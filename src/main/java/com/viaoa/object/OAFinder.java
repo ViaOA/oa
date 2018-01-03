@@ -446,9 +446,9 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         
         if (linkInfos == null || pos >= linkInfos.length) {
             boolean bIsUsed;
-            if (filter != null) bIsUsed = filter.isUsed(obj);
+            if (filter != null && !bStop) bIsUsed = filter.isUsed(obj);
             else bIsUsed = true;
-            bIsUsed = bIsUsed && isUsed((T) obj);
+            bIsUsed = !bStop && bIsUsed && isUsed((T) obj);
 
             if (bIsUsed) {
                 onFound((T) obj);

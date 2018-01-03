@@ -125,8 +125,6 @@ public class OASyncClient {
         long ts = System.currentTimeMillis();
         
         final int cntx = aiCntGetDetail.incrementAndGet();        
-        int xDup = OAObjectSerializeDelegate.cntDup;
-        int xNew = OAObjectSerializeDelegate.cntNew;
 
         // LOG.fine("masterObject="+masterObject+", propertyName="+propertyName);
         if (masterObject == null || propertyName == null) return null;
@@ -136,6 +134,9 @@ public class OASyncClient {
         String[] additionalMasterProperties = null; 
         Object result = null;
 
+        int xDup=0;
+        int xNew=0;
+        
         OALinkInfo li = null;
         try {
             // both Hub && pp are set by HubMerger, HubGroupBy
@@ -145,6 +146,8 @@ public class OASyncClient {
             
             if (OARemoteThreadDelegate.isRemoteThread()) {
                     // use annotated version that does not use the msg queue
+                xDup = OAObjectSerializeDelegate.cntDup;
+                xNew = OAObjectSerializeDelegate.cntNew;
                 result = getRemoteClient().getDetailNow(cntx, masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
                         additionalMasterProperties, siblingKeys, bUsesDetail);
             }
@@ -156,12 +159,17 @@ public class OASyncClient {
                 
                 int max;
                 if (li == null) max = 20;
-                else if (li.getType() == OALinkInfo.TYPE_MANY) max = 50;
+                else if (li.getType() == OALinkInfo.TYPE_MANY) {
+                    if (li.getCouldBeLarge()) max = 5;
+                    else max = 50;
+                }
                 else max = 100;
 
                 siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max);
                 additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
               
+                xDup = OAObjectSerializeDelegate.cntDup;
+                xNew = OAObjectSerializeDelegate.cntNew;
                 result = getRemoteClient().getDetailNow(cntx, masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
                         additionalMasterProperties, siblingKeys, bUsesDetail);
             }
@@ -225,7 +233,13 @@ public class OASyncClient {
             int iDup = OAObjectSerializeDelegate.cntDup;
             
             ts = System.currentTimeMillis() - ts;
-            String s = (ts > 750) ? " ALERT" : "";
+            String s = "";
+            if (ts > 750) {
+                if ((iNew-xNew) > 1000) {
+                    if (ts > 2000) s = " ALERT";
+                }
+                else s = " ALERT";
+            }
             s = String.format(
                 "client=%d, id=%,d, Obj=%s, prop=%s, ref=%s, getSib=%,d/%,d, moreProps=%d, " +
                 "newCnt=%,d, dupCnt=%,d, totNewCnt=%,d, totDupCnt=%,d, ms=%,d%s",

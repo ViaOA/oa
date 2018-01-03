@@ -2,6 +2,7 @@ package com.viaoa.object;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.hub.Hub;
@@ -11,8 +12,8 @@ import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
 /**
- * Find other siblings objects that need the same property loaded.
- * Used by DS and CS to be able to get extra data and increase performance.
+ * Find the closet siblings objects that need the same property loaded.
+ * Used by DS and CS to be able to get extra data per request to server/datasource, and increase performance.
  * @author vvia
  */
 public class OAObjectSiblingDelegate {
@@ -86,9 +87,10 @@ public class OAObjectSiblingDelegate {
             hub = findBestSiblingHub(mainObject);
             
             if (hub == null);
-            else if (hub.getMasterHub() != null) max *= .70;
-            else if (hub.getMasterObject() != null) max *= .50;
-            else max *= .80;
+            else if (OAObjectHubDelegate.getHubReferences(mainObject).length == 1);
+            else if (hub.getMasterHub() != null) max *= .80;
+            else if (hub.getMasterObject() != null) max *= .60;
+            else max *= .50;
         }
             
         OALinkInfo lix = linkInfo;
@@ -130,48 +132,67 @@ public class OAObjectSiblingDelegate {
         final boolean bIsMany = (linkInfo != null) && (linkInfo.getType() == OALinkInfo.TYPE_MANY);
         final Class clazz = (linkInfo == null) ? null : linkInfo.getToClass();
         
+        final int cntPreviousFound = alObjectKey.size();
+        final LinkedList<OAObjectKey> llObjectKey = new LinkedList<>();
+        
         OAFinder f = new OAFinder(hub, spp) {
+            int cntAfterMain = -1;
             @Override
-            protected boolean isUsed(OAObject obj) {
-                if (obj == mainObject) return false;
-                Object objx = OAObjectPropertyDelegate.getProperty(obj, property, true, true);
+            protected boolean isUsed(OAObject oaObject) {
+                if (oaObject == mainObject) {
+                    cntAfterMain = 0; 
+                    return false;
+                }
+                
+                OAObjectKey objectKey = oaObject.getObjectKey();
+                Object propertyValue = OAObjectPropertyDelegate.getProperty(oaObject, property, true, true);
+                
+                boolean bAdd = false;
+                
                 if (bIsMany) {
-                    if (!(objx instanceof Hub)) {
-                        OAObjectKey key = obj.getObjectKey();
-                        if (!alObjectKey.contains(key)) {
-                            alObjectKey.add(key);
-                            if (alObjectKey.size() >= max) {
-                                stop();
-                            }
-                        }
+                    if (!(propertyValue instanceof Hub)) {
+                        bAdd = true;
                     }
                 }
-                else if (objx instanceof OAObjectKey) {
-                    OAObjectKey key = (OAObjectKey) objx;
-                    if (!hsKeys.contains(key)) {
-                        hsKeys.add(key);
-                        if (OAObjectCacheDelegate.get(clazz, key) == null) {
-                            alObjectKey.add(obj.getObjectKey());
-                            if (alObjectKey.size() >= max) {
-                                stop();
-                            }
+                else if (propertyValue instanceof OAObjectKey) {
+                    if (!hsKeys.contains(objectKey)) {
+                        hsKeys.add(objectKey);
+                        if (OAObjectCacheDelegate.get(clazz, objectKey) != null) {
+                            bAdd = true;
                         }
                     }
                 }
                 else if (linkInfo == null) {  // must be blob
-                    if (objx instanceof OANotExist) {
-                        OAObjectKey key = obj.getObjectKey();
-                        alObjectKey.add(obj.getObjectKey());
-                        if (alObjectKey.size() >= max) {
-                            stop();
+                    if (propertyValue instanceof OANotExist) {
+                        bAdd = true;
+                    }
+                }
+                
+                if (bAdd && !llObjectKey.contains(objectKey) && !alObjectKey.contains(objectKey)) {
+                    if (!OAObjectPropertyDelegate.isPropertyLocked(oaObject, property)) {
+                        if (cntAfterMain >= 0) cntAfterMain++;
+                        llObjectKey.add(objectKey);
+                        if (max > 0) {
+                            int x = llObjectKey.size()+cntPreviousFound;
+                            if (x >= max) {
+                                if (x > max) llObjectKey.remove(0);
+                                if (cntAfterMain >= ((max-cntPreviousFound)/2)) {
+                                    stop();
+                                }
+                            }
                         }
                     }
                 }
+                
                 return false;
             }
         };
         f.setUseOnlyLoadedData(true);
         f.find();
+        
+        for (OAObjectKey ok : llObjectKey) {
+            alObjectKey.add(ok);
+        }
     }
     
     

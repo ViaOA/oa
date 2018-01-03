@@ -765,8 +765,12 @@ public class OAObjectReflectDelegate {
                     }
                     else {
                         int x;                    
-                        if (linkInfo.getCouldBeLarge()) x = 5;
-                        else x = 25;
+                        if (linkInfo.getCouldBeLarge()) {
+                            x = 4;
+                        }
+                        else {
+                            x = 25;
+                        }
                         siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, x);
                     }
                     
@@ -775,11 +779,14 @@ public class OAObjectReflectDelegate {
                         for (OAObjectKey keyx : siblingKeys) {
                             Object[] idsx = keyx.getObjectIds();
                             if (idsx == null || idsx.length != 1) continue;
-                            if (sibIds == null) sibIds = "" + idsx[0];
-                            else sibIds += "," + idsx[0];
+                            
                             OAObject objx = OAObjectCacheDelegate.get(oaObj.getClass(), keyx);
                             if (objx != null) {
-                                hmSiblingHub.put(keyx, new Hub(linkClass, objx, liReverse, false));
+                                if (OAObjectPropertyDelegate.attemptPropertyLock(objx, linkPropertyName)) {
+                                    hmSiblingHub.put(keyx, new Hub(linkClass, objx, liReverse, false));
+                                    if (sibIds == null) sibIds = "" + idsx[0];
+                                    else sibIds += "," + idsx[0];
+                                }
                             }
                         }
                         if (sibIds != null) {
@@ -1005,6 +1012,7 @@ public class OAObjectReflectDelegate {
                 else {
                     OAObjectPropertyDelegate.setPropertyHubIfNotSet(obj, linkPropertyName, hx);
                 }
+                OAObjectPropertyDelegate.releasePropertyLock(obj, linkPropertyName);
             }
         }
         return hub;
@@ -1326,7 +1334,9 @@ public class OAObjectReflectDelegate {
             return currentRefsLoaded;
         }
         if (obj == null) return currentRefsLoaded;
-        if (cascade.wasCascaded(obj, true)) return currentRefsLoaded;
+        if (cascade.wasCascaded(obj, true)) {
+            if (levelsLoaded > 0) return currentRefsLoaded;
+        }
         if (callback != null) {
             if (!callback.updateObject(obj)) return currentRefsLoaded;
         }
@@ -1339,14 +1349,21 @@ public class OAObjectReflectDelegate {
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
             if (bOwnedOnly && !li.bOwner) continue;
+            boolean bIsMany = li.getType() == OALinkInfo.TYPE_MANY;
 
             Object objx = OAObjectPropertyDelegate.getProperty(obj, li.getName(), true, true);
-            if (objx instanceof OANotExist || objx instanceof OAObjectKey) {  // not loaded from ds
-                currentRefsLoaded++;
+
+            if (objx instanceof OANotExist) {  // not loaded from ds
+                if (bIsMany) currentRefsLoaded++; 
+            }
+            else if (objx instanceof OAObjectKey) {  // not loaded from ds
+                if (OAObjectCacheDelegate.get(li.getToClass(), (OAObjectKey) objx) == null) {
+                    currentRefsLoaded++; 
+                }
             }
             
             objx = obj.getProperty(li.getName()); // load prop
-            if (maxLevelsToLoad > 0 && currentRefsLoaded >= maxRefsToLoad) break;
+            if (maxRefsToLoad > 0 && currentRefsLoaded >= maxRefsToLoad) break;
             if (objx == null) continue;
             
             if (levelsLoaded + 1 >= maxLevelsToLoad) {
@@ -1556,10 +1573,13 @@ public class OAObjectReflectDelegate {
                             }
                             Object valx = OAObjectPropertyDelegate.getProperty(objx, linkPropertyName, false, false);
                             if (!(valx instanceof OAObjectKey)) continue;
-                            Object[] idsx = ((OAObjectKey)valx).getObjectIds();
-                            if (idsx == null || idsx.length != 1) continue;
-                            if (sibIds == null) sibIds = "" + idsx[0];
-                            else sibIds += "," + idsx[0];
+                            
+                            if (!OAObjectPropertyDelegate.isPropertyLocked(objx, linkPropertyName)) {
+                                Object[] idsx = ((OAObjectKey)valx).getObjectIds();
+                                if (idsx == null || idsx.length != 1) continue;
+                                if (sibIds == null) sibIds = "" + idsx[0];
+                                else sibIds += "," + idsx[0];
+                            }
                         }
                         if (sibIds != null) {
                             Object[] idsx = key.getObjectIds();
