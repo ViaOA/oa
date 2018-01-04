@@ -2258,6 +2258,13 @@ if (!getKeepSorted()) hub.cancelSort();
                     }
                     setCursor(Cursor.getDefaultCursor());
                 }
+                
+                Container cont = getParent();
+                for (int i=0; i<3 && cont!=null; i++) {
+                    cont.repaint();
+                    cont = cont.getParent();
+                }
+                
             }
         };
         sw.execute();
