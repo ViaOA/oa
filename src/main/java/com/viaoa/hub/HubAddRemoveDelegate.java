@@ -438,9 +438,9 @@ private static long msLAST;
         if (!bIsLoading) {
             HubEventDelegate.fireBeforeAddEvent(thisHub, obj, thisHub.getCurrentSize());
         }
-    
+
         if (thisHub.isOAObject()) {
-            HubCSDelegate.addToHub(thisHub, (OAObject) obj);
+            HubCSDelegate.addToHub(thisHub, (OAObject) obj);  // use OAThreadLocalDelegate.setSuppressCSMessages(true) to not have add sent to other clients/server
         }
         if (!internalAdd(thisHub, obj, true, false)) {
             //LOG.warning(" NOT ADDED <<<<<");
