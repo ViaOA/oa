@@ -14,6 +14,7 @@ import java.lang.ref.*;
 import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.*;
@@ -114,6 +115,7 @@ public class OASyncClient {
     }
     
     private final AtomicInteger aiCntGetDetail = new AtomicInteger();
+    private final ConcurrentHashMap<Integer, Integer> hmSibling = new ConcurrentHashMap<Integer, Integer>(); 
     
     /**
      * This is sent to the server using ClientGetDetail, by using a customized objectSerializer
@@ -134,8 +136,8 @@ public class OASyncClient {
         String[] additionalMasterProperties = null; 
         Object result = null;
 
-        int xDup=0;
-        int xNew=0;
+        int cntNew=0;
+        int cntDup=0;
         
         OALinkInfo li = null;
         try {
@@ -146,8 +148,8 @@ public class OASyncClient {
             
             if (OARemoteThreadDelegate.isRemoteThread()) {
                     // use annotated version that does not use the msg queue
-                xDup = OAObjectSerializeDelegate.cntDup;
-                xNew = OAObjectSerializeDelegate.cntNew;
+                cntDup = OAObjectSerializeDelegate.cntDup;
+                cntNew = OAObjectSerializeDelegate.cntNew;
                 result = getRemoteClient().getDetailNow(cntx, masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
                         additionalMasterProperties, siblingKeys, bUsesDetail);
             }
@@ -168,10 +170,26 @@ public class OASyncClient {
                 siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max);
                 additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
               
-                xDup = OAObjectSerializeDelegate.cntDup;
-                xNew = OAObjectSerializeDelegate.cntNew;
-                result = getRemoteClient().getDetailNow(cntx, masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
+                try {
+                    if (siblingKeys != null) {
+                        for (OAObjectKey ok : siblingKeys) {
+                            int g = ok.getGuid();
+                            hmSibling.put(g, g);
+                        }
+                    }
+                    cntDup = OAObjectSerializeDelegate.cntDup;
+                    cntNew = OAObjectSerializeDelegate.cntNew;
+                    result = getRemoteClient().getDetailNow(cntx, masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
                         additionalMasterProperties, siblingKeys, bUsesDetail);
+                }
+                finally {
+                    if (siblingKeys != null) {
+                        for (OAObjectKey ok : siblingKeys) {
+                            int g = ok.getGuid();
+                            hmSibling.remove(g);
+                        }
+                    }
+                }
             }
         }
         catch (Exception e) {
@@ -179,12 +197,17 @@ public class OASyncClient {
         }
         
         lastMasterObjects[lastMasterCnter++%lastMasterObjects.length] = masterObject;
-        
         int cntSib = 0;
+        
+        Object resultHold = result;//qqqqqqqqq
+
         if (result instanceof OAObjectSerializer) {
             // see ClientGetDetail.getSerializedDetail(..)
             OAObjectSerializer os = (OAObjectSerializer) result;
 
+            cntDup = os.dupCount;
+            cntNew = os.newCount;
+            
             result = os.getObject();
             
             // the custom serializer can send extra objects, and might use objKey instead of the object. 
@@ -216,6 +239,10 @@ public class OASyncClient {
                 }
             }
         }
+        else {
+            cntDup = OAObjectSerializeDelegate.cntDup - cntDup;
+            cntNew = OAObjectSerializeDelegate.cntNew - cntNew;
+        }
         
         if (result instanceof Hub) {
             Hub hub = (Hub) result;
@@ -228,14 +255,12 @@ public class OASyncClient {
             }
         }
 
-        if (true || OAObjectSerializeDelegate.cntNew-xNew > 25 || cntx % 100 == 0) {
-            int iNew = OAObjectSerializeDelegate.cntNew; 
-            int iDup = OAObjectSerializeDelegate.cntDup;
+        if (true || OAObjectSerializeDelegate.cntNew-cntNew > 25 || cntx % 100 == 0) {
             
             ts = System.currentTimeMillis() - ts;
             String s = "";
             if (ts > 750) {
-                if ((iNew-xNew) > 1000) {
+                if (cntNew > 1000) {
                     if (ts > 2000) s = " ALERT";
                 }
                 else s = " ALERT";
@@ -251,10 +276,10 @@ public class OASyncClient {
                 cntSib,
                 (siblingKeys == null)?0:siblingKeys.length,
                 additionalMasterProperties==null?0:additionalMasterProperties.length,
-                iNew-xNew, 
-                iDup-xDup,
-                iNew, 
-                iDup,
+                cntNew, 
+                cntDup,
+                OAObjectSerializeDelegate.cntNew, 
+                OAObjectSerializeDelegate.cntDup,
                 ts,
                 s
             );
