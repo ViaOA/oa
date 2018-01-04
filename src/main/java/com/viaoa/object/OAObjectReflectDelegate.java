@@ -886,6 +886,7 @@ public class OAObjectReflectDelegate {
             if (sibIds != null) {
                 OALinkInfo rli = linkInfo.getReverseLinkInfo();
                 try {
+                    OAThreadLocalDelegate.setSuppressCSMessages(true);
                     OAThreadLocalDelegate.setLoading(true);
                     for ( ; select.hasMore(); ) {
                         OAObject objx = select.next();
@@ -907,6 +908,7 @@ public class OAObjectReflectDelegate {
                 }
                 finally {
                     OAThreadLocalDelegate.setLoading(false);
+                    OAThreadLocalDelegate.setSuppressCSMessages(false);
                 }
             }
             else { 
