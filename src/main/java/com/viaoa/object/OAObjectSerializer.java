@@ -522,10 +522,26 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
 
     public static boolean bReadId = true; // 20171218, set to false to read older data 
     
+
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        int xDup = OAObjectSerializeDelegate.cntDup;
+        int xNew = OAObjectSerializeDelegate.cntNew;
+        try {
+            _readObject(stream);
+        }
+        finally {
+            newCount = OAObjectSerializeDelegate.cntNew - xNew;
+            dupCount = OAObjectSerializeDelegate.cntDup - xDup;
+        }
+    }
+    
+    public transient int newCount;
+    public transient int dupCount;
+    
     /**
      * Called by objectStream to deserialize a wrapper. 
      */
-    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+    private void _readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
         long ts = System.currentTimeMillis();
         
         if (bReadId) {
