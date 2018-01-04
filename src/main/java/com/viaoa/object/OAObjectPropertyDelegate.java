@@ -456,7 +456,7 @@ public class OAObjectPropertyDelegate {
                 if (lock.done) break;
                 lock.hasWait = true;
                 try {
-                    lock.wait(50); 
+                    lock.wait(100); 
                 }
                 catch (Exception e) {
                 }
