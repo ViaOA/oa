@@ -342,5 +342,39 @@ public class OALinkInfo { //implements java.io.Serializable {
     public void setMergerPropertyPath(String pp) {
         this.mergerPropertyPath = pp;
     }
+    public boolean isOne2One() {
+        if (getType() != TYPE_ONE) return false;
+        OALinkInfo rli = getReverseLinkInfo();
+        if (rli == null) return false;
+        if (rli.getType() != TYPE_ONE) return false;
+        return true;
+    }
+    public boolean isOne() {
+        return getType() == TYPE_ONE;
+    }
+    public boolean isMany() {
+        return getType() == TYPE_MANY;
+    }
+    public boolean isMany2Many() {
+        if (getType() != TYPE_MANY) return false;
+        OALinkInfo rli = getReverseLinkInfo();
+        if (rli == null) return false;
+        if (rli.getType() != TYPE_MANY) return false;
+        return true;
+    }
+    public boolean isOne2Many() {
+        if (getType() != TYPE_ONE) return false;
+        OALinkInfo rli = getReverseLinkInfo();
+        if (rli == null) return false;
+        if (rli.getType() != TYPE_MANY) return false;
+        return true;
+    }
+    public boolean isMany2One() {
+        if (getType() != TYPE_MANY) return false;
+        OALinkInfo rli = getReverseLinkInfo();
+        if (rli == null) return false;
+        if (rli.getType() != TYPE_ONE) return false;
+        return true;
+    }
 }
 
