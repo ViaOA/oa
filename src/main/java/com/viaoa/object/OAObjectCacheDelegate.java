@@ -10,7 +10,7 @@
 */
 package com.viaoa.object;
 
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -74,13 +74,13 @@ public class OAObjectCacheDelegate {
     
     /**
      * Automatically set by Hub.select() when a select is done without a where clause.
-     * A SoftReference is used for storage.  
+     * A WeakReference is used for storage.  
      * When a new OAObject is created, it will be added to a SelectAllHub.
      * @since 2007/08/16
      */
     public static Hub[] getSelectAllHubs(Class clazz) {
     	if (clazz == null) return null;
-        SoftReference[] refs = (SoftReference[]) OAObjectHashDelegate.hashCacheSelectAllHub.get(clazz);
+        WeakReference[] refs = (WeakReference[]) OAObjectHashDelegate.hashCacheSelectAllHub.get(clazz);
         if (refs == null) return null;
     	synchronized (OAObjectHashDelegate.hashCacheSelectAllHub) {
 	        Hub[] hubs = new Hub[refs.length];
@@ -106,8 +106,8 @@ public class OAObjectCacheDelegate {
     	if (hs != null && hs.length > 0) return hs[0];
     	return null;
     }   
-    private static SoftReference[] removeSelectAllHubs(SoftReference[] refs, SoftReference refRemove) {
-		SoftReference[] refs2 = new SoftReference[refs.length-1];
+    private static WeakReference[] removeSelectAllHubs(WeakReference[] refs, WeakReference refRemove) {
+		WeakReference[] refs2 = new WeakReference[refs.length-1];
 		boolean bFound = false;
         int j = 0;
 		for (int i=0; i<refs.length; i++) {
@@ -127,20 +127,20 @@ public class OAObjectCacheDelegate {
     	LOG.fine("Hub.objectClass = "+clazz);
     	
     	synchronized (OAObjectHashDelegate.hashCacheSelectAllHub) {
-    	    SoftReference[] refs = (SoftReference[]) OAObjectHashDelegate.hashCacheSelectAllHub.get(clazz);
+    	    WeakReference[] refs = (WeakReference[]) OAObjectHashDelegate.hashCacheSelectAllHub.get(clazz);
 	        if (refs == null) {
-	        	refs = new SoftReference[1];
+	        	refs = new WeakReference[1];
 	        }
 	    	else {
 		    	// first see if Hub is already in the list
 		        for (int i=0; i<refs.length; i++) {
 		        	if (hub == refs[i].get()) return;
 				}	
-		        SoftReference[] refs2 = new SoftReference[refs.length+1];
+		        WeakReference[] refs2 = new WeakReference[refs.length+1];
 				System.arraycopy(refs, 0, refs2, 0, refs.length);
 				refs = refs2;
 	    	}
-	    	refs[refs.length-1] = new SoftReference(hub);
+	    	refs[refs.length-1] = new WeakReference(hub);
 	    	OAObjectHashDelegate.hashCacheSelectAllHub.put(clazz, refs);
 	    	LOG.finer("total for class="+clazz+" is now "+refs.length);
 		}
@@ -155,7 +155,7 @@ public class OAObjectCacheDelegate {
     	Class clazz = hub.getObjectClass();
     	if (clazz == null) return;
     	// LOG.finest("Hub.objectClass = "+clazz);
-    	SoftReference[] refs = (SoftReference[]) OAObjectHashDelegate.hashCacheSelectAllHub.get(clazz);
+    	WeakReference[] refs = (WeakReference[]) OAObjectHashDelegate.hashCacheSelectAllHub.get(clazz);
         if (refs == null) return;
     	synchronized (OAObjectHashDelegate.hashCacheSelectAllHub) {
 	        for (int i=0; i<refs.length; i++) {
@@ -166,7 +166,7 @@ public class OAObjectCacheDelegate {
 	        	    	LOG.fine("total for class="+clazz+" is now 0");
 	        		}
 	        		else {
-	        		    SoftReference[] refNew = removeSelectAllHubs(refs, refs[i]);
+	        		    WeakReference[] refNew = removeSelectAllHubs(refs, refs[i]);
 	        			OAObjectHashDelegate.hashCacheSelectAllHub.put(clazz, refNew);
 	        	    	LOG.finer("total for class="+clazz+" is now "+refNew.length);
 	        		}
@@ -181,14 +181,14 @@ public class OAObjectCacheDelegate {
      }
 
     /**
-     * Used to store a global hub by name, using a SoftReference.
+     * Used to store a global hub by name, using a WeakReference.
      * @param name reference name to use, not case-sensitive
      * @return if found then Hub, else null.
      */
     static public void setNamedHub(String name, Hub hub) {
     	LOG.fine("Hub="+hub+", name="+name);
     	if (name == null || hub == null) return;
-    	OAObjectHashDelegate.hashCacheNamedHub.put(name.toUpperCase(), new SoftReference(hub));
+    	OAObjectHashDelegate.hashCacheNamedHub.put(name.toUpperCase(), new WeakReference(hub));
     	LOG.fine("total named Hubs is now ="+OAObjectHashDelegate.hashCacheNamedHub.size());
     }
     /**
@@ -199,7 +199,7 @@ public class OAObjectCacheDelegate {
     public static Hub getNamedHub(String name) {
     	//LOG.finer("Name="+name);
     	if (name == null) return null;
-    	SoftReference ref = (SoftReference) OAObjectHashDelegate.hashCacheNamedHub.get(name.toUpperCase());
+    	WeakReference ref = (WeakReference) OAObjectHashDelegate.hashCacheNamedHub.get(name.toUpperCase());
         Hub hub = null;
         if (ref != null) {
         	hub = (Hub) ref.get();
@@ -400,7 +400,7 @@ public class OAObjectCacheDelegate {
             TreeMap tm = tmh.treeMap;
             Map.Entry me = tm.firstEntry();
             while (me != null) {
-                SoftReference ref = (SoftReference) me.getValue();
+                WeakReference ref = (WeakReference) me.getValue();
                 Object obj = ref.get();
                 if (obj != null) {
                     if (!callback.updateObject(obj)) break;
@@ -561,7 +561,7 @@ public class OAObjectCacheDelegate {
             tmh.rwl.writeLock().lock();
             final TreeMap tm = tmh.treeMap;
 
-            SoftReference ref = (SoftReference) tm.get(ok);
+            WeakReference ref = (WeakReference) tm.get(ok);
 
             if (ref != null) {
                 result = (OAObject) ref.get();
@@ -574,7 +574,7 @@ public class OAObjectCacheDelegate {
             if (result == null) {
                 if (ref != null) tm.remove(ok);  // previous value was gc'd
                 if (mode != IGNORE_ALL) {
-                    ref = new SoftReference(obj);
+                    ref = new WeakReference(obj);
                     tm.put(ok, ref);
                     bSendAddEvent = true;
                 }
@@ -589,7 +589,7 @@ public class OAObjectCacheDelegate {
                 }
                 else if (mode == OVERWRITE_DUPS) {
                     if (ref != null) tm.remove(ok);  // previous value was gc'd
-                    ref = new SoftReference(obj);
+                    ref = new WeakReference(obj);
                     tm.put(ok, ref);
                     removeObj = result;
                     result = obj;
@@ -641,9 +641,9 @@ public class OAObjectCacheDelegate {
         try {
             tmh.rwl.writeLock().lock();
             if (oldKey != null) {
-                SoftReference refx = tmh.treeMap.remove(oldKey);
+                WeakReference refx = tmh.treeMap.remove(oldKey);
             }
-            tmh.treeMap.put(ok, new SoftReference(obj));
+            tmh.treeMap.put(ok, new WeakReference(obj));
         }
         finally {
             tmh.rwl.writeLock().unlock();
@@ -667,7 +667,7 @@ public class OAObjectCacheDelegate {
             boolean b = true;
             try {
                 tmh.rwl.writeLock().lock();
-                SoftReference ref = tmh.treeMap.remove(key);
+                WeakReference ref = tmh.treeMap.remove(key);
                 // 20140307 make sure that the obj in tree is the one being removed
                 //   since an obj that is finalized could be reloaded. 
                 if (ref != null) {
@@ -700,7 +700,7 @@ public class OAObjectCacheDelegate {
 
     
     static class TreeMapHolder {
-        TreeMap<OAObjectKey, SoftReference<OAObject>> treeMap = new TreeMap<OAObjectKey, SoftReference<OAObject>>();
+        TreeMap<OAObjectKey, WeakReference<OAObject>> treeMap = new TreeMap<OAObjectKey, WeakReference<OAObject>>();
         ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     } 
     
@@ -765,11 +765,11 @@ public class OAObjectCacheDelegate {
             	else key = OAObjectKeyDelegate.convertToObjectKey(clazz, key);
             }
         	
-            SoftReference ref;
+            WeakReference ref;
             
             try {
                 tmh.rwl.readLock().lock();
-                ref = (SoftReference) tmh.treeMap.get(key);
+                ref = (WeakReference) tmh.treeMap.get(key);
             }
             finally {
                 tmh.rwl.readLock().unlock();
@@ -917,7 +917,7 @@ public class OAObjectCacheDelegate {
         try {
             tmh.rwl.readLock().lock();
         
-            Map.Entry<OAObjectKey, SoftReference<OAObject>> me = null;
+            Map.Entry<OAObjectKey, WeakReference<OAObject>> me = null;
             if (fromObject != null) {
                 OAObjectKey key;
                 if (fromObject instanceof OAObjectKey) key = (OAObjectKey) fromObject;
@@ -931,7 +931,7 @@ public class OAObjectCacheDelegate {
             
             boolean b = OAObject.class.isAssignableFrom(clazz);
             while (me != null) {
-                SoftReference ref = (SoftReference) me.getValue();
+                WeakReference ref = (WeakReference) me.getValue();
                 Object object = ref.get();
                 if (object != null && object != fromObject) {
                     if (!bSkipNew || !b || !((OAObject)object).getNew()) {
