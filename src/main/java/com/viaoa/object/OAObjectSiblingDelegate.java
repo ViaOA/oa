@@ -54,6 +54,17 @@ public class OAObjectSiblingDelegate {
             for (OALinkInfo li : pp.getLinkInfos()) {
                 if (property.equalsIgnoreCase(li.getName())) {
                     bValid = true;
+                    
+                    if (li.getRecursive()) {
+                        OALinkInfo rli = li.getReverseLinkInfo();
+                        Object objx = mainObject;
+                        for ( ; rli != null; ) {
+                            objx = rli.getValue(objx);
+                            if (objx == null) break;
+                            if (ppPrefix == null) ppPrefix = li.getName();
+                            else ppPrefix += "." + li.getName();
+                        }
+                    }
                     break;
                 }
                 if (ppPrefix == null) ppPrefix = li.getName();
@@ -145,6 +156,7 @@ public class OAObjectSiblingDelegate {
     protected static void findSiblings(final ArrayList<OAObjectKey> alObjectKey, final Hub hub, String spp, final String property, final OALinkInfo linkInfo, 
             final OAObject mainObject, final HashMap<OAObjectKey, OAObjectKey> hmObjKeyPos, final int max, final ConcurrentHashMap<Integer, Integer> hmIgnoreSibling) {
         final boolean bIsMany = (linkInfo != null) && (linkInfo.getType() == OALinkInfo.TYPE_MANY);
+        final boolean bIsOne2One = !bIsMany && (linkInfo != null) && (linkInfo.isOne2One());
         final Class clazz = (linkInfo == null) ? null : linkInfo.getToClass();
         
         final int cntPreviousFound = alObjectKey.size();
@@ -198,6 +210,9 @@ public class OAObjectSiblingDelegate {
                             bAdd = true;
                         }
                     }
+                }
+                else if (bIsOne2One && propertyValue == null) {
+                    bAdd = true;
                 }
                 else if (linkInfo == null) {  // must be blob
                     if (propertyValue instanceof OANotExist) {
