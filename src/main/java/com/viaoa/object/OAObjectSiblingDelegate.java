@@ -1,8 +1,10 @@
 package com.viaoa.object;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.hub.Hub;
@@ -24,6 +26,18 @@ public class OAObjectSiblingDelegate {
      * Used to find any siblings that also need the same property loaded.
      */
     public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int maxAmount) {
+        return getSiblings(mainObject, property, maxAmount, null);
+    }
+    
+    /**
+     * 
+     * @param mainObject
+     * @param property
+     * @param maxAmount
+     * @param hmSibling guid of objects to ignore, because they are "inflight"
+     * @return
+     */
+    public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int maxAmount, final ConcurrentHashMap<Integer, Integer> hmIgnoreSibling) {
         if (mainObject == null || OAString.isEmpty(property) || maxAmount < 1) return null;
 
         final OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(mainObject.getClass(), property);
@@ -76,7 +90,7 @@ public class OAObjectSiblingDelegate {
         }
         
         final ArrayList<OAObjectKey> alObjectKey = new ArrayList<>();
-        final HashSet<OAObjectKey> hsKeys = new HashSet<>();
+        final HashMap<OAObjectKey, OAObjectKey> hsKeys = new HashMap<>();
         
         int max = maxAmount;
         Hub hub = getDetailHub;
@@ -99,7 +113,7 @@ public class OAObjectSiblingDelegate {
             if (hsHubVisited.contains(hub)) break;
             hsHubVisited.add(hub);
             
-            findSiblings(alObjectKey, hub, ppPrefix, property, linkInfo, mainObject, hsKeys, max);
+            findSiblings(alObjectKey, hub, ppPrefix, property, linkInfo, mainObject, hsKeys, max, hmIgnoreSibling);
 
             if (alObjectKey.size() >= max) break;
 
@@ -128,7 +142,8 @@ public class OAObjectSiblingDelegate {
         return keys;
     }
     
-    protected static void findSiblings(final ArrayList<OAObjectKey> alObjectKey, Hub hub, String spp, final String property, final OALinkInfo linkInfo, final OAObject mainObject, final HashSet<OAObjectKey> hsKeys, final int max) {
+    protected static void findSiblings(final ArrayList<OAObjectKey> alObjectKey, final Hub hub, String spp, final String property, final OALinkInfo linkInfo, 
+            final OAObject mainObject, final HashMap<OAObjectKey, OAObjectKey> hmObjKeyPos, final int max, final ConcurrentHashMap<Integer, Integer> hmIgnoreSibling) {
         final boolean bIsMany = (linkInfo != null) && (linkInfo.getType() == OALinkInfo.TYPE_MANY);
         final Class clazz = (linkInfo == null) ? null : linkInfo.getToClass();
         
@@ -139,14 +154,25 @@ public class OAObjectSiblingDelegate {
             int cntAfterMain = -1;
             @Override
             protected boolean isUsed(OAObject oaObject) {
+                
+                Object propertyValue = OAObjectPropertyDelegate.getProperty(oaObject, property, true, true);
+
                 if (oaObject == mainObject) {
+                    if (propertyValue instanceof OAObjectKey) {
+                        OAObjectKey ok = (OAObjectKey) propertyValue;
+                        OAObjectKey okx  = hmObjKeyPos.put(ok, oaObject.getObjectKey());
+                        if (okx != null) llObjectKey.remove(okx);
+                    }
                     cntAfterMain = 0; 
                     return false;
                 }
+
+                if (hmIgnoreSibling != null) {
+                    int guid = oaObject.getGuid();
+                    if (hmIgnoreSibling.contains(guid)) return false;
+                }
                 
                 OAObjectKey objectKey = oaObject.getObjectKey();
-                Object propertyValue = OAObjectPropertyDelegate.getProperty(oaObject, property, true, true);
-                
                 boolean bAdd = false;
                 
                 if (bIsMany) {
@@ -154,10 +180,21 @@ public class OAObjectSiblingDelegate {
                         bAdd = true;
                     }
                 }
-                else if (propertyValue instanceof OAObjectKey) {
-                    if (!hsKeys.contains(objectKey)) {
-                        hsKeys.add(objectKey);
-                        if (OAObjectCacheDelegate.get(clazz, objectKey) != null) {
+                else if (linkInfo != null && propertyValue instanceof OAObjectKey) {
+                    OAObjectKey ok = (OAObjectKey) propertyValue;
+                    OAObjectKey okx  = hmObjKeyPos.put(ok, oaObject.getObjectKey());
+                    if (okx != null) {
+                        if (cntAfterMain >= 0 && okx.equals(mainObject.getObjectKey())) { 
+                            hmObjKeyPos.put(ok, okx);
+                        }
+                        else {
+                            if (llObjectKey.remove(okx)) {
+                                bAdd = true;
+                            }
+                        }
+                    }
+                    else {
+                        if (OAObjectCacheDelegate.get(clazz, ok) == null) {
                             bAdd = true;
                         }
                     }
