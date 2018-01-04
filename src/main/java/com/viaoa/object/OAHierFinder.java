@@ -15,6 +15,7 @@ import java.util.HashSet;
 import com.viaoa.util.*;
 import com.viaoa.util.filter.OAEmptyFilter;
 import com.viaoa.util.filter.OANotEmptyFilter;
+import com.viaoa.util.filter.OANotNullFilter;
 
 /**
  * This is used to find the first value in an object hierarchy (including recursive) that 
@@ -69,6 +70,9 @@ public class OAHierFinder<F extends OAObject> {
     }
     public Object findFirstEmpty(F fromObject) {
         return findFirst(fromObject, new OAEmptyFilter());
+    }
+    public Object findFirstNotNull(F fromObject) {
+        return findFirst(fromObject, new OANotNullFilter());
     }
     
     protected boolean findFirstValue(final OAObject obj, OAFilter filter, final int pos) {
