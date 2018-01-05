@@ -243,6 +243,7 @@ public class ResultSetIterator implements OADataSourceIterator {
     private HashSet<Integer> hsObjectWasLoaded;
     
     public synchronized Object next() {
+        if (!bInit) init();
         if (!bMore && hubReadAhead == null) return null;
 
         if (hubReadAhead == null) {
