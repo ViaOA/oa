@@ -76,8 +76,8 @@ public class OAObjectSiblingDelegate {
                 for (OALinkInfo li : pp.getLinkInfos()) {
                     Class c = li.getToClass();
                     OALinkInfo lix = OAObjectInfoDelegate.getLinkInfo(c, mainObject.getClass());
-                    if (lix != null && !lix.getPrivateMethod()) {
-                        bValid = true;
+                    if (lix != null) {
+                        if (!lix.getPrivateMethod()) bValid = true;
                         break;
                     }
                     if (ppPrefix == null) ppPrefix = li.getName();
@@ -129,13 +129,18 @@ public class OAObjectSiblingDelegate {
             if (alObjectKey.size() >= max) break;
 
             lix = HubDetailDelegate.getLinkInfoFromMasterToDetail(hub);
-            if (lix == null) break;
+            if (lix == null || lix.getToClass() == null) break;  // could be using GroupBy as hub
             if (ppPrefix == null) ppPrefix = lix.getName();
             else ppPrefix = lix.getName() + "." + ppPrefix;
             
             Hub hx = hub.getMasterHub();
             if (hx != null) {
                 if (cnt > 3) break;
+                Object objx = hub.getMasterObject();
+                if (objx == null) break;
+                if (!objx.getClass().equals(hx.getObjectClass())) {
+                    break;
+                }
                 hub = hx;
             }
             else {
