@@ -61,7 +61,8 @@ public class HubJfcDetail {
             @Override
             protected void done() {
                 if (obj != hubMaster.getAO()) return;
-                hubDetail.setSharedHub((Hub) obj.getProperty(prop), false);
+                Hub h = (Hub) obj.getProperty(prop);
+                hubDetail.setSharedHub(h, false);
                 hubDetail.datam.masterHub = hubMaster;
                 hubDetail.datam.liDetailToMaster = li;
             }
