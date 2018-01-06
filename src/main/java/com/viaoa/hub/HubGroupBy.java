@@ -1231,14 +1231,18 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
         Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
         String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
         try {
-            OAThreadLocalDelegate.setSuppressCSMessages(true);
             OAThreadLocalDelegate.setGetDetailHub(this.hubFrom, this.propertyPath);
             for (F bx : hubFrom) {
-                add(bx);
+                try {
+                    OAThreadLocalDelegate.setSuppressCSMessages(true);
+                    add(bx);
+                }
+                finally {
+                    OAThreadLocalDelegate.setSuppressCSMessages(false);
+                }
             }
         }
         finally {
-            OAThreadLocalDelegate.setSuppressCSMessages(false);
             OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
         }
     }
