@@ -2238,6 +2238,7 @@ if (!getKeepSorted()) hub.cancelSort();
     private final AtomicInteger aiRow = new AtomicInteger();
     // 20171230
     protected void setHubPos(final int row) {
+        if (row < 0) return;
         aiRow.set(row);
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
