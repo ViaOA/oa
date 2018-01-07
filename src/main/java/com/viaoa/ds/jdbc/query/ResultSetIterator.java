@@ -30,6 +30,7 @@ import com.viaoa.util.ClassModifier;
 import com.viaoa.util.OAConverter;
 import com.viaoa.util.OADate;
 import com.viaoa.util.OADateTime;
+import com.viaoa.util.OAThrottle;
 import com.viaoa.util.OATime;
 import com.viaoa.ds.OADataSourceIterator;
 import com.viaoa.ds.jdbc.*;
@@ -71,6 +72,8 @@ public class ResultSetIterator implements OADataSourceIterator {
     Object[] arguments; // when using preparedStatement
     private boolean bUsePreparedStatement;
 
+    public static final OAThrottle throttle = new OAThrottle(2500);
+    
     public String getQuery() {
         return query;
     }
@@ -106,8 +109,6 @@ public class ResultSetIterator implements OADataSourceIterator {
         this(ds, clazz, columns, query, null, max, null);
     }
     
-    public static final AtomicInteger aiCount = new AtomicInteger();
-
     /**
      * @param query2 used if the first query only returns pkIds.  
      * Query2 will need to use ? to position where the id values will be inserted.
@@ -135,22 +136,19 @@ public class ResultSetIterator implements OADataSourceIterator {
         return this.bDirty;
     }
     
-    public static int DisplayMod = 25000;
-    public static volatile long msLastDisplay;
+    
     protected synchronized void init() {
         if (bInit) return;
         bInit = true;
 
-        aiCount.incrementAndGet();
-        if ( (aiCount.get() % DisplayMod == 0) || (msLastDisplay+10000 < System.currentTimeMillis())) {
+        if (throttle.check()) {
             String s = query;
             int pos = s.toUpperCase().indexOf("FROM");
             if (pos > 0) s = s.substring(pos);
-            s = aiCount.get()+") ResultSetIterator: query="+s;
+            s = throttle.getCheckCount()+") ResultSetIterator: query="+s;
             
             LOG.fine(s);
             System.out.println(s);
-            msLastDisplay = System.currentTimeMillis();
         }
         /*
         if ( (qqq%(DisplayMod*4)==0)) {        
