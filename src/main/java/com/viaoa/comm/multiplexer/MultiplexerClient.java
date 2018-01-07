@@ -102,7 +102,7 @@ public class MultiplexerClient {
      */
     public void start() throws Exception {
         if (_bCreated) return;
-        LOG.fine("creating real socket, setting tcpNoDelay=true");
+        LOG.fine(String.format("creating real socket, host=%s, port=%d", _host, _port));
 
         _socket = new Socket(_host, _port);
         _socket.setTcpNoDelay(true);
