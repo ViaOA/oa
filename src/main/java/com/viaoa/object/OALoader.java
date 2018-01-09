@@ -28,6 +28,12 @@ import com.viaoa.util.*;
  * 
     OALoader<Company, Employee> l = new OALoader<Company, Employee>(CompanyPP.locations.employees);
     l.load(company);
+    
+
+    // recursive
+    OALoader<ItemCategory, Product> loader = new OALoader(5, ItemCategoryPP.itemCategories().items().products().pp);
+    loader.load(ModelDelegate.getItemCategories());
+    
     </code>
  * 
  */
@@ -43,7 +49,6 @@ public class OALoader<F extends OAObject, T extends OAObject> {
 
     private volatile boolean bStop;
     private boolean bSetup;
-    private boolean bRequiresCasade;
 
     private final int threadCount;
     private volatile OAExecutorService executorService;
@@ -54,6 +59,8 @@ public class OALoader<F extends OAObject, T extends OAObject> {
     
     private Hub<F> hubFrom;
     
+    private OACascade[] cascades;
+
     public OALoader(int threadCount, String propPath) {
         this.threadCount = Math.min(threadCount, 50);
         this.strPropertyPath = propPath;
@@ -73,7 +80,9 @@ public class OALoader<F extends OAObject, T extends OAObject> {
     public int getNotLoadedCount() {
         return aiNotLoadedCnt.get();
     }
-    
+
+    /**
+     */
     public void load(Hub<F> hubRoot) {
         if (hubRoot == null) return;
 
@@ -97,6 +106,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
             OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
             aiThreadsUsed.decrementAndGet();
             this.hubFrom = null;
+            cascades = null;
         }
     }
     
@@ -126,6 +136,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
             OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
             aiThreadsUsed.decrementAndGet();
             this.hubFrom = null;
+            cascades = null;
         }
     }
     
@@ -141,37 +152,38 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         hubFrom.add(objectRoot);
         _load(objectRoot);
         hubFrom = null;
+        cascades = null;
     }
     
     protected void _load(F object) {
         if (object == null) return;
 
-        OACascade cascade = null;
-        if (bRequiresCasade) cascade = new OACascade(true);
-        
-        _load(object, 0, cascade);
+        _load(object, 0);
     }
 
-    private void _load(final Object obj, final int pos, final OACascade cascade) {
+    private void _load(final Object obj, final int pos) {
         if (obj == null) return;
         aiVisitCnt.incrementAndGet();
         
         if (obj instanceof Hub) {
             for (Object objx : (Hub) obj) {
-                _load(objx, pos, cascade);
+                _load(objx, pos);
                 if (bStop) break;
             }
             return;
         }
 
         if (!(obj instanceof OAObject)) return;
-        if (cascade != null && cascade.wasCascaded((OAObject) obj, true)) return;
 
+        if (pos > 0 && cascades != null) {
+            if (cascades[pos-1].wasCascaded((OAObject) obj, true)) return;
+        }
+        
         // check if recursive
         if (pos == 0) {
             if (liRecursiveRoot != null) {
                 Object objx = liRecursiveRoot.getValue(obj);
-                _load(objx, pos, cascade); // go up a level to then go through hub
+                _load(objx, pos); // go up a level to then go through hub
                 if (bStop) return;
             }
         }
@@ -187,7 +199,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                         try {
                             OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
                             Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
-                            _load(objx, pos, cascade);
+                            _load(objx, pos);
                         }
                         finally {
                             OAThreadLocalDelegate.resetGetDetailHub(null, null);
@@ -214,7 +226,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
             }
             else {
                 Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
-                _load(objx, pos, cascade);
+                _load(objx, pos);
                 if (bStop) return;
             }
         }
@@ -230,7 +242,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                         try {
                             OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
                             Object objx = linkInfos[pos].getValue(obj);
-                            _load(objx, pos+1, cascade);
+                            _load(objx, pos+1);
                         }
                         finally {
                             OAThreadLocalDelegate.resetGetDetailHub(null, null);
@@ -241,7 +253,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                 return;
             }
             Object objx = linkInfos[pos].getValue(obj);
-            _load(objx, pos+1, cascade);
+            _load(objx, pos+1);
             if (bStop) return;
         }
     }
@@ -284,6 +296,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(c);
         liRecursiveRoot = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
 
+        /*was
         bRequiresCasade = true;
         if (linkInfos != null && linkInfos.length > 0) {
             HashSet<Class> hs = new HashSet<Class>();
@@ -293,6 +306,14 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                     break;
                 }
                 hs.add(li.getToClass());
+            }
+        }
+        */
+        
+        if (linkInfos != null && linkInfos.length > 0) {
+            cascades = new OACascade[linkInfos.length];
+            for (int i=0; i<linkInfos.length; i++) {
+                cascades[i] = new OACascade();
             }
         }
     }
