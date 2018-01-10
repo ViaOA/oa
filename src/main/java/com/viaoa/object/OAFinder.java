@@ -96,6 +96,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         this.fromHub = fromHub;
         this.strPropertyPath = propPath;
         this.bUseAll = bUseAll;
+        bEnableRecursiveRoot = fromHub != null && fromHub.getMasterObject() != null;
     }
 
     public void setAllowRecursiveRoot(boolean b) {
@@ -103,7 +104,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     }
     /**
      * Flag to know if the root object/hub should allow for recursive duing the find.  
-     * Default is false.
+     * Default is determined by the following.  Default is false, unless hub is the root and it has a masterObject.
      */
     public boolean getAllowRecursiveRoot() {
         return this.bEnableRecursiveRoot;
