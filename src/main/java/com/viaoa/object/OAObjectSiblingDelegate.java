@@ -171,24 +171,22 @@ public class OAObjectSiblingDelegate {
             int cntAfterMain = -1;
             @Override
             protected boolean isUsed(OAObject oaObject) {
-                
                 Object propertyValue = OAObjectPropertyDelegate.getProperty(oaObject, property, true, true);
 
                 if (oaObject == mainObject) {
                     if (propertyValue instanceof OAObjectKey) {
                         OAObjectKey ok = (OAObjectKey) propertyValue;
                         OAObjectKey okx  = hmObjKeyPos.put(ok, oaObject.getObjectKey());
-                        if (okx != null) llObjectKey.remove(okx);
+                        if (okx != null) {
+                            if (llObjectKey.remove(okx)) {
+                                if (hmIgnoreSibling != null) hmIgnoreSibling.remove(okx.getGuid());
+                            }
+                        }
                     }
                     cntAfterMain = 0; 
                     return false;
                 }
 
-                if (hmIgnoreSibling != null) {
-                    int guid = oaObject.getGuid();
-                    if (hmIgnoreSibling.contains(guid)) return false;
-                }
-                
                 OAObjectKey objectKey = oaObject.getObjectKey();
                 boolean bAdd = false;
                 
@@ -206,6 +204,7 @@ public class OAObjectSiblingDelegate {
                         }
                         else {
                             if (llObjectKey.remove(okx)) {
+                                if (hmIgnoreSibling != null) hmIgnoreSibling.remove(okx.getGuid());
                                 bAdd = true;
                             }
                         }
@@ -225,14 +224,25 @@ public class OAObjectSiblingDelegate {
                     }
                 }
                 
+                if (bAdd && hmIgnoreSibling != null) {
+                    int guid = oaObject.getGuid();
+                    if (hmIgnoreSibling.contains(guid)) return false;
+                }
+                
                 if (bAdd && !llObjectKey.contains(objectKey) && !alObjectKey.contains(objectKey)) {
                     if (!OAObjectPropertyDelegate.isPropertyLocked(oaObject, property)) {
                         if (cntAfterMain >= 0) cntAfterMain++;
                         llObjectKey.add(objectKey);
+                        if (hmIgnoreSibling != null) hmIgnoreSibling.put(objectKey.getGuid(), objectKey.getGuid());
                         if (max > 0) {
                             int x = llObjectKey.size()+cntPreviousFound;
                             if (x >= max) {
-                                if (x > max) llObjectKey.remove(0);
+                                if (x > max) {
+                                    OAObjectKey okx = llObjectKey.remove(0);
+                                    if (okx != null) {
+                                        if (hmIgnoreSibling != null) hmIgnoreSibling.remove(okx.getGuid());
+                                    }
+                                }
                                 if (cntAfterMain >= ((max-cntPreviousFound)/2)) {
                                     stop();
                                 }
@@ -240,8 +250,7 @@ public class OAObjectSiblingDelegate {
                         }
                     }
                 }
-                
-                return false;
+                return false; 
             }
         };
         f.setUseOnlyLoadedData(true);
