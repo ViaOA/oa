@@ -86,7 +86,7 @@ public class OAExecutorService {
                 Thread t = new Thread(r);
                 String s = "";
                 if (OAString.isNotEmpty(name)) s = name+".";
-                t.setName("OAExecutorService."+s+"."+ai.getAndIncrement());
+                t.setName("OAExecutorService."+ s + ai.getAndIncrement());
                 t.setDaemon(true);
                 t.setPriority(Thread.NORM_PRIORITY);
                 return t;
@@ -121,12 +121,11 @@ public class OAExecutorService {
         if (executorService == null) return 0;
         return executorService.getActiveCount();
     }
-    
+
+    // test
     public static void main(String[] args) throws Exception {
         Executors.newCachedThreadPool();
-
         Executors.newFixedThreadPool(12);
-        
         
         ThreadPoolExecutor te = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
                 60L, TimeUnit.SECONDS,
@@ -148,9 +147,5 @@ public class OAExecutorService {
             System.out.println("Created "+id);
             te.submit(r);
         }
-        
-        
     }
-    
-    
 }
