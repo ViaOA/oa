@@ -166,17 +166,14 @@ public class OASyncClient {
                     else max = 50;
                 }
                 else max = 100;
+                
+//qqqqqqq might want another flag for loader/finder/merger to be able to set ... to get a lot more
+                // >> Type= Loader|Finder|Merger|Other,  loader needs to get as much as possible
 
-                siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max);
+                siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max, hmSibling);
                 additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
               
                 try {
-                    if (siblingKeys != null) {
-                        for (OAObjectKey ok : siblingKeys) {
-                            int g = ok.getGuid();
-                            hmSibling.put(g, g);
-                        }
-                    }
                     cntDup = OAObjectSerializeDelegate.cntDup;
                     cntNew = OAObjectSerializeDelegate.cntNew;
                     result = getRemoteClient().getDetailNow(cntx, masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
