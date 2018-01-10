@@ -104,9 +104,9 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         }
         finally {
             OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
-            aiThreadsUsed.decrementAndGet();
             this.hubFrom = null;
             cascades = null;
+            if (executorService != null) executorService.close();
         }
     }
     
@@ -134,9 +134,9 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         }
         finally {
             OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
-            aiThreadsUsed.decrementAndGet();
             this.hubFrom = null;
             cascades = null;
+            if (executorService != null) executorService.close();
         }
     }
     
@@ -153,6 +153,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         _load(objectRoot);
         hubFrom = null;
         cascades = null;
+        if (executorService != null) executorService.close();
     }
     
     protected void _load(F object) {
@@ -189,68 +190,61 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         }
         else if (recursiveLinkInfos != null && pos <= recursiveLinkInfos.length && (recursiveLinkInfos[pos - 1] != null)) {
             if (executorService != null && !recursiveLinkInfos[pos - 1].isLoaded(obj) && aiThreadsUsed.get() < threadCount) {
-                aiThreadsUsed.incrementAndGet();
-                aiNotLoadedCnt.incrementAndGet();
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (bStop) return;
-                        long ms = System.currentTimeMillis();
-                        try {
-                            OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
-                            Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
-                            _load(objx, pos);
-                        }
-                        finally {
-                            OAThreadLocalDelegate.resetGetDetailHub(null, null);
-                            aiThreadsUsed.decrementAndGet();
-                        }
-                        
-                        // make sure that this thread does not "jam" up others by finishing too quickly
-                        ms = System.currentTimeMillis() - ms;
-                        String pp = OALoader.this.strPropertyPath;
-                        long x;
-                        if (pp == null || pp.indexOf('.') < 0) x = 2500;
-                        else x = 1000;
-                        
-                        x -= (int) (Math.random() * 400);
-                        if (ms < x) {  // have it sleep so that siblings that use hubFrom can get more data
+                int x = aiThreadsUsed.incrementAndGet();
+                if (x <= threadCount) {
+                    aiNotLoadedCnt.incrementAndGet();
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (bStop) return;
                             try {
-                                Thread.sleep(x - ms);
+                                OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
+                                Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
+                                _load(objx, pos);
                             }
-                            catch (Exception e) {
-                            } 
+                            finally {
+                                OAThreadLocalDelegate.resetGetDetailHub(null, null);
+                                aiThreadsUsed.decrementAndGet();
+                            }
                         }
-                    }
-                });
+                    });
+                    return;
+                }
+                aiThreadsUsed.decrementAndGet();
             }
-            else {
-                Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
-                _load(objx, pos);
-                if (bStop) return;
-            }
+            Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
+            _load(objx, pos);
+            if (bStop) return;
         }
 
         if (linkInfos != null && pos < linkInfos.length) {
-            if (executorService != null && !linkInfos[pos].isLoaded(obj) && aiThreadsUsed.get() < threadCount) {
-                aiThreadsUsed.incrementAndGet();
-                aiNotLoadedCnt.incrementAndGet();
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (bStop) return;
-                        try {
-                            OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
-                            Object objx = linkInfos[pos].getValue(obj);
-                            _load(objx, pos+1);
+            boolean b = linkInfos[pos].isLoaded(obj);
+if (!b) {
+    int xx = 4;
+    xx++;
+}
+            if (executorService != null && !b && aiThreadsUsed.get() < threadCount) {
+                int x = aiThreadsUsed.incrementAndGet();
+                if (x <= threadCount) {
+                    aiNotLoadedCnt.incrementAndGet();
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (bStop) return;
+                            try {
+                                OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
+                                Object objx = linkInfos[pos].getValue(obj);
+                                _load(objx, pos+1);
+                            }
+                            finally {
+                                OAThreadLocalDelegate.resetGetDetailHub(null, null);
+                                aiThreadsUsed.decrementAndGet();
+                            }
                         }
-                        finally {
-                            OAThreadLocalDelegate.resetGetDetailHub(null, null);
-                            aiThreadsUsed.decrementAndGet();
-                        }
-                    }
-                });
-                return;
+                    });
+                    return;
+                }
+                aiThreadsUsed.decrementAndGet();
             }
             Object objx = linkInfos[pos].getValue(obj);
             _load(objx, pos+1);
@@ -313,7 +307,8 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         if (linkInfos != null && linkInfos.length > 0) {
             cascades = new OACascade[linkInfos.length];
             for (int i=0; i<linkInfos.length; i++) {
-                cascades[i] = new OACascade();
+                cascades[i] = new OACascade(true);  // true= use lock
+                
             }
         }
     }
