@@ -26,7 +26,7 @@ public class OAObjectSiblingDelegate {
      * Used to find any siblings that also need the same property loaded.
      */
     public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int maxAmount) {
-        return getSiblings(mainObject, property, maxAmount, null);
+        return getSiblings(mainObject, property, maxAmount, null, null);
     }
     
     /**
@@ -34,12 +34,22 @@ public class OAObjectSiblingDelegate {
      * @param mainObject
      * @param property
      * @param maxAmount
-     * @param hmSibling guid of objects to ignore, because they are "inflight"
-     * @return
+     * @param hmIgnoreSibling ignore list, because they are "inflight" with other concurrent requests
+     * @param alRemoveFromHm list of keys that were added to hmSibling, that can be removed after request is done. 
+     * @return list of keys that are siblings
      */
-    public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int maxAmount, final ConcurrentHashMap<Integer, Integer> hmIgnoreSibling) {
+    public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int maxAmount, ConcurrentHashMap<String, OAObject> hmIgnoreSibling, ArrayList<String> alRemoveFromHm) {
+//long ms = System.currentTimeMillis();//qqqqqqqqqqqqqqqqqq        
+        OAObjectKey[] keys = _getSiblings(mainObject, property, maxAmount, hmIgnoreSibling, alRemoveFromHm);
+//System.out.println("----> "+(System.currentTimeMillis()-ms)+" <---- "+hmIgnoreSibling.size()+", "+alRemoveFromHm.size());    
+        return keys;
+    }
+    public static OAObjectKey[] _getSiblings(final OAObject mainObject, final String property, final int maxAmount, ConcurrentHashMap<String, OAObject> hmIgnoreSibling, ArrayList<String> alRemoveFromHm) {
         if (mainObject == null || OAString.isEmpty(property) || maxAmount < 1) return null;
 
+        if (hmIgnoreSibling == null) hmIgnoreSibling = new ConcurrentHashMap<>();
+        if (alRemoveFromHm == null) alRemoveFromHm = new ArrayList<>();
+        
         final OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(mainObject.getClass(), property);
         
         // set by Finder, HubMerger, HubGroupBy, LoadReferences, etc - where it will be loading from a Root Hub using a PropertyPath
@@ -120,11 +130,13 @@ public class OAObjectSiblingDelegate {
             
         OALinkInfo lix = linkInfo;
         final HashSet<Hub> hsHubVisited = new HashSet<>();
+        final HashMap<OAObjectKey, OAObject> hmTypeOneObjKey = new HashMap<>();
+        
         for (int cnt=0 ; hub!=null; cnt++) {
             if (hsHubVisited.contains(hub)) break;
             hsHubVisited.add(hub);
             
-            findSiblings(alObjectKey, hub, ppPrefix, property, linkInfo, mainObject, hsKeys, max, hmIgnoreSibling);
+            findSiblings(alObjectKey, hub, ppPrefix, property, linkInfo, mainObject, alRemoveFromHm, hmTypeOneObjKey, hmIgnoreSibling, max);
 
             if (alObjectKey.size() >= max) break;
 
@@ -158,16 +170,26 @@ public class OAObjectSiblingDelegate {
         return keys;
     }
     
-    protected static void findSiblings(final ArrayList<OAObjectKey> alObjectKey, final Hub hub, String spp, final String property, final OALinkInfo linkInfo, 
-            final OAObject mainObject, final HashMap<OAObjectKey, OAObjectKey> hmObjKeyPos, final int max, final ConcurrentHashMap<Integer, Integer> hmIgnoreSibling) {
+    
+    protected static void findSiblings(
+            final ArrayList<OAObjectKey> alFoundObjectKey, 
+            final Hub hubRoot, final String finderPropertyPath, final String origProperty, 
+            final OALinkInfo linkInfo, 
+            final OAObject mainObject, 
+            final ArrayList<String> alRemoveFromHm, // for calling thread, list to remove from hmIgnoreGuidPropery
+            final HashMap<OAObjectKey, OAObject> hmTypeOneObjKey, // for calling thread, refobjs already looked at
+            final ConcurrentHashMap<String, OAObject> hmIgnoreGuidProperty,  // for all threads
+            final int max) 
+    {
+        
+        final String property = origProperty.toUpperCase();
         final boolean bIsMany = (linkInfo != null) && (linkInfo.getType() == OALinkInfo.TYPE_MANY);
         final boolean bIsOne2One = !bIsMany && (linkInfo != null) && (linkInfo.isOne2One());
         final Class clazz = (linkInfo == null) ? null : linkInfo.getToClass();
         
-        final int cntPreviousFound = alObjectKey.size();
         final LinkedList<OAObjectKey> llObjectKey = new LinkedList<>();
         
-        OAFinder f = new OAFinder(hub, spp) {
+        OAFinder f = new OAFinder(hubRoot, finderPropertyPath) {
             int cntAfterMain = -1;
             @Override
             protected boolean isUsed(OAObject oaObject) {
@@ -175,44 +197,46 @@ public class OAObjectSiblingDelegate {
 
                 if (oaObject == mainObject) {
                     if (propertyValue instanceof OAObjectKey) {
-                        OAObjectKey ok = (OAObjectKey) propertyValue;
-                        OAObjectKey okx  = hmObjKeyPos.put(ok, oaObject.getObjectKey());
-                        if (okx != null) {
-                            if (llObjectKey.remove(okx)) {
-                                if (hmIgnoreSibling != null) hmIgnoreSibling.remove(okx.getGuid());
-                            }
+                        hmTypeOneObjKey.put((OAObjectKey) propertyValue, mainObject);
+                        String sid = ((OAObjectKey) propertyValue).getGuid()+"";
+                        OAObject objx = hmIgnoreGuidProperty.put(sid, mainObject);
+                        if (objx != null) {
+                            llObjectKey.remove(objx.getObjectKey());
+                            alFoundObjectKey.remove(objx.getObjectKey());
                         }
+                        alRemoveFromHm.add(sid);
                     }
                     cntAfterMain = 0; 
                     return false;
                 }
 
-                OAObjectKey objectKey = oaObject.getObjectKey();
+                String sid = null;
                 boolean bAdd = false;
-                
                 if (bIsMany) {
-                    if (!(propertyValue instanceof Hub)) {
+                    if (!(propertyValue instanceof Hub)) { 
                         bAdd = true;
                     }
                 }
                 else if (linkInfo != null && propertyValue instanceof OAObjectKey) {
-                    OAObjectKey ok = (OAObjectKey) propertyValue;
-                    OAObjectKey okx  = hmObjKeyPos.put(ok, oaObject.getObjectKey());
-                    if (okx != null) {
-                        if (cntAfterMain >= 0 && okx.equals(mainObject.getObjectKey())) { 
-                            hmObjKeyPos.put(ok, okx);
-                        }
-                        else {
-                            if (llObjectKey.remove(okx)) {
-                                if (hmIgnoreSibling != null) hmIgnoreSibling.remove(okx.getGuid());
-                                bAdd = true;
-                            }
-                        }
-                    }
-                    else {
-                        if (OAObjectCacheDelegate.get(clazz, ok) == null) {
+                    if (!hmTypeOneObjKey.containsKey((OAObjectKey) propertyValue)) {
+                        if (OAObjectCacheDelegate.get(clazz, (OAObjectKey) propertyValue) == null) {
+                            hmTypeOneObjKey.put((OAObjectKey) propertyValue, oaObject);
                             bAdd = true;
                         }
+                        else hmTypeOneObjKey.put((OAObjectKey) propertyValue, null);
+                    }
+                    else {
+                        if (cntAfterMain >= 0) {
+                            OAObject objx = hmTypeOneObjKey.get((OAObjectKey) propertyValue);
+                            if (objx != null && objx != mainObject && llObjectKey.contains(objx.getObjectKey())) {
+                                llObjectKey.remove(objx.getObjectKey());
+                                hmTypeOneObjKey.put((OAObjectKey) propertyValue, oaObject);
+                                bAdd = true;
+                            }
+                        }                        
+                    }
+                    if (bAdd) {
+                        sid  = ((OAObjectKey) propertyValue).getGuid() + "";
                     }
                 }
                 else if (bIsOne2One && propertyValue == null) {
@@ -224,26 +248,42 @@ public class OAObjectSiblingDelegate {
                     }
                 }
                 
-                if (bAdd && hmIgnoreSibling != null) {
-                    int guid = oaObject.getGuid();
-                    if (hmIgnoreSibling.contains(guid)) return false;
-                }
+                if (bAdd) {
+                    if (sid == null) {
+                        sid = oaObject.getGuid() + property;
+                        if (hmIgnoreGuidProperty.containsKey(sid)) return false;
+                    }
                 
-                if (bAdd && !llObjectKey.contains(objectKey) && !alObjectKey.contains(objectKey)) {
-                    if (!OAObjectPropertyDelegate.isPropertyLocked(oaObject, property)) {
+                    if (!alFoundObjectKey.contains(oaObject.getObjectKey())) { // && !OAObjectPropertyDelegate.isPropertyLocked(oaObject, property)) {
                         if (cntAfterMain >= 0) cntAfterMain++;
-                        llObjectKey.add(objectKey);
-                        if (hmIgnoreSibling != null) hmIgnoreSibling.put(objectKey.getGuid(), objectKey.getGuid());
+                        llObjectKey.add(oaObject.getObjectKey());
+
+                        hmIgnoreGuidProperty.put(sid, oaObject);
+                        alRemoveFromHm.add(sid);
+
                         if (max > 0) {
-                            int x = llObjectKey.size()+cntPreviousFound;
+                            int x = llObjectKey.size()+alFoundObjectKey.size();
                             if (x >= max) {
                                 if (x > max) {
                                     OAObjectKey okx = llObjectKey.remove(0);
                                     if (okx != null) {
-                                        if (hmIgnoreSibling != null) hmIgnoreSibling.remove(okx.getGuid());
+                                        if (bIsMany || bIsOne2One) {
+                                            String s = okx.getGuid()+property;
+                                            if (hmIgnoreGuidProperty.remove(s) == null) {
+                                            }
+                                            if (!alRemoveFromHm.remove(s)) {
+                                            }
+                                        }
+                                        else {
+                                            String s = okx.getGuid()+"";
+                                            if (hmIgnoreGuidProperty.remove(s) == null) {
+                                            }
+                                            if (!alRemoveFromHm.remove(s)) {
+                                            }
+                                        }
                                     }
                                 }
-                                if (cntAfterMain >= ((max-cntPreviousFound)/2)) {
+                                if (cntAfterMain >= ((max-alFoundObjectKey.size())/2)) {
                                     stop();
                                 }
                             }
@@ -257,7 +297,7 @@ public class OAObjectSiblingDelegate {
         f.find();
         
         for (OAObjectKey ok : llObjectKey) {
-            alObjectKey.add(ok);
+            alFoundObjectKey.add(ok);
         }
     }
     
