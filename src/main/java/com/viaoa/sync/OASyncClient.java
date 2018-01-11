@@ -115,7 +115,7 @@ public class OASyncClient {
     }
     
     private final AtomicInteger aiCntGetDetail = new AtomicInteger();
-    private final ConcurrentHashMap<Integer, Integer> hmSibling = new ConcurrentHashMap<Integer, Integer>(); 
+    private final ConcurrentHashMap<String, OAObject> hmSibling = new ConcurrentHashMap<String, OAObject>(); 
     
     /**
      * This is sent to the server using ClientGetDetail, by using a customized objectSerializer
@@ -144,7 +144,7 @@ public class OASyncClient {
             // both Hub && pp are set by HubMerger, HubGroupBy
             final Hub detailHub = OAThreadLocalDelegate.getGetDetailHub();
             final String detailPropertyPath = OAThreadLocalDelegate.getGetDetailPropertyPath();
-            final boolean bUsesDetail = (detailHub != null && detailPropertyPath != null); 
+            final boolean bUsesDetail = (detailHub != null && OAString.isNotEmpty(detailPropertyPath)); 
             
             if (OARemoteThreadDelegate.isRemoteThread()) {
                     // use annotated version that does not use the msg queue
@@ -167,10 +167,10 @@ public class OASyncClient {
                 }
                 else max = 100;
                 
-//qqqqqqq might want another flag for loader/finder/merger to be able to set ... to get a lot more
-                // >> Type= Loader|Finder|Merger|Other,  loader needs to get as much as possible
-
-                siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max, hmSibling);
+                if (bUsesDetail) max *= 3;
+                
+                ArrayList<String> alRemoveFromHm = new ArrayList<>();
+                siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max, hmSibling, alRemoveFromHm);
                 additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
               
                 try {
@@ -180,11 +180,8 @@ public class OASyncClient {
                         additionalMasterProperties, siblingKeys, bUsesDetail);
                 }
                 finally {
-                    if (siblingKeys != null) {
-                        for (OAObjectKey ok : siblingKeys) {
-                            int g = ok.getGuid();
-                            hmSibling.remove(g);
-                        }
+                    for (String sid : alRemoveFromHm) {
+                        hmSibling.remove(sid);
                     }
                 }
             }
