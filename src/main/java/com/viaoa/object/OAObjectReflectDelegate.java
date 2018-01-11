@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -615,9 +616,28 @@ public class OAObjectReflectDelegate {
         
         return hub;
     }
+    
+    // keeps track of siblings that are "in flight"
+    private static final ConcurrentHashMap<String, OAObject> hmIgnoreSibling = new ConcurrentHashMap<>();
     private static Hub _getReferenceHub(final OAObject oaObj, final String linkPropertyName, String sortOrder, 
             boolean bSequence, Hub hubMatch, final OAObjectInfo oi, final OALinkInfo linkInfo ) {
-
+        
+        ArrayList<String> alRemoveFromHm = new ArrayList<>(); // list of references added to hmIgnoreSibling by this request
+        Hub h = null;
+        try {
+            h = _getReferenceHub2(oaObj, linkPropertyName, sortOrder, bSequence, hubMatch, oi, linkInfo, alRemoveFromHm);
+        }
+        finally {
+            for (String s : alRemoveFromHm) {
+                hmIgnoreSibling.remove(s);
+            }
+        }
+        return h;
+    }
+    private static Hub _getReferenceHub2(final OAObject oaObj, final String linkPropertyName, String sortOrder, 
+            boolean bSequence, Hub hubMatch, final OAObjectInfo oi, final OALinkInfo linkInfo,
+            final  ArrayList<String> alRemoveFromHm) 
+    {
         Object propertyValue = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
         boolean bThisIsServer = OAObjectCSDelegate.isServer(oaObj);
         // dont get calcs from server, calcs are maintained locally, events are not sent
@@ -771,7 +791,8 @@ public class OAObjectReflectDelegate {
                         else {
                             x = 25;
                         }
-                        siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, x);
+                        
+                        siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, x, hmIgnoreSibling, alRemoveFromHm);
                     }
                     
                     if (siblingKeys != null) {
@@ -1431,6 +1452,8 @@ public class OAObjectReflectDelegate {
      * If reference object is not already loaded, then OADataSource will be used to retrieve object.
      * @param bForce, if false and there is not 
      */
+    
+    
     public static Object getReferenceObject(OAObject oaObj, String linkPropertyName) {
         Object objOriginal = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
         
@@ -1455,15 +1478,18 @@ public class OAObjectReflectDelegate {
             return objOriginal; // found it
         }
 
-
+        ArrayList<String> alRemoveFromHm = new ArrayList<>();
         Object result = null;
         try {
             OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
-            result = _getReferenceObject(oaObj, linkPropertyName, oi, li);
+            result = _getReferenceObject(oaObj, linkPropertyName, oi, li, alRemoveFromHm);
             OAObjectPropertyDelegate.setPropertyCAS(oaObj, linkPropertyName, result, objOriginal, bDidNotExist, false);
         }
         finally {
             OAObjectPropertyDelegate.releasePropertyLock(oaObj, linkPropertyName);
+            for (String s : alRemoveFromHm) {
+                hmIgnoreSibling.remove(s);
+            }
             if (result instanceof OAObjectKey) {
                 result = getReferenceObject(oaObj, linkPropertyName);
             }
@@ -1472,7 +1498,7 @@ public class OAObjectReflectDelegate {
     }
 
     // note: this acquired a lock before calling
-    private static Object _getReferenceObject(final OAObject oaObj, final String linkPropertyName, final OAObjectInfo oi, final OALinkInfo li) {
+    private static Object _getReferenceObject(final OAObject oaObj, final String linkPropertyName, final OAObjectInfo oi, final OALinkInfo li, final ArrayList<String> alRemoveFromHm) {
         if (linkPropertyName == null) return null;
 
         boolean bIsServer = OASyncDelegate.isServer(oaObj);
@@ -1565,7 +1591,7 @@ public class OAObjectReflectDelegate {
                 }
                 else {
                     // 20171222
-                    OAObjectKey[] siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, 75);
+                    OAObjectKey[] siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, 75, hmIgnoreSibling, alRemoveFromHm);
                     String sibIds = null;
                     if (siblingKeys != null) {
                         for (OAObjectKey keyx : siblingKeys) {
