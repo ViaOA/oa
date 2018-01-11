@@ -54,8 +54,8 @@ public class OAObjectSiblingDelegateTest extends OAUnitTest {
         f.find(ModelDelegate.getPrograms());
         
         oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeType, 100);
-        assertEquals(1, oks.length);
-        assertEquals(oks[0], emp.getObjectKey());
+        assertEquals(0, oks.length); // should not include itself
+        //assertEquals(oks[0], emp.getObjectKey());
         
         oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeAwards, 25);
         assertEquals(0, oks.length);  // all have empawards
@@ -74,7 +74,7 @@ public class OAObjectSiblingDelegateTest extends OAUnitTest {
         f.find(ModelDelegate.getPrograms());
         
         oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeType, 100);
-        assertEquals(1, oks.length);
+        assertEquals(0, oks.length);
         
         
         f = new OAFinder<Program, Employee>("locations.employees"){
