@@ -7,7 +7,6 @@
 package com.viaoa.object;
 
 import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.concurrent.OAExecutorService;
@@ -219,10 +218,6 @@ public class OALoader<F extends OAObject, T extends OAObject> {
 
         if (linkInfos != null && pos < linkInfos.length) {
             boolean b = linkInfos[pos].isLoaded(obj);
-if (!b) {
-    int xx = 4;
-    xx++;
-}
             if (executorService != null && !b && aiThreadsUsed.get() < threadCount) {
                 int x = aiThreadsUsed.incrementAndGet();
                 if (x <= threadCount) {
@@ -290,25 +285,10 @@ if (!b) {
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(c);
         liRecursiveRoot = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
 
-        /*was
-        bRequiresCasade = true;
-        if (linkInfos != null && linkInfos.length > 0) {
-            HashSet<Class> hs = new HashSet<Class>();
-            for (OALinkInfo li : linkInfos) {
-                if (hs.contains(li.getToClass())) {
-                    bRequiresCasade = false;
-                    break;
-                }
-                hs.add(li.getToClass());
-            }
-        }
-        */
-        
         if (linkInfos != null && linkInfos.length > 0) {
             cascades = new OACascade[linkInfos.length];
             for (int i=0; i<linkInfos.length; i++) {
                 cascades[i] = new OACascade(true);  // true= use lock
-                
             }
         }
     }
