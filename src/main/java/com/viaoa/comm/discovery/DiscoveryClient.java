@@ -36,7 +36,7 @@ public class DiscoveryClient {
     private DatagramSocket sockSend, sockReceive;
     private InetAddress iaBroadcast;
     // list of servers registered (host name)
-    private HashSet<String> hmServer = new HashSet<String>();
+    private HashSet<String> hsServer = new HashSet<String>();
     private volatile boolean bStarted;
     private AtomicInteger aiStartStop = new AtomicInteger();
     private String msg;
@@ -130,8 +130,8 @@ public class DiscoveryClient {
             String serverMsg = new String(dpReceive.getData());
             LOG.finer("Received: " + serverMsg);
 
-            if (!hmServer.contains(serverMsg)) {
-                hmServer.add(serverMsg);
+            if (!hsServer.contains(serverMsg)) {
+                hsServer.add(serverMsg);
                 onNewServerMessage(serverMsg);
             }
 

@@ -77,7 +77,7 @@ public class OAObjectCSDelegate {
     public static boolean isInServerSideCache(OAObject oaObj) {
         if (oaObj == null) return false;
         int guid = oaObj.getObjectKey().getGuid();
-        return hashServerSideCache.contains(guid);
+        return hashServerSideCache.containsKey(guid);
     }
     
     /**
@@ -113,7 +113,7 @@ public class OAObjectCSDelegate {
         Class c = oaObj.getClass();
         if (!OASyncDelegate.isClient(c)) return;
         int guid = oaObj.getObjectKey().getGuid();
-        if (guid < 0 || hashServerSideCache.contains(guid)) return;
+        if (guid < 0 || hashServerSideCache.containsKey(guid)) return;
     
         if (bSendToServer) {
             RemoteSessionInterface ri = OASyncDelegate.getRemoteSession(c);

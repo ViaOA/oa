@@ -11,8 +11,6 @@
 package com.viaoa.util;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.text.*;
 import java.sql.Time;
 

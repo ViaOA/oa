@@ -220,6 +220,7 @@ public class OAFinderTest extends OAUnitTest {
         
         OAFinder<Location, Employee> finder = new OAFinder<Location, Employee>(LocationPP.employees().pp);
         finder.addEqualFilter(Employee.P_LastName, "xxx");
+        finder.setAllowRecursiveRoot(true);
         Employee empx = finder.findFirst(ModelDelegate.getPrograms().getAt(0).getLocations());
         assertEquals(emp, empx);
         
@@ -240,6 +241,7 @@ public class OAFinderTest extends OAUnitTest {
         
         OAFinder<Location, Employee> finder = new OAFinder<Location, Employee>(LocationPP.employees().pp);
         finder.addEqualFilter(Employee.P_LastName, "xxx");
+        finder.setAllowRecursiveRoot(true);
         Employee empx = finder.findFirst(ModelDelegate.getPrograms().getAt(0).getLocations().getAt(0));
         assertEquals(empx, emp);
         emp.setLastName("");
