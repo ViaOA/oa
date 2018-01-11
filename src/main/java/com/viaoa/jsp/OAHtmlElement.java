@@ -318,7 +318,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         }
 
         String s = getStyleJs();
-        if (s != null) sb.append("$('#"+id+"').css("+s+");\n");
+        if (OAString.isNotEmpty(s)) sb.append("$('#"+id+"').css("+s+");\n");
 
         s = getClassJs();
         if (s != null) sb.append(s+"\n");
