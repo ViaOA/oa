@@ -157,7 +157,7 @@ public class HubDelegate {
 		if (hub == null) return null;
 	    HubDataMaster dm = HubDetailDelegate.getDataMaster(hub);
 	    if (dm == null) return null;
-	    return dm.masterObject;
+	    return dm.getMasterObject();
 	}
 	
 	
@@ -167,9 +167,9 @@ public class HubDelegate {
 	public static Class getMasterClass(Hub hub) {
 		if (hub == null) return null;
 		HubDataMaster dm = HubDetailDelegate.getDataMaster(hub);
-		Object obj = dm.masterObject;
+		Object obj = dm.getMasterObject();
 	    if (obj != null) return obj.getClass();
-    	if (dm.masterHub != null) return dm.masterHub.getObjectClass();
+    	if (dm.getMasterHub() != null) return dm.getMasterHub().getObjectClass();
     	return null;
 	}
 
@@ -185,7 +185,7 @@ public class HubDelegate {
 	            throw new RuntimeException("cant change object class if objects are in hub");
 	        }
 	        HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
-	        if (dm.masterHub != null || thisHub.datam.masterObject != null) {
+	        if (dm.getMasterHub() != null || thisHub.datam.getMasterObject() != null) {
 	            throw new RuntimeException("cant change object class if masterObject exists");
 	        }
 	        if (thisHub.datau.getSharedHub() != null || HubShareDelegate.getSharedWeakHubSize(thisHub) > 0) {
@@ -218,7 +218,7 @@ public class HubDelegate {
 	*/
 	public static boolean isValid(Hub hub) {
 	    HubDataMaster dm = HubDetailDelegate.getDataMaster(hub);
-	    if (dm.masterHub != null && dm.masterObject == null) {
+	    if (dm.getMasterHub() != null && dm.getMasterObject() == null) {
 	    	return false;
 	    }
 	    if (hub.datau.getLinkToHub() != null) {
@@ -244,8 +244,8 @@ public class HubDelegate {
 	 */
 	public static Hub getControllingHub(Hub hub) {
         HubDataMaster dm = HubDetailDelegate.getDataMaster(hub);
-        if (dm.masterHub != null) {
-            return dm.masterHub;
+        if (dm.getMasterHub() != null) {
+            return dm.getMasterHub();
         }
         if (hub.datau.getLinkToHub() != null) {
             if (hub.datau.isAutoCreate()) {
@@ -322,7 +322,7 @@ public class HubDelegate {
         }
         else if (bM2M) {
     	    bHasMethod = false;
-    	    if (dm.masterObject != null && dm.liDetailToMaster != null) { 
+    	    if (dm.getMasterObject() != null && dm.liDetailToMaster != null) { 
     	    	updateMany2ManyLinks(thisHub, dm); // update any link tables
     	    }
     	}
@@ -376,18 +376,18 @@ public class HubDelegate {
 	    	OAObject obj = (OAObject) adds[i];
 	    	if (obj.getNew()) continue;
 	    	Object objx = OAObjectReflectDelegate.getRawReference(obj, dm.liDetailToMaster.getName());
-	    	if (objx instanceof Hub) HubDataDelegate.removeFromAddedList((Hub) objx, dm.masterObject);
+	    	if (objx instanceof Hub) HubDataDelegate.removeFromAddedList((Hub) objx, dm.getMasterObject());
 	    }
 	    for (int i=0; removes != null && i< removes.length; i++) {
             b = true;
 	    	if (!(removes[i] instanceof OAObject)) continue;
 	    	OAObject obj = (OAObject) removes[i];
 	    	Object objx = OAObjectReflectDelegate.getRawReference(obj, dm.liDetailToMaster.getName());
-	    	if (objx instanceof Hub) HubDataDelegate.removeFromRemovedList((Hub) objx, dm.masterObject);
+	    	if (objx instanceof Hub) HubDataDelegate.removeFromRemovedList((Hub) objx, dm.getMasterObject());
 	    }
 	    if (b) {
 	        String propFromMaster = OAObjectInfoDelegate.getReverseLinkInfo(dm.liDetailToMaster).getName();
-	        HubDSDelegate.updateMany2ManyLinks(dm.masterObject, adds, removes, propFromMaster);
+	        HubDSDelegate.updateMany2ManyLinks(dm.getMasterObject(), adds, removes, propFromMaster);
 	    }
     }
 	

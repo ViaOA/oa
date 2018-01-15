@@ -40,13 +40,13 @@ public class HubJfcDetail {
      
         if (obj == null) {
             hubDetail.setSharedHub(null);
-            hubDetail.datam.masterHub = hubMaster;
+            hubDetail.datam.setMasterHub(hubMaster);
             hubDetail.datam.liDetailToMaster = li;
             return;
         }
         if (obj.isLoaded(prop)) {
             hubDetail.setSharedHub(((Hub) obj.getProperty(prop)), false);
-            hubDetail.datam.masterHub = hubMaster;
+            hubDetail.datam.setMasterHub(hubMaster);
             return;
         }
         hubDetail.setSharedHub(null);
@@ -63,7 +63,7 @@ public class HubJfcDetail {
                 if (obj != hubMaster.getAO()) return;
                 Hub h = (Hub) obj.getProperty(prop);
                 hubDetail.setSharedHub(h, false);
-                hubDetail.datam.masterHub = hubMaster;
+                hubDetail.datam.setMasterHub(hubMaster);
                 hubDetail.datam.liDetailToMaster = li;
             }
         };

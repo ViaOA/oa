@@ -366,15 +366,15 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
             //}
 
             HubDataMaster dm = HubDetailDelegate.getDataMaster(this);
-            if (dm.masterHub != null) {
+            if (dm.getMasterHub() != null) {
                 if (cnt > 5) {
                     if (alHub == null) alHub = new ArrayList<Hub>();
                     alHub.add(this);
                 }
-                s += ">MasterHub:" + dm.masterHub._toString(cnt+1, alHub);
+                s += ">MasterHub:" + dm.getMasterHub()._toString(cnt+1, alHub);
             }
-            else if (dm.masterObject != null) {
-                s += ">MasterObject:" + dm.masterObject;
+            else if (dm.getMasterObject() != null) {
+                s += ">MasterObject:" + dm.getMasterObject();
             }
         }
         return s;

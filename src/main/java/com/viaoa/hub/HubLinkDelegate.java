@@ -572,7 +572,7 @@ public class HubLinkDelegate {
                     OAFilter<Hub> filter = new OAFilter<Hub>() {
                         @Override
                         public boolean isUsed(Hub h) {
-                            return (h.datam.masterObject != null);
+                            return (h.datam.getMasterObject() != null);
                         }
                     };
                     Hub[] hubs = HubShareDelegate.getAllSharedHubs(fromHub, filter);
@@ -580,7 +580,7 @@ public class HubLinkDelegate {
                     //was: Hub[] hubs = HubShareDelegate.getAllSharedHubs(fromHub);
                     boolean b = true;
                     for (int i=0; i < hubs.length && b; i++) {
-                        if (hubs[i].datam.masterObject != null) b = false;
+                        if (hubs[i].datam.getMasterObject() != null) b = false;
                     }
 	            	if (b) fromHub.addElement(obj);
 	            }
@@ -610,7 +610,7 @@ public class HubLinkDelegate {
 	                    if (flag != 0) break;
 	
 	                    HubDataMaster dm = HubDetailDelegate.getDataMaster(h);
-	                    h = dm.masterHub;
+	                    h = dm.getMasterHub();
 	                }
 	            }
 	        }
@@ -640,8 +640,8 @@ public class HubLinkDelegate {
                 }
                 HubDataMaster dm = HubDetailDelegate.getDataMaster(h);
                 // 20110805 recursive hubs could be changing, where a hub could be now sharing the same hub as it's detailHubs
-                if (dm.masterHub == h) break;
-                h = dm.masterHub;
+                if (dm.getMasterHub() == h) break;
+                h = dm.getMasterHub();
                 if (h == null) break;
                 if (h == fromHub.getLinkHub()) bForce = true; // if this hub is linked to its masterHub
             }

@@ -34,7 +34,7 @@ public class HubCSDelegate {
      */
     public static void removeAllFromHub(Hub thisHub) {
         if (OASyncDelegate.isSingleUser(thisHub)) return;
-        if (!(thisHub.datam.masterObject instanceof OAObject)) return;
+        if (!(thisHub.datam.getMasterObject() instanceof OAObject)) return;
         if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
         if (!OARemoteThreadDelegate.shouldSendMessages()) {
             return;
@@ -55,8 +55,8 @@ public class HubCSDelegate {
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSync(thisHub);
         if (rs != null) {
             rs.removeAllFromHub(
-                thisHub.datam.masterObject.getClass(), 
-                thisHub.datam.masterObject.getObjectKey(), 
+                thisHub.datam.getMasterObject().getClass(), 
+                thisHub.datam.getMasterObject().getObjectKey(), 
                 HubDetailDelegate.getPropertyFromMasterToDetail(thisHub) 
             );
         }
@@ -67,7 +67,7 @@ public class HubCSDelegate {
 	 */
 	public static void removeFromHub(Hub thisHub, OAObject obj, int pos) {
         if (OASyncDelegate.isSingleUser(thisHub)) return;
-        if (!(thisHub.datam.masterObject instanceof OAObject)) return;
+        if (!(thisHub.datam.getMasterObject() instanceof OAObject)) return;
         if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
         if (!OARemoteThreadDelegate.shouldSendMessages()) {
             return;
@@ -86,15 +86,15 @@ public class HubCSDelegate {
             }
         }
     	
-        if (OAObjectInfoDelegate.getOAObjectInfo((OAObject)thisHub.datam.masterObject).getLocalOnly()) return;
+        if (OAObjectInfoDelegate.getOAObjectInfo((OAObject)thisHub.datam.getMasterObject()).getLocalOnly()) return;
     	
         // must have a master object to be able to know which hub to add object to
         // send REMOVE message
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSync(thisHub);
         if (rs != null) {
             rs.removeFromHub(
-                    thisHub.datam.masterObject.getClass(), 
-                    thisHub.datam.masterObject.getObjectKey(), 
+                    thisHub.datam.getMasterObject().getClass(), 
+                    thisHub.datam.getMasterObject().getObjectKey(), 
                     HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
                     obj.getClass(), obj.getObjectKey());
         }
@@ -124,8 +124,8 @@ public class HubCSDelegate {
         // must have a master object to be able to know which hub to add object to
         // send ADD message
         
-        if (!(thisHub.datam.masterObject instanceof OAObject)) return;
-        OAObject master = (OAObject) thisHub.datam.masterObject;
+        if (!(thisHub.datam.getMasterObject() instanceof OAObject)) return;
+        OAObject master = (OAObject) thisHub.datam.getMasterObject();
 	    if (OAObjectInfoDelegate.getOAObjectInfo(master).getLocalOnly()) return;
 
 	    /* 20160826 removed, since this is only needed when loading oaobj.hub, which already suppresses messages when loading
@@ -135,7 +135,7 @@ public class HubCSDelegate {
 	    */
 	    
 	    // 20140314 dont need to send if masterObject is only on client so far
-        if (OAObjectCSDelegate.isInNewObjectCache(thisHub.datam.masterObject)) {
+        if (OAObjectCSDelegate.isInNewObjectCache(thisHub.datam.getMasterObject())) {
 	        return;
 	    }
 
@@ -185,8 +185,8 @@ public class HubCSDelegate {
                     });
                     
                     rs.addNewToHub(
-                            thisHub.datam.masterObject.getClass(), 
-                            thisHub.datam.masterObject.getObjectKey(), 
+                            thisHub.datam.getMasterObject().getClass(), 
+                            thisHub.datam.getMasterObject().getObjectKey(), 
                             HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), oos);
                             
                     return;
@@ -194,8 +194,8 @@ public class HubCSDelegate {
             }
             
             rs.addToHub(
-                thisHub.datam.masterObject.getClass(), 
-                thisHub.datam.masterObject.getObjectKey(), 
+                thisHub.datam.getMasterObject().getClass(), 
+                thisHub.datam.getMasterObject().getObjectKey(), 
                 HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), thisObj);
         }
 	}	
@@ -221,8 +221,8 @@ public class HubCSDelegate {
             }
         }
 
-        if (!(thisHub.datam.masterObject instanceof OAObject)) return false;
-        if (OAObjectInfoDelegate.getOAObjectInfo((OAObject)thisHub.datam.masterObject).getLocalOnly()) return false;
+        if (!(thisHub.datam.getMasterObject() instanceof OAObject)) return false;
+        if (OAObjectInfoDelegate.getOAObjectInfo((OAObject)thisHub.datam.getMasterObject()).getLocalOnly()) return false;
 
         // must have a master object to be able to know which hub to add object to
         // send ADD message
@@ -231,8 +231,8 @@ public class HubCSDelegate {
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSync(thisHub);
         if (rs != null) {
             rs.insertInHub(
-                    thisHub.datam.masterObject.getClass(), 
-                    thisHub.datam.masterObject.getObjectKey(), 
+                    thisHub.datam.getMasterObject().getClass(), 
+                    thisHub.datam.getMasterObject().getObjectKey(), 
                     HubDetailDelegate.getPropertyFromMasterToDetail(thisHub), 
                     obj, pos);
         }
@@ -257,7 +257,7 @@ public class HubCSDelegate {
             if (liRev != null && liRev.getCalculated()) return;
         }
 
-        OAObject objMaster = thisHub.datam.masterObject;
+        OAObject objMaster = thisHub.datam.getMasterObject();
         if (objMaster == null) return;
 	    if (OAObjectInfoDelegate.getOAObjectInfo(objMaster).getLocalOnly()) return;
 	    
@@ -288,7 +288,7 @@ public class HubCSDelegate {
         if (!OARemoteThreadDelegate.shouldSendMessages()) return;
         if (OAThreadLocalDelegate.isSuppressCSMessages()) return;
 
-        OAObject objMaster = thisHub.datam.masterObject;
+        OAObject objMaster = thisHub.datam.getMasterObject();
         if (objMaster == null) return;
         if (OAObjectInfoDelegate.getOAObjectInfo(objMaster).getLocalOnly()) return;
 
@@ -357,14 +357,14 @@ public class HubCSDelegate {
             if (liRev != null && liRev.getCalculated()) return false;
         }
 
-        if (!(thisHub.datam.masterObject instanceof OAObject)) return false;
-        if (OAObjectInfoDelegate.getOAObjectInfo((OAObject)thisHub.datam.masterObject).getLocalOnly()) return false;
+        if (!(thisHub.datam.getMasterObject() instanceof OAObject)) return false;
+        if (OAObjectInfoDelegate.getOAObjectInfo((OAObject)thisHub.datam.getMasterObject()).getLocalOnly()) return false;
 
         RemoteSyncInterface rs = OASyncDelegate.getRemoteSync(thisHub);
         if (rs != null) {
             rs.clearHubChanges(
-                thisHub.datam.masterObject.getClass(), 
-                thisHub.datam.masterObject.getObjectKey(), 
+                thisHub.datam.getMasterObject().getClass(), 
+                thisHub.datam.getMasterObject().getObjectKey(), 
                 HubDetailDelegate.getPropertyFromMasterToDetail(thisHub) 
             );
         }

@@ -321,9 +321,9 @@ public class HubAddRemoveDelegate {
         }
     
         // if there is a masterHub, then make sure that this Hub is active/valid
-        if (thisHub.datam.masterObject == null && thisHub.getCurrentSize() == 0) { // 20160330
+        if (thisHub.datam.getMasterObject() == null && thisHub.getCurrentSize() == 0) { // 20160330
             HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
-            if (dm.masterHub != null && dm.masterObject == null) {
+            if (dm.getMasterHub() != null && dm.getMasterObject() == null) {
                 return "has masterHub, but masterObject is null";
             }
         }
@@ -452,9 +452,9 @@ private static long msLAST;
             if (OAObjectHubDelegate.isInHub((OAObject)obj, thisHub)) {
                 // this code has been moved before the listeners are notified.  Else listeners could ask for more objects
                 
-                if (thisHub.datam.masterObject != null) {
+                if (thisHub.datam.getMasterObject() != null) {
                     if (!bIsLoading || thisHub.datam.liDetailToMaster.getType() == OALinkInfo.ONE) {
-                        HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
+                        HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.getMasterObject());
                     }
                 }
                 //was: HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
@@ -714,7 +714,7 @@ private static long msLAST;
         if (thisHub.isOAObject()) OAObjectHubDelegate.addHub((OAObject)obj,thisHub);
         
         // moved before listeners are notified.  Else listeners could ask for it.
-        HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
+        HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.getMasterObject());
 
 /* 20140904 I'm not sure why this was needed to be after setPropertyToMaster,
  * but it is now moved before so that contains(obj) will return true. 

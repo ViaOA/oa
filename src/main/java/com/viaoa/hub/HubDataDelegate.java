@@ -196,7 +196,7 @@ public class HubDataDelegate {
     	thisHub.data.vector.addElement(obj);
         
         int xx = thisHub.data.vector.size();
-        if (xx > 499 && thisHub.datam.masterObject != null && (xx%100)==0) {
+        if (xx > 499 && thisHub.datam.getMasterObject() != null && (xx%100)==0) {
             if (xx < 1000 || (xx%1000)==0) LOG.fine("large Hub with masterObject, Hub="+thisHub);
             if ((xx%10000)==0) {
                 LOG.fine("large Hub with masterObject, Hub="+thisHub);
@@ -363,9 +363,9 @@ public class HubDataDelegate {
                 if (obj != null) {
 	                OAObjectHubDelegate.addHub((OAObject)obj, thisHub);
 	                thisHub.data.vector.setElementAt(obj, pos);
-	                if (thisHub.datam.masterObject != null) {
+	                if (thisHub.datam.getMasterObject() != null) {
 		                // need to set property to MasterHub
-	                	HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.masterObject);
+	                	HubDetailDelegate.setPropertyToMasterHub(thisHub, obj, thisHub.datam.getMasterObject());
 	                }
                 }
 	        }
@@ -410,7 +410,7 @@ public class HubDataDelegate {
 	        }
 	    }
 
-        if (pos < 0 && adjustMaster && (thisHub.datau.getSharedHub() != null || thisHub.datam.masterHub != null)) {
+        if (pos < 0 && adjustMaster && (thisHub.datau.getSharedHub() != null || thisHub.datam.getMasterHub() != null)) {
             OALinkInfo liRecursiveOne = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
 
             // need to verify that this hub is recursive with masterObject
@@ -463,7 +463,7 @@ public class HubDataDelegate {
             }
 
             if (bUseMaster) {
-                if (thisHub.datam.masterHub != null && thisHub.datam.liDetailToMaster != null) {  
+                if (thisHub.datam.getMasterHub() != null && thisHub.datam.liDetailToMaster != null) {  
                     // only do this if a masterHub, since a hub that has a masterObject (w/o hub) should not do this adjustment
                     Object parent = OAObjectReflectDelegate.getProperty((OAObject)object, thisHub.datam.liDetailToMaster.getName());
                     if (parent != null) {

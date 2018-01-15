@@ -74,6 +74,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     private Hub<F> fromHub;
     private boolean bUseAll;
     private boolean bEnableRecursiveRoot;
+    private boolean bEnableRecursiveRootWasCalled;
     
     /**
      * flag to know if it should only find data that is currently in memory.
@@ -96,11 +97,11 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         this.fromHub = fromHub;
         this.strPropertyPath = propPath;
         this.bUseAll = bUseAll;
-        bEnableRecursiveRoot = fromHub != null && fromHub.getMasterObject() != null;
     }
 
     public void setAllowRecursiveRoot(boolean b) {
         this.bEnableRecursiveRoot = b;
+        this.bEnableRecursiveRootWasCalled = true;
     }
     /**
      * Flag to know if the root object/hub should allow for recursive duing the find.  
@@ -183,6 +184,10 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     }
 
     public ArrayList<T> find(ArrayList<F> alRoot, F objectLastUsed) {
+        if (!bEnableRecursiveRootWasCalled) { 
+            bEnableRecursiveRoot = false;
+        }
+        
         alFound = new ArrayList<T>();
         if (bEnableStack) stack = new StackValue[5];
 
@@ -215,6 +220,17 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     
     // 20171224 update threadloc.getDetail
     public ArrayList<T> find(Hub<F> hubRoot, F objectLastUsed) {
+        if (!bEnableRecursiveRootWasCalled) { 
+            if (hubRoot != null) {
+                OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterToDetail(hubRoot);
+                if (li != null && li.getRecursive()) {
+                    bEnableRecursiveRoot = true;
+                }
+            }
+            else {
+                bEnableRecursiveRoot = true;
+            }
+        }
         ArrayList<T> al = null;
         Hub dh = null;
         String dpp = null;

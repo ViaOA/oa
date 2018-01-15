@@ -54,7 +54,9 @@ public class HubSerializeDelegate {
 
     public static void replaceMasterObject(Hub thisHub, OAObject objFrom, OAObject objTo) {
         if (thisHub == null) return;
-        if (thisHub.datam.masterObject == objFrom) thisHub.datam.masterObject = objTo;
+        if (thisHub.datam.getMasterObject() == objFrom) {
+            thisHub.datam.setMasterObject(objTo);
+        }
     }
     
     /** 

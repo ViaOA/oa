@@ -108,7 +108,7 @@ public class HubShareDelegate {
 
     public static HubCopy getHubCopy(Hub thisHub) {
         Hub h = HubShareDelegate.getMainSharedHub(thisHub);
-        if (h.datam.masterObject != null || h.datam.masterHub != null) {
+        if (h.datam.getMasterObject() != null || h.datam.getMasterHub() != null) {
             // filtered hubs will not have a master
             return null;
         }
@@ -127,7 +127,7 @@ public class HubShareDelegate {
     
     public static HubFilter getHubFilter(Hub thisHub) {
         Hub h = HubShareDelegate.getMainSharedHub(thisHub);
-        if (h.datam.masterObject != null || h.datam.masterHub != null) {
+        if (h.datam.getMasterObject() != null || h.datam.getMasterHub() != null) {
             // filtered hubs will not have a master
             return null;
         }

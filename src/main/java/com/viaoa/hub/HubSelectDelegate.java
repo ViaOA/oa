@@ -274,17 +274,17 @@ if (sel.getNextCount() != thisHub.getCurrentSize()) {
 	    	if (thisHub.data.objClass == null) return;
 	    }
 	
-	    if (thisHub.datam.masterObject != null && thisHub.datam.liDetailToMaster != null) {
+	    if (thisHub.datam.getMasterObject() != null && thisHub.datam.liDetailToMaster != null) {
 	        if (select != thisHub.data.getSelect() && thisHub.data.getSelect() != null) {
 	            throw new RuntimeException("select cant be changed for detail hub");
 	        }
 
-	        if (thisHub.datam.masterObject != null) {
-	            if (thisHub.datam.masterObject != select.getWhereObject()) {
+	        if (thisHub.datam.getMasterObject() != null) {
+	            if (thisHub.datam.getMasterObject() != select.getWhereObject()) {
     	            if (select.getWhere() == null || select.getWhere().length() == 0) {
-    	                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisHub.datam.masterObject.getClass());
+    	                OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(thisHub.datam.getMasterObject().getClass());
     	                if (oi.getUseDataSource()) {
-    	                    select.setWhereObject(thisHub.datam.masterObject);
+    	                    select.setWhereObject(thisHub.datam.getMasterObject());
     	                }
     	            }
     	            else {
@@ -296,7 +296,7 @@ if (sel.getNextCount() != thisHub.getCurrentSize()) {
 	        }
 	    }
 	    if (select.getWhereObject() != null) {
-	        if (thisHub.datam.liDetailToMaster != null && select.getWhereObject() == thisHub.datam.masterObject) {
+	        if (thisHub.datam.liDetailToMaster != null && select.getWhereObject() == thisHub.datam.getMasterObject()) {
 	            select.setPropertyFromWhereObject(thisHub.datam.liDetailToMaster.getReverseName());
 	        }
 	    }

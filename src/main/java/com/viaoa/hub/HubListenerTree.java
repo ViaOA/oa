@@ -79,6 +79,10 @@ public class HubListenerTree {
                 if (lis != null && lis.length>0) {
                     bUseOrig = false;
                     for (OALinkInfo li : lis) {
+if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
                         if (li.getReverseLinkInfo().getType() == OALinkInfo.TYPE_ONE) {
                             bUseOrig = true;
                             break;

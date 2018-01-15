@@ -29,10 +29,38 @@ class HubDataMaster implements java.io.Serializable {
     static final long serialVersionUID = 2L;  // used for object serialization
     
     /** Only used for a Detail Hub, created by Hub.getDetail() */
-    protected transient volatile Hub masterHub;
+    private transient volatile Hub masterHub;
+    public void setMasterHub(Hub h) {
+        this.masterHub = masterHub;
+checkMaster();        
+    }
+    public Hub getMasterHub() {
+checkMaster();        
+        return this.masterHub;
+    }
     
     /** The object that Hub "belongs" to. */
-    protected transient volatile OAObject masterObject;
+    private transient volatile OAObject masterObject;
+    public void setMasterObject(OAObject obj) {
+        this.masterObject = obj;
+checkMaster();        
+    }
+    public OAObject getMasterObject() {
+checkMaster();        
+        return this.masterObject;
+    }
+public void checkMaster() {
+    //qqqqqqqqqqqqq
+    if (masterHub == null) return;
+    if (masterObject != null && masterHub.getSize() == 0) {
+        int qq = 0;
+        qq++;//qqqqqqqqq
+        if (qq == 1) {  // ********* debug and change qq so that exception is not thrown *******
+            throw new RuntimeException("checkMaster failed, masterHub="+masterHub+", masterObject="+masterObject);
+        }
+    }
+}
+        
     
     /** LinkInfo from Detail (MANY) to Master (ONE).  */
     protected transient volatile OALinkInfo liDetailToMaster; 

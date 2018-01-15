@@ -46,7 +46,7 @@ public class HubRootDelegate {
         OAFilter<Hub> filter = new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub hx) {
-                return (hx.datam.masterHub != null);
+                return (hx.datam.getMasterHub() != null);
             }
         };
         Hub[] hubs = HubShareDelegate.getAllSharedHubs(thisHub, filter);
@@ -65,15 +65,15 @@ public class HubRootDelegate {
         if (dm.liDetailToMaster == null) {
             return OAObjectInfoDelegate.getRootHub(thisHub.data.getObjectInfo());
         }
-        if (thisHub.datam.masterObject == null && thisHub.datam.masterHub == null) {
+        if (thisHub.datam.getMasterObject() == null && thisHub.datam.getMasterHub() == null) {
             return OAObjectInfoDelegate.getRootHub(thisHub.data.getObjectInfo());
         }
-        if (thisHub.datam.masterObject == null) {
-            if (thisHub.datam.masterHub != null) {
-                Class mc = thisHub.datam.masterHub.getObjectClass();
+        if (thisHub.datam.getMasterObject() == null) {
+            if (thisHub.datam.getMasterHub() != null) {
+                Class mc = thisHub.datam.getMasterHub().getObjectClass();
                 if (mc != null) {
                     if (mc.equals(thisHub.getObjectClass())) {
-                        h = getRootHub(thisHub.datam.masterHub);
+                        h = getRootHub(thisHub.datam.getMasterHub());
                         if (h != null) return h;
                     }
                     else {
@@ -113,7 +113,7 @@ public class HubRootDelegate {
 	            // cant use the masterHub, need to get the "real" detail hub of master object
 	            //   For recursive hubs that are linked, the master (owner) might not be using the root hub.
 	            //   By getting the hub value of the masterObject, it will call its hub getMethod, which will be the root hub
-	        	return (Hub) OAObjectReflectDelegate.getProperty((OAObject)dm.masterObject, OAObjectInfoDelegate.getReverseLinkInfo(dm.liDetailToMaster).getName());
+	        	return (Hub) OAObjectReflectDelegate.getProperty((OAObject)dm.getMasterObject(), OAObjectInfoDelegate.getReverseLinkInfo(dm.liDetailToMaster).getName());
 	        }
 	
 	        // the linkInfo for the parent is not the owner or a recursive parent
@@ -131,7 +131,7 @@ public class HubRootDelegate {
 	        OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(linkOwner);
 	        if (liRev != null && liRev.getType() == OALinkInfo.MANY) {
 	            // get owner object:
-	            Object owner = OAObjectReflectDelegate.getProperty((OAObject)dm.masterObject, linkOwner.getName());
+	            Object owner = OAObjectReflectDelegate.getProperty((OAObject)dm.getMasterObject(), linkOwner.getName());
 	            if (owner != null) {
 	                Object root = OAObjectReflectDelegate.getProperty((OAObject)owner, liRev.getName());
 	                if (!(root instanceof Hub)) throw new RuntimeException("Hub.getRootHub() method from owner object not returning a Hub.");
