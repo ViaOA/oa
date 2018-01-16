@@ -79,9 +79,9 @@ public class HubListenerTree {
                 if (lis != null && lis.length>0) {
                     bUseOrig = false;
                     for (OALinkInfo li : lis) {
-if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
+if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if this is a bug or not, just log it for now 20180115
+    LOG.log(Level.WARNING, "Link does not have a reverseLinkInfo, link.toClass="+li.getToClass()+", name="+li.getName()+", pp="+spp+", rootHub="+HubListenerTree.this.root.hub, new Exception("Found HubListenerTree issue qqqqqq"));
+    continue;
 }
                         if (li.getReverseLinkInfo().getType() == OALinkInfo.TYPE_ONE) {
                             bUseOrig = true;
