@@ -300,6 +300,13 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
         return order;
     }
 
+    public void setSortBy(String s) {
+        setOrder(s);
+    }
+    public String getSortBy() {
+        return getOrder();
+    }
+    
     /** 
         Flag to show if query should use OADataSource.selectPassthru() instead of OADataSource.select() 
     */

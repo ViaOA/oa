@@ -115,7 +115,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         bStop = false;
         setup(sel.getSelectClass());
         if (threadCount > 0) executorService = new OAExecutorService(threadCount, "OALoader");
-        this.hubFrom = new Hub();
+        this.hubFrom = new Hub(sel.getSelectClass());
 
         Hub hubHold = OAThreadLocalDelegate.getGetDetailHub();
         String ppHold = OAThreadLocalDelegate.getGetDetailPropertyPath();
@@ -149,7 +149,21 @@ public class OALoader<F extends OAObject, T extends OAObject> {
 
         hubFrom = new Hub(objectRoot.getClass());
         hubFrom.add(objectRoot);
-        _load(objectRoot);
+        
+        Hub hubHold = OAThreadLocalDelegate.getGetDetailHub();
+        String ppHold = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        try {
+            OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
+            _load(objectRoot);
+        }
+        finally {
+            OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
+            this.hubFrom = null;
+            cascades = null;
+            if (executorService != null) executorService.close();
+        }
+        
+        
         hubFrom = null;
         cascades = null;
         if (executorService != null) executorService.close();

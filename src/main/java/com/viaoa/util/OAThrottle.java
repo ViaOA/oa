@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.*;
 
 /**
  * Used to throttle based on a minimum time (ms) frame.
- * Has a check() method that can be called to know if it's time for further action.
+ * Use the check() method to know if it's time again.
  * @author vvia
  */
 public class OAThrottle {
