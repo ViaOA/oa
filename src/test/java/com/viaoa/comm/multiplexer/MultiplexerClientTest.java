@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.concurrent.atomic.AtomicInteger;
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
+import com.viaoa.object.OAObject;
 
 public class MultiplexerClientTest extends OAUnitTest {
     private AtomicInteger aiCount = new AtomicInteger();
@@ -16,7 +17,7 @@ public class MultiplexerClientTest extends OAUnitTest {
     public void test(int ... msgSizes) throws Exception {
         final MultiplexerClient mc = new MultiplexerClient("localhost", 1101);
         mc.start();
-        mc.DEBUG = true;
+        OAObject.setDebugMode(true);
         
         for (int i=0; i<msgSizes.length; i++) {
             final int id = i;

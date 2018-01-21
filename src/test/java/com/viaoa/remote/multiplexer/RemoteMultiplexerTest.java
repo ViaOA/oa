@@ -9,6 +9,7 @@ import org.junit.Test;
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
+import com.viaoa.object.OAObject;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.remote.multiplexer.remote.*;  // test package only
 import com.viaoa.util.OADateTime;
@@ -549,7 +550,7 @@ public class RemoteMultiplexerTest extends OAUnitTest {
     }
     
     public static void main(String[] args) throws Exception {
-        MultiplexerClient.DEBUG = MultiplexerServer.DEBUG = true;
+        OAObject.setDebugMode(true);
         
         System.out.println("START: "+(new OADateTime()));
         

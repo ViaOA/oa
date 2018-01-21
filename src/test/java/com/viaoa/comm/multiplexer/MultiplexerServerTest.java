@@ -9,6 +9,7 @@ import static org.junit.Assert.*;
 
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
+import com.viaoa.object.OAObject;
 import com.viaoa.util.OAString;
 
 import test.theice.tsac3.model.oa.*;
@@ -38,8 +39,7 @@ public class MultiplexerServerTest extends OAUnitTest {
         multiplexerServer = new MultiplexerServer(null, 1101);
         ServerSocket ss = multiplexerServer.createServerSocket("test");
         multiplexerServer.start();
-
-        multiplexerServer.DEBUG = true;
+        OAObject.setDebugMode(true);
         
         for (int i=0; (maxConnections==0 && i==0) || i<maxConnections; i++) {
             Socket s = ss.accept();

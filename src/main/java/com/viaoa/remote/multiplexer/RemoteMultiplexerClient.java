@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.comm.multiplexer.io.VirtualSocket;
+import com.viaoa.object.OAObject;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.info.BindInfo;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
@@ -339,7 +340,7 @@ public class RemoteMultiplexerClient {
                         if (i > 0) {
                             if (!multiplexerClient.isConnected()) break;
                             if (ri.methodInfo.timeoutSeconds > 0 && i >= ri.methodInfo.timeoutSeconds) {
-                                if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                                if (!OAObject.getDebugMode()) {
                                     break;
                                 }
                             }
@@ -970,7 +971,7 @@ public class RemoteMultiplexerClient {
                             t.Lock.notify(); // have RemoteClientThread call processMessageforStoC(..)
                             for (int i=0 ; t.requestInfo == ri && !ri.methodInvoked; i++) {
                                 if (i >= (maxSeconds*10)) {
-                                    if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                                    if (!OAObject.getDebugMode()) {
                                         break;
                                     }
                                 }

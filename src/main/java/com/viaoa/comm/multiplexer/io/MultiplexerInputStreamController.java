@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
+import com.viaoa.object.OAObject;
 import com.viaoa.object.OAThreadLocalDelegate;
 
 /**
@@ -164,7 +165,7 @@ public abstract class MultiplexerInputStreamController {
                                 }
                             }
                             else if (cnt == (_timeoutSeconds * 4)) {
-                                if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                                if (!OAObject.getDebugMode()) {
                                     LOG.warning("Connection="+_connectionId+", VSocket id=" + vs._id + ", name=" + vs.getServerSocketName() + ", has been timed out, will disconnect socket and continue");
                                     long ms = System.currentTimeMillis();
                                     if (msLastStackDump + 30000 < ms) {

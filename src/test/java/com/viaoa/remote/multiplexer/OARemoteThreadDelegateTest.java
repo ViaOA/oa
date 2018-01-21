@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
+import com.viaoa.object.OAObject;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.annotation.OARemoteMethod;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
@@ -44,8 +45,7 @@ public class OARemoteThreadDelegateTest extends OAUnitTest {
     
     @Before
     public void setup() throws Exception {
-        MultiplexerServer.DEBUG = true;        
-        MultiplexerClient.DEBUG = true;        
+        OAObject.setDebugMode(true);
         
         System.out.println("Before, calling setup");
         // setup server

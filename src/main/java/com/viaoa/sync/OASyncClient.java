@@ -99,7 +99,7 @@ public class OASyncClient {
                     clientInfo.setFreeMemory(Runtime.getRuntime().freeMemory());
                     clientInfo.setTotalMemory(Runtime.getRuntime().totalMemory());
                     try {
-                        if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                        if (!OAObject.getDebugMode()) {
                             getRemoteSession().update(clientInfo);
                         }
                         Thread.sleep(seconds * 1000);
@@ -279,7 +279,9 @@ public class OASyncClient {
             );
             OAPerformance.LOG.fine(s);
             LOG.fine(s);
-System.out.println("OASyncClient.getDetail: "+s);//qqqqqqq            
+            if (OAObject.getDebugMode()) {
+                System.out.println("OASyncClient.getDetail: "+s);
+            }
         }
         return result;
     }

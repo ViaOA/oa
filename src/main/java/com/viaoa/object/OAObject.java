@@ -990,5 +990,13 @@ public class OAObject implements java.io.Serializable, Comparable {
         }
     }
     
+    private static boolean DebugMode = false;
+    public static void setDebugMode(boolean b) {
+        LOG.config("DebugMode set to "+b);
+        DebugMode = b;
+    }
+    public static boolean getDebugMode() {
+        return DebugMode;
+    }
     
 }

@@ -148,7 +148,9 @@ public class ResultSetIterator implements OADataSourceIterator {
             s = throttle.getCheckCount()+") ResultSetIterator: query="+s;
             
             LOG.fine(s);
-            System.out.println(s);
+            if (OAObject.getDebugMode()) {
+                System.out.println(s);
+            }
         }
         /*
         if ( (qqq%(DisplayMod*4)==0)) {        

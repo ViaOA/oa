@@ -32,6 +32,7 @@ import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
 import com.viaoa.comm.multiplexer.io.VirtualServerSocket;
 import com.viaoa.comm.multiplexer.io.VirtualSocket;
+import com.viaoa.object.OAObject;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.info.BindInfo;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
@@ -633,7 +634,7 @@ public class RemoteMultiplexerServer {
                             break;
                         }
                         if (maxSeconds > 0 && i >= maxSeconds) {
-                            if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                            if (!OAObject.getDebugMode()) {
                                 ri.exceptionMessage = "timeout waiting for response";
                                 break;
                             }
@@ -1224,7 +1225,7 @@ public class RemoteMultiplexerServer {
             // the calling thread is waiting for this request to be completed
             for (;;) {
                 if (waitForMethodInvoked(ri, maxSeconds)) break;
-                if (!MultiplexerClient.DEBUG && !MultiplexerServer.DEBUG) {
+                if (!OAObject.getDebugMode()) {
                     ri.exceptionMessage = "timeout waiting for response";
                     break;
                 }

@@ -36,6 +36,7 @@ import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.object.OAFinder;
+import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.sync.remote.RemoteBroadcastInterface;
@@ -324,7 +325,7 @@ public class OASyncServerTest {
     
     
     public static void main(String[] args) throws Exception {
-        MultiplexerServer.DEBUG = true;
+        OAObject.setDebugMode(true);
         OALogUtil.consoleOnly(Level.FINE, OACircularQueue.class.getName());//"com.viaoa.util.OACircularQueue");
         
         Logger logx = Logger.getLogger(OACircularQueue.class.getName());

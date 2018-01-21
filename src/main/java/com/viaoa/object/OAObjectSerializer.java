@@ -494,6 +494,9 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         LOG.fine(wcnter+") "+msg);
 
         OAPerformance.LOG.fine(wcnter+") "+msg);
+        if (OAObject.getDebugMode()) {
+            System.out.println("OAObjectSerializer.writeObject "+wcnter+") "+msg);
+        }        
     }
 
     
@@ -608,6 +611,9 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     	rcnter++;
         LOG.fine(rcnter+") "+msg);
         OAPerformance.LOG.fine(rcnter+") "+msg);
+        if (OAObject.getDebugMode()) {
+            System.out.println("OAObjectSerializer.readObject "+rcnter+") "+msg);
+        }        
     }
     
     

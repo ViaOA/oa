@@ -8,6 +8,7 @@ import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.ds.cs.OADataSourceClient;
 import com.viaoa.hub.Hub;
+import com.viaoa.object.OAObject;
 import com.viaoa.util.OALogUtil;
 
 import test.hifive.delegate.ModelDelegate;
@@ -20,7 +21,7 @@ public class HifiveClientTest extends OAUnitTest {
     private static OASyncClient syncClient;
     
     public void test() throws Exception {
-        MultiplexerClient.DEBUG = true;
+        OAObject.setDebugMode(true);
         syncClient = new OASyncClient("localhost", port);
         
         // **NOTE** need to make sure that HifiveServerTest is running in another jvm
@@ -42,7 +43,7 @@ public class HifiveClientTest extends OAUnitTest {
     
     
     public static void main(String[] args) throws Exception {
-        MultiplexerClient.DEBUG = true;
+        OAObject.setDebugMode(true);
         OALogUtil.consoleOnly(Level.CONFIG);
         OALogUtil.consolePerformance();
 

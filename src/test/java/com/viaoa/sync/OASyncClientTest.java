@@ -32,6 +32,7 @@ import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.hub.HubMerger;
 import com.viaoa.object.OAFinder;
+import com.viaoa.object.OAObject;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.sync.remote.RemoteBroadcastInterface;
@@ -518,7 +519,7 @@ public class OASyncClientTest extends OAUnitTest {
     
     @Before
     public void setup() throws Exception {
-        MultiplexerClient.DEBUG = true;
+        OAObject.setDebugMode(true);
         syncClient = new OASyncClient("localhost", port) {
             @Override
             public void onStopCalled(String title, String msg) {
@@ -682,7 +683,7 @@ public class OASyncClientTest extends OAUnitTest {
     
     
     public static void main(String[] args) throws Exception {
-        MultiplexerClient.DEBUG = true;
+        OAObject.setDebugMode(true);
         OALogUtil.consoleOnly(Level.CONFIG);
 
         OASyncClientTest test = new OASyncClientTest();
