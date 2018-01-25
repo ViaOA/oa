@@ -62,6 +62,22 @@ public class OAObjectPropertyDelegate {
         return false;
     }
 
+    /**
+     * check to see if property does or will exist (if it is oaObjKey).
+     * @return
+     */
+    public static boolean isReferenceNull(OAObject oaObj, String name) {
+        if (oaObj == null || name == null) return false;
+        Object[] props = oaObj.properties;
+        if (props == null) return false;
+
+        for (int i=0; i<props.length; i+=2) {
+            if ( props[i] == null || !name.equalsIgnoreCase((String)props[i]) ) continue;
+            return false;  
+        }
+        return true;
+    }
+    
     public static String[] getPropertyNames(OAObject oaObj) {
         Object[] props = oaObj.properties;
         if (props == null) return null;
@@ -456,6 +472,11 @@ public class OAObjectPropertyDelegate {
                 if (lock.done) break;
                 lock.hasWait = true;
                 try {
+/*qqqqqqqqqqqqqqqq
+if (OAObject.getDebugMode()) {                    
+    System.out.println("OAObjectPropertyDelegate._setPropertyLock(..), thread="+Thread.currentThread()+" is waiting on "+oaObj+", prop="+name);
+}
+*/
                     lock.wait(100); 
                 }
                 catch (Exception e) {

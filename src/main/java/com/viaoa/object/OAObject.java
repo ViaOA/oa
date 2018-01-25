@@ -100,7 +100,7 @@ public class OAObject implements java.io.Serializable, Comparable {
 
     private static final long serialVersionUID = 1L; // internally used by Java Serialization to identify this version of OAObject.
     
-    public static final int version = 180120;   // NOTE: also need to update manifest.mf
+    public static final int version = 180125;   // NOTE: also need to update manifest.mf
     static {
         /*
         Properties props = System.getProperties();
@@ -828,7 +828,7 @@ public class OAObject implements java.io.Serializable, Comparable {
         return OAObjectKeyDelegate.getKey(this);
     }
     public int getGuid() {
-        return OAObjectKeyDelegate.getGuid(this);
+        return guid;
     }
     
     // 20130630
@@ -962,6 +962,10 @@ public class OAObject implements java.io.Serializable, Comparable {
         return OAObjectPropertyDelegate.isPropertyLoaded(this, prop);
     }
 
+    public boolean isReferenceNull(String prop) {
+        return OAObjectPropertyDelegate.isReferenceNull(this, prop);
+    }
+    
     public Object hierFind(String propertyName, String heirarchyPropertyPath) {
         OAHierFinder hf = new OAHierFinder<OAObject>(propertyName, heirarchyPropertyPath);
         Object objx = hf.findFirstNotEmpty(this);
@@ -997,6 +1001,11 @@ public class OAObject implements java.io.Serializable, Comparable {
     }
     public static boolean getDebugMode() {
         return DebugMode;
+    }
+    
+    public boolean isPropertyLocked(String prop) {
+        boolean b = OAObjectPropertyDelegate.isPropertyLocked(this, prop);
+        return b;
     }
     
 }

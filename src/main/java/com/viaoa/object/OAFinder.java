@@ -76,6 +76,8 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     private boolean bEnableRecursiveRoot;
     private boolean bEnableRecursiveRootWasCalled;
     
+    private OACascade cascade; // cascade that can be set by calling code
+    
     /**
      * flag to know if it should only find data that is currently in memory.
      */
@@ -134,6 +136,9 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
      */
     public void stop() {
         bStop = true;
+    }
+    public boolean getStop() {
+        return bStop;
     }
 
     public void setUseOnlyLoadedData(boolean b) {
@@ -215,6 +220,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         this.alFound = null;
         this.stack = null;
         this.stackPos = 0;
+        this.cascades = null;
         return al;        
     }
     
@@ -276,6 +282,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         this.alFound = null;
         this.stack = null;
         this.stackPos = 0;
+        cascades = null;
         return al;        
     }
 
@@ -361,6 +368,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         this.alFound = null;
         this.stack = null;
         this.stackPos = 0;
+        this.cascades = null;
         return al;        
     }
     
@@ -379,12 +387,17 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         recursiveLinkInfos = propertyPath.getRecursiveLinkInfos();
         methods = propertyPath.getMethods();
         
+                
         if (linkInfos.length != methods.length) {
             // oafinder is to get from one OAObj/Hub to another, not a property/etc
             throw new RuntimeException("propertyPath "+strPropertyPath+" must end in an OAObject/Hub");
         }
         
-
+        cascades = new OACascade[linkInfos.length];
+        for (int i=0; i<linkInfos.length; i++) {
+            cascades[i] = new OACascade();
+        }
+        
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(c);
         liRecursiveRoot = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
         
@@ -415,23 +428,11 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     
     private void performFind(F obj) {
         if (obj == null) return;
-
-        if (linkInfos != null && linkInfos.length > 0) {
-            cascades = new OACascade[linkInfos.length];
-            for (int i=0; i<linkInfos.length; i++) {
-                cascades[i] = new OACascade();
-            }
-        }
-        try {
-            find(obj, 0);
-        }
-        finally {
-            cascades = null;
-        }
+        find(obj, 0);
     }
 
     
-    private void find(Object obj, int pos) {
+    protected void find(Object obj, int pos) {
         if (obj==null || bStop) return;
         if (pos > 20) {
             return;
@@ -457,8 +458,14 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
 
         if (!(obj instanceof OAObject)) return;
 
+        if (cascade != null) {
+            boolean b = cascade.wasCascaded((OAObject) obj, true);
+            if (b) return;
+        }
+        
         if (pos > 0 && cascades != null) {
-            if (cascades[pos-1].wasCascaded((OAObject) obj, true)) return;
+            boolean b = cascades[pos-1].wasCascaded((OAObject) obj, true);
+            if (b) return;
         }
         
         if (linkInfos == null || pos >= linkInfos.length) {
@@ -655,5 +662,8 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         bAddAndFilter = true;
         bAddOrFilter = false;
     }
-    
+
+    public void setCascade(OACascade cascade) {
+        this.cascade = cascade;
+    }
 }

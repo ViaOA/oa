@@ -28,8 +28,8 @@ public class OAObjectKeyDelegate {
 	}
 
 	public static int getGuid(OAObject oaObj) {
-	    if(oaObj == null) return -1;
-	    return getKey(oaObj).guid;
+	    if (oaObj == null) return -1;
+	    return oaObj.guid;
 	}
 	
 	/**

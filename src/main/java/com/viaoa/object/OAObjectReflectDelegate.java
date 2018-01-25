@@ -618,26 +618,10 @@ public class OAObjectReflectDelegate {
     }
     
     // keeps track of siblings that are "in flight"
-    private static final ConcurrentHashMap<String, OAObject> hmIgnoreSibling = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, Boolean> hmIgnoreSibling = new ConcurrentHashMap<>();
     private static Hub _getReferenceHub(final OAObject oaObj, final String linkPropertyName, String sortOrder, 
             boolean bSequence, Hub hubMatch, final OAObjectInfo oi, final OALinkInfo linkInfo ) {
         
-        ArrayList<String> alRemoveFromHm = new ArrayList<>(); // list of references added to hmIgnoreSibling by this request
-        Hub h = null;
-        try {
-            h = _getReferenceHub2(oaObj, linkPropertyName, sortOrder, bSequence, hubMatch, oi, linkInfo, alRemoveFromHm);
-        }
-        finally {
-            for (String s : alRemoveFromHm) {
-                hmIgnoreSibling.remove(s);
-            }
-        }
-        return h;
-    }
-    private static Hub _getReferenceHub2(final OAObject oaObj, final String linkPropertyName, String sortOrder, 
-            boolean bSequence, Hub hubMatch, final OAObjectInfo oi, final OALinkInfo linkInfo,
-            final  ArrayList<String> alRemoveFromHm) 
-    {
         Object propertyValue = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
         boolean bThisIsServer = OAObjectCSDelegate.isServer(oaObj);
         // dont get calcs from server, calcs are maintained locally, events are not sent
@@ -792,7 +776,7 @@ public class OAObjectReflectDelegate {
                             x = 25;
                         }
                         
-                        siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, x, hmIgnoreSibling, alRemoveFromHm);
+                        siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, x, hmIgnoreSibling);
                     }
                     
                     if (siblingKeys != null) {
@@ -1036,6 +1020,11 @@ public class OAObjectReflectDelegate {
                     OAObjectPropertyDelegate.setPropertyHubIfNotSet(obj, linkPropertyName, hx);
                 }
                 OAObjectPropertyDelegate.releasePropertyLock(obj, linkPropertyName);
+            }
+        }
+        if (siblingKeys != null) {
+            for (OAObjectKey ok : siblingKeys) {
+                hmIgnoreSibling.remove(ok.getGuid());
             }
         }
         return hub;
@@ -1478,18 +1467,14 @@ public class OAObjectReflectDelegate {
             return objOriginal; // found it
         }
 
-        ArrayList<String> alRemoveFromHm = new ArrayList<>();
         Object result = null;
         try {
             OAObjectPropertyDelegate.setPropertyLock(oaObj, linkPropertyName);
-            result = _getReferenceObject(oaObj, linkPropertyName, oi, li, alRemoveFromHm);
+            result = _getReferenceObject(oaObj, linkPropertyName, oi, li);
             OAObjectPropertyDelegate.setPropertyCAS(oaObj, linkPropertyName, result, objOriginal, bDidNotExist, false);
         }
         finally {
             OAObjectPropertyDelegate.releasePropertyLock(oaObj, linkPropertyName);
-            for (String s : alRemoveFromHm) {
-                hmIgnoreSibling.remove(s);
-            }
             if (result instanceof OAObjectKey) {
                 result = getReferenceObject(oaObj, linkPropertyName);
             }
@@ -1498,7 +1483,7 @@ public class OAObjectReflectDelegate {
     }
 
     // note: this acquired a lock before calling
-    private static Object _getReferenceObject(final OAObject oaObj, final String linkPropertyName, final OAObjectInfo oi, final OALinkInfo li, final ArrayList<String> alRemoveFromHm) {
+    private static Object _getReferenceObject(final OAObject oaObj, final String linkPropertyName, final OAObjectInfo oi, final OALinkInfo li) {
         if (linkPropertyName == null) return null;
 
         boolean bIsServer = OASyncDelegate.isServer(oaObj);
@@ -1591,7 +1576,7 @@ public class OAObjectReflectDelegate {
                 }
                 else {
                     // 20171222
-                    OAObjectKey[] siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, 75, hmIgnoreSibling, alRemoveFromHm);
+                    final OAObjectKey[] siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, 75, hmIgnoreSibling);
                     String sibIds = null;
                     if (siblingKeys != null) {
                         for (OAObjectKey keyx : siblingKeys) {
@@ -1600,7 +1585,9 @@ public class OAObjectReflectDelegate {
                                 continue;
                             }
                             Object valx = OAObjectPropertyDelegate.getProperty(objx, linkPropertyName, false, false);
-                            if (!(valx instanceof OAObjectKey)) continue;
+                            if (!(valx instanceof OAObjectKey)) {
+                                continue;
+                            }
                             
                             if (!OAObjectPropertyDelegate.isPropertyLocked(objx, linkPropertyName)) {
                                 Object[] idsx = ((OAObjectKey)valx).getObjectIds();
@@ -1620,7 +1607,7 @@ public class OAObjectReflectDelegate {
                         sel.setWhere("id IN ("+sibIds+")");
                         sel.select();
                         for ( ; sel.hasMore(); ) {
-                            OAObject refx = sel.next();  // this will load into objCache w/softRef
+                            OAObject refx = sel.next();  // this will load into objCache w/weakRef
                             if (refx.getObjectKey().equals(key)) {
                                 ref = refx;
                             }
@@ -1628,6 +1615,9 @@ public class OAObjectReflectDelegate {
                     }
                     else {
                         ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
+                    }
+                    for (OAObjectKey ok : siblingKeys) {
+                        hmIgnoreSibling.remove(ok.getGuid());
                     }
                     //was: ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
                 }

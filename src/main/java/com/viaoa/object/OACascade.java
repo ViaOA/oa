@@ -19,6 +19,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.util.OAThrottle;
 
 /**
  * Used for cascading methods, to be able to know if an object
@@ -120,10 +121,17 @@ public class OACascade {
         if (bAdd) {
             if (rwLock != null) rwLock.writeLock().lock();
             treeObject.add(oaObj.guid);
+/*            
+if (treeObject.size() > 10000) {
+    if (throttle.check()) System.out.println((throttle.getCount())+") "+Thread.currentThread().getName()+" ********* OACascade, tree.size="+treeObject.size()+", obj="+oaObj);//qqqqqqqqqqqqqqqqqqqqqq
+}
+*/
             if (rwLock != null) rwLock.writeLock().unlock();
         }
         return false;
     }
+//final OAThrottle throttle = new OAThrottle(5000);
+
     
     public boolean wasCascaded(Hub hub, boolean bAdd) {
         if (hub == null) return false;

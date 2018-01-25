@@ -115,7 +115,7 @@ public class OASyncClient {
     }
     
     private final AtomicInteger aiCntGetDetail = new AtomicInteger();
-    private final ConcurrentHashMap<String, OAObject> hmSibling = new ConcurrentHashMap<String, OAObject>(); 
+    private final ConcurrentHashMap<Integer, Boolean> hmIgnoreSibling = new ConcurrentHashMap<Integer, Boolean>(); 
     
     /**
      * This is sent to the server using ClientGetDetail, by using a customized objectSerializer
@@ -169,8 +169,7 @@ public class OASyncClient {
                 
                 if (bUsesDetail) max *= 3;
                 
-                ArrayList<String> alRemoveFromHm = new ArrayList<>();
-                siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max, hmSibling, alRemoveFromHm);
+                siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max, hmIgnoreSibling);
                 additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
               
                 try {
@@ -180,8 +179,8 @@ public class OASyncClient {
                         additionalMasterProperties, siblingKeys, bUsesDetail);
                 }
                 finally {
-                    for (String sid : alRemoveFromHm) {
-                        hmSibling.remove(sid);
+                    for (OAObjectKey ok : siblingKeys) {
+                        hmIgnoreSibling.remove(ok.getGuid());
                     }
                 }
             }
@@ -193,7 +192,7 @@ public class OASyncClient {
         lastMasterObjects[lastMasterCnter++%lastMasterObjects.length] = masterObject;
         int cntSib = 0;
         
-        Object resultHold = result;//qqqqqqqqq
+        Object resultHold = result;
 
         if (result instanceof OAObjectSerializer) {
             // see ClientGetDetail.getSerializedDetail(..)

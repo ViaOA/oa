@@ -110,6 +110,9 @@ public class OAPropertyPath<F> {
         for (int i=0; i<linkInfos.length; i++) {
             OALinkInfo li = linkInfos[i];
             OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+            if (liRev.getPrivateMethod()) {
+                return null; 
+            }
             if (pp.length() > 0) pp = "." + pp;
             pp = liRev.getName() + pp;
         }

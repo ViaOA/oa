@@ -55,6 +55,9 @@ public class OAThrottle {
     public long getCheckCount() {
         return aiCnt.get();
     }
+    public long getCount() {
+        return aiCnt.get();
+    }
     /**
      * Returns the last time that a call to check() returned true.
      */

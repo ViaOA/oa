@@ -105,7 +105,10 @@ public class OALoader<F extends OAObject, T extends OAObject> {
             OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
             this.hubFrom = null;
             cascades = null;
-            if (executorService != null) executorService.close();
+            if (executorService != null) {
+                executorService.close();
+                executorService = null;
+            }
         }
     }
     
@@ -135,7 +138,10 @@ public class OALoader<F extends OAObject, T extends OAObject> {
             OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
             this.hubFrom = null;
             cascades = null;
-            if (executorService != null) executorService.close();
+            if (executorService != null) {
+                executorService.close();
+                executorService = null; 
+            }
         }
     }
     
@@ -160,13 +166,11 @@ public class OALoader<F extends OAObject, T extends OAObject> {
             OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
             this.hubFrom = null;
             cascades = null;
-            if (executorService != null) executorService.close();
+            if (executorService != null) {
+                executorService.close();
+                executorService = null;
+            }
         }
-        
-        
-        hubFrom = null;
-        cascades = null;
-        if (executorService != null) executorService.close();
     }
     
     protected void _load(F object) {
@@ -189,7 +193,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
 
         if (!(obj instanceof OAObject)) return;
 
-        if (pos > 0 && cascades != null) {
+        if (pos > 0 && cascades != null && (linkInfos != null && (pos+1) < linkInfos.length)) {
             if (cascades[pos-1].wasCascaded((OAObject) obj, true)) return;
         }
         
@@ -202,10 +206,11 @@ public class OALoader<F extends OAObject, T extends OAObject> {
             }
         }
         else if (recursiveLinkInfos != null && pos <= recursiveLinkInfos.length && (recursiveLinkInfos[pos - 1] != null)) {
-            if (executorService != null && !recursiveLinkInfos[pos - 1].isLoaded(obj) && aiThreadsUsed.get() < threadCount) {
+            boolean b = recursiveLinkInfos[pos - 1].isLoaded(obj);
+            if (!b) aiNotLoadedCnt.incrementAndGet();
+            if (executorService != null && !b && aiThreadsUsed.get() < threadCount) {
                 int x = aiThreadsUsed.incrementAndGet();
                 if (x <= threadCount) {
-                    aiNotLoadedCnt.incrementAndGet();
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
@@ -225,6 +230,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                 }
                 aiThreadsUsed.decrementAndGet();
             }
+            
             Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
             _load(objx, pos);
             if (bStop) return;
@@ -232,10 +238,10 @@ public class OALoader<F extends OAObject, T extends OAObject> {
 
         if (linkInfos != null && pos < linkInfos.length) {
             boolean b = linkInfos[pos].isLoaded(obj);
+            if (!b) aiNotLoadedCnt.incrementAndGet();
             if (executorService != null && !b && aiThreadsUsed.get() < threadCount) {
                 int x = aiThreadsUsed.incrementAndGet();
                 if (x <= threadCount) {
-                    aiNotLoadedCnt.incrementAndGet();
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
@@ -286,6 +292,10 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         bSetup = true;
         if (propertyPath != null || c == null) return;
         propertyPath = new OAPropertyPath(c, strPropertyPath);
+        
+        aiThreadsUsed.set(0); 
+        aiVisitCnt.set(0);
+        aiNotLoadedCnt.set(0);
 
         linkInfos = propertyPath.getLinkInfos();
         recursiveLinkInfos = propertyPath.getRecursiveLinkInfos();
