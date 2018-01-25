@@ -472,11 +472,10 @@ public class OAObjectPropertyDelegate {
                 if (lock.done) break;
                 lock.hasWait = true;
                 try {
-/*qqqqqqqqqqqqqqqq
+//qqqqqqqqqqqqqqqq
 if (OAObject.getDebugMode()) {                    
-    System.out.println("OAObjectPropertyDelegate._setPropertyLock(..), thread="+Thread.currentThread()+" is waiting on "+oaObj+", prop="+name);
+//    System.out.println("OAObjectPropertyDelegate._setPropertyLock(..), thread="+Thread.currentThread()+" is waiting on "+oaObj+", prop="+name);
 }
-*/
                     lock.wait(100); 
                 }
                 catch (Exception e) {
