@@ -160,4 +160,11 @@ if (treeObject.size() > 10000) {
         }
         return false;
     }
+    
+    public int getVisitCount() {
+        int cnt = 0;
+        if (treeObject != null) cnt += treeObject.size();
+        if (treeHub != null) cnt += treeHub.size();
+        return cnt;
+    }
 }
