@@ -19,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
+import com.viaoa.object.OAObject;
+
 /**
  * Manages expired queries.
  * @author vvia
@@ -86,9 +88,11 @@ public class OASelectManager {
             if (t == 0) continue;
             
             if (t < time) {
-                LOG.warning("cancel select, after timeout.  Select="+sel.getSelectClass()+", where="+sel.getWhere());
-                sel.cancel();
-                it.remove();
+                if (!OAObject.getDebugMode()) {
+                    LOG.warning("cancel select, after timeout.  Select="+sel.getSelectClass()+", where="+sel.getWhere());
+                    sel.cancel();
+                    it.remove();
+                }
             }
         }
         LOG.finer("done, before="+iTotal+", after="+hmSelect.size());
