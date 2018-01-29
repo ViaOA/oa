@@ -19,8 +19,12 @@ import com.viaoa.util.OAThrottle;
  */
 public class OAObjectSiblingDelegate {
 
-    private final static long MaxMs = 35; // max ms for finding
-    private final static int MaxVisit = 500;
+    private final static long MaxMs = 25; // max ms for finding
+    private final static int MaxVisit = 300;
+    
+    private static final OAThrottle throttle = new OAThrottle(250);
+    
+    
     /**
      * Used to find any siblings that also need the same property loaded.
      */
@@ -36,16 +40,10 @@ public class OAObjectSiblingDelegate {
      * @param hmIgnore ignore list, because they are "inflight" with other concurrent requests
      * @return list of keys that are siblings
      */
-
-static final OAThrottle throttle = new OAThrottle(25);
     public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int maxAmount, ConcurrentHashMap<Integer, Boolean> hmIgnore) {
         long msStarted = System.currentTimeMillis();
         OAObjectKey[] keys = _getSiblings(mainObject, property, maxAmount, hmIgnore, msStarted);
         long x = (System.currentTimeMillis()-msStarted);         
-if (x > 85) {
-    int xx = 4; //qqqqqqqqqqq
-    xx++;
-}
         if (throttle.check() || x > (MaxMs*2)) {
             if (OAObject.getDebugMode()) {
                 System.out.println((throttle.getCheckCount())+") OAObjectSiblingDelegate ----> "+x+"  obj="+mainObject.getClass().getSimpleName()+", prop="+property+",  hmIgnore="+hmIgnore.size()+", alRemove="+keys.length);
@@ -143,7 +141,6 @@ if (x > 85) {
         }
         else if (getDetailHub != null) {
             hub = getDetailHub;
-            //qqqqqqqq needs to have a time limit
         }
         else {
             hub = findBestSiblingHub(mainObject, null);
@@ -152,8 +149,6 @@ if (x > 85) {
 
         int max = maxAmount;
         if (hub == null) {
-            int xx = 4;
-            xx++;//qqqqqqqqq
         }
         else if (ppReverse != null) {
         }
@@ -186,24 +181,7 @@ if (x > 85) {
             }
             startPosHubRoot = Math.max(0, startPosHubRoot - x);
             
-long msx = System.currentTimeMillis();            
-//            findSiblings(alObjectKey, hub, startPosHubRoot, ppPrefix, property, linkInfo, mainObject, hmTypeOneObjKey, hmIgnore, max, cascade, msStarted);
-findSiblings(alObjectKey, hub, startPosHubRoot, ppPrefix, property, linkInfo, mainObject, hmTypeOneObjKey, hmIgnore, max, cascade, msx, cnt);
-if (System.currentTimeMillis() - msx > 50) {
-    int xx = 4; //qqqqqq
-    if (xx == 0) {
-        for (int i=0; i<99; i++) {
-            msx = System.currentTimeMillis();
-            HashMap hmx = new HashMap();
-            ConcurrentHashMap hmz = new ConcurrentHashMap();
-            OACascade cx = new OACascade();
-            findSiblings(alObjectKey, hub, startPosHubRoot, ppPrefix, property, linkInfo, mainObject, hmx, hmz, max, cx, msx, cnt);
-            long lx = System.currentTimeMillis() - msx;
-            if (lx == 0) break;
-        }
-    }
-    
-}
+            findSiblings(alObjectKey, hub, startPosHubRoot, ppPrefix, property, linkInfo, mainObject, hmTypeOneObjKey, hmIgnore, max, cascade, msStarted);
             if (alObjectKey.size() >= max) break;
 
             long lx = (System.currentTimeMillis()-msStarted);
@@ -287,8 +265,8 @@ if (System.currentTimeMillis() - msx > 50) {
             final ConcurrentHashMap<Integer, Boolean> hmIgnore,  // for all threads
             final int max,
             final OACascade cascade,
-            final long msStarted,
-            final int cnt) 
+            final long msStarted
+            ) 
     {
         
         final String property = origProperty.toUpperCase();
