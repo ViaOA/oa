@@ -31,9 +31,11 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     */
     public OATextField() {
         control = new OATextFieldController();
+        setDisabledTextColor(Color.gray);
     }
     public OATextField(TextFieldController control) {
         this.control = control;
+        setDisabledTextColor(Color.gray);
     }
 
     /**
@@ -42,6 +44,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     */
     public OATextField(Hub hub, String propertyPath) {
         control = new OATextFieldController(hub, propertyPath);
+        setDisabledTextColor(Color.gray);
     }
 
     /**
@@ -52,6 +55,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     public OATextField(Hub hub, String propertyPath, int cols) {
         super(cols);
         control = new OATextFieldController(hub, propertyPath);
+        setDisabledTextColor(Color.gray);
     }
 
     /**
@@ -60,6 +64,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     */
     public OATextField(OAObject hubObject, String propertyPath) {
         control = new OATextFieldController(hubObject, propertyPath);
+        setDisabledTextColor(Color.gray);
     }
 
     /**
@@ -70,6 +75,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     public OATextField(OAObject hubObject, String propertyPath, int cols) {
         super(cols);
         control = new OATextFieldController(hubObject, propertyPath);
+        setDisabledTextColor(Color.gray);
     }
 
     public TextFieldController getController() {
