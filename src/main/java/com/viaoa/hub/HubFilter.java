@@ -713,6 +713,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
                 if (objx != null) {
                     objx = getObject((T)objx);
                     if (objx != null && !hub.contains(objx)) {
+                        if (aiInitializeCount.get() != cnt) {
+                            return false;
+                        }
                         addObject((T)objx, true);
                     }
                 }
@@ -727,6 +730,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             T obj = hubMaster.getAO();
             if (obj != null && !hub.contains(obj)) {
                 obj = null;
+            }
+            if (aiInitializeCount.get() != cnt) {
+                return false;
             }
             hub.setAO(obj);
         }

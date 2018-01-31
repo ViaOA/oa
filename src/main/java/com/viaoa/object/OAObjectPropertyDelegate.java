@@ -165,8 +165,8 @@ public class OAObjectPropertyDelegate {
         }
         if (bFirePropertyChange) oaObj.firePropertyChange(name, value, null);
     }
-    public static void removePropertyIfNull(OAObject oaObj, String name, boolean bFirePropertyChange) {
-        if (oaObj.properties == null || name == null) return;
+    public static boolean removePropertyIfNull(OAObject oaObj, String name, boolean bFirePropertyChange) {
+        if (oaObj.properties == null || name == null) return false;
         Object value = null;
         boolean bResize = false;
         synchronized (oaObj) {
@@ -174,7 +174,7 @@ public class OAObjectPropertyDelegate {
                 if (oaObj.properties[i] == null) bResize = true;
                 else if (name.equalsIgnoreCase((String)oaObj.properties[i])) {
                     value = oaObj.properties[i+1];
-                    if (value != null) return;
+                    if (value != null) return false;
                     
                     oaObj.properties[i] = null;
                     oaObj.properties[i+1] = null;
@@ -184,6 +184,7 @@ public class OAObjectPropertyDelegate {
             }
         }
         if (bFirePropertyChange) oaObj.firePropertyChange(name, value, null);
+        return true;
     }
     
     private static void resizeProperties(OAObject oaObj) {
@@ -462,8 +463,8 @@ public class OAObjectPropertyDelegate {
             if (lock.thread == Thread.currentThread()) return bCheckIfThisThread;
             if (!bWaitIfNeeded) return false;
             for (int i=0; ;i++) {
-                if (i > 100) {
-                    LOG.log(Level.WARNING, "wait time exceeded for lock, obj="+oaObj+", prop="+name+", will continue", new Exception("fyi: wait time exceeded, will continue"));
+                if (i >= 50) {
+                    LOG.log(Level.WARNING, "wait time exceeded for lock, obj="+oaObj+", prop="+name+", Thread="+Thread.currentThread().getName()+", will continue", new Exception("fyi: wait time exceeded, will continue"));
                     return false;  // bail out, ouch
                 }
                 if (i == 0) {
@@ -472,10 +473,11 @@ public class OAObjectPropertyDelegate {
                 if (lock.done) break;
                 lock.hasWait = true;
                 try {
-//qqqqqqqqqqqqqqqq
+/*qqqqqqqqqqqqqqqq
 if (OAObject.getDebugMode()) {                    
-//    System.out.println("OAObjectPropertyDelegate._setPropertyLock(..), thread="+Thread.currentThread()+" is waiting on "+oaObj+", prop="+name);
+    System.out.println("OAObjectPropertyDelegate._setPropertyLock(..), thread="+Thread.currentThread()+" is waiting on "+oaObj+", prop="+name);
 }
+*/
                     lock.wait(100); 
                 }
                 catch (Exception e) {

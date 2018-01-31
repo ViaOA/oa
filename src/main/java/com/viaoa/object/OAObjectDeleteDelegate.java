@@ -89,13 +89,16 @@ public class OAObjectDeleteDelegate {
     	        }
             }
             
-	        // 20120702 if m2m and nullHub, then need to find any hub that is not in the getHubs()
+	        // 20120702 if m2m and private, then need to find any hub that is not in the getHubs()
 	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
 	        for (OALinkInfo li : oi.getLinkInfos()) {
 	            if (!li.getPrivateMethod()) continue;
+                if (li.getType() != OALinkInfo.TYPE_MANY) continue;
 	            
-	            final OALinkInfo rev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+	            final OALinkInfo rev = li.getReverseLinkInfo();
 	            if (rev == null) continue;
+	            if (rev.getType() != OALinkInfo.TYPE_MANY) continue;
+	            
 	            OAObjectCacheDelegate.callback(new OACallback() {
                     @Override
                     public boolean updateObject(Object obj) {
@@ -108,6 +111,34 @@ public class OAObjectDeleteDelegate {
                     }
                 }, li.getToClass());
 	        }
+
+	        // 20180130
+	        // M2O where M is private
+            for (final OALinkInfo li : oi.getLinkInfos()) {
+                if (!li.getPrivateMethod()) continue;
+                
+                final OALinkInfo rev = li.getReverseLinkInfo();
+                if (rev == null) continue;
+                if (rev.getType() != OALinkInfo.TYPE_ONE) continue;
+                
+                OAObjectCacheDelegate.callback(new OACallback() {
+                    @Override
+                    public boolean updateObject(Object obj) {
+                        Object objx = OAObjectPropertyDelegate.getProperty((OAObject) obj, li.getName(), false, false);
+                        if (objx instanceof OAObjectKey) {
+                            if (!objx.equals(oaObj.getObjectKey())) return true;
+                            if (OAObjectPropertyDelegate.removePropertyIfNull((OAObject) obj, rev.getName(), false)) {
+                                return true;
+                            }
+                        }
+                        else {
+                            if (objx != oaObj) return true;
+                        }
+                        ((OAObject) obj).setProperty(rev.getName(), null);
+                        return true;
+                    }
+                }, li.getToClass());
+            }
 	        
 	        oaObj.setChanged(false);
 	        OAObjectDelegate.setNew(oaObj, true);
@@ -235,7 +266,7 @@ public class OAObjectDeleteDelegate {
 		        	}
 		        	continue;
 		        }
-		        // else Many ..
+		        // else liRev=Many ..
 		        if (!li.getPrivateMethod()) continue;
 
                 //  it uses a LinkTable. Need to remove from liRev Hub and remove from link table

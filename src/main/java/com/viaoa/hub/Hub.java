@@ -15,6 +15,7 @@ import java.io.*;
 import java.lang.reflect.*;
 
 import com.viaoa.sync.OASyncDelegate;
+import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.util.*;
 import com.viaoa.ds.*;
 import com.viaoa.object.*;
@@ -898,7 +899,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public void add(TYPE obj) {
         HubAddRemoveDelegate.add(this, obj);
     }
-
+    
     /**
      * Flag to know if add/remove are enabled
      */
@@ -2207,6 +2208,13 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     }
     public boolean isLoading() {
         return OAThreadLocalDelegate.isLoading();
+    }
+
+    /**
+     * notifies clients that hub has changed, and should be retrieved from server.
+     */
+    public void sendRefresh() {
+        HubCSDelegate.sendRefresh(this);
     }
     
     // public transient boolean DEBUG; // for debugging

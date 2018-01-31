@@ -396,27 +396,9 @@ public class HubAddRemoveDelegate {
         finally {
             if (!bIsLoading) OAThreadLocalDelegate.unlock(thisHub);
         }
-//qqqqqqqqqqqqqqqqqqqqqqqqqqq
-if (!b && !thisHub.data.vector.contains(obj)) {
-    long ts = System.currentTimeMillis();
-    if (ts  > msLAST+ 5000)  {
-        msLAST = ts;
-        
-    if (obj.getClass().getSimpleName().equals("Employee")) {
-        if (thisHub.getMasterObject() != null && thisHub.getMasterObject().getClass().getSimpleName().equals("Location")) {
-
-            String s = thisHub.data.vector.contains(obj) ? "Object is in Vector" : "not in vector";
-            s += ", " + (OAObjectHubDelegate.isAlreadyInHub((OAObject) obj, thisHub) ? "IN obj.hubs" : "NOT in obj.hubs");
-            
-    LOG.log(Level.WARNING, "VINCE qqqqqqqqqqqqqqqqqqqqqq", new Exception(s));
-        }
-    }
-    }
-}
-        
         if (b) _afterAdd(thisHub, obj);
     }
-private static long msLAST;    
+    
     private static boolean _add(final Hub thisHub, final Object obj, final boolean bIsLoading) {
         if (obj instanceof OAObjectKey) {
             // store OAObjectKey.  Real object will be retrieved when it is accessed
@@ -504,7 +486,6 @@ private static long msLAST;
         return true;
     }
 
-    
     protected static void sortMove(final Hub thisHub, final Object obj) {
         for (int i=0; i<5; i++) {
             try {
@@ -784,6 +765,20 @@ private static long msLAST;
      */
     public static void unsafeAddAll(Hub hub, List list) {
         hub.data.vector.addAll(list);
+    }
+    
+    public static void refresh(Hub hub, Hub hubNew) {
+        for (OAObject objx : (Hub<OAObject>) hub) {
+            OAObjectHubDelegate.removeHub(objx, hub, false);
+        }
+        hub.data.vector.clear();
+        hub.dataa.clear();
+
+        for (OAObject objx : (Hub<OAObject>) hubNew) {
+            hub.data.vector.add(objx);
+            OAObjectHubDelegate.addHub(objx, hub);
+        }
+        HubEventDelegate.fireOnNewListEvent(hub, true);
     }
 }
 

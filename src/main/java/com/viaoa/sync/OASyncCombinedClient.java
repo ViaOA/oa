@@ -313,6 +313,23 @@ public class OASyncCombinedClient {
                     public boolean addNewToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, OAObjectSerializer obj) {
                         return addToHub(masterObjectClass, masterObjectKey, hubPropertyName, obj.getObject());
                     }
+
+                    @Override
+                    public void refresh(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName) {
+                        ClientSession cs = getClientSession(masterObjectClass, masterObjectKey);
+                        if (cs == null) return;
+                        
+                        Mapper m = cs.hmClassToMapper.get(masterObjectClass);
+                        if (m == null) return;
+                        
+                        OAObjectKey k1 = m.hmServerToClient.get(masterObjectKey);
+                        if (k1 == null) return;
+
+                        RemoteSyncInterface rs = getRemoteSyncInterface(cs);
+                        if (rs == null) return;
+                        
+                        rs.refresh(masterObjectClass, masterObjectKey, hubPropertyName);
+                    }
                 };
                 return remoteSync;
             }
@@ -427,6 +444,18 @@ public class OASyncCombinedClient {
                     @Override
                     public boolean addNewToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, OAObjectSerializer obj) {
                         return addToHub(masterObjectClass, masterObjectKey, hubPropertyName, obj.getObject());
+                    }
+                    @Override
+                    public void refresh(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName) {
+                        OAObjectKey k1 = getClientToServerKey(masterObjectClass, masterObjectKey);
+                        if (k1 == null) return;
+
+                        try {
+                            syncClient.getRemoteSync().refresh(masterObjectClass, k1, hubPropertyName);
+                        }
+                        catch (Exception e) {
+                            LOG.log(Level.WARNING, "", e);
+                        }
                     }
                 };
                 return remoteSync;

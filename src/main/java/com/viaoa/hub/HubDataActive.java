@@ -32,5 +32,8 @@ class HubDataActive implements java.io.Serializable {
 	public void clear(boolean eof) {
 	    activeObject = null;
 	}
+    public void clear() {
+        activeObject = null;
+    }
 }
 

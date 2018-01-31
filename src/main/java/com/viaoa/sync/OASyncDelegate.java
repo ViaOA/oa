@@ -11,6 +11,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubDetailDelegate;
+import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAThreadLocalDelegate;
@@ -390,6 +392,7 @@ public class OASyncDelegate {
             }
         }
     }
+
 
     // ========= RemoteSyncInterface ============
     public static RemoteSyncInterface getRemoteSync() {

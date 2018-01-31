@@ -27,7 +27,6 @@ public interface RemoteSyncInterface {
     boolean addToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object obj);
     boolean addNewToHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, OAObjectSerializer obj);
     
-    
     boolean insertInHub(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName, Object obj, int pos);
     
     boolean removeFromHub(Class objectClass, OAObjectKey objectKey, String hubPropertyName, Class objectClassX, OAObjectKey objectKeyX);   
@@ -37,6 +36,11 @@ public interface RemoteSyncInterface {
     boolean sort(Class objectClass, OAObjectKey objectKey, String hubPropertyName, String propertyPaths, boolean bAscending, Comparator comp);
 
     void clearHubChanges(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName);
+
+    /**
+     * Used when the server Hub.sendRefresh() is called, so that clients can replace with new collection.
+     */
+    void refresh(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName);
     
     // moved to remoteClient so that it will be performed on the server
     // boolean deleteAll(Class objectClass, OAObjectKey objectKey, String hubPropertyName);

@@ -291,7 +291,7 @@ public class OAObjectCSDelegate {
 
     
 	// used by OAObjectReflectDelegate.getReferenceHub()
-	protected static Hub getServerReferenceHub(OAObject oaObj, String linkPropertyName) {
+	public static Hub getServerReferenceHub(OAObject oaObj, String linkPropertyName) {
         LOG.finer("object="+oaObj+", linkProperyName="+linkPropertyName);
         if (oaObj == null || linkPropertyName == null) return null;
     	Hub hub = null;

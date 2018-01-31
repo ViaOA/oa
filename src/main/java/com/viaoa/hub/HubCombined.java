@@ -30,6 +30,7 @@ public class HubCombined<T> {
 
     protected Hub<T> hubMaster;
     protected ArrayList<Hub<T>> alHub;
+    protected ArrayList<HubListener<T>> alHubListener;
     
     public HubCombined(Hub<T> hubMaster, Hub<T> ... hubs) {
         this.hubMaster = hubMaster;
@@ -39,11 +40,20 @@ public class HubCombined<T> {
         }
     }
     
+    public void close() {
+        int i = 0;
+        for (Hub h : alHub) {
+            h.removeHubListener( alHubListener.get(i++));
+        }
+        alHub.clear();
+        alHubListener.clear();
+    }
+    
     public void add(Hub<T> hub) {
         if (alHub == null) alHub = new ArrayList<Hub<T>>();
         alHub.add(hub);
 
-        hub.addHubListener(new HubListenerAdapter<T>() {
+        HubListener hl = new HubListenerAdapter<T>() {
             @Override
             public void afterAdd(HubEvent<T> e) {
                 hubMaster.add(e.getObject());
@@ -74,7 +84,17 @@ public class HubCombined<T> {
                     if (!b) hubMaster.remove(obj);
                 }
             }
-        });
+            @Override
+            public void onNewList(HubEvent<T> e) {
+                beforeRemoveAll(e);
+                for (Object obj : e.getHub()) {
+                    hubMaster.add((T) obj);
+                }
+            }
+        };
+        hub.addHubListener(hl);
+        if (alHubListener == null) alHubListener = new ArrayList<HubListener<T>>();
+        alHubListener.add(hl);
         
         for (T obj : hub) {
             hubMaster.add(obj);

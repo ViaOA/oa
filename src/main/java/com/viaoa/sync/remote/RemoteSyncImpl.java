@@ -16,13 +16,17 @@ import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubAddRemoveDelegate;
 import com.viaoa.hub.HubDataDelegate;
+import com.viaoa.hub.HubEventDelegate;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectCSDelegate;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectDelegate;
+import com.viaoa.object.OAObjectHubDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectSerializer;
+import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
 
 /**
@@ -214,6 +218,28 @@ public class RemoteSyncImpl implements RemoteSyncInterface {
         if (h == null) return;
 
         HubDataDelegate.clearHubChanges(h);
+    }
+
+    /**
+     * Used when the server Hub.sendRefresh() is called, so that clients can replace with new collection.
+     */
+    @Override
+    public void refresh(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName) {
+        if (OASync.isServer()) return;
+
+        OAObject obj = getObject(masterObjectClass, masterObjectKey);
+        if (obj == null) {
+            return;
+        }
+
+        Hub hub = getHub(obj, hubPropertyName);
+        if (hub == null) {
+            return;
+        }
+        
+        Hub<OAObject> hubNew = OAObjectCSDelegate.getServerReferenceHub(obj, hubPropertyName);
+
+        HubAddRemoveDelegate.refresh(hub, hubNew);
     }
 
 }

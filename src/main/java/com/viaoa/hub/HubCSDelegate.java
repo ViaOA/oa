@@ -370,5 +370,17 @@ public class HubCSDelegate {
         }
         return true;
     }   
+
+    public static void sendRefresh(Hub thisHub) {
+        if (thisHub == null) return;
+        RemoteSyncInterface rsi = OASyncDelegate.getRemoteSync();
+        if (rsi == null) return;
+        OAObject obj = thisHub.getMasterObject();
+        if (obj == null) return;
+        OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterToDetail(thisHub);
+        if (li == null) return;
+        rsi.refresh(obj.getClass(), obj.getObjectKey(), li.getName());
+    }
+
 }
 

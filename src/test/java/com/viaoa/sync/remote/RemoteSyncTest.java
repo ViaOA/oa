@@ -87,6 +87,11 @@ public class RemoteSyncTest extends OAUnitTest {
             @Override
             public void clearHubChanges(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName) {
             }
+            @Override
+            public void refresh(Class masterObjectClass, OAObjectKey masterObjectKey, String hubPropertyName) {
+                // TODO Auto-generated method stub
+                
+            }
         };
         return rsi;
     }
