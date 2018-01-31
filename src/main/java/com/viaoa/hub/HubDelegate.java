@@ -434,6 +434,13 @@ public class HubDelegate {
         return thisHub.data.getAutoSequence();
     }
     
+    public static void resequence(Hub thisHub) {
+        if (thisHub.data.getAutoSequence() != null) {
+            thisHub.data.getAutoSequence().resequence();
+        }
+    }
+    
+    
     /**
 	    Makes sure that for each object in a hubMaster, there exists an object in this hub where property
 	    is equal to the hubMaster object.

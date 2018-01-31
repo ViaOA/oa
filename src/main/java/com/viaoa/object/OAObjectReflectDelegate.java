@@ -565,7 +565,7 @@ public class OAObjectReflectDelegate {
                 
                 if (bSequence) {
                     if (HubDelegate.getAutoSequence(hub) == null) {
-                        hub.setAutoSequence(seqProperty); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
+                        hub.setAutoSequence(seqProperty, 0, false); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
                     }
                 }
                 else if (OAString.notEmpty(sortOrder) && HubSortDelegate.getSortListener(hub) == null){
@@ -936,7 +936,7 @@ public class OAObjectReflectDelegate {
                             // need to loop thru and set Hubs for siblings
                             for (Entry<OAObjectKey, Hub> entry : hmSiblingHub.entrySet()) {
                                 Hub hx = entry.getValue();
-                                hx.setAutoSequence(seqProperty); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
+                                hx.setAutoSequence(seqProperty, 0, false); // server will keep autoSequence property updated - clients dont need autoSeq (server side managed)
                             }
                         }
                     }

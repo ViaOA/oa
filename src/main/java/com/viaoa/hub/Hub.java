@@ -1484,6 +1484,10 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         HubDelegate.setAutoSequence(this, property, startNumber, true);
     }
 
+    public void resequence() {
+        HubDelegate.resequence(this);
+    }
+    
     /**
      * Used to update a property in each object to equal/store the position
      * within this Hub.

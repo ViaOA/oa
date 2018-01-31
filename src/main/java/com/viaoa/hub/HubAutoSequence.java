@@ -11,6 +11,7 @@
 package com.viaoa.hub;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.lang.reflect.*;
 
@@ -166,15 +167,20 @@ public class HubAutoSequence extends HubListenerAdapter implements java.io.Seria
         resequence(0);
     }
         
-    private volatile int resequenceCnt;  // used instead of synchronization
+    private final AtomicInteger aiResequenceCnt = new AtomicInteger();  // used instead of synchronization
+    
+    public void resequence() {
+        resequence(0);
+    }
+    
     protected void resequence(int startPos) {
         if (hub.isDeletingAll()) return;
-        int cnt = (++resequenceCnt);
+        int cnt = aiResequenceCnt.incrementAndGet();
         int x = hub.getSize();  // only seq loaded objects
         for (int i=startPos; i<x; i++) {
             Object obj = hub.elementAt(i);
             if (obj == null) break;
-            if (cnt != resequenceCnt) break;
+            if (cnt != aiResequenceCnt.get()) break;
             updateSequence(obj, i+startNumber);
         }
     }
