@@ -10,15 +10,9 @@
 */
 package com.viaoa.object;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import com.viaoa.util.*;
+import java.util.*;
+import java.util.logging.*;
 import com.viaoa.hub.*;
-
-// 2007/10/31 qqqqqqqqqq NOTE: Have DataSource use  OAObjectReflectDelegate.getRawReference(oaObj, prop) to get reference properties ..............
 
 public class OAObjectSaveDelegate {
     private static Logger LOG = Logger.getLogger(OAObjectSaveDelegate.class.getName());
@@ -62,16 +56,29 @@ public class OAObjectSaveDelegate {
                 }
             }
             
-            for (int i=0; i<2; i++) {
-                if (OAObjectSaveDelegate.onSave(oaObj)) break;
+            for (int i=0; i<4; i++) {
+                try {
+                    if (OAObjectSaveDelegate.onSave(oaObj)) {
+                        if (i > 0) {
+                            String msg = "Retry save successful, class="+oaObj.getClass().getSimpleName()+", key="+oaObj.getObjectKey()+", try="+(i+1);
+                            LOG.log(Level.WARNING, msg);
+                        }
+                        break;
+                    }
+                }
+                catch (Exception e) {
+                    String msg = "error saving, class="+oaObj.getClass().getSimpleName()+", key="+oaObj.getObjectKey()+", isNew="+oaObj.isNew()+", try="+(i+1)+" of 4";
+                    if (i == 3) msg += " ALERT: possible data loss";
+                    LOG.log(Level.WARNING, msg, e);
+                    oaObj.setChanged(true);
+                    OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
+                    continue;
+                }
                 
                 // try again, object might have been changed in the process
-                String msg = "onSave returned false, class="+oaObj.getClass().getSimpleName()+", key="+oaObj.getObjectKey()+", isNew="+oaObj.isNew();
-                if (i == 0) msg += ", will try again now";
-                else msg += ", will try again the next time save is called";
+                String msg = "onSave returned false, class="+oaObj.getClass().getSimpleName()+", key="+oaObj.getObjectKey()+", isNew="+oaObj.isNew() + ", will try again the next time save is called";
                 LOG.warning(msg);
-                
-                OAObjectSaveDelegate._save(oaObj, true, iCascadeRule, cascade); // "ONE" relationships
+                break;
             }
             
             if (hubs != null) {
@@ -179,7 +186,7 @@ public class OAObjectSaveDelegate {
     			    			    }
     			    		    }
     			    		    OAObjectDelegate.setNew(oaRef, false);
-    			    		    if (!oaRef.changedFlag) oaRef.changedFlag = true;  // so that it will be save/updated
+    			    		    oaRef.changedFlag = true;  // so that it will be save/updated
 
                                 synchronized (hmSaveNewLock) {
                                     hmSaveNewLock.remove(new Integer(oaRef.guid));
@@ -270,25 +277,7 @@ public class OAObjectSaveDelegate {
             oaObj.setChanged(false);
 	        
             if (oi.getUseDataSource()) {
-                for (int i=0; i<2; i++) {
-                    try {
-                        OAObjectDSDelegate.save(oaObj);
-                        break;
-                    }
-                    catch (Exception e) {
-                        String msg = "error saving, class="+oaObj.getClass().getSimpleName()+", key="+oaObj.getObjectKey()+", isNew="+oaObj.isNew()+", wasNew="+bIsNew+", will retry="+(i==0);
-                        if (i > 0 || !bIsNew) {
-                            throw new RuntimeException(msg, e);
-                        }
-                        
-                        LOG.log(Level.WARNING, msg, e);
-                        oaObj.setChanged(true);
-                        if (bIsNew) {
-                            OAObjectDelegate.setNew(oaObj, false);
-                            bIsNew = false;
-                        }
-                    }
-                }
+                OAObjectDSDelegate.save(oaObj);
             }
             OAObjectLogDelegate.logToXmlFile(oaObj, true);
             if (bIsNew) {
@@ -302,10 +291,6 @@ public class OAObjectSaveDelegate {
                     hmSaveNewLock.notifyAll();           
 	            }
 	        }
-	        //was, before 5/4:
-	        // 20130404 moved to always mark as saved, so that an error can not keep other objects from saving later
-	        //oaObj.setDeleted(false);  // in case it was deleted, and then re-saved
-	        //oaObj.setChanged(false);
 	    }
         oaObj.afterSave();
         return true;
