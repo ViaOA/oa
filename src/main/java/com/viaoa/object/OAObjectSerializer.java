@@ -490,6 +490,11 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         }
         stream.writeInt(totalObjectsWritten);
 
+        if (totalObjectsWritten > 120000 || totalObjectsWritten < 0) {
+            msg = " ALERT, totalObjectsWritten is wrong";
+            LOG.warning(msg);
+        }
+        
         wcnter++;
         LOG.fine(wcnter+") "+msg);
 
@@ -523,7 +528,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
         }
     }
 
-    public static boolean bReadId = true; // 20171218, set to false to read older data 
+    public static boolean bReadId = true; // 20171218, set to false to read older data  (ex: unit test binary file) 
     
 
     private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
@@ -603,6 +608,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
                     extraObject==null?"null":extraObject.getClass().getSimpleName(),
                     totalObjectsWritten, (ts2-ts));
     	}
+//qqqqqqqqqqqqqqqqqqqqqqqqq    	
         if (totalObjectsWritten > 120000 || totalObjectsWritten < 0) {
             msg = " ALERT, totalObjectsWritten is wrong";
             LOG.warning(rcnter+") "+msg);
