@@ -228,7 +228,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
     public ArrayList<T> find(Hub<F> hubRoot, F objectLastUsed) {
         if (!bEnableRecursiveRootWasCalled) { 
             if (hubRoot != null) {
-                OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterToDetail(hubRoot);
+                OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterObjectToDetail(hubRoot);
                 if (li != null && li.getRecursive()) {
                     bEnableRecursiveRoot = true;
                 }
@@ -254,6 +254,11 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         return al;
     }
     
+    private int rootHubPos;
+    public int getRootHubPos() {
+        return this.rootHubPos;
+    }
+    
     /**
      * Given the propertyPath, find all of the objects from a Hub,
      * starting after objectLastFound
@@ -263,16 +268,16 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         if (bEnableStack) stack = new StackValue[5];
 
         if (hubRoot == null) return alFound;
-
+        
+        rootHubPos = -1;
         bStop = false;
         setup(hubRoot.getObjectClass());
         
-        int pos;
-        if (objectLastUsed == null) pos = 0;
-        else pos = hubRoot.getPos(objectLastUsed) + 1;
+        if (objectLastUsed == null) rootHubPos = 0;
+        else rootHubPos = hubRoot.getPos(objectLastUsed) + 1;
         
-        for ( ; ;pos++) {
-            F objectRoot = hubRoot.getAt(pos);
+        for ( ; ;rootHubPos++) {
+            F objectRoot = hubRoot.getAt(rootHubPos);
             if (objectRoot == null) break;
             stackPos = 0;
             performFind(objectRoot);
