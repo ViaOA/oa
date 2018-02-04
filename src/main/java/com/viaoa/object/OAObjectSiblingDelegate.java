@@ -20,7 +20,7 @@ import com.viaoa.util.OAThrottle;
 public class OAObjectSiblingDelegate {
 
     private final static long MaxMs = 25; // max ms for finding
-    private final static int MaxVisit = 300;
+    private final static int MaxVisit = 350;
     
     private static final OAThrottle throttle = new OAThrottle(250);
     
@@ -141,6 +141,21 @@ public class OAObjectSiblingDelegate {
         }
         else if (getDetailHub != null) {
             hub = getDetailHub;
+            if (ppPrefix != null) {
+                OAFinder f = new OAFinder(ppPrefix) {
+                    @Override
+                    protected boolean isUsed(OAObject obj) {
+                        return obj == mainObject;
+                    }
+                };
+                f.setUseOnlyLoadedData(true);
+                if (f.findFirst(hub) == null) {
+                    objInHub = null;
+                }
+                else {
+                    objInHub = (OAObject) hub.getAt(f.getRootHubPos());
+                }
+            }
         }
         else {
             hub = findBestSiblingHub(mainObject, null);
@@ -148,7 +163,7 @@ public class OAObjectSiblingDelegate {
         }
 
         int max = maxAmount;
-        if (hub == null) {
+        if (hub == null || getDetailHub == hub) {
         }
         else if (ppReverse != null) {
         }
@@ -184,17 +199,18 @@ public class OAObjectSiblingDelegate {
             findSiblings(alObjectKey, hub, startPosHubRoot, ppPrefix, property, linkInfo, mainObject, hmTypeOneObjKey, hmIgnore, max, cascade, msStarted);
             if (alObjectKey.size() >= max) break;
 
-            long lx = (System.currentTimeMillis()-msStarted);
-            if (lx > MaxMs) { //  && !OAObject.getDebugMode()) {
-                break;
+            if (msStarted > 0) {
+                long lx = (System.currentTimeMillis()-msStarted);
+                if (lx > MaxMs) { //  && !OAObject.getDebugMode()) {
+                    break;
+                }
             }
-
             if (cnt > 3) break;
             if (cascade.getVisitCount() > MaxVisit) break;
             
             // find next hub to use
             
-            lix = HubDetailDelegate.getLinkInfoFromMasterToDetail(hub);
+            lix = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(hub);
             if (lix == null || lix.getToClass() == null) break;  // could be using GroupBy as hub
             
             
@@ -326,9 +342,11 @@ public class OAObjectSiblingDelegate {
             @Override
             protected void find(Object obj, int pos) {
                 super.find(obj, pos);
-                long lx = (System.currentTimeMillis()-msStarted);
-                if (lx > MaxMs) { // && !OAObject.getDebugMode()) {
-                    stop();
+                if (msStarted > 0) {
+                    long lx = (System.currentTimeMillis()-msStarted);
+                    if (lx > MaxMs) { // && !OAObject.getDebugMode()) {
+                        stop();
+                    }
                 }
                 if (cascade.getVisitCount() > MaxVisit) {
                     stop();
