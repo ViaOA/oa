@@ -65,6 +65,10 @@ public class HubListenerTree {
             String spp = null;
             HubListenerTreeNode tn = this;
             for ( ;tn != null; ) {
+                if (tn.liReverse == null || tn.liReverse.getReverseLinkInfo() == null) {
+                    spp = null;
+                    break;
+                }
                 if (tn.property != null) {
                     if (spp == null) spp = tn.property;
                     else spp = tn.property + "." + spp;
@@ -80,8 +84,14 @@ public class HubListenerTree {
                     bUseOrig = false;
                     for (OALinkInfo li : lis) {
 if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if this is a bug or not, just log it for now 20180115
-    LOG.log(Level.WARNING, "Link does not have a reverseLinkInfo, link.toClass="+li.getToClass()+", name="+li.getName()+", pp="+spp+", rootHub="+HubListenerTree.this.root.hub, new Exception("Found HubListenerTree issue qqqqqq"));
-    continue;
+    // LOG.log(Level.FINE, "Link does not have a reverseLinkInfo, link.toClass="+li.getToClass()+", name="+li.getName()+", pp="+spp+", rootHub="+HubListenerTree.this.root.hub, new Exception("Found HubListenerTree issue qqqqqq"));
+    bUseOrig = true;
+    break;
+    /* 20180201 found this one, looks to be ok:    can remove this later, testing for now
+    Feb 01, 2018 7:08:09 PM com.tmgsc.hifive.control.server.ServerController handleException
+    WARNING: Remote Error: From client, connection=1 (admin  (Admin Admin))client exception: Link does not have a reverseLinkInfo, link.toClass=class com.viaoa.object.OAObject, name=B, pp=B, rootHub=Hub.OALeftJoin,csize:17
+    java.lang.Exception: Found HubListenerTree issue qqqqqq
+     */
 }
                         if (li.getReverseLinkInfo().getType() == OALinkInfo.TYPE_ONE) {
                             bUseOrig = true;

@@ -91,7 +91,7 @@ public class HubAODelegate {
             liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
 	    }
 	    else {
-            liRev = HubDetailDelegate.getLinkInfoFromMasterToDetail(thisHub);
+            liRev = HubDetailDelegate.getLinkInfoFromMasterObjectToDetail(thisHub);
 	    }
 	    if (liRev != null) {
             if (liRev.getType() == li.ONE && bUpdateLink) {  // 20171117

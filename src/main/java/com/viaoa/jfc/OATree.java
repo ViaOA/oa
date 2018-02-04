@@ -1763,7 +1763,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                                 liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
                             }
                             else {
-                                liRev = HubDetailDelegate.getLinkInfoFromMasterToDetail(tndUse.node.def.updateHub);
+                                liRev = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(tndUse.node.def.updateHub);
                             }
                             if (liRev != null && liRev.getType() == li.ONE) {
                                 b = false;
@@ -1847,7 +1847,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                             liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
                         }
                         else {
-                            liRev = HubDetailDelegate.getLinkInfoFromMasterToDetail(hx);
+                            liRev = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(hx);
                         }
                         if (liRev != null && liRev.getType() == li.ONE) {
                             b = false;

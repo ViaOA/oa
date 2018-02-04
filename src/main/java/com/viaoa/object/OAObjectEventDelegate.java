@@ -131,7 +131,7 @@ public class OAObjectEventDelegate {
             if (!oix.getLookup() && !oix.getPreSelect()) {
                 String s = "FYI (no exception), reference is being set to null, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj+", old value="+oldObj;
                 RuntimeException e = new RuntimeException(s);
-                LOG.log(Level.WARNING, s, e);
+                LOG.log(Level.FINE, s, e);
             }
         }
     }

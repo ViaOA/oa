@@ -377,7 +377,7 @@ public class HubCSDelegate {
         if (rsi == null) return;
         OAObject obj = thisHub.getMasterObject();
         if (obj == null) return;
-        OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterToDetail(thisHub);
+        OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterObjectToDetail(thisHub);
         if (li == null) return;
         rsi.refresh(obj.getClass(), obj.getObjectKey(), li.getName());
     }

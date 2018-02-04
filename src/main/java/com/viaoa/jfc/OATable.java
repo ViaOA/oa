@@ -2058,6 +2058,26 @@ if (!getKeepSorted()) hub.cancelSort();
         columnModel.getSelectionModel().setLeadSelectionIndex(-1);
     }
 
+    protected void myClearSelectionAndLeadAnchor1() {
+        for (int i=0; i<3; i++) {
+            try {
+                selectionModel.setValueIsAdjusting(true);
+                columnModel.getSelectionModel().setValueIsAdjusting(true);
+
+                _myClearSelectionAndLeadAnchor();
+                break;
+            }
+            catch (Exception e) {
+                // no-op
+            }
+        }
+    }
+    protected void myClearSelectionAndLeadAnchor2() {
+        selectionModel.setValueIsAdjusting(false);
+        columnModel.getSelectionModel().setValueIsAdjusting(false);
+    }
+    
+    
     // 20150424
     private int lastMouseDragRow = -1;
     private boolean bIsMouseDragging;
@@ -3410,9 +3430,10 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
 
             public @Override void onNewList(HubEvent e) {
                 if (getRunningValueChanged()) return;
-
-                table.myClearSelectionAndLeadAnchor();
+      
+                table.myClearSelectionAndLeadAnchor1();
                 rebuildListSelectionModel();
+                table.myClearSelectionAndLeadAnchor2();
                 if (table.chkSelection != null) table.repaint(100);
             }
         };

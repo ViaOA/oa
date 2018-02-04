@@ -986,18 +986,71 @@ public class HubDetailDelegate {
         }
         return null;
     }
-    public static OALinkInfo getLinkInfoFromMasterToDetail(Hub thisDetailHub) {
+
+    
+    // 20180204 reworked to check for cases where a Hub is a masterHub for a detail Hub, and it is using a shared Hub.
+    //    ex: hub that uses a HierarchyFinder,  ex: Employee.getHierAwardTypes()
+    //        Employee.hubHierAwardTypes.datam.masterObject could be Program (not thisEmployee)
+    //        Employee.hubHierAwardTypes.datam.liDetailToMaster could be Program.awardTypes
+    public static OALinkInfo getLinkInfoFromMasterHubToDetail(Hub thisDetailHub) {
         Hub h = HubShareDelegate.getMainSharedHub(thisDetailHub);
         
         if (h == null) {
             h = getHubWithMasterObject(thisDetailHub);
             if (h == null) return null;
         }
+        
+        thisDetailHub = h;
+
+        Hub hubMaster = thisDetailHub.datam.getMasterHub();
+        OAObject master = thisDetailHub.datam.getMasterObject();
+
+        if (thisDetailHub.datam.liDetailToMaster != null) {
+            OALinkInfo li = thisDetailHub.datam.liDetailToMaster.getReverseLinkInfo();
+            if (li != null) {
+                if (master == null) return li;
+                if (hubMaster == null) return li;
+                
+                if (hubMaster.getObjectClass().equals(master.getClass())) return li;                
+            }
+        }
+        else if (master != null) {
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(master.getClass());
+            OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, master, thisDetailHub);
+            if (li != null) {
+                return li;
+            }
+        }
+        
+        // see if it can be found using detailHub info
+        if (hubMaster == null) return null;
+        int x = hubMaster.datau.getVecHubDetail() == null ? 0 : hubMaster.datau.getVecHubDetail().size();
+        for (int i=0; i<x; i++) {
+            HubDetail hd = (HubDetail) hubMaster.datau.getVecHubDetail().elementAt(i);
+            if (hd.hubDetail == thisDetailHub) {
+                OALinkInfo li = hd.liMasterToDetail;
+                if (li != null) {
+                    return li;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static OALinkInfo getLinkInfoFromMasterObjectToDetail(Hub thisDetailHub) {
+        Hub h = HubShareDelegate.getMainSharedHub(thisDetailHub);
+        
+        if (h == null) {
+            h = getHubWithMasterObject(thisDetailHub);
+            if (h == null) return null;
+        }
+        
         thisDetailHub = h;
         if (thisDetailHub.datam.liDetailToMaster != null) {
             OALinkInfo li = thisDetailHub.datam.liDetailToMaster.getReverseLinkInfo();
             if (li != null) return li;
         }
+        
         OAObject master = thisDetailHub.datam.getMasterObject();
         if (master != null) {
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(master.getClass());
@@ -1007,22 +1060,24 @@ public class HubDetailDelegate {
             }
         }
         
-        // see if it can be found using detailHub info
         Hub hubMaster = thisDetailHub.datam.getMasterHub();
-        if (hubMaster != null) {
-            int x = hubMaster.datau.getVecHubDetail() == null ? 0 : hubMaster.datau.getVecHubDetail().size();
-            for (int i=0; i<x; i++) {
-                HubDetail hd = (HubDetail) hubMaster.datau.getVecHubDetail().elementAt(i);
-                if (hd.hubDetail == thisDetailHub) {
-                    OALinkInfo li = hd.liMasterToDetail;
-                    if (li != null) {
-                        return li;
-                    }
+        // see if it can be found using detailHub info
+        if (hubMaster == null) return null;
+        int x = hubMaster.datau.getVecHubDetail() == null ? 0 : hubMaster.datau.getVecHubDetail().size();
+        for (int i=0; i<x; i++) {
+            HubDetail hd = (HubDetail) hubMaster.datau.getVecHubDetail().elementAt(i);
+            if (hd.hubDetail == thisDetailHub) {
+                OALinkInfo li = hd.liMasterToDetail;
+                if (li != null) {
+                    return li;
                 }
             }
         }
         return null;
     }
+    
+    
+    
     /**
         Used for master/detail Hubs, returns the name of the property from the detail Hub to master Hub.
         <p>
