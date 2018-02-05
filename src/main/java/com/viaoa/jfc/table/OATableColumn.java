@@ -293,7 +293,15 @@ public class OATableColumn {
             obj = h.contains(obj); 
         }
         else {
-            obj = OAReflect.getPropertyValue(obj, ms);
+            final Hub getDetailHub = OAThreadLocalDelegate.getGetDetailHub();
+            final String getDetailPropertyPath = OAThreadLocalDelegate.getGetDetailPropertyPath();
+            try {
+                OAThreadLocalDelegate.setGetDetailHub(hub, path);
+                obj = OAReflect.getPropertyValue(obj, ms);
+            }
+            finally {
+                OAThreadLocalDelegate.resetGetDetailHub(getDetailHub, getDetailPropertyPath);
+            }
         }
         return obj;
     }

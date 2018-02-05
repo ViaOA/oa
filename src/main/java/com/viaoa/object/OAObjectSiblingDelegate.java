@@ -20,7 +20,6 @@ import com.viaoa.util.OAThrottle;
 public class OAObjectSiblingDelegate {
 
     private final static long MaxMs = 25; // max ms for finding
-    private final static int MaxVisit = 350;
     
     private static final OAThrottle throttle = new OAThrottle(250);
     
@@ -46,7 +45,7 @@ public class OAObjectSiblingDelegate {
         long x = (System.currentTimeMillis()-msStarted);         
         if (throttle.check() || x > (MaxMs*2)) {
             if (OAObject.getDebugMode()) {
-                System.out.println((throttle.getCheckCount())+") OAObjectSiblingDelegate ----> "+x+"  obj="+mainObject.getClass().getSimpleName()+", prop="+property+",  hmIgnore="+hmIgnore.size()+", alRemove="+keys.length);
+                System.out.println((throttle.getCheckCount())+") OAObjectSiblingDelegate ----> "+x+"  obj="+mainObject.getClass().getSimpleName()+", prop="+property+",  hmIgnore="+(hmIgnore==null?0:hmIgnore.size())+", alRemove="+keys.length);
             }
         }
         return keys;
@@ -67,14 +66,35 @@ public class OAObjectSiblingDelegate {
         if (getDetailHub != null && getDetailPropertyPath != null) {
             // see if property is in the detailPP
             OAPropertyPath pp = new OAPropertyPath(getDetailHub.getObjectClass(), getDetailPropertyPath);
+            boolean b = false;
             for (OALinkInfo li : pp.getLinkInfos()) {
                 if (property.equalsIgnoreCase(li.getName())) {
                     bValid = true;
                     break;
                 }
+                if (b) {
+                    // found mainObj, but next prop was not found
+                    b = false;
+                    OALinkInfo lix = OAObjectInfoDelegate.getLinkInfo(mainObject.getClass(), property);
+                    if (lix != null) {
+                        bValid = true;
+                        break;
+                    }
+                }
+                if (mainObject.getClass().equals(li.getToClass())) {
+                    b = true;
+                }
+                
                 if (ppPrefix == null) ppPrefix = li.getName();
                 else ppPrefix += "." + li.getName();
             }
+            if (b) {
+                OALinkInfo lix = OAObjectInfoDelegate.getLinkInfo(mainObject.getClass(), property);
+                if (lix != null) {
+                    bValid = true;
+                }
+            }
+            
             if (!bValid) {
                 // see if property is off of the detailPP
                 ppPrefix = null;
@@ -190,13 +210,14 @@ public class OAObjectSiblingDelegate {
             hsHubVisited.add(hub);
             
             int startPosHubRoot = hub.getPos(objInHub);
-            int x = max/2;
-            for (int i=0; i<cnt; i++) {
+            int x = max;
+            for (int i=0; i<=cnt; i++) {
                 x /= 2;
             }
+            x = Math.min(x, 25);
             startPosHubRoot = Math.max(0, startPosHubRoot - x);
             
-            findSiblings(alObjectKey, hub, startPosHubRoot, ppPrefix, property, linkInfo, mainObject, hmTypeOneObjKey, hmIgnore, max, cascade, msStarted);
+            findSiblings(alObjectKey, hub, startPosHubRoot, ppPrefix, property, linkInfo, mainObject, hmTypeOneObjKey, hmIgnore, max, cascade, msStarted, cnt);
             if (alObjectKey.size() >= max) break;
 
             if (msStarted > 0) {
@@ -206,7 +227,7 @@ public class OAObjectSiblingDelegate {
                 }
             }
             if (cnt > 3) break;
-            if (cascade.getVisitCount() > MaxVisit) break;
+            if (cascade.getVisitCount() > 500) break;
             
             // find next hub to use
             
@@ -281,7 +302,8 @@ public class OAObjectSiblingDelegate {
             final ConcurrentHashMap<Integer, Boolean> hmIgnore,  // for all threads
             final int max,
             final OACascade cascade,
-            final long msStarted
+            final long msStarted,
+            final int runCount
             ) 
     {
         
@@ -333,7 +355,7 @@ public class OAObjectSiblingDelegate {
                 if (alFoundObjectKey.size() >= max) {
                     stop();
                 }
-                if (cascade.getVisitCount() > MaxVisit) {
+                if (runCount > 0 && cascade.getVisitCount() > 500) {
                     stop();
                 }
 
@@ -348,7 +370,7 @@ public class OAObjectSiblingDelegate {
                         stop();
                     }
                 }
-                if (cascade.getVisitCount() > MaxVisit) {
+                if (runCount > 0 && cascade.getVisitCount() > 500) {
                     stop();
                 }
             }
