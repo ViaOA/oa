@@ -1,129 +1,156 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.viaoa</groupId>
-    <artifactId>oa</artifactId>
-    <version>3.5.36</version>
- 
-    <packaging>jar</packaging>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.viaoa</groupId>
+	<artifactId>oa</artifactId>
+	<version>3.5.39-SNAPSHOT</version>
 
-    <name>OA</name>
-    <description>
+	<packaging>jar</packaging>
+
+	<name>${project.groupId}:${project.artifactId}</name>
+
+	<description>
         Object Automation library
     </description>
 
-    <url>http://www.viaoa.com</url>
+	<url>http://www.viaoa.com</url>
+    <inceptionYear>1999</inceptionYear>
+    
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
-    <licenses>
-        <license>
-            <name>license info available soon</name>
-            <url></url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+	<scm>
+		<connection>scm:git:https://github.com/ViaOA/oa.git</connection>
+		<developerConnection>scm:git:https://github.com/ViaOA/oa.git</developerConnection>
+		<url>https://github.com/ViaOA/oa/tree/master</url>
+	</scm>
 
-    <scm>
-        <developerConnection>https://github.com/ViaOA/oa.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
+	<developers>
+		<developer>
+			<name>Vince Via</name>
+			<email>vince@viaoa.com</email>
+			<organization>Via Object Architects</organization>
+			<organizationUrl>http://www.viaoa.com</organizationUrl>
+		</developer>
+	</developers>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
-    <repositories>
-        <repository>
-            <id>maven</id>
-            <name>Internal Releases</name>
-            <url>https://maven.intcx.net/content/repositories/releases</url>
-        </repository>
-        <repository>
-            <id>maven_public</id>
-            <name>Internal public files</name>
-            <url>https://maven.intcx.net/content/repositories/public</url>
-        </repository>
-        <repository>
-            <id>maven_snapshot</id>
-            <name>Snapshot Releases</name>
-            <url>https://maven.intcx.net/content/repositories/snapshots</url>
-        </repository>
-    </repositories>
+	<repositories>
+	</repositories>
 
-    <dependencies>
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>javax.mail-api</artifactId>
-            <version>1.5.0</version>
-        </dependency>
+	<dependencies>
+	
+	
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>javax.mail-api</artifactId>
+			<version>1.6.0</version>
+		</dependency>
 
-        <dependency>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5-7.6.0v20120127</version>
-        </dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>4.0.0</version>
+			<scope>compile</scope>
+		</dependency>
 
-        <dependency>
-            <groupId>org.glassfish.javax.servlet</groupId>
-            <artifactId>jsp</artifactId>
-            <version>2.1.0.v201004190952</version>
-        </dependency>
+<!-- not needed 
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>jsp-api</artifactId>
+			<version>6.0.53</version>
+		</dependency>
+ -->
+		<dependency>
+			<groupId>itext</groupId>
+			<artifactId>itext</artifactId>
+			<version>1.3.1</version>
+		</dependency>
 
-        <dependency>
-            <groupId>itext</groupId>
-            <artifactId>itext</artifactId>
-            <version>1.3.1</version>
-        </dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.gif/**</include>
-                    <include>**/*.jpg/**</include>
-                    <include>**/*.png/**</include>
-                    <include>**/*.css/**</include>
-                    <include>**/*.ht*/**</include>
-                    <include>**/*.pro*/**</include>
-                    <include>**/*.sql/**</include>
-                    <include>**/*.xml/**</include>
-                    <include>**/help/**</include>
-                    <include>**/*.jks/**</include>
-                </includes>
-                <excludes>
-                    <exclude>**/doc-files/**</exclude>
-                    <exclude>**/package.html/**</exclude>
-                    <exclude>**/overview.html/**</exclude>
-                </excludes>
-            </resource>
-        </resources>
-        <plugins>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+	
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.gif/**</include>
+					<include>**/*.jpg/**</include>
+					<include>**/*.png/**</include>
+					<include>**/*.css/**</include>
+					<include>**/*.ht*/**</include>
+					<include>**/*.pro*/**</include>
+					<include>**/*.sql/**</include>
+					<include>**/*.xml/**</include>
+					<include>**/help/**</include>
+					<include>**/*.jks/**</include>
+				</includes>
+				<excludes>
+					<exclude>**/doc-files/**</exclude>
+					<exclude>**/package.html/**</exclude>
+					<exclude>**/overview.html/**</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.5.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.14.1</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <skipTests>true</skipTests>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifestFile>manifest.mf</manifestFile>
-                    </archive>
-                </configuration>
-            </plugin>
-
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<archive>
+						<manifestFile>manifest.mf</manifestFile>
+						<manifestEntries>
+							<Implementation-Title>OA</Implementation-Title>
+							<Implementation-Vendor>ViaOA</Implementation-Vendor>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jarsigner-plugin</artifactId>
@@ -137,44 +164,72 @@
                     </execution>
                 </executions>
                 <configuration>
-<!-- ICE -->                 
-                    <keystore>keystore/icestore.jks</keystore>
-                    <alias>icecert</alias>
-                    <storepass>password</storepass>
-                    <keypass>password</keypass>
-<!-- OA                     
-                    <keystore>keystore/viaoa.jks</keystore>
-                    <alias>viaoa</alias>
-                    <storepass>vince1</storepass>
-                    <keypass>vince1</keypass>
- -->                    
+                    <keystore>${keystore.path}</keystore>
+                    <alias>${keystore.alias}</alias>
+                    <storepass>${keystore.store.password}</storepass>
                 </configuration>
             </plugin>
-            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <archive>
-                        <manifestFile>manifest.mf</manifestFile>
-                        <manifestEntries>
-                            <Implementation-Title>OA</Implementation-Title>
-                            <Implementation-Vendor>ViaOA</Implementation-Vendor>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.14.1</version>
-                <configuration>
-                    <skipTests>true</skipTests>
-                </configuration>
-            </plugin>
-            
-            
-        </plugins>
-    </build>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<additionalOptions>-Xdoclint:none</additionalOptions>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.8</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<!-- Set this to true and the release will automatically proceed and 
+						sync to Central Repository will follow -->
+					<autoReleaseAfterClose>false</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
