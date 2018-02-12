@@ -27,7 +27,7 @@ import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.util.OAString;
 
-/**
+/*
  * Get byte[] for PDF from an Object Property
  * 
  * 
@@ -61,7 +61,7 @@ public class PdfServlet extends HttpServlet {
      * Create and register an encoded request string using the real request string.  
      * Note: this is only valid during the lifetime of the pdf servlet instance.
      * 
-     * @param requestValue request string to encode
+
      * @return http request to use for the link
      */
     public static String createRandomRequestValue(Class clazz, String id, String property, String fname) {

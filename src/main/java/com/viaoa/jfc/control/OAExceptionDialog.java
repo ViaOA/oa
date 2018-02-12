@@ -23,7 +23,6 @@ import com.viaoa.hub.*;
     Registers with OAException as a listener.
     <p>
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
-    @see OAException
 */
 public class OAExceptionDialog extends JDialog { //implements OAExceptionListener {
     JList lst;

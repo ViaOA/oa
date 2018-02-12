@@ -295,7 +295,7 @@ public class OAForm extends OABase implements Serializable {
     }
 
 
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OARelationshipGrid getRelationshipGrid(String name) {
@@ -304,7 +304,7 @@ public class OAForm extends OABase implements Serializable {
         throw new RuntimeException("OAForm.getRelationshipGrid() \""+name+"\" not found");
     }
     
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OARadio getRadio(String name) {
@@ -313,7 +313,7 @@ public class OAForm extends OABase implements Serializable {
         throw new RuntimeException("OAForm.getRadio() Radio \""+name+"\" not found");
     }
 
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OACheckBox getCheckBox(String name) {
@@ -321,7 +321,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OACheckBox) return (OACheckBox) obj;
         throw new RuntimeException("OAForm.getCheckBox() CheckBox \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OAComboBox getComboBox(String name) {
@@ -329,7 +329,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OAComboBox) return (OAComboBox) obj;
         throw new RuntimeException("OAForm.getComboBox() ComboBox \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OAList getList(String name) {
@@ -337,7 +337,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OAList) return (OAList) obj;
         throw new RuntimeException("OAForm.getList() List \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OATextArea getTextArea(String name) {
@@ -345,7 +345,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OATextArea) return (OATextArea) obj;
         throw new RuntimeException("OAForm.getTextArea() TextArea \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OATree getTree(String name) {
@@ -353,7 +353,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OATree) return (OATree) obj;
         throw new RuntimeException("OAForm.getTree() Tree \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OATextField getTextField(String name) {
@@ -361,7 +361,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OATextField) return (OATextField) obj;
         throw new RuntimeException("OAForm.getTextField() TextField \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OAPasswordField getPasswordField(String name) {
@@ -370,7 +370,7 @@ public class OAForm extends OABase implements Serializable {
         throw new RuntimeException("OAForm.getPasswordField() PasswordField \""+name+"\" not found");
     }
     
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OATable getTable(String name) {
@@ -383,7 +383,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OADataTable) return (OADataTable) obj;
         throw new RuntimeException("OAForm.getDataTable() DataTable \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OACommand getCommand(String name) {
@@ -391,7 +391,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OACommand) return (OACommand) obj;
         throw new RuntimeException("OAForm.getCommand() Command \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OATabbedPane getTabbedPane(String name) {
@@ -400,7 +400,7 @@ public class OAForm extends OABase implements Serializable {
         throw new RuntimeException("OAForm.getTabbedPane() \""+name+"\" not found");
     }
     
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OAImage getImage(String name) {
@@ -408,7 +408,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OAImage) return (OAImage) obj;
         throw new RuntimeException("OAForm.getImage() name \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OAFileInput getFileInput(String name) {
@@ -416,7 +416,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OAFileInput) return (OAFileInput) obj;
         throw new RuntimeException("OAForm.getFileInput() \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OALink getLink(String name) {
@@ -424,7 +424,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OALink) return (OALink) obj;
         throw new RuntimeException("OAForm.getLink() Link \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OAToggleButton getToggleButton(String name) {
@@ -432,7 +432,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OAToggleButton) return (OAToggleButton) obj;
         throw new RuntimeException("OAForm.getToggleButton() ToggleButton \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OAButtonGroup getButtonGroup(String name) {
@@ -440,7 +440,7 @@ public class OAForm extends OABase implements Serializable {
         if (obj instanceof OAButtonGroup) return (OAButtonGroup) obj;
         throw new RuntimeException("OAForm.getButtonGroup() ButtonGroup \""+name+"\" not found");
     }
-    /** @throws OAException if not found. 
+    /**  
         @param name is not case sensitive
     */
     public OALabel getLabel(String name) {
@@ -472,9 +472,9 @@ public class OAForm extends OABase implements Serializable {
         Calls all components on the form "getInitScript()" to get any initialization javascript.
         Note: this will set OASession.setCurrentForm(this)
         ex:
-        <form method="post" action="<%=form.getAction()%>">
-        =>
-        <form method="post" action="oaform.jsp" enctype="multipart/form-data"><input type="hidden" name="oaform" value="formName">       
+        &lt;form method="post" action="&lt;=form.getAction()&gt;"&gt;
+        
+        &lt;form method="post" action="oaform.jsp" enctype="multipart/form-data"&gt;&lt;input type="hidden" name="oaform" value="formName"&gt;       
     */
     public String getAction() {
         if (session != null) session.setCurrentForm(this);
@@ -633,9 +633,9 @@ vvvvvvvvvvvvvvvvvvvvvvqqqqqqqqqqqqqqqqqqqqq*/
     }
     
     
-    /** called by (oaform.jsp -> form -> frame) 
+    /** called by (oaform.jsp .. form .. frame) 
         calls setValues on all OAHtml components and processCommand on any commands
-        @returns forwardUrl
+        @return forwardUrl
         
         <pre>
         STEPS:

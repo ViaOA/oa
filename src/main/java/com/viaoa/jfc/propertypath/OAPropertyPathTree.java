@@ -79,7 +79,7 @@ public class OAPropertyPathTree extends OATree {
      *            false, then only the active object is shown.
      * @param bShowCalc
      *            flag to know if calculated properties should be shown.
-     * @parma bShowProps if false, then only OAObjectDef objects will be shown.
+     * @param bShowProps if false, then only OAObjectDef objects will be shown.
      * @param bAllowMany
      *            if true the Links of type MANY are listed
      * @param bAllowOne
@@ -369,7 +369,7 @@ public class OAPropertyPathTree extends OATree {
     /**
      * additional list of ObjectDefs that can be selected (does not allow expanding)
      * 
-     * @param hubCompany
+     * @param hubAdditionalObjectDefs
      *            list of objectDefs to include at the root level.
      */
     public void setAdditionalObjectDefs(Hub<ObjectDef> hubAdditionalObjectDefs) {

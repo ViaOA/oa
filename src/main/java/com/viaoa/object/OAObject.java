@@ -1,4 +1,4 @@
-/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
+/*  Copyright 1999-2018 Vince Via vvia@viaoa.com
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -30,7 +30,7 @@ import com.viaoa.util.*;
     OAObjects have built-in functionality to allow it to work with other Classes.  This includes other OAObjects,
     Hub Collections, any datasource/database, JFC component, JSP component, XML, other applications (distributed) and any other Class.
     <p>
-    &nbsp;&nbsp;&nbsp;<img src="doc-files/ObjectAutomation1.gif">
+    &nbsp;&nbsp;&nbsp;<img src="doc-files/ObjectAutomation1.gif" alt="">
     <br>
     Subclasses of OAObject can be created that add properties and methods for building customized software applications.  
     OAObject then supplies the capability for these subclasses to automatically work with any OA Enabled Class.
@@ -94,7 +94,7 @@ import com.viaoa.util.*;
 
     @author Vince Via
     @see Hub for observable collection class that has "linkage" features for automatically managing relationships.
-    @see OAHtmlSelect for datasource independent queries based on object and property paths.
+    see OAHtmlSelect for datasource independent queries based on object and property paths.
 */
 public class OAObject implements java.io.Serializable, Comparable {
 
@@ -188,7 +188,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
     	OAObjectSerializeDelegate._readObject(this, in);
     }
-    /** 
+    /* 
      * This is called by serialization to check if object already exists in the Cache.
      * @see OAObjectSerializeDelegate#_readResolve
      */
@@ -196,7 +196,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     	Object obj = OAObjectSerializeDelegate._readResolve(this);
     	return obj;
     }
-    /**
+    /*
      *  Used to serialize and object.  
      *  @see OAObjectSerializeDelegate#_writeObject to see how objects can be custom written by selecting the properties that will be sent 
      *  in the object graph.
@@ -205,7 +205,7 @@ public class OAObject implements java.io.Serializable, Comparable {
 		OAObjectSerializeDelegate._writeObject(this, stream);
 	}
 
-    /** calls setProperty()
+    /* calls setProperty()
 	    @see #setProperty(String, Object, String)
 	*/
 	public void setProperty(String propName, boolean value) {
@@ -217,19 +217,19 @@ public class OAObject implements java.io.Serializable, Comparable {
     public void setProperty(String propName, int value) {
     	OAObjectReflectDelegate.setProperty(this, propName,new Integer(value),null);
     }
-    /** calls setProperty()
+    /* calls setProperty()
         @see #setProperty(String, Object, String)
     */
     public void setProperty(String propName, long value) {
     	OAObjectReflectDelegate.setProperty(this, propName,new Long(value),null);
     }
-    /** calls setProperty()
+    /* calls setProperty()
         @see #setProperty(String, Object, String)
     */
     public void setProperty(String propName, double value) {
     	OAObjectReflectDelegate.setProperty(this, propName, new Double(value),null);
     }
-    /** calls setProperty()
+    /* calls setProperty()
         @see #setProperty(String, Object, String)
 	*/
 	public void setProperty(String propName, Object value) {
@@ -255,7 +255,8 @@ public class OAObject implements java.io.Serializable, Comparable {
         Ex: employee.setSalary("32,500"), where salary property is an int.  "32,500" will be converted to (int) 32500<br>
         Ex: employee.setHireDate("05/24/1988"), where HireDate property is an OADate and will be converted<br>
         <br>
-        <ol>If property is a Hub, then the following is done:
+        If property is a Hub, then the following is done:
+        <ol>
         <li> if hub has already loaded by calling getHub(propName), then value is converted to object and then
            added into Hub.
         <li> if hub has not been loaded by calling getHub(propName), but has been created:<br>
@@ -263,6 +264,9 @@ public class OAObject implements java.io.Serializable, Comparable {
            b: Hub for class OAObjectKey is created and value is converted to OAObjectKey and then added.  When
               getHub(propName) is called, then all of the ObjectKeys will be converted to objects.
         </ol>
+        @param propName name of property
+        @param value new value
+        @param fmt format to convert from
         @see OAObjectReflectDelegate#setProperty
     */
     public void setProperty(String propName, Object value, String fmt) {
@@ -295,6 +299,8 @@ public class OAObject implements java.io.Serializable, Comparable {
     /**
         Generic way for getting any property or value as a String value.
         @return if value is null then "", else formatted value using OAConverter.toString(value,fmt)
+        @param propName
+        @param fmt
     */
     public String getPropertyAsString(String propName, String fmt) {
         Object obj = getProperty(propName);
@@ -302,7 +308,7 @@ public class OAObject implements java.io.Serializable, Comparable {
         return OAConverter.toString(obj, fmt);
     }
 
-    /**
+    /*
 	    Generic way for getting any property or value as a String value.
 	    @return if value is null then nullValue, else formatted value using OAConverter.toString(value,fmt)
 	*/
@@ -355,9 +361,8 @@ public class OAObject implements java.io.Serializable, Comparable {
         <li> the objects are the same class and the values of the propertyIds are equal.
            If both objects isNew() and either one has a its propertyId.isNull(), then they will never be equal.
         <li> if the object being compared to is equal to the objectId property of this object.
-        @param key object to compare to, object or objects[] to compare this object's objectId(s) with or OAObjectKey to compare with this object's objectId
-        @see OAObject#getPropertyIdValues
-        @see OAObjectKey#OAObjectKey
+        </ul>
+        @param obj object to compare to, object or objects[] to compare this object's objectId(s) with or OAObjectKey to compare with this object's objectId
      */
     public final boolean equals(Object obj) {
         if (obj == null) return false;
@@ -451,7 +456,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     }
 
 
-    /** 
+    /* 
         @see OAObjectReflectDelegate#copyInto(OAObject, OAObject, String[], OACopyCallback)
     */
     public void copyInto(OAObject toObject) {
@@ -460,7 +465,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     
     /**
      * Option to have finalized objects automatically saved to datasource.  Default is false.
-     * @param b
+     * @param b to set value
      */
     public static void setFinalizeSave(boolean b) {
     	OAObjectDelegate.bFinalizeSave = b;
@@ -481,7 +486,6 @@ public class OAObject implements java.io.Serializable, Comparable {
 
     /**
 	    True if this object is in process of being loaded.
-        @see OAObjectDelegate#isLoading
      */
     public boolean isLoading() {
     	return OAThreadLocalDelegate.isLoading();
@@ -490,12 +494,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     /**
         Used to manage property changes.
         Sends a "beforePropertyChange()" to all listeners of the Hubs that this object is a member of.  <br>
-        The original value is saved and can be retreived by calling getOriginalPropertyValue or canel.
-
-        @param saveChanges save original value
-        @param property is not case sensitive
-        @see #cancel
-        @see #getOriginalPropertyValue
+        @param propertyName is not case sensitive
     */
     protected void fireBeforePropertyChange(String propertyName, Object oldObj, Object newObj, boolean bLocalOnly) {
     	OAObjectEventDelegate.fireBeforePropertyChange(this, propertyName, oldObj, newObj, bLocalOnly, true);
@@ -505,22 +504,22 @@ public class OAObject implements java.io.Serializable, Comparable {
     	OAObjectEventDelegate.fireBeforePropertyChange(this, propertyName, oldObj, newObj, oi.getLocalOnly(), true);
     }
 
-    /** @see #fireBeforePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
+    /* @see #fireBeforePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
     protected void fireBeforePropertyChange(String property, boolean oldObj, boolean newObj) {
         fireBeforePropertyChange( property, oldObj?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE,  newObj?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE);
     }
 
-    /** @see #fireBeforePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
+    /* @see #fireBeforePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
     protected void fireBeforePropertyChange(String property, int oldObj, int newObj) {
         fireBeforePropertyChange( property, new Integer(oldObj),  new Integer(newObj));
     }
 
-    /** @see #fireBeforePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
+    /* @see #fireBeforePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
     protected void fireBeforePropertyChange(String property, long oldObj, long newObj) {
         fireBeforePropertyChange( property, new Long(oldObj),  new Long(newObj));
     }
 
-    /** @see #fireBeforePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
+    /* @see #fireBeforePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
     protected void fireBeforePropertyChange(String property, double oldObj, double newObj) {
         fireBeforePropertyChange( property, new Double(oldObj),  new Double(newObj));
     }
@@ -537,28 +536,28 @@ public class OAObject implements java.io.Serializable, Comparable {
     }
     
     
-    /** @see #firePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
+    /* @see #firePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
     protected void firePropertyChange(String property, boolean oldObj, boolean newObj) {
         firePropertyChange( property, oldObj?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE,  newObj?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE);
     }
 
-    /** @see #firePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
+    /* @see #firePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
     protected void firePropertyChange(String property, int oldObj, int newObj) {
         firePropertyChange( property, new Integer(oldObj),  new Integer(newObj));
     }
 
-    /** @see #firePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
+    /* @see #firePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
     protected void firePropertyChange(String property, long oldObj, long newObj) {
         firePropertyChange( property, new Long(oldObj),  new Long(newObj));
     }
 
-    /** @see #firePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
+    /* @see #firePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange */
     protected void firePropertyChange(String property, double oldObj, double newObj) {
         firePropertyChange( property, new Double(oldObj),  new Double(newObj));
     }
     
     
-    /**
+    /*
         Version of firePropertyChange that will not send to OAServer.
         @see #firePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange
     */
@@ -568,7 +567,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     protected void fireLocalPropertyChange(String property) {
         OAObjectEventDelegate.firePropertyChange(this, property, null, null, true, true, true);
     }
-    /**
+    /*
         Version of firePropertyChange that will not send to OAServer.
         @see #firePropertyChange(String, Object, Object, boolean, boolean) firePropertyChange
     */
@@ -576,7 +575,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     	firePropertyChange( property, new Integer(oldObj),  new Integer(newObj),true);
     }
     
-    /**
+    /*
         Retrieves reference property that is for a Hub Collection.
         @see #getHub(String, String)
     */
@@ -600,13 +599,6 @@ public class OAObject implements java.io.Serializable, Comparable {
     /**
         DataSource independent method to retrieve a reference property that is a Hub Collection.
         @param linkPropertyName name of property to retrieve. (case insensitive)
-        @param sortOrder
-        @param bStore if true (default), then reference object/Hub is stored internally.
-        <p>
-        If Hub is not already loaded then, hub is created by:</br>
-        Hub h = new Hub(linkClass, this, linkPropertyName);<br>
-        h.setSelectOrder(sortOrder);<br>
-        h.executeSelectLater();<br>
     */
     protected Hub getHub(String linkPropertyName, String sortOrder) {
     	return OAObjectReflectDelegate.getReferenceHub(this, linkPropertyName, sortOrder, false, null);
@@ -670,7 +662,6 @@ public class OAObject implements java.io.Serializable, Comparable {
         <li> calls "cascadeSave()" to save all Links with TYPE=ONE and CASCADE=true
         </ol>
         @see #isChanged
-        @see Hub#saved
     */
     public void save() {
     	this.save(CASCADE_LINK_RULES);
@@ -679,7 +670,6 @@ public class OAObject implements java.io.Serializable, Comparable {
     /**
         @param iCascadeRule OR combination of CASCADE, ALL, FORCE, NOCHECK
         @see #save()
-        @see Hub#saved
     */
     public void save(int iCascadeRule) {
         if (!canSave(null)) {
@@ -709,7 +699,7 @@ public class OAObject implements java.io.Serializable, Comparable {
 
     /** Remove this object from all hubs and deletes object from OADataSource.
         Calls canDelete first.
-        @see Hub#deleted
+        see Hub#deleted
     */
     public void delete() {
         if (!canDelete(null)) {
@@ -729,21 +719,19 @@ public class OAObject implements java.io.Serializable, Comparable {
 
 
     /** Creates a lock on this object.
-        @see OALock#lock(Object,Object,Object)
+        see OALock#lock(Object,Object,Object)
     */
     public void lock() {
         OAObjectLockDelegate.lock(this);
     }
 
     /** Unlocks this object.
-        @see OALock#unlock(Object)
     */
     public void unlock() {
     	OAObjectLockDelegate.unlock(this);
     }
 
     /** Checks to see if object is locked.
-        @see OALock#isLocked(Object)
     */
     public boolean isLocked() {
         return OAObjectLockDelegate.isLocked(this);
@@ -836,7 +824,7 @@ public class OAObject implements java.io.Serializable, Comparable {
      * Used to determine if an object should be added to a reference/master hub when one
      * of it's OAObject properties is set.  If false, then the object will not be added to
      * masterHubs until this is called with "true" or when oaObj is saved.
-     * @param bEnabled (default is true)
+     * @param b (default is true)
      */
     public void setAutoAdd(boolean b) {
         OAObjectDelegate.setAutoAdd(this, b);
@@ -874,7 +862,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     }
 
     // 20160506
-    /**
+    /*
      * 
      * @param params
      * @return

@@ -158,14 +158,11 @@ public class OATable extends OAHtmlComponent {
     String colorOdd = "#eeeeee";  // odd lines
     String colorSelected = "#FFFF40";// "#ffffcc";   selected line
 
-    /** @param name unique name of table (within the form it is in), can not have '.' */
     public OATable(Hub hub) {
         setHub(hub);
     }
 
     /** add a command button to table
-        @see OACommand.TABLENEXT
-        @see OACommand.TABLEPREVIOUS
         @param name is not case sensitive
     */
     public void addCommand(String name, OACommand cmd) {
@@ -446,14 +443,14 @@ public class OATable extends OAHtmlComponent {
         addColumn(new OATableColumn(comp,heading));
     }
     
-    /** @parma htmlColumn html within the TD tags 
+    /** @param htmlColumn html within the TD tags 
     */
     public void add(OAHtmlComponent comp, String heading, String htmlColumn) {
         OATableColumn tc = new OATableColumn(comp,heading);
         tc.setHtmlBetween(htmlColumn);
         addColumn(tc);
     }
-    /** @parma htmlColumn html within the TD tags 
+    /** @param htmlColumn html within the TD tags 
         @param htmlBefore / After code around column data
     */
     public void add(OAHtmlComponent comp, String heading, String htmlColumn, String htmlBefore, String htmlAfter) {
@@ -570,13 +567,13 @@ public class OATable extends OAHtmlComponent {
         return s;
     }
 
-    /** @returns string in format of "1-10 of 57" */
+    /** @return string in format of "1-10 of 57" */
     public String getCount() {
         if (hub == null) return "no hub";
         int tot = hub.getSize();
         return getCount(tot," of "+tot);
     }
-    /** @returns string in format of "1-10"+msg or "0 Listed" if no rows. */
+    /** @return string in format of "1-10"+msg or "0 Listed" if no rows. */
     public String getCount(int total, String msg) {
         initialize();
         int lastRow = topRow + scrollAmount;
@@ -706,7 +703,7 @@ public class OATable extends OAHtmlComponent {
         return bResetTop;
     }
 
-    /** @returns javascript needed for initialization. */
+    /** @return javascript needed for initialization. */
     public String getInitScript() {
         String line = "";
         Enumeration enumx = hashCommand.elements();

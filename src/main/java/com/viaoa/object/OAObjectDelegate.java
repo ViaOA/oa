@@ -372,7 +372,7 @@ public class OAObjectDelegate {
         recurse(oaObj, callback, cascade);
 	}
 	
-	/** @see #recurse(OACallback) */
+	/** see #recurse(OACallback) */
 	public static void recurse(OAObject oaObj, OACallback callback, OACascade cascade) {
 	    if (cascade.wasCascaded(oaObj, true)) return;
 	

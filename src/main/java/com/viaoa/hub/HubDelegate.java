@@ -64,7 +64,7 @@ public class HubDelegate {
 	    Note: if OAObject and isLoading, then true is always returned.
 	    <br>
 	    Note: if property value is a null or a blank String, then it is not checked.
-	    @returns true if object is valid, false if another object already uses same unique property value.
+	    @return true if object is valid, false if another object already uses same unique property value.
 	*/
 	public static boolean verifyUniqueProperty(Hub thisHub, Object object) {
 	    if (thisHub == null || object == null) return true;
@@ -212,9 +212,9 @@ public class HubDelegate {
     /**
 	    If this hub has a master Hub or link Hub and that Hub does not have an active Object set,
 	    then this Hub is invalid.
-	    @see #setLinkHub
-	    @see #getDetailHub
-	    @see #findControllingHub(Hub) to get the Hub that this hub depends on.
+
+
+
 	*/
 	public static boolean isValid(Hub hub) {
 	    HubDataMaster dm = HubDetailDelegate.getDataMaster(hub);
@@ -262,7 +262,7 @@ public class HubDelegate {
 	/**
 	    Returns this hub, or one of its shared Hubs, that has
 	    an addHub established.
-	    @see #setAddHub
+
 	*/
 	public static Hub getAnyAddHub(final Hub hub) {
 	    if (hub.getAddHub() != null) return hub;

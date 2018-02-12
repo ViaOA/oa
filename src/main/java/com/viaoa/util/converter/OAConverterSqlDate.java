@@ -19,13 +19,15 @@ import com.viaoa.util.*;
 /**
     Convert to/from a Date value.
     <br>
-    <ul><b>Converting the following to a Date</b>
+    <b>Converting the following to a Date</b>
+    <ul>
     <li>String: converts to a Date, using optional format for parsing.
     <li>OADateTime: returns Date value.
     <li>All others value will return null.
     </ul>
     <br>
-    <ul><b>Converts a Date to any of the following</b>
+    <b>Converts a Date to any of the following</b>
+    <ul>
     <li>String, using an optional format.
     </ul>
     

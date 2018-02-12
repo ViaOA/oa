@@ -73,7 +73,7 @@ public class OALabel extends OAHtmlComponent {
         return getText();
     }
 
-    /** @returns HTML safe/converted String 
+    /* @return HTML safe/converted String 
         Converts null to "", converts &lt;,&gt;,&quot;,&amp; to html strings,
         [CR][LF} to <br> 
         @see OALabel#getRawText to get unconverted value

@@ -33,7 +33,7 @@ import com.viaoa.hub.HubEvent;
  *      public void nameTrigger(HubEvent hubEvent) 
  *      
  *  example:   
- *     @OATriggerMethod(onlyUseLoadedData=true, runOnServer=true, runInBackgroundThread=true, properties= {"test"})
+ *     &#64;OATriggerMethod(onlyUseLoadedData=true, runOnServer=true, runInBackgroundThread=true, properties= {"test"})
  *
  *  Note: the trigger method is not called if hub.isfetching, or oaobj.isLoading
  *
@@ -44,23 +44,23 @@ import com.viaoa.hub.HubEvent;
 public @interface OATriggerMethod {
 
     /** 
-     * Property paths that will automatically call this method when the propPath is changed.
+     * @return Property paths that will automatically call this method when the propPath is changed.
      */
     String[] properties() default {};
     
     
     /**
-     * if true (default), then triggers are only made on objects that are in memory.
+     * @return if true (default), then triggers are only made on objects that are in memory.
      */
     boolean onlyUseLoadedData() default true;
     
     /**
-     * if true (default), then only run on the server.
+     * @return if true (default), then only run on the server.
      */
     boolean runOnServer() default true;
     
     /**
-     * If true, then this will be ran in another thread. Otherwise false (default), run in the current thread.
+     * @return If true, then this will be ran in another thread. Otherwise false (default), run in the current thread.
      */
     boolean runInBackgroundThread() default false;
 }

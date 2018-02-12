@@ -225,8 +225,8 @@ public class OASyncServer {
     
     /**
      * This can be overwritten to capture info about the server and client connections.
-     * @see #startServerUpdateThread(int)
-     * @see OASyncClient#startClientUpdateThread(int)
+     * see #startServerUpdateThread(int)
+     * see OASyncClient#startClientUpdateThread(int)
      */
     public void onUpdate(ClientInfo ci) {
         int cid = ci.getConnectionId();

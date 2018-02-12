@@ -27,9 +27,6 @@ public class HubRootDelegate {
 
     /**
 	    If this is a recursive hub with an owner, then the root hub will be returned, else null.
-	    @see #setRoot
-	    @see #setRootHub
-	    @see OALinkInfo
 	*/
 	public static Hub getRootHub(final Hub thisHub) {
 		

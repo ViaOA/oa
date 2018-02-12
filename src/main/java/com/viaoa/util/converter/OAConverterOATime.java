@@ -18,7 +18,8 @@ import java.util.*;
 /**
     Convert to/from a OATime value.
     <br>
-    <ul><b>Converts the following to an OATime</b>
+    <b>Converts the following to an OATime</b>
+    <ul>
     <li>String, using optional format string.    
     <li>Time
     <li>Date
@@ -26,7 +27,8 @@ import java.util.*;
     <li>All others value will return null.
     </ul>
     <br>
-    <ul><b>Converts an OATime to any of the following</b>
+    <b>Converts an OATime to any of the following</b>
+    <ul>
     <li>String, using an optional format.
     </ul>
 

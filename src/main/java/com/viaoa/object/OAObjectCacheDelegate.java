@@ -49,25 +49,25 @@ public class OAObjectCacheDelegate {
 	protected static int DefaultAddMode = 1;
 
     /** throw an exception if a duplicate object is added. This is Default.  
-	    @see HubController#setAddMode
+	    see HubController#setAddMode
 	*/
 	static public final int NO_DUPS = 1;   // dont use 0
 	
 	/** dont store object if a duplicate is already stored. 
 	    If the object is being deserialized (see OAObject.readResolve)
 	    then the object that is already loaded will be used.
-	    @see HubController#setAddMode
+	    see HubController#setAddMode
 	    @see OAObject#readResolve
 	*/
 	static public final int IGNORE_DUPS = 2;
 	
 	/** store object even if another exists
-	    @see HubController#setAddMode
+	    see HubController#setAddMode
 	*/
 	static public final int OVERWRITE_DUPS = 3;
 	
 	/** dont store objects.
-	    @see HubController#setAddMode
+	    see HubController#setAddMode
 	*/
 	static public final int IGNORE_ALL = 4;
 	static protected final int MODE_MAX = 4;
@@ -183,7 +183,7 @@ public class OAObjectCacheDelegate {
     /**
      * Used to store a global hub by name, using a WeakReference.
      * @param name reference name to use, not case-sensitive
-     * @return if found then Hub, else null.
+
      */
     static public void setNamedHub(String name, Hub hub) {
     	LOG.fine("Hub="+hub+", name="+name);
@@ -243,7 +243,7 @@ public class OAObjectCacheDelegate {
     }
     */
     
-    /** @see addListener(Class, HubListener) */
+    /* see addListener(Class, HubListener) */
     public static void removeListener(Class clazz, OAObjectCacheListener l) {
     	LOG.fine("class="+clazz);
         Vector vecListener = (Vector) OAObjectHashDelegate.hashCacheListener.get(clazz);
@@ -259,7 +259,7 @@ public class OAObjectCacheDelegate {
 
     /** 
         Returns array of HubListeners for a given class.
-        @see addListener(Class, HubListener) 
+        see addListener(Class, HubListener) 
     */
     public static OAObjectCacheListener[] getListeners(Class c) {
         if (aiListenerCount.get() == 0) return null;
@@ -486,7 +486,7 @@ public class OAObjectCacheDelegate {
         The DefaultAddMode determines how HubController.addObject() will handle an object if it already exists.
         This method sets the Default mode for all unassigned threads.
         @param mode AddModes are NO_DUPS (default), IGNORE_DUPS, OVERWRITE_DUPS.
-        @see  HubController#setAddMode
+        see  HubController#setAddMode
     */
     static public void setDefaultAddMode(int mode) {
         LOG.config("default add mode="+mode);
@@ -503,7 +503,7 @@ public class OAObjectCacheDelegate {
     /** 
         Used by OAObject to cache new objects.
         Objects are removed by OAObject.finalize()
-        @see #setAddMode(int)
+        see #setAddMode(int)
         @return either the object that was "obj" or the object that was already in the tree.
     */
     public static OAObject add(OAObject obj) {
@@ -787,7 +787,7 @@ public class OAObjectCacheDelegate {
 
     /** 
         Used to retrieve any object.
-        @param key object to find.
+        param key object to find.
     */
     public static Object get(OAObject obj) {
         if (bDisableCache) return null;

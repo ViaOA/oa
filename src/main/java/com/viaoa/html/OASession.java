@@ -491,14 +491,14 @@ public class OASession extends OABase {
     }
 
 
-    /** For this to work oaheader.jsp needs to call setResponse() & setRequest()*/
+    /** For this to work oaheader.jsp needs to call setResponse() &amp; setRequest()*/
     public void putCookie(String name, String value) {
         setCookie(name,value);
     }
     public void putCookie(String name, int x) {
         setCookie(name,x+"");
     }
-    /** For this to work oaheader.jsp needs to call setResponse() & setRequest().
+    /** For this to work oaheader.jsp needs to call setResponse() &amp; setRequest().
         Uses Servlet.Response to create a cookie.  MaxAge is set to max. */
     public void setCookie(String name, String value) {
         if (response == null) return;
@@ -507,7 +507,7 @@ public class OASession extends OABase {
         response.addCookie(c);
     }
     /** uses Servlet.Request to get a cookie. 
-        For this to work oaform.jsp & oabeans.jsp need to call setResponse() & setRequest()
+        For this to work oaform.jsp &amp; oabeans.jsp need to call setResponse() &amp; setRequest()
     */
     public String getCookie(String name) {
         if (request == null) return null;
@@ -555,7 +555,7 @@ public class OASession extends OABase {
         BindFrame bf = new BindFrame(formUrl, commandName, frameSetUrl, frameName, url);
         getBindFrames().addElement(bf);
     }    
-    /** this will display a Url at the "_top" postion when the OACommand or OALink is pressed/submitted.
+    /* this will display a Url at the "_top" postion when the OACommand or OALink is pressed/submitted.
         @param formUrl form that OACommand/OALink component is on
         @param commandName name of OACommand/OALink component
         @param url of new page to display at the "_top" of browser.  This will call OASession.setTopUrl() when selected

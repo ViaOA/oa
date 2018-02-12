@@ -19,7 +19,7 @@ import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
 
-/**
+/*
  * 20170528 copied from OACombo ... currently, a work in progress to handle a recursive hub
  *      will be making it like jfc OATree, with nodes, etc qqqqqq
  *

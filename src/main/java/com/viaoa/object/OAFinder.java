@@ -20,7 +20,7 @@ import com.viaoa.util.*;
 import com.viaoa.util.filter.*;
 
 // 20140124
-/**
+/*
  * This is used to find all values from one OAObject/Hub to another OAObject/Hub, using a propertyPath.
  * Support is included for Filters.
  *

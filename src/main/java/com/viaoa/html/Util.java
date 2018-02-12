@@ -69,9 +69,9 @@ public class Util {
 
    
     /** get the id from an Id encoded name 
-        @nameUsed created by getEncodedName()
-        @cnt is the number of id to use.  The first one is 0.
-        @returns object or null if encoding was not done on nameUsed
+        @param nameUsed created by getEncodedName()
+        @param cnt is the number of id to use.  The first one is 0.
+        @return object or null if encoding was not done on nameUsed
     */
     public static Object getEncodedObject(String nameUsed, Hub hub, int cnt) {
         // OAid4_name_2_id_3_idb

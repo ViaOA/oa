@@ -21,7 +21,7 @@ public interface ImageHandlerInterface {
     
     /**
      * Load the image.
-     * @param name name of image
+     * @param srcName name of image
      */
     public Image loadImage(String srcName);
 

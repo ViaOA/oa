@@ -16,7 +16,6 @@ import java.net.ServerSocket;
 /**
  * Created by MultiplexerServerSocketController to create new ServerSockets that work through multiplexed connections.
  * 
- * @see com.MultiplexerServer.comm.server.MultiplexerServer#createServerSocket(String, MultiplexerSocket.Type)
  * @author vvia
  */
 public class VirtualServerSocket extends ServerSocket {
@@ -30,9 +29,6 @@ public class VirtualServerSocket extends ServerSocket {
      * 
      * @param name
      *            name for MultiplexerClient to use to create a connection.
-     * @param type
-     *            type of socket to create.
-     * @throws IOException
      */
     public VirtualServerSocket(String name) throws IOException {
         this._name = name;

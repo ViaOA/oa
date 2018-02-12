@@ -31,10 +31,11 @@ import com.viaoa.hub.*;
    An OAFilter can be used to further filter the results.
   
    <p>
-   <ul>Queries
+   Queries
+   <ul>
    <li>All property names and connectors names are case insensitive.
-   <li>Can use the following connectors "AND", "&&", "||", "OR", "(", ")"
-   <li>Can use "=", "==", "!=", "<", "<=", ">", ">=", "LIKE", "%" (wildcard), "null" (any case)
+   <li>Can use the following connectors "AND", "&amp;&amp;", "||", "OR", "(", ")"
+   <li>Can use "=", "==", "!=", "&lt;", "&lt;=", "&gt;", "&gt;=", "LIKE", "%" (wildcard), "null" (any case)
    <li>use "PASS[" to begin a passthru part of the query, and "]THRU" to end it.
    <li>"ASC" ascending, "DESC" descending can be used with Order By properties.
    </ul>
@@ -43,7 +44,7 @@ import com.viaoa.hub.*;
         OASelect select = new OASelect();
         String query = OAConverter.toDataSourceString("dept", dept); // converts to dept.Id = 'MIS'
         String fname = "John";
-        query += " && (dept.manager.lastName like 'Jones%'";
+        query += " &amp;&amp; (dept.manager.lastName like 'Jones%'";
         query += " || (dept.manager.firstName == " + OAConvert.toDataSourceString(fname) + ")";
         select.setWhere(query);
         select.setOrder("dept.name, Emp.LastName DESC, emp.firstName");
@@ -53,7 +54,7 @@ import com.viaoa.hub.*;
         select.setFetchAmount(40);    // amount of objects to read at a time (default=45)
 
         // or use params for where query
-		query = "dept = ? && dept.manager.lastName like ? || dept.manager.firstname = ?";
+		query = "dept = ? &amp;&amp; dept.manager.lastName like ? || dept.manager.firstname = ?";
 		Object[] params = new Object[] {dept, "Jones%", fname};
         select.setWhere(query);
 		select.setParams(params);

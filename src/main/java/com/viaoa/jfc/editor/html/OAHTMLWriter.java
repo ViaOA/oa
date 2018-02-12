@@ -31,7 +31,7 @@ import java.net.URL;
  *          comments that begin with "vv" were created because the code would
  *          not compile, because of package protected. Luckily, the code is not
  *          needed. The method "writeEmbeddedTags()" was changed so that
- *          "styles" would be added to HTML tags, or a <span> was created to add
+ *          "styles" would be added to HTML tags, or a &lt;span&gt; was created to add
  *          the style
  */
 public class OAHTMLWriter extends AbstractWriter {

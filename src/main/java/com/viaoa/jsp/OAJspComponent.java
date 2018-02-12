@@ -33,7 +33,7 @@ public interface OAJspComponent extends java.io.Serializable {
     
     /**
      * Called by form.beforeSubmit for every jspcomponent   
-     * @returns true to continue, false cancel the processing of the request 
+     * @return true to continue, false cancel the processing of the request 
      */
     boolean _beforeFormSubmitted();
     

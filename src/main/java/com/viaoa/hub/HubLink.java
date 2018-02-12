@@ -59,7 +59,7 @@ package com.viaoa.hub;
 
     <p>
     Example:<br>
-    &nbsp;&nbsp;&nbsp;<img src="doc-files/Hub4.gif">
+    &nbsp;&nbsp;&nbsp;<img src="doc-files/Hub4.gif" alt="">
     <br>
     The Hub on the left is a collection of Employee objects. The Hub on the right has Department objects. <br>
     if the (A) active object is changed to "Emp 2", the (B) active object is changed to "Dept B",

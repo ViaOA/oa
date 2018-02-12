@@ -115,7 +115,7 @@ public abstract class OACircularQueue<TYPE> {
      * queue slots can be set to null once they are not needed.  
      * It is also used so that queue writers dont go too fast and overrun the readers.
      * @param sessionId identifier for the session
-     * @param maxFallBehind max amount that it can fall behind the head, else an addMessage will wait for up to 1 second.
+     * param maxFallBehind max amount that it can fall behind the head, else an addMessage will wait for up to 1 second.
      * @return current queueHeadPosition
      */
     public long registerSession(int sessionId) {
@@ -179,7 +179,7 @@ public abstract class OACircularQueue<TYPE> {
         return addMessageToQueue(msg, 0);
     }
     /**
-     * @param bThrottle if true, then make sure that headPos is not too far ahead of readers
+     * param bThrottle if true, then make sure that headPos is not too far ahead of readers
      */
     public int addMessageToQueue(final TYPE msg, final int throttleAmount) {
         return addMessageToQueue(msg, throttleAmount, -1);

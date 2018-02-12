@@ -35,7 +35,7 @@ public class JfcUtil {
      * Create a wrapper component that will resize a percentage of the available space. 
      * @param comp
      * @param percentage number from 0 to 100
-     * @param bBoth if true then Hort & Vert, else only Hort
+     * @param bBoth if true then Hort &amp; Vert, else only Hort
      * @return
      */
     public static JComponent createFilledPanel(JComponent comp, int percentage, boolean bBoth) {

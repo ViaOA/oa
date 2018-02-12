@@ -23,7 +23,7 @@ import java.util.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 
-/**   qqqqqqqqqqqqqqqqqq
+/*
 <pre>
     [Java Code]
     Hub hubR = new Hub(DataType.class);
@@ -38,7 +38,7 @@ import com.viaoa.util.*;
    
     ....
     [HTML Code]
-<pre>
+</pre>
 
 &lt;table border=1&gt;
     &lt;tr&gt;
@@ -63,7 +63,7 @@ import com.viaoa.util.*;
 
 &lt;/table&gt;
 
-</pre>
+
 */
 public class OARelationshipGrid extends OAHtmlComponent {
     private static final long serialVersionUID = 1L;

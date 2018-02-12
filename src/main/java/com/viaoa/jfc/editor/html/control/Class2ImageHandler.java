@@ -57,7 +57,7 @@ public class Class2ImageHandler implements ImageHandlerInterface {
     
     /**
      * 
-     * @param hubCompany Hub that has all images in it.
+
      * @param byteArrayPropertyName name of property that is for a byte[] to store "raw"
      * @param sourceNamePropertyName property to use to store the source of the image (ex: file name) 
      * @param idPropertyName unique property value to use for the html img src tag. If null, then sourceNamePropertyName will be used.

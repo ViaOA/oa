@@ -17,9 +17,8 @@ All rights reserved.
 */ 
 package com.viaoa.html;
 
-import javax.servlet.jsp.*;
 
-/** This is the class used for the JSP <%@page extends="oa.html.OAJsp" %> directive.  
+/* This is the class used for the JSP <%@page extends="oa.html.OAJsp" %> directive.  
     The purpose is to create class level properties that can be accessed from the pages inner classes.
     The properties are OAApplication and OASession.  oabeans.jsp will init these.
     

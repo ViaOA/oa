@@ -21,7 +21,8 @@ import java.math.*;
     Convert to/from a Number value.
 
     <br>
-    <ul><b>Converting the following to a Number</b>
+    <b>Converting the following to a Number</b>
+    <ul>
     <li>null returns a number with value = 0
     <li>Any type of Number
     <li>String, using an optional format.
@@ -32,7 +33,8 @@ import java.math.*;
     <li>All others value will return null.
     </ul>
     <br>
-    <ul><b>Converting a Number to any of the following</b>
+    <b>Converting a Number to any of the following</b>
+    <ul>
     <li>String, using an optional format.
     </ul>
 

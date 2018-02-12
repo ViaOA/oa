@@ -192,7 +192,7 @@ public class OADataSourceJDBC extends OADataSource {
 
     /**
         Called by OAObject.getRequiredProperties() to find required properties that are unassigned.
-        @returns true if the datasource will set the property value before saving.
+        @return true if the datasource will set the property value before saving.
     */
     public @Override boolean willCreatePropertyValue(OAObject object, String propertyName) {
         if (object == null) return false;

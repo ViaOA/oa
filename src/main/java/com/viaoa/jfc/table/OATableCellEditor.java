@@ -42,7 +42,7 @@ public abstract class OATableCellEditor implements TableCellEditor, FocusListene
         this(c,0,0);
     }
 
-    /** 
+    /* 
         @see #setEditArrowkeys        
         @see #setDisabledArrowKeys
     */
@@ -50,7 +50,7 @@ public abstract class OATableCellEditor implements TableCellEditor, FocusListene
         this(c,editArrowKeys,0);
     }
 
-    /** 
+    /* 
         @see #setEditArrowkeys        
         @see #setDisabledArrowKeys
     */

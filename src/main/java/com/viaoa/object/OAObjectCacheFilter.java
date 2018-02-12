@@ -50,7 +50,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
     }
     
     /**
-     * Create new cache filter.  Cached objects that are true for isUsedFromObjectCache & isUsed will be added to hub.
+     * Create new cache filter.  Cached objects that are true for isUsedFromObjectCache &amp; isUsed will be added to hub.
      * @param hub if size is equal to 0, then refresh will be called.  Otherwise refresh will not be called, since it's
      * assumed that the objects were preselected.
      */

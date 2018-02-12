@@ -21,9 +21,9 @@ import com.viaoa.sync.*;
 
 
 /** Undo Support for OA.gui components.
-   @see OAUndoableEvent
+
    @see #createUndoManager
-   @see UndoableController
+   see UndoableController
 */
 public class OAUndoManager extends UndoManager {
 
@@ -62,7 +62,7 @@ public class OAUndoManager extends UndoManager {
 
     /**
         Used to group more then one undoable edit into one undoable edit.
-        @param presentationName name to display for compound edit.
+
     */
     public static void startCompoundEdit() {
         startCompoundEdit("", true);
@@ -134,7 +134,7 @@ public class OAUndoManager extends UndoManager {
         undoManager.addEdit(anEdit);
     }    
 
-/**qqqqqqq 20100124 not used?    
+/* *qqqqqqq 20100124 not used?    
     public static void add(UndoableEdit anEdit, boolean bIgnoreDuplicate) {
         if (anEdit == null || undoManager == null) return;
         if (bIgnoreDuplicate && anEdit.equals(lastEdit)) return;
@@ -209,7 +209,7 @@ public class OAUndoManager extends UndoManager {
     }
 
     /** 
-        @returns true if counter for current thread > 0, or if OAUndoManager is null or thread is OAClient.isClientThread()
+        @return true if counter for current thread &gt; 0, or if OAUndoManager is null or thread is OAClient.isClientThread()
     */
     public static boolean getIgnore() {
         if (undoManager == null) return true;

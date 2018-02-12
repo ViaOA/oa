@@ -44,7 +44,7 @@ import com.viaoa.util.*;
     &lt;input type="image" name="oacommand_7_cmdTest" SRC="save.gif" src="test.gif"&gt;
 
     <br>-or-
-    &lt;INPUT TYPE="SUBMIT" &lt;%=form.getCommand("cmdTest").getTags()%&gt;" VALUE="OK" >&gt;
+    &lt;INPUT TYPE="SUBMIT" &lt;%=form.getCommand("cmdTest").getTags()%&gt;" VALUE="OK"&gt;
     output =&gt;
     &lt;input type="SUBMIT" name="oacommand_7_cmdTest" VALUE="OK" &gt;
     

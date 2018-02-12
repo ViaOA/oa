@@ -50,7 +50,7 @@ public class OAPopupList extends OAList {
         super.setWidth(width);
     }
     
-    /**
+    /*
      * @param idPopup html element to listen for click event
      * @param bUpdateText update html text for idPopup to match the selected item. Example: set the text/name for a button.
      */

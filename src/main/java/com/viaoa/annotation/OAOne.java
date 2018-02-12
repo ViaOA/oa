@@ -27,47 +27,47 @@ public @interface OAOne {
     String displayName() default "";
     String description() default "";
 
-    /** true if this object is the owner of linked to object */
+    /** @return true if this object is the owner of linked to object */
     boolean owner() default false;
 
-    /** true if this is a recursive relationship. */
+    /** @return true if this is a recursive relationship. */
     // 20131013 removed, since Manys are marked as recursive
     // boolean recursive() default false;
     
-    /** name used in the toClass that refers to this class. */
+    /** @return name used in the toClass that refers to this class. */
     String reverseName() default "";
 
     boolean required() default false;
     boolean verify() default false;
     
-    /** true if saving this class will save the many objects */
+    /** @return true if saving this class will save the many objects */
     boolean cascadeSave() default false;
     
-    /** true if deleting this class will delete the many objects */
+    /** @return true if deleting this class will delete the many objects */
     boolean cascadeDelete() default false;
 
-    /** if true, then this object is not store in datasource. */
+    /** @return if true, then this object is not store in datasource. */
     boolean isTransient() default false;
     
-    /** if false, then this object can not create, but must pick an existing. */
+    /** @return if false, then this object can not create, but must pick an existing. */
     boolean allowCreateNew() default true;
 
-    /** if true, then this object is auto created. */
+    /** @return if true, then this object is auto created. */
     boolean autoCreateNew() default false;
     
-    /** if false, then an existing object can not be used - a new one must be created. */
+    /** @return if false, then an existing object can not be used - a new one must be created. */
     boolean allowAddExisting() default true;
     
-    /** if true, then this must be empty (null) to delete the other object */
+    /** @return if true, then this must be empty (null) to delete the other object */
     boolean mustBeEmptyForDelete() default false; 
     
     
     String toolTip() default "";
     String help() default "";
-    /** flag to know if the code for the metods has been modified. */
+    /** @return flag to know if the code for the metods has been modified. */
     boolean hasCustomCode() default false;
     
-    /** true if this is a calculated reference. */
+    /** @return true if this is a calculated reference. */
     boolean isCalculated() default false;
     
     boolean isImportMatch() default false;

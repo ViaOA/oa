@@ -110,7 +110,6 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
 
     /**
         Format string used for displaying value.
-        @see HubGuiAdapter#setFormat
     */
     public void setFormat(String fmt) {
         if (control != null) control.setFormat(fmt);
@@ -120,7 +119,6 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     }
     /**
         Format string used for displaying value.
-        @see HubGuiAdapter#setFormat
     */
     public String getFormat() {
         if (control != null) control.getFormat();
@@ -314,14 +312,14 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     
     /**
         Property path used for displaying rows.
-        @see HubGuiAdapter#setPropertyPath
+
     */
     public String getPropertyPath() {
         return control.getPropertyPath();
     }
     /**
         Property path used for displaying rows.
-        @see HubGuiAdapter#setPropertyPath
+
     */
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);
@@ -535,8 +533,8 @@ focusComp = this;
     
     /**
      * Other Hub/Property used to determine if component is enabled.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
+ 
+
      */
     public void setEnabled(Hub hub) {
         control.getEnabledController().add(hub);
@@ -565,8 +563,8 @@ focusComp = this;
     
     /**
      * Other Hub/Property used to determine if component is visible.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
+ 
+
      */
     public void setVisible(Hub hub) {
         control.getVisibleController().add(hub);

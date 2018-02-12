@@ -45,7 +45,7 @@ import com.viaoa.hub.HubListener.InsertLocation;
  *
  * See the paint method to see how it is used to render a single column cell.
  *
-        Hub<User> hub = new Hub<User>(User.class);
+        Hub&lt;User&gt; hub = new Hub&lt;User&gt;(User.class);
         final OATreeTableController tree = new OATreeTableController(hub);
         tree.setPreferredSize(15, 33);
 

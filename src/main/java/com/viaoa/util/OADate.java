@@ -193,8 +193,8 @@ public class OADate extends OADateTime {
 
     /**
         Compares this date with two dates to see if this date is between them.
-        @returns true if this.OADate is GreaterThan or Equal to Obj1 and LessThan or Equal Obj2
-        @param obj Date, OADate, Calendar
+        @return true if this.OADate is GreaterThan or Equal to Obj1 and LessThan or Equal Obj2
+        param obj Date, OADate, Calendar
         @param obj2 Date, OADate, Calendar
     */
     public boolean between(Object obj1, Object obj2) {

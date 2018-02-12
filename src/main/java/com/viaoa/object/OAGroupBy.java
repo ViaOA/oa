@@ -21,7 +21,7 @@ import com.viaoa.hub.Hub;
  * @param <G> group by object
  * @param <F> detail hub / source.
  * 
- * @see HubGroupBy#
+ * see HubGroupBy#
  */
 @OAClass(addToCache=false, initialize=false, useDataSource=false, localOnly=true)
 public class OAGroupBy<F extends OAObject, G extends OAObject> extends OAObject {

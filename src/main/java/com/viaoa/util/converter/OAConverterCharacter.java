@@ -16,14 +16,16 @@ import com.viaoa.util.*;
 /**
     Convert a value to/from a Character value.
     <br>
-    <ul><b>Converts the following to a Character</b>
+    <b>Converts the following to a Character</b>
+    <ul>
     <li>If a String and one char in length, then the first char in the String.
     <li>If a boolean, then it will be converted to either a 'T' or 'F'.
     <li>If numeric, and value is within the MIN and MAX values of a Character, then the intValue.
     <li>Otherwise, null is returned.
     </ul>
     <br>
-    <ul><b>Converts a Character to any of the following</b>
+    <b>Converts a Character to any of the following</b>
+    <ul>
     <li>String, single character. ex: 'T' = "T"
     </ul>
 
@@ -33,7 +35,7 @@ public class OAConverterCharacter implements OAConverterInterface {
 
     /**
         Convert a value to/from a Character value.
-        @parma value is object to convert.<br>
+        parma value is object to convert.<br>
         @param clazz is Character.Class if converting a value to a Character or the Class to convert a Character to.
         @return Object of type clazz if conversion can be done, else null.
     */

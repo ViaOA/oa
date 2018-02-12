@@ -134,13 +134,13 @@ public class OAImage extends OALink {
         bSelected = b;
     }
 
-    /** @returns full string for name.  ex: NAME="imgTest" */
+    /** @return full string for name.  ex: NAME="imgTest" */
     public String getNameTag() {
         return "NAME=\""+getName()+"\"";
     }    
     
     
-    /** @returns full string for image source.  ex: SRC="image.gif" */
+    /** @return full string for image source.  ex: SRC="image.gif" */
     public String getSourceTag() {
         return "SRC=\""+getSource()+"\"";
     }    
@@ -165,7 +165,7 @@ public class OAImage extends OALink {
     
 
     private String lastSource;
-    /** @returns image source.  ex: "image.gif" 
+    /** @return image source.  ex: "image.gif" 
         @see OAImage#getSourceTag
     */
     public String getSource() {
@@ -198,7 +198,7 @@ public class OAImage extends OALink {
     }
 
 
-    /** @returns javascript needed for initialization. */
+    /** @return javascript needed for initialization. */
     public String getInitScript() {
         String line = null;
 
@@ -220,7 +220,7 @@ public class OAImage extends OALink {
         return line;
     }
 
-    /** @returns JavaScript or "". */
+    /** @return JavaScript or "". */
     public String getScript() {
         String line = "";
         String s = getSource();

@@ -163,7 +163,7 @@ public class OATime extends OADateTime {
     /**
         Time comparision with any object.  Object will first be converted to OATime.
         @param obj Date, OADate, Calendar
-        @returns "0" if equal, "-1" if this OADateTime is less than, "1" if this OADateTime is greater than,
+        @return "0" if equal, "-1" if this OADateTime is less than, "1" if this OADateTime is greater than,
            "2" if objects can not be compared.
     */
     public int compare(Object obj) {

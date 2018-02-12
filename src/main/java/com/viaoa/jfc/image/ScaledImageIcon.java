@@ -25,7 +25,7 @@ public class ScaledImageIcon implements Icon {
     Image imgScaled;
 
     /**
-     * @param imageIcon
+     * @param icon
      * @param maxW if 0 then it is ignored
      * @param maxH if 0 then it is ignored
      */

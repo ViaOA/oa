@@ -92,7 +92,7 @@ public class OASyncCombinedClient {
     }
     
     /**
-     * @param syncClient client to the combined server.
+     * 
      */
     public OASyncCombinedClient() {
 //        OASyncDelegate.setSyncCombinedClient(this);

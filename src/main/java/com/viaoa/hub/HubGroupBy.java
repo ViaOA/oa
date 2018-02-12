@@ -22,12 +22,12 @@ import com.viaoa.util.OAString;
 /**
  * Combines a hub into a new single hub to create the equivalent of a database groupBy.
  * 
- * The combined Hub (see getCombinedHub) uses OAObject OAGroupBy<F, G>, where G is the same class as the
+ * The combined Hub (see getCombinedHub) uses OAObject OAGroupBy&lt;F, G&gt;, where G is the same class as the
  * groupBy Hub and F is a hub of the from objects.
  *
  * 
  * // group Employees by Dept
- * new HubGroupBy<Emp, Dept>(hubEmp, hubAllDept, "depts") new HubGroupBy<Emp, Dept>(hubEmp, "depts")
+ * new HubGroupBy&lt;Emp, Dept&gt;(hubEmp, hubAllDept, "depts") new HubGroupBy&lt;Emp, Dept&gt;(hubEmp, "depts")
  *
  * Split property path - this is when all of the methods in a pp are not public (link that does not
  * create method). HubGroupBy is able to group them by splitting the pp using HubGroupBy and HubFrom to get a
@@ -40,8 +40,7 @@ import com.viaoa.util.OAString;
  * internally will create 2 HubGroupBys ... (hubMRADClients, "MRADClient.Application.ApplicationType")
  * (hubApplicationGroups, "ApplicationTypes")
  * 
- * @see HubLeftJoin# to create a "flat" list.
- * @see OAGroupBy# type of object for combined  
+ * @see HubLeftJoin to create a "flat" list.
  * @author vvia
  */
 public class HubGroupBy<F extends OAObject, G extends OAObject> {
@@ -92,12 +91,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
     /**
      * Create a hub on objects that are based on hubB, and are grouped by hubA. This allows a the
      * combined hub to have a full list like a left-join.
-     * 
-     * @param hubA
-     *            objects that are to be grouped.
-     * @param hubB
-     *            optional list of objects to have as the master list. This will act as a left-join
-     * 
+
      * @param propertyPath
      *            pp of the property from the right object to get left object. example: if hubDept,
      *            hubEmpOrders, then "Employee.Department" HubGroupBy(hubEmpOrders, hubDept,
@@ -158,7 +152,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
     
     
     /**
-     * @return Hub<G> of groupBy objects that are in sync (share AO) with combined Hub.
+     * @return Hub of groupBy objects that are in sync (share AO) with combined Hub.
      */
     public Hub<G> getMasterHub() {
         if (hubMaster == null) {

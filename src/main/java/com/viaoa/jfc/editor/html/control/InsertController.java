@@ -30,7 +30,7 @@ import com.viaoa.jfc.editor.html.oa.Insert;
 import com.viaoa.jfc.editor.html.view.InsertDialog;
 
 /**
- * Controller for InsertDialog, which allows inserting html & attributes.
+ * Controller for InsertDialog, which allows inserting html &amp; attributes.
  * @author vvia
  *
  */

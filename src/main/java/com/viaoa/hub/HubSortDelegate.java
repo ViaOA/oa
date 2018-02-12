@@ -20,16 +20,11 @@ import com.viaoa.util.OAString;
 /**
  * Delegate used for sorting hub.
  * @author vvia
- *
  */
 public class HubSortDelegate {
 
     /**
 	    Reorder objects in this Hub, sorted by the value(s) from propertyPath(s).
-	    @see sort(String,boolean)
-	    @see HubSorter
-	    @see #cancelSort
-	    Note: all sort methods need to call this method, since this will handle Client/Server issues.
 	*/
     public static void sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp) {
         sort(thisHub, propertyPaths, bAscending, comp, false);
@@ -152,7 +147,7 @@ public class HubSortDelegate {
 	
     /**
 	    Removes/disconnects HubSorter (if any) that is keeping objects in a sorted order.
-	    @see sort(String,boolean)
+
 	*/
 	public static void cancelSort(Hub thisHub) {
 	    if (isSorted(thisHub)) {

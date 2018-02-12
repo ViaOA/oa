@@ -45,7 +45,7 @@ import com.viaoa.annotation.OACalculatedProperty;
     <p>
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
  
-    @see OAObject#getOAObjectInfo
+
     @see OAObjectInfo    
     @author Vince Via
  */
@@ -69,7 +69,7 @@ public class OACalcInfo implements java.io.Serializable {
      * Example:  
      *   new CalcInfo("totalCostOfOrder",String { "orderItem.qty", "orderItem.product.cost", "customer.freight", "customer.state.taxRate" } );            
      * </pre>
-     * @param propertyName name of calculated property
+     * @param name name of calculated property
      * @param props array of depend property paths
      */
     public OACalcInfo(String name, String[] props) {

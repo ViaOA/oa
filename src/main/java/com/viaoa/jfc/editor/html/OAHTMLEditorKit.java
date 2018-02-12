@@ -225,7 +225,7 @@ public abstract class OAHTMLEditorKit extends HTMLEditorKit {
         }
     }
 
-    /** copied from DefaultEditorKit 
+    /* copied from DefaultEditorKit 
         Overwritten/replaced to fix bug where BOL on first line goes to position[0], when text really
         begins at position[1] when <head> exists.  The element at position[0] is for a "default" character in the <head>
     */
@@ -610,7 +610,7 @@ public abstract class OAHTMLEditorKit extends HTMLEditorKit {
     }
     
     /**
-     * Inserts a Div with a background image, and the width & height are set to the image size.
+     * Inserts a Div with a background image, and the width &amp; height are set to the image size.
      */
     class InsertImageDivAction extends InsertHTMLTextAction {
         private SimpleAttributeSet tempSet;

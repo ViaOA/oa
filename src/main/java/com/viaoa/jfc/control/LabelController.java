@@ -48,7 +48,7 @@ public class LabelController extends JFCController {
     /**
         Bind a label to the active object in a Hub.  Can be used to only
         display an icon for the active object.
-        @see HubGuiAdapter#setImageProperty
+
     */
     public LabelController(Hub hub, JLabel lab) { 
         super(hub, lab); // this will add hub listener

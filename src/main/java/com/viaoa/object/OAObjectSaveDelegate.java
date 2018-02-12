@@ -231,8 +231,8 @@ public class OAObjectSaveDelegate {
 	
 	private static final HashMap<Integer, Thread> hmSaveNewLock = new HashMap<Integer, Thread>(11);
 	
-    /** @param bFullSave false=dont flag as unchanged, used when object needs to be saved twice. First to create
-	    object in datasource so that reference objects can refer to it
+    /** 
+	    
 	*/
 	protected static boolean onSave(OAObject oaObj) {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());

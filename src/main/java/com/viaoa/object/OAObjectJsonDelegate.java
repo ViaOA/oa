@@ -29,7 +29,7 @@ public class OAObjectJsonDelegate {
 	    Called by OAJsonWriter to save object as JSON.  All ONE, MANY2MANY, and MANY w/o reverse getMethod References
 	    will store reference Ids, using the name of reference property as the tag.<br>
 	    Note: if a property's value is null, then it will not be included.
-	    @see #read
+	    see #read
 	*/
     public static void write(OAObject oaObj, OAJsonWriter ow, boolean bKeyOnly, OACascade cascade) {
         ow.println("{");

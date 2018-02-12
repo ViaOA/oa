@@ -66,8 +66,8 @@ public class OALogger extends Logger {
 	
 	
 	/**
-	 *  @returns Logger for class name that uses the resource bundle file values.properties.
-	 *  @see Format#getResourceBundleFileName
+	 *  @return Logger for class name that uses the resource bundle file values.properties.
+	 *  see Format#getResourceBundleFileName
 	 */
 	public static Logger getLogger(Class c) {
 		if (c == null) return null;

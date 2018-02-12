@@ -45,7 +45,7 @@ import com.viaoa.util.OAString;
 
 */
 
-/**
+/* 
  * Text pane used for html styled editor.
  * 
  * Subclasses JTextPane and adds support for pasting and printing:
@@ -106,8 +106,8 @@ import com.viaoa.util.OAString;
  * <li>background-position
  * <li>background
  * 
- * <img src='classpath://com.theice.tsam.view.image/icon.gif'>
- * <img src='oaproperty:://classPath/propName?Id'>  ???? verify that this is correct qqqqqqqqqqq
+ * <img src='classpath://com.theice.tsam.view.image/icon.gif' alt="">
+ * <img src='oaproperty:://classPath/propName?Id' alt=''>  ???? verify that this is correct qqqqqqqqqqq
  * 
  * <li>width
  * <li>height
@@ -134,7 +134,7 @@ import com.viaoa.util.OAString;
  * 
  * 
  * ** NOTE **
- *  for <Table>, if the Border attr is used, then it's value will be used for all TD border-width,
+ *  for Table, if the Border attr is used, then it's value will be used for all TD border-width,
  *      for any TD inside of it (even inner tables)
  *  set Table attribute "BORDER=0" to remove lines 
  * 
@@ -293,7 +293,7 @@ public class OAHTMLTextPane extends JTextPane implements OAPrintable {
      * Overwritten to first make sure that the document is not being printed.
      * 
      * @param text
-     * @param bWaitIfPrinting
+
      */
     @Override
     public void setText(final String text) {
@@ -1173,7 +1173,7 @@ public class OAHTMLTextPane extends JTextPane implements OAPrintable {
         return newImage;
     }
 
-    /***
+    /* **
      * qqqqqq int qqq=0;
      * 
      * @Override public Dimension getPreferredSize() { Dimension d =

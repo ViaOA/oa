@@ -26,8 +26,6 @@ import com.viaoa.util.*;
 public class HubLinkDelegate {
     /**
         Main LinkHub method used to link from one hub to another. 
-        @see Hub#setLinkHub(Hub,String) Full Description of Linking Hubs
-        @see HubLink
     */
     protected static void setLinkHub(Hub thisHub, String propertyFrom, Hub linkToHub, String propertyTo, boolean linkPosFlag, boolean bAutoCreate, boolean bAutoCreateAllowDups) {
         // 20110809 add bAutoCreateAllowDups
@@ -415,8 +413,6 @@ public class HubLinkDelegate {
     /**
         Returns true if this Hub is linked to another Hub using the
         position of the active object.
-        @see Hub#setLink(Hub,String) Full Description of Linking Hubs
-        @see HubLink
     */
     public static boolean getLinkHubOnPos(Hub thisHub) {
         return getLinkHubOnPos(thisHub, false);
@@ -444,9 +440,6 @@ public class HubLinkDelegate {
         Used for linking/connecting Hubs,
         to get method used to set the property value of the active object in the masterHub
         to the active object in this Hub.
-        @see updateLinkProperty
-        @see Hub#setLink(Hub,String) Full Description of Linking Hubs
-        @see HubLink
     */
     public static Method getLinkSetMethod(Hub thisHub) {
         return getLinkSetMethod(thisHub, false);
@@ -475,8 +468,6 @@ public class HubLinkDelegate {
 
     /**
         Used to get value from active object in masterHub, that is then used to set active object in this hub.
-        @see Hub#setLink(Hub,String) Full Description of Linking Hubs
-        @see HubLink
     */
     public static Method getLinkGetMethod(Hub thisHub) {
         return getLinkGetMethod(thisHub, false);
@@ -506,8 +497,6 @@ public class HubLinkDelegate {
     /**
         Returns the property path of the property that this Hub is
         linked to.
-        @see Hub#setLink(Hub,String) Full Description of Linking Hubs
-        @see HubLink
     */
     public static String getLinkHubPath(Hub thisHub) {
         return getLinkHubPath(thisHub, false);

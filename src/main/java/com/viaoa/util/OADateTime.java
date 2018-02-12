@@ -15,7 +15,7 @@ import java.text.*;
 import java.io.IOException;
 import java.sql.Time;
 
-/**
+/*
     Superclass of OADate and OATime that combines Calendar, Date and SimpleDateFormat.
 
     'Hms', 'Mdy'
@@ -331,7 +331,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
     /**
         @param year full year (not year minus 1900 like Date)
         @param month 0-11
-        @param date day of the month
+        @param day day of the month
      */
     public OADateTime(int year, int month, int day) {
         this(new Date(year-1900, month, day));
@@ -345,7 +345,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
     /**
        @param year full year (not year minus 1900 like Date)
        @param month 0-11
-       @param date day of the month
+       @param day day of the month
     */
     public OADateTime(int year, int month, int day, int hrs, int mins, int secs, int milsecs) {
         this(new Date(year-1900, month, day, hrs, mins, secs));
@@ -646,7 +646,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
     }
     /**
         Get month, values between 0-11.
-        @returns month as 0-11
+        @return month as 0-11
     */
     public int getMonth() {
         if (timeZone == null || timeZone == defaultTimeZone) {
@@ -685,7 +685,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
             _releaseCal(c);
         }
     }
-    /** @returns day of month, 1-31.*/
+    /** @return day of month, 1-31.*/
     public int getDay() {
         if (timeZone == null || timeZone == defaultTimeZone) {
             Date d = new Date(_time);
@@ -1047,7 +1047,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         or greater than the specified object.
 
         @param obj Date, OADate, Calendar, String
-        @returns "0" if equal, "-1" if this OADateTime is less than, "1" if this OADateTime is greater than,
+        @return "0" if equal, "-1" if this OADateTime is less than, "1" if this OADateTime is greater than,
            "2" if objects can not be compared.
     */
     public int compareTo(Object obj) {
@@ -1545,7 +1545,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         @see OADateTime#setFormat
         @see #setGlobalOutputFormat
         @see #addGlobalParseFormat
-        @see #getGlobalParseFormats
+        see #getGlobalParseFormats
         @see #valueOf(String,String)
     */
     public static OADateTime valueOf(String strDateTime) {

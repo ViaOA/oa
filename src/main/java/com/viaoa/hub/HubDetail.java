@@ -28,7 +28,7 @@ import com.viaoa.object.*;
     </pre>
     <p>
     Note: This does not get serialized with Hub.
-    @see Hub#getDetail
+    see Hub#getDetail
 */
 class HubDetail implements java.io.Serializable {
     static final long serialVersionUID = 1L;  // used for object serialization

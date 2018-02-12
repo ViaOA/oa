@@ -459,11 +459,10 @@ public class HubEventDelegate {
 
 	/**
 	    Called by OAObject and Hub, used to notify all listeners of a property change.
-	    @param object OAObject that was changed
+	    @param oaObj OAObject that was changed
 	    @param propertyName name of property that changed. This is case insensitive
 	    @param oldValue previous value of property
 	    @param newValue new value of property
-	    @see #fireCalcPropertyChange(Object,String)
 	*/
 	public static void fireBeforePropertyChange(Hub thisHub, OAObject oaObj, String propertyName, Object oldValue, Object newValue) {
 	    HubListener[] hl = getAllListeners(thisHub);
@@ -485,11 +484,10 @@ public class HubEventDelegate {
 	
 	/**
 	    Called by OAObject and Hub, used to notify all listeners of a property change.
-	    @param object OAObject that was changed
+	    @param oaObj OAObject that was changed
 	    @param propertyName name of property that changed. This is case insensitive
 	    @param oldValue previous value of property
 	    @param newValue new value of property
-	    @see #fireCalcPropertyChange(Object,String)
 	*/
 	public static void fireAfterPropertyChange(final Hub thisHub, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue, final OALinkInfo linkInfo ) {
 		// 2007/01/03 need to call propertyChangeDupChain() first, since propertyChange
@@ -583,8 +581,6 @@ public class HubEventDelegate {
 	/**
 	    Used to notify listeners that a new collection has been established.
 	    Called by select() and when a detail Hub's source of data is changed.
-	    @see #updateDetail
-	    @see #select
 	 */
 	public static void fireOnNewListEvent(Hub thisHub, boolean bAll) {
 	    if (thisHub == null) return;
@@ -620,9 +616,7 @@ public class HubEventDelegate {
         Add a Listener to this hub specifying a specific property name.
         If property is a calculated property, then the Hub will automatically
         set up internal listeners to know when the calculated property changes.
-        @param listener HubListener object
         @param property name to listen for
-        @see HubEvent
     */
     public static void addHubListener(Hub thisHub, HubListener hl, String property, String[] dependentPropertyPaths) {
         if (property != null && property.indexOf('.') >= 0) {
@@ -654,15 +648,8 @@ public class HubEventDelegate {
         clearGetAllListenerCache(thisHub);
     }
 	
-	// this is taken from HubDataUnique
 	/**
 	    Add a new Hub Listener, that receives all Hub and OAObject events.
-	    @param bFront if true, then this listener is added to beginning of list, so that
-	    it is called first.
-	    @see #removeListener
-	    @see HubListener
-	    @see HubEvent
-	    @see #addHubListener(Hub, HubListener, String)
 	*/
 	public static void addHubListener(Hub thisHub, HubListener hl) {
         getHubListenerTree(thisHub).addListener(hl);
@@ -672,7 +659,6 @@ public class HubEventDelegate {
 	public static int TotalHubListeners; 	
 	/**
 	    Remove HubListener from list.
-	    @see #addListener
 	*/
 	protected static void removeHubListener(Hub thisHub, HubListener l) {
 	    if (thisHub.datau.getListenerTree() == null) return;
@@ -684,7 +670,6 @@ public class HubEventDelegate {
 	private final static HubListener[] hlEmpty = new HubListener[0];
 	/**
 	    Returns list of registered listeners.
-	    @see #addListener
 	*/
 	protected static HubListener[] getHubListeners(Hub thisHub) {
 	    if (thisHub.datau.getListenerTree() == null) return hlEmpty;
@@ -695,7 +680,6 @@ public class HubEventDelegate {
 
     /**
 	    Returns a count of all of the listeners for this Hub and all of Hubs that are shared with it.
-	    @see #addListener
 	*/
 	public static int getListenerCount(Hub thisHub) {
 	    return getAllListeners(thisHub).length;
@@ -703,7 +687,6 @@ public class HubEventDelegate {
 	
 	/**
 	    Returns an array of HubListeners for all of the listeners for this Hub and all of Hubs that are shared with it.
-	    @see #addListener
 	*/
 	public static HubListener[] getAllListeners(Hub thisHub) {
 	    return getAllListeners(thisHub,0);

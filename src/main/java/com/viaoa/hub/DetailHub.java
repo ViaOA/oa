@@ -22,7 +22,7 @@ package com.viaoa.hub;
     as the master Hub.  This DetailHub will automatically contain the Employee objects for whichever Department is
     currenly the active object in the master Hub.
     <br>
-    &nbsp;&nbsp;&nbsp;<img src="doc-files/Hub3.gif">
+    &nbsp;&nbsp;&nbsp;<img src="doc-files/Hub3.gif" alt="">
     <br>
     Using the diagram, the detail Hub is populated with the Employee objects from the Department that is the
     active object in the master Hub. Actually, the detail Hub is not really populated, but rather it uses
@@ -42,10 +42,6 @@ package com.viaoa.hub;
     * Hub hubEmp = new HubDetail(hubDept,"Employees", "lastName, firstName"); // sets sort order
     *
     </pre>
-
-
-
-    @since 2004/03/19 using methods built into Hub.  see {@link Hub#getDetail} {@link Hub#setMaster}
     @see Hub
 */
 public class DetailHub<TYPE> extends Hub<TYPE> {

@@ -869,7 +869,7 @@ public class OAObjectInfoDelegate {
     // 20141130 weakReferenceable 
 
     /**
-     * Returns true if any of the parent links has type=Many and cacheSize>0,
+     * Returns true if any of the parent links has type=Many and cacheSize &amp; 0,
      * which means that this object can be GCd.
      */
     public static boolean isWeakReferenceable(OAObject oaObj) {

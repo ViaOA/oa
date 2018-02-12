@@ -268,7 +268,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
     
 
     /**
-        Flag that allows for drag & drop support, default=true.
+        Flag that allows for drag &amp; drop support, default=true.
     */
     public void setAllowDnD(boolean b) {
         setAllowDrop(b);
@@ -1697,7 +1697,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
             }
         }
         </pre>
-        @see #valueChangedImpl(TreeSelectionEvent)
+        @see #valueChanged(TreeSelectionEvent)
         @see #nodeSelected(OATreeNodeData)
         @see #objectSelected(Object)
     */

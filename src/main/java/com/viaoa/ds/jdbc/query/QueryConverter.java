@@ -34,7 +34,7 @@ import com.viaoa.ds.jdbc.delegate.*;
     Uses JOINs or LEFT OUTER JOINS to connect super/sub classes and ONE type references.<br>
     Uses EXISTS for MANY type references.<br>
     Will work with any valid object path.<br>
-    Allows OR, ||, AND, &&, (), =, !=, NULL, &lt;, &lt;=, &gt;, &gt;=
+    Allows OR, ||, AND, &amp;&amp;, (), =, !=, NULL, &lt;, &lt;=, &gt;, &gt;=
     <p>
     Converts to SQL using OAQueryTokenizer to parse object query into tokens, along with Database to Object Mapping.
     @see #getUseDistinct to see if the query will require the use of the "DISTINCT" keyword.

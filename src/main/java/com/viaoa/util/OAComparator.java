@@ -19,7 +19,7 @@ import com.viaoa.hub.Hub;
 /**
     OAComparator is used to sort objects.  Hub.sort uses this when creating a HubSorter.
     @see Hub#sort
-    @see HubSortListener
+    see HubSortListener
 */
 public class OAComparator implements Comparator {
     Class clazz;

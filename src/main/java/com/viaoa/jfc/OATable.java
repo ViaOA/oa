@@ -55,7 +55,7 @@ import com.viaoa.util.*;
  * has its own own renderer that is called for each cell.<br>
  * Also see OATable.getRenderer(...) to be able to customize any cell.
  * <p>
- * &nbsp;&nbsp;&nbsp;<img src="doc-files/table.gif">
+ * &nbsp;&nbsp;&nbsp;<img src="doc-files/table.gif" alt="">
  * <p>
  * Example:<br>
  * <p>
@@ -1081,9 +1081,9 @@ if (!getKeepSorted()) hub.cancelSort();
     /**
      * Can be overwritten to customize the component used to renderer a Table cell.
      * 
-     * @see #getRenderer(JComponent, JTable, Object, boolean, boolean, int, int) to customize the
+     * see #getRenderer(JComponent, JTable, Object, boolean, boolean, int, int) to customize the
      *      component
-     * @see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int) Preferred way
+     * see #customizeRenderer(JLabel, JTable, Object, boolean, boolean, int, int) Preferred way
      */
     public Component getRenderer_OLD(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         Component comp = null;
@@ -1269,10 +1269,6 @@ if (!getKeepSorted()) hub.cancelSort();
     // 20150428
     /**
      * Add a column that will that will use checkboxes to show selected rows.
-     * 
-     * @param hubSelect
-     * @param heading
-     * @param width
      */
     public OATableColumn addCounterColumn() {
         return addCounterColumn("#", 3);

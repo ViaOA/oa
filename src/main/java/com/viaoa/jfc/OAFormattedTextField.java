@@ -136,8 +136,6 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
 
     /**
      * Other Hub/Property used to determine if component is enabled.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
      */
     public void setEnabled(Hub hub) {
         control.getEnabledController().add(hub);
@@ -165,8 +163,6 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
     */
     /**
      * Other Hub/Property used to determine if component is visible.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
      */
     public void setVisible(Hub hub) {
         control.getVisibleController().add(hub);

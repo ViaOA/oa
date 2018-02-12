@@ -337,7 +337,7 @@ public class ConnectionPool implements Runnable {
     
     /**
         Returns a JDBC Statement that can be used for direct JDBC calls.
-        @message message reason/description for using statement.  This is used by getInfo(),
+        @param message reason/description for using statement.  This is used by getInfo(),
     */  
     public Statement getStatement(String message) throws Exception {
         OAConnection con = getStatementConnection();

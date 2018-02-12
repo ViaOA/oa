@@ -20,7 +20,7 @@ package com.viaoa.html;
 import java.util.Vector;
 
 /** TreeTitleNode for OATree.
-</pre>
+
 */
 
 public class OATreeTitleNode extends OATreeNode {

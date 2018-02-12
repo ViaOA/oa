@@ -525,7 +525,7 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     }
     
     
-    /**
+    /*
      * Callback from {@link #getTemplate(Object, int, int, int)}, before calling getEscapedHtml
      */
     public String getTemplateValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, String defaultValue) {
@@ -597,7 +597,7 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     }
     
     
-    /**
+    /*
      * By default, will get servlet image using servletImagePropertyPath, and text using propertyPath.
      * @see #getHtmlImage(Object, int, int, int)
      * @see #getHtmlData(Object, int, int, int)

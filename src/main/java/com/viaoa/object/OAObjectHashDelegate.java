@@ -156,7 +156,7 @@ public class OAObjectHashDelegate {
      * This is called by OAObjectKeyDelegate.updateKey() when an OAObject.OAObjectKey is changed so that it can be rehashed.
      * @param oaObj
      * @param keyOld
-     * @param keyNew
+
      */
     public static void rehash(OAObject oaObj, OAObjectKey keyOld) {
     	//OAObjectKey keyNew = OAObjectKeyDelegate.getKey(oaObj);

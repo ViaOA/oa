@@ -29,7 +29,7 @@ import com.viaoa.util.*;
  * forward URL: to act as a link
  * helper methods to set attributes
  * 
- * @see #setConvertTextToHtml(boolean) set to false if text is already in html
+ * see #setConvertTextToHtml(boolean) set to false if text is already in html
  * @author vvia
  */
 public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface{
@@ -403,7 +403,7 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
     /**
         Returns format to use for displaying value as a String.
         @see OADate#OADate
-        @see OAConverterNumber#OAConverterNumber
+        see OAConverterNumber#OAConverterNumber
     */
     public String getFormat() {
         if (format == null && bDefaultFormat && !OAString.isEmpty(htmlPropertyPath) && hub != null) {

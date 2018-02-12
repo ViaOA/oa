@@ -108,7 +108,7 @@ public class OATextField extends OAHtmlComponent {
     }
 
     /** unconverted/raw value stored for textfield. 
-        @returns string value of text or null
+        @return string value of text or null
         @see OATextField#getValue to get HTML safe text
         @see OATextField#getHtmlText to get HTML safe text
     */
@@ -183,7 +183,7 @@ public class OATextField extends OAHtmlComponent {
     }
 
     /** same as calling getHtmlText()
-        @returns HTML "safe" vaule
+        @return HTML "safe" vaule
         @see OATextField#getText
     */
     public String getValue() {

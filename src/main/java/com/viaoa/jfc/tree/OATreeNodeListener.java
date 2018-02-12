@@ -23,7 +23,7 @@ import com.viaoa.hub.*;
 import com.viaoa.jfc.*;
 
 /** 
-    @depreciated See OATree for description on setting Listeners
+    @deprecated See OATree for description on setting Listeners
     @see OATree
 */
 public interface OATreeNodeListener {

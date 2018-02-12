@@ -58,7 +58,7 @@ import com.viaoa.jfc.table.*;
         [confirmActionPerformed]  -- user confirm or cancel
         [getFile Save/Open] 
         {runActionPerformed}  -- sets up/uses swingWorker
-            >>> onActionPerformed  -- where actual event is handled
+            onActionPerformed  -- where actual event is handled
         afterActionPerformed  -- show completed message
            or
         afterActionPerformedFailure  - if error

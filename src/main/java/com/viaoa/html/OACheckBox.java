@@ -47,7 +47,6 @@ import com.viaoa.util.*;
     output =&gt;
     &lt;input type="checkbox" name="chkHourly" value="true" checked vav=""&gt;
 </pre>
-    @see also OARadio
 */
 public class OACheckBox extends OAHtmlComponent {
     private static final long serialVersionUID = 1L;

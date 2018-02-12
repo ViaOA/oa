@@ -33,16 +33,16 @@ public @interface OAClass {
     boolean isLookup() default false;
     boolean isPreSelect() default false;
     
-    /** flag used to determine if object can be stored to datasource. */
+    /**  @return flag used to determine if object can be stored to datasource. */
     boolean useDataSource() default true;
 
-    /** flag to know if objects should be added to cache */
+    /** @return flag to know if objects should be added to cache */
     boolean addToCache() default true;
     
-    /** if true, then changes are not sent to sever. */
+    /** @return if true, then changes are not sent to sever. */
 	boolean localOnly() default false;
 	
-	/** if false, then objects are not initialized on creation */
+	/** @return if false, then objects are not initialized on creation */
 	boolean initialize() default true;
 
     String displayProperty() default "";

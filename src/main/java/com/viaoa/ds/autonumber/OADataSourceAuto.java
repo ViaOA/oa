@@ -22,7 +22,6 @@ import com.viaoa.ds.*;
     assign autoNumbers for new objects that have object Id properties that are numbers and not initialized.
     <p>
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
-    @see NextNumber2
 */
 
 public class OADataSourceAuto extends OADataSource {

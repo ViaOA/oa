@@ -214,9 +214,9 @@ public class OAFile extends java.io.File {
      * @param c
      * @param resourceName
      *            class path name for file to read
-     * @param fname
+     * param fname
      *            file name to save as
-     * @param estimatedSize
+     * param estimatedSize
      * @return true if successful, false if resource did not exist
      * @throws Exception
      */
@@ -252,7 +252,7 @@ public class OAFile extends java.io.File {
      * Read the contents of a text file from a specific class location. This
      * will read from a jar file.
      * 
-     * @param fname
+     * param fname
      *            '/' seperated file name, located from the class. If fname
      *            begins with '/' then the file will go to the root directory.
      */

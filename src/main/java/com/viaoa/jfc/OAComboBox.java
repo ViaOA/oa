@@ -111,8 +111,6 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
     
     /**
      * Other Hub/Property used to determine if component is enabled.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
      */
     public void setEnabled(Hub hub) {
         control.getEnabledController().add(hub);
@@ -140,8 +138,6 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
     */
     /**
      * Other Hub/Property used to determine if component is visible.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
      */
     public void setVisible(Hub hub) {
         control.getVisibleController().add(hub);
@@ -317,16 +313,12 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
     
     /** 
         Format used to display this property.  Used to format Date, Times and Numbers.
-        @see OADate#OADate
-        @see OAConverterNumber#OAConverterNumber
     */
     public void setFormat(String fmt) {
         control.setFormat(fmt);
     }
     /** 
         Format used to display this property.  Used to format Date, Times and Numbers.
-        @see OADate#OADate
-        @see OAConverterNumber#OAConverterNumber
     */
     public String getFormat() {
         return control.getFormat();
@@ -347,7 +339,6 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
 
     /**
         Root directory where images are stored.
-        @see #setImageProperty
     */
     public void setImagePath(String path) {
         control.setImagePath(path);
@@ -483,14 +474,14 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
     
     /**
         Property path used to retrieve/set value for this component.
-        @see HubGuiAdapter#setPropertyPath(String)
+
     */
     public String getPropertyPath() {
         return control.getPropertyPath();
     }
     /**
         Property path used to retrieve/set value for this component.
-        @see HubGuiAdapter#setPropertyPath(String)
+
     */
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);

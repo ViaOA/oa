@@ -54,7 +54,7 @@ import com.viaoa.util.*;
     OAComboBox cbo = new OAComboBox(hub, "name");
     cbo.setNullDescription("Top Level");
     form.add("cboCategory", cbo);
-<pre>
+</pre>
 */
 public class OAComboBox extends OAHtmlComponent {
     private static final long serialVersionUID = 1L;
@@ -81,7 +81,7 @@ public class OAComboBox extends OAHtmlComponent {
         Note: if hub is not a Shared Hub, then one will be created and it will be used.
         @param masterHub hub that is used for listing
         @param linkHub hub to update
-        @parem propertyPath property to display
+        @param propertyPath property to display
     */
     public OAComboBox(Hub masterHub, Hub linkHub, String propertyPath, int columns) {
         if (masterHub != null && linkHub != null) {

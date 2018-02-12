@@ -134,7 +134,7 @@ public abstract class OAHtmlComponent implements Serializable {
         return propertyPath;
     }
 
-    /** @returns Script (javascript) needed for initialization. */
+    /** @return Script (javascript) needed for initialization. */
     public String getInitScript() {
         return null;
     }
@@ -314,7 +314,6 @@ public abstract class OAHtmlComponent implements Serializable {
 
     /** display format for property.  Currently used to format Date, Times and Numbers.
         @see OADate#OADate
-        @see OAConverterNumber#OAConverterNumber
     */
     public void setFormat(String fmt) {
         format = fmt;

@@ -32,7 +32,7 @@ import com.viaoa.util.*;
  * Use setView if an HtmlPane is going to be used for the data portion of the report.
  *
  * Uses an HtmlConverter to convert tags with values.
- * The html code uses special tags "<%= ? %>", where "?" is the name of the Property name, or object property path.
+ * The html code uses special tags "&lt;%= ? %&gt;", where "?" is the name of the Property name, or object property path.
  * By using setProperties and setObject, you can set where the data is retrieved from.
  * Use a "$" prefix in tag name to have it use an internal tag, or a value from the setProperties.
  * Otherwise, the value of the tag will be taken from the object, using the name as the property path.
@@ -89,7 +89,7 @@ public class OAHTMLReport extends OAReport {
      * @param htmlHead2 heading for additional pages.  
      * @param htmlDetail
      * @param htmlFoot
-     * @param props Properties to use for "$" vars in the HTML ex: <%=$Name%>
+     * @param props Properties to use for "$" vars in the HTML ex: &lt;%=$Name%&gt;
      */
     public OAHTMLReport(OAHTMLTextPane txtDetail, String htmlHead, String htmlHead2, String htmlDetail, String htmlFoot, OAProperties props) {
         this.properties = props;

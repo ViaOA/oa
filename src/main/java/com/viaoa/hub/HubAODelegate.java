@@ -31,7 +31,7 @@ public class HubAODelegate {
     /**
 	    Navigational method that will set the position of the active object.
 	    GUI components use this to recognize which object that they are working with.
-	    @param pos position to set.  If > size() or < 0 then it will be set to null, and getPos() will return -1
+	    @param pos position to set.  If &gt; size() or &lt; 0 then it will be set to null, and getPos() will return -1
 	    @see Hub#getActiveObject
 	 */
 	public static Object setActiveObject(Hub thisHub, int pos) {
@@ -73,7 +73,6 @@ public class HubAODelegate {
 	    Master Hub, which will cause this Hub to be refreshed, allowing the object to be found. <i>Makes sense?</i>
 	    <p>
 	    @param adjustMaster - see getPos(Object, boolean) for notes
-	    @see Hub#set(Object,boolean)
 	*/
 	public static void setActiveObject(Hub thisHub, Object object, boolean adjustMaster) {
 	    if (object != null) {

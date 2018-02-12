@@ -330,10 +330,6 @@ System.out.println("getOutputStream "+Thread.currentThread().getName()+", _bWrit
      * 
      * @param cmd
      *            see MultiplexerSocketController for list of commands
-     * @param param
-     * @param serverProcessName
-     *            used for new vsockets, so that the server will know which
-     *            MultiplexerServerSocket.accept() to use.
      */
     protected void sendCommand(int cmd, int param, String serverSocketName) throws IOException {
         if (this._bIsClosed) return;

@@ -79,8 +79,8 @@ public class DiscoveryServer {
         return this.msg;
     }
     
-    /**
-     * Runs thread to send udp broadcast messages, and listen for discoveryClient requests. 
+    /*
+     * Runs thread to send udp broadcast messages, and listen for discoveryClient requests.
      */
     public void start() throws Exception {
         if (bStarted) return;
@@ -103,7 +103,7 @@ public class DiscoveryServer {
         t.start();
     }
 
-    /**
+    /*
      * Called by start, to listen for clients, and respond by sending out message.
      * @param iStartStop used to know when to stop.
      */

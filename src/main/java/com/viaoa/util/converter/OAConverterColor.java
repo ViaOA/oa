@@ -17,13 +17,15 @@ import java.awt.Color;
 /**
     Convert to/from a Color value.
     <br>
-    <ul><b>Converts the following to a Color</b>
+    <b>Converts the following to a Color</b>
+    <ul>
     <li>String: name of a color (see Color, case insensitive) or be able to be converted by using Color.decode    
     <li>Number or Character: Color for that value will be returned.
     <li>All others value will return null.
     </ul>
     <br>
-    <ul><b>Converts a Color to any of the following</b>
+    <b>Converts a Color to any of the following</b>
+    <ul>
     <li>String, using a Hex value.  ex: "#FF88DB"
     </ul>
 

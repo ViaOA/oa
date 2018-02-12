@@ -43,7 +43,7 @@ public class OAObjectEmptyHubDelegate {
     /**
      * Called by OAObject.afterLoad() to initialize any Hubs that are empty, so that
      * they will not need to go to the database.
-     * @param oaObj
+     * @param obj
      */
     public static void initialize(OAObject obj) {
         if (map == null) return;

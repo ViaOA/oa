@@ -40,7 +40,7 @@ public class OATransaction {
     private ArrayList<OATransactionListener> al = new ArrayList<OATransactionListener>();
 
     
-    /**  java.sql.Connection isolation levels
+    /*  java.sql.Connection isolation levels
         java.sql.Connection.X<br>
         TRANSACTION_NONE - level not set - some databases (ex: Derby) will throw and exception<br>
         TRANSACTION_READ_UNCOMMITTED - data changed by transaction will be used by other transactions that read<br>

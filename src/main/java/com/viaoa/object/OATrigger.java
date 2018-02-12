@@ -4,7 +4,7 @@ package com.viaoa.object;
 /**
  * Defines a method to be called from a root class, when any change is made from an object in a propertyPath
  * 
- * @see OATriggerDelegate# to have a trigger created. 
+ * see OATriggerDelegate# to have a trigger created. 
  */
 public class OATrigger {
     protected String name;

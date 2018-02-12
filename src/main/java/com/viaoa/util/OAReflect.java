@@ -118,7 +118,7 @@ public class OAReflect {
         @return array of "get' methods that can be used to retrieve a value from an object of type clazz.
         @see #getPropertyValue(Object,Method)
         @see #getMethods(Class,String,boolean)
-        @throws OAException if any method can not be found.
+
     */
     public static Method[] getMethods(Class clazz, String propertyPath) {
         return getMethods(clazz, propertyPath, true);
@@ -141,7 +141,7 @@ public class OAReflect {
         @return array of "get' methods that can be used to retrieve a value from an object of type clazz.
         If the a method can not be found then null is returned.
         @see #getPropertyValue(Object,Method)
-        @throws OAException if methods can not be found and bThrowException is true.
+        throws OAException if methods can not be found and bThrowException is true.
      ** also can use newer OAPropertyPath, which has more info, including the methods
     */
     public static Method[] getMethods(Class clazz, String propertyPath, boolean bThrowException) {
@@ -302,7 +302,7 @@ public class OAReflect {
     /**
         Convert a String value to a different value of Class clazz.
         This will call OAConverter to do the conversion.
-        @param clazz Class to convert String value to.
+        param clazz Class to convert String value to.
         @param value is String to convert.
         @param format is text format used for String.
         @return Object that is converted from String value.
@@ -355,7 +355,7 @@ public class OAReflect {
         @param object beginning object to use when calling methods.
         @param method array of methods to call.  Will use object for the first method, then will
         follow using the returned object for each method.
-        @param format text format to use for conversion to string value.
+        param format text format to use for conversion to string value.
         @return If any method call returns a null, then null will be returned, else the string value of the
         last method call.
         @see OAReflect#getMethods

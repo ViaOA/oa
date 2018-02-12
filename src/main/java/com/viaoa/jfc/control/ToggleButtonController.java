@@ -75,7 +75,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
     /**
         Bind a button to a property path for an object.
         @param valueOn value to use for property when button is selected
-        @param valueOFf value to use for property when button is not selected
+        @param valueOff value to use for property when button is not selected
     */
     public ToggleButtonController(Object object, AbstractButton button, String propertyPath, Object valueOn, Object valueOff) {
         super(object, propertyPath, button); // this will add hub listener
@@ -97,7 +97,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
     /**
         Bind a button to a property path to the active object for a Hub.
         Button will be enabled based on active object in Hub not being null.
-        @param valueOn value to use for property when button is selected
+        param valueOn value to use for property when button is selected
     */
     public ToggleButtonController(Hub hub, AbstractButton button, String propertyPath, int value) {
         this(hub, button, propertyPath, new Integer(value));
@@ -106,7 +106,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
     /**
         Bind a button to a property path to the active object for a Hub.
         Button will be enabled based on active object in Hub not being null.
-        @param valueOn value to use for property when button is selected
+        param valueOn value to use for property when button is selected
     */
     public ToggleButtonController(Hub hub, AbstractButton button, String propertyPath, boolean value) {
         super(hub, propertyPath, button); // this will add hub listener
@@ -118,7 +118,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
     /**
         Bind a button to a property path to the active object for a Hub.
         Button will be enabled based on active object in Hub not being null.
-        @param valueOn value to use for property when button is selected
+        param valueOn value to use for property when button is selected
     */
     public ToggleButtonController(Hub hub, AbstractButton button, String propertyPath, Object value) {
         super(hub, propertyPath, button); // this will add hub listener
@@ -131,7 +131,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
         Bind a button to a property path to the active object for a Hub.
         Button wil be enabled based on active object in Hub not being null.
         @param valueOn value to use for property when button is selected
-        @param valueOFf value to use for property when button is not selected
+        @param valueOff value to use for property when button is not selected
     */
     public ToggleButtonController(Hub hub, AbstractButton button, String propertyPath, Object valueOn, Object valueOff) {
         super(hub, propertyPath, button); // this will add hub listener

@@ -251,7 +251,7 @@ public class OAList extends OAHtmlComponent {
         }
     }
 
-    /** returns the string needed for "option" tags.
+    /* returns the string needed for "option" tags.
         ex: 
         <select name="lstDept" multiple size="4"> <%=form.getOptions("lstDept")%> </select>
         NOTE: jsp tag must be last in select tag
@@ -296,7 +296,7 @@ public class OAList extends OAHtmlComponent {
         return lastValue;
     }
 
-    /** @param ids the objectIds for all parents if this is using a recursiveHub. */
+    /* @param ids the objectIds for all parents if this is using a recursiveHub. */
     void getOptions(Hub hub, StringBuffer sb, String[] ids, boolean bAllFlag) {
         String s;
         hub.loadAllData();

@@ -281,7 +281,7 @@ public class HubCSDelegate {
 	}		
 	
 	/**
-	 * @return true if sort is done, else false if sort has not been done.
+	 * Sort objects in hub
 	 */
 	public static void sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp) {
         if (OASyncDelegate.isSingleUser(thisHub)) return;

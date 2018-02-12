@@ -99,7 +99,7 @@ public class OAHtml {
     }
     
     
-    /**
+    /*
      * Get substring of html document text, which will then include html tags/attributes.
      * example: if the substring(1,3) for html doc '<html><body>abced<body><html>' will return '<html><body>bc<body><html>'
      */

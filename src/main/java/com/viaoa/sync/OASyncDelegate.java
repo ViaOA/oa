@@ -606,7 +606,7 @@ public class OASyncDelegate {
      * This will set a flag in the current OARemoteThread to allow any further changes during the
      * current msg processing to be sent to the server/other clients.
      * 
-     * @see OARemoteThread
+     * see OARemoteThread
      */
     public static boolean sendMessages() {
         return OARemoteThreadDelegate.sendMessages();
@@ -658,7 +658,7 @@ public class OASyncDelegate {
         return ri.connectionId;
     }
 
-    /**
+    /*
      * used to create a block of code that will only process on the server. Send messages if this is the
      * server.
      * 

@@ -18,7 +18,8 @@ import java.sql.Time;
 /**
     Convert to/from a OADate value.
     <br>
-    <ul><b>Converting the following to an OADate</b>
+    <b>Converting the following to an OADate</b>
+    <ul>
     <li>String, using optional format string.    
     <li>Time
     <li>Date
@@ -26,7 +27,8 @@ import java.sql.Time;
     <li>All others value will return null.
     </ul>
     <br>
-    <ul><b>Converting an OADate to any of the following</b>
+    <b>Converting an OADate to any of the following</b>
+    <ul>
     <li>String, using an optional format.
     </ul>
 

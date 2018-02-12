@@ -39,7 +39,7 @@ public class OAMail implements java.io.Serializable {
     /**
      * Used to send emails.
      * @param host 
-     * @param port if < 1, then it will use default 25
+     * @param port if &lt; 1, then it will use default 25
      * @param user  user id for mail server
      * @param pw  user password for mail server
      */

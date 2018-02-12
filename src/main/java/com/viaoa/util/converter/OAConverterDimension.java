@@ -18,13 +18,15 @@ import java.awt.*;
 /**
     Convert to/from a Rectangle value.
     <br>
-    <ul><b>Converts the following to a  Rectangle</b>
+    <b>Converts the following to a  Rectangle</b>
+    <ul>
     <li>String.  ex: "x,y,w,h"
     <li>Number, by encoding in 16bit positions.
     <li>All others value will return null.
     </ul>
     <br>
-    <ul><b>Converts a Rectangle to any of the following Classes</b>
+    <b>Converts a Rectangle to any of the following Classes</b>
+    <ul>
     <li>String, using a comma separated list.  Ex: "x,y,w,h"
     </ul>
 

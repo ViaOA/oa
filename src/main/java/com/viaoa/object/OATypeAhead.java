@@ -34,50 +34,50 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
     private boolean bUseAOOnly;
     
     /**
-     *  pp from objects <F> to to objects <T>
+     *  pp from objects F to to objects T
      *  this is not used/needed if finder is not null.
      */
     protected String finderPropertyPath;
     protected OAPropertyPath ppFinder;
     
     /** 
-     * property in <T> to match with search text.
+     * property in T to match with search text.
      */
     protected String matchPropertyPath;
     protected OAPropertyPath ppMatch;
 
     /**
-     * pp from <T> used for display value
+     * pp from T used for display value
      */
     protected String displayPropertyPath;
     protected OAPropertyPath ppDisplay;
     protected String displayFormat;    
     
     /**
-     * pp from <T> used for sorting the matched objects.
+     * pp from T used for sorting the matched objects.
      */
     protected String sortValuePropertyPath; 
     protected OAPropertyPath ppSortValue;
     protected String sortValueFormat;    
 
     /**
-     * pp from <T> used for dropdown display
+     * pp from T used for dropdown display
      */
     protected String dropDownDisplayPropertyPath;
     protected OAPropertyPath ppDropDownDisplay;
     protected String dropDownDisplayFormat;
 
     /**
-     * additional custom finder for filtering <T> objects
+     * additional custom finder for filtering T objects
      */
     protected OAFilter<T> filter;
     
     /**
-     * To class <T> using finderPropertyPath
+     * To class T using finderPropertyPath
      */
     private Class<T> classTo;
     
-    /**
+    /*
      * used to get from hub<F>.activeObj to hub<T>
      */
     protected OAFinder<F,T> finder;
@@ -103,8 +103,8 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
      * Note: this is treated as a freeform, where user can enter a value that is not in the list.
      * 
      * @param values array of values to choose from
-     * @param hubTo hub where AO.propertyName will be updated with selected value from values.
-     * @param propertyName name of property that is to be updated.
+     * param hubTo hub where AO.propertyName will be updated with selected value from values.
+     * param propertyName name of property that is to be updated.
      */
     public static OATypeAhead createTypeAhead(String[] values) {
         if (values == null) values = new String[0];
@@ -177,7 +177,7 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
     
     /**
      * @param hub root hub used for searches
-     * @param bUseAOOnly use ActiveObject in hub for searches.
+
      * @param params
      */
     public OATypeAhead(Hub<F> hub, OATypeAheadParams params) {
@@ -403,7 +403,7 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
     }
     
     
-    /** callback during search to get the display value of a selected <T> object. */
+    /** callback during search to get the display value of a selected &lt;T&gt; object. */
     public String getDisplayValue(T obj) {
         String s;
         if (ppDisplay != null) {
@@ -414,7 +414,7 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         }
         return s;
     }
-    /** callback during search to get the dropdown display value of matching <T> objects.*/
+    /** callback during search to get the dropdown display value of matching T objects.*/
     public String getDropDownDisplayValue(T obj) {
         String s;
         if (ppDropDownDisplay != null) {
@@ -425,7 +425,7 @@ public class OATypeAhead<F extends OAObject,T extends OAObject> {
         }
         return s;
     }
-    /** callback during search to get the sort value of matching <T> objects. */
+    /** callback during search to get the sort value of matching T objects. */
     public String getSortValue(T obj) {
         String s;
         if (ppSortValue != null) {

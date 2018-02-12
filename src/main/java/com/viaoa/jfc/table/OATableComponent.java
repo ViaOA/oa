@@ -37,12 +37,10 @@ public interface OATableComponent {
 
     /**
         A dot (".") separated list of property names.
-        @see HubGuiAdapter#setPropertyPath(String)
     */
     public String getPropertyPath();
     /**
         A dot (".") separated list of property names.
-        @see HubGuiAdapter#setPropertyPath(String)
     */
     public void setPropertyPath(String path);
 
@@ -82,7 +80,7 @@ public interface OATableComponent {
     
     /**
         Get the Renderer for this component when it is used as a column in an OATable.
-        @see #customizeTableRenderer(JLabel, JTable, Object, boolean, boolean, int, int)
+        @see #customizeTableRenderer(JLabel, JTable, Object, boolean, boolean, int, int, boolean, boolean)
     */
     public Component getTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column);
     

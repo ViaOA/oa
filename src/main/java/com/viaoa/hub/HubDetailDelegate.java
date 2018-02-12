@@ -845,7 +845,7 @@ public class HubDetailDelegate {
         Example: if a dept object has an emp hub, then
         it will be the masterObject of the hubEmp.  All additions and removes will be tracked
         for a OADataSource that uses links.
-        @param linkInfo is from the detail object to the master.
+        @param liDetailToMaster is from the detail object to the master.
     */
     public static void setMasterObject(Hub thisHub, OAObject masterObject, OALinkInfo liDetailToMaster) {
         // OAObject needs to know which hubs are under it

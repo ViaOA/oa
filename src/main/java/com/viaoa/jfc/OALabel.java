@@ -88,16 +88,12 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     
     /** 
         Format used to display this property.  Used to format Date, Times and Numbers.
-        @see OADate#OADate
-        @see OAConverterNumber#OAConverterNumber
     */
     public void setFormat(String fmt) {
         control.setFormat(fmt);
     }
     /** 
         Format used to display this property.  Used to format Date, Times and Numbers.
-        @see OADate#OADate
-        @see OAConverterNumber#OAConverterNumber
     */
     public String getFormat() {
         return control.getFormat();
@@ -313,7 +309,6 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
 
     /**
         Property path used to retrieve/set value for this component.
-        @see HubGuiAdapter#setPropertyPath(String)
     */
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);

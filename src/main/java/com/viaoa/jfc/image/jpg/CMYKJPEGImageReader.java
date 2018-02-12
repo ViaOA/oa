@@ -365,7 +365,7 @@ public class CMYKJPEGImageReader extends ImageReader {
      * @param cmykProfile An ICC_Profile for conversion from the CMYK color space
      * to the RGB color space. If this parameter is null, a default profile is used.
      * @return a BufferedImage in the RGB color space.
-     * @throws NullPointerException.
+
      */
     public static BufferedImage createRGBImageFromYCCK(Raster ycckRaster, ICC_Profile cmykProfile) {
         BufferedImage image;

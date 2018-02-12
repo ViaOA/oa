@@ -34,7 +34,7 @@ public class OAObjectLockDelegate {
     
     /** 
 	    Used to set a lock on an Object.
-	    @see #lock(Object,Object,Object) lock
+	    see #lock(Object,Object,Object) lock
 	*/
 	public static void lock(OAObject object) {
 	    if (object == null) throw new IllegalArgumentException("object can not be null");

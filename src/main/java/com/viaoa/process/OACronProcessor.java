@@ -79,7 +79,7 @@ public class OACronProcessor {
         LOG.fine("stop called, aiStartStop=" + aiStartStop);
     }
 
-    /**
+    /*
      * called by {@link #runProcessInAnotherThread(OACron, boolean)} using an execService thread.
      */
     protected void callProcess(final OACron cron, boolean bManuallyCalled) {
@@ -90,7 +90,7 @@ public class OACronProcessor {
     }
 
     
-    /**
+    /*
      * will use execService to then call {@link #process(OACron,boolean)}
      */
     public void callProcessInAnotherThread(final OACron cron, final boolean bManuallyCalled) {

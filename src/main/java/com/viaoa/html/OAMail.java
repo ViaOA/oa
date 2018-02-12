@@ -43,7 +43,7 @@ public class OAMail implements java.io.Serializable {
         send(host,user, pw, new String[] {to}, null, from,subject,text, contentType);
     }
 
-    /** 
+    /* 
         @param host smtp mail server
         @param "mail to" list of addresses to send message to
         @param "mail cc" list of addresses to send message to
@@ -91,7 +91,7 @@ public class OAMail implements java.io.Serializable {
         send(host,new String[] {to}, null, from,subject,text, fileNames);
     }
 
-    /** 
+    /* 
         @param host smtp mail server
         @param "mail to" list of addresses to send message to
         @param "mail cc" list of addresses to send message to

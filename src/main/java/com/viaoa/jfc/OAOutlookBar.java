@@ -76,7 +76,7 @@ public class OAOutlookBar extends JPanel implements ActionListener {
      * 
      * @param name
      *            The name of the outlook bar
-     * @param componenet
+     * @param component
      *            The component to add to the bar
      */
     public void addBar(String name, JComponent component) {
@@ -106,7 +106,7 @@ public class OAOutlookBar extends JPanel implements ActionListener {
      *            The name of the outlook bar
      * @param icon
      *            An icon to display in the outlook bar
-     * @param componenet
+     * @param component
      *            The component to add to the bar
      * @param title
      *            the title on the outlook bar button

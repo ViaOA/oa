@@ -97,19 +97,20 @@ import com.viaoa.object.*;
  * Hubs have an <i>Active Object</i>, which is a reference to the object in the
  * Hub that currently has the <i>focus</i>. Navigational methods in the Hub can
  * be used to change the active object. <br>
- * &nbsp;&nbsp;&nbsp;<img src="doc-files/Hub2.gif">
+ * &nbsp;&nbsp;&nbsp;<img src="doc-files/Hub2.gif" alt="hub">
  * <p>
  * 
  * 
  * <b>Configuring Hubs to work together (the <i>Wiring</i>)</b><br>
  * Hubs can be configured to form relationships and automatically work together.
- * <ul>
+ * <br>
  * This includes:
+ * <ul>
  * <li>Creating Master/Detail relationships. see {@link DetailHub}
  * <li>Hubs that Share the same data. see {@link SharedHub}
  * <li>Linking/Connecting Hubs together. see {@link HubLink}
  * </ul>
- * &nbsp;&nbsp;&nbsp;<img src="doc-files/Hub1.gif">
+ * &nbsp;&nbsp;&nbsp;<img src="doc-files/Hub1.gif" alt="">
  */
 public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Iterable<TYPE> {
     static final long serialVersionUID = 1L; // used for object serialization
@@ -129,8 +130,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     /**
      * No argument constructor for creating a new Hub. Note: you must call
      * Hub.setObjectClass(objClass) before adding objects.
-     * 
-     * @see #setObjectClass
      */
     public Hub() {
         this((Class) null, 5);
@@ -169,15 +168,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            Class for the object being stored
      * @param vecSize
      *            initial size of vector
-     * @param vecGrow
-     *            number of new entries to add when resizing
-     * @param hashSize
-     *            initial size of hashtable
-     * @param hashLoadFactor
-     *            number between 0.0 and 1.0 to determine when to resize/rehash
-     *            hashtable
      */
-
     public Hub(Class<TYPE> objClass, int vecSize) {
         data = new HubData(objClass, vecSize);
         datau = new HubDataUnique();
@@ -214,8 +205,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * called whenever the objects are referenced or by calling executeSelect()
      * directly.<br>
      * 
-     * @param masterObjectProperty
-     *            property from masterObject
      * @param linkInfo
      *            from hub class to master object
      */
@@ -277,7 +266,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @param name
      *            of property (case insensitive)
-     * @obj value to store
+     * @param obj value to store
      * @see #getProperty
      * @see #removeProperty
      */
@@ -290,7 +279,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @param name
      *            of property to get. (case insensitive)
-     * @see #putProperty(String, Object)
+     * see #putProperty(String, Object)
      * @see #removeProperty
      */
     public Object getProperty(String name) {
@@ -302,8 +291,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @param name
      *            of property to get. (case insensitive)
-     * @see #putProperty(String, Object)
-     * @see #getProperty
+     * see #putProperty(String, Object)
+     * see #getProperty
      */
     public void removeProperty(String name) {
         HubDelegate.removeProperty(this, name);
@@ -567,8 +556,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * save is called.
      * <p>
      * Note: this will abort if any of the objects throws an exception
-     * 
-     * @see Hub#canSaveAll
      * @see OAObject#save
      */
     public void saveAll() {
@@ -587,7 +574,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * <p>
      * Note: this does not abort if any of the objects cant be deleted.
      * 
-     * @see Hub#canDeleteAll
      * @see OAObject#delete
      * @see Hub#clear() which will delete the objects during a save of parent
      *      object (based on cascade rules)
@@ -626,7 +612,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @param key
      *            hashkey of object to find. OAObject "hashCode()" and "equals"
      *            is used to find match
-     * @returns Object or null if not found. Note: you need to cast this value
+     * @return Object or null if not found. Note: you need to cast this value
      * @param key
      *            object to compare to, object or objects[] to compare this
      *            object's objectId(s) with or OAObjectKey to compare with this
@@ -642,7 +628,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @param pos
      *            position of object to retreive, relative to 0
-     * @return null if pos > size()
+     * @return null if pos &gt; size()
      * @see #elementAt
      */
     public TYPE getObjectAt(int pos) {
@@ -705,7 +691,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * with.
      * 
      * @param pos
-     *            position to set. If > size() or < 0 then it will be set to
+     *            position to set. If &gt; size() or &lt; 0 then it will be set to
      *            null, and getPos() will return -1
      * @see Hub#getActiveObject
      */
@@ -732,7 +718,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     /**
      * Navigational method that sets the current active object.
      * 
-     * @param obj
+     * @param object
      *            is object to make the active object.
      */
     public void setAO(Object object) {
@@ -750,10 +736,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     /**
      * If this is a recursive hub with an owner, then the root hub will be
      * returned, else null.
-     * 
-     * @see #setRoot
-     * @see #setRootHub
-     * @see OALinkInfo
      */
     public Hub getRootHub() {
         return HubRootDelegate.getRootHub(this);
@@ -868,7 +850,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            is a masterObject, then the active object in the master Hub
      *            could be changed so that the object can then be found in this
      *            Hub.
-     * @returns position of object in the Hub, else -1.
+     * @return position of object in the Hub, else -1.
      */
     public int getPos(Object object) {
         // 20150203 changed to not update master/detail if object is not in this hub
@@ -889,12 +871,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @param obj
      *            Object to add, must be from the same class that was used when
      *            creating the Hub
-     * @return true if object was added else false (Hub.canAdd(obj) returned
-     *         false
-     * @see Hub#getObjectClass
-     * @see Hub#insert
-     * @see Hub#canAdd
-     * @see Vector#addElement
+     * return true if object was added else false (Hub.canAdd(obj) returned false
      */
     public void add(TYPE obj) {
         HubAddRemoveDelegate.add(this, obj);
@@ -1090,7 +1067,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * same objects as the shared hub. All events that affect the data will be
      * sent to all shared Hubs.
      * 
-     * @param msterHub
+     * @param masterHub
      *            is the source Hub that this Hub will share data from.
      * @param bShareAO
      *            true=use same activeObject as shared hub, false:use seperate
@@ -1105,7 +1082,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * same objects as the shared hub. All events that affect the data will be
      * sent to all shared Hubs.
      * 
-     * @param msterHub
+     * @param masterHub
      *            is the source Hub that this Hub will share data from.
      */
     public void setSharedHub(Hub<TYPE> masterHub) {
@@ -1172,7 +1149,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            object has a Hub of Employee Objects. If bShareActive=true,
      *            then the Detail Hub will use the same active object as the one
      *            in the Hub that it is sharing.
-     * @parma selectOrder is the sort order to select objects in.
+     * @param selectOrder is the sort order to select objects in.
      * @see #setSharedHub
      * @see DetailHub
      */
@@ -1255,8 +1232,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Used to create Master/Detail relationships. Set the controlling/master
      * hub for this hub
      * 
-     * @param propertyPath
-     *            is the property path from masterHub to get to this hub
      */
     public void setMasterHub(Hub masterHub) {
         HubDetailDelegate.setMasterHub(this, masterHub, null, false, null);
@@ -1266,8 +1241,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Used to create Master/Detail relationships. Set the controlling/master
      * hub for this hub
      * 
-     * @param propertyPath
-     *            is the property path from masterHub to get to this hub
      */
     public void setMasterHub(Hub masterHub, boolean bShared) {
         HubDetailDelegate.setMasterHub(this, masterHub, null, bShared, null);
@@ -1306,9 +1279,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     /**
      * Used to create Master/Detail relationships. Set the controlling/master
      * hub for this hub
-     * 
-     * @param propertyPath
-     *            is the property path from masterHub to get to this hub
      */
     public Hub getMasterHub() {
         return HubDetailDelegate.getMasterHub(this);
@@ -1342,11 +1312,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * property is a calcualated property, then the Hub will automatically set
      * up internal listeners to know when the calculated property changes.
      * 
-     * @param listener
-     *            HubListener object
      * @param property
      *            name to listen for
-     * @see HubEvent
      */
     public void addHubListener(HubListener<TYPE> hl, String property) {
         HubEventDelegate.addHubListener(this, hl, property);
@@ -1420,10 +1387,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      */
     /**
      * Add a Listener to this Hub.
-     * 
-     * @param listener
-     *            HubListener object
-     * @see HubEvent
      */
     public void addHubListener(HubListener<TYPE> hl) {
         HubEventDelegate.addHubListener(this, hl);
@@ -1434,10 +1397,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Remove a Listener to this Hub.
-     * 
-     * @param listener
-     *            HubListener object
-     * @see #addHubListener
      */
     public void removeHubListener(HubListener<TYPE> hl) {
         HubEventDelegate.removeHubListener(this, hl);
@@ -1542,8 +1501,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @param comp
      *            is comparator that has callback method used to sort objects in
      *            this Hub.
-     * @see HubSorter
-     * @see #cancelSort
      */
     public void sort(Comparator comp) {
         HubSortDelegate.sort(this, null, true, comp);
@@ -1551,10 +1508,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Reorder objects in this Hub, sorted by the value(s) from propertyPath(s).
-     * 
-     * @see #sort(String,boolean)
-     * @see HubSorter
-     * @see #cancelSort
      */
     public void sort(String... propertyPaths) {
         String s = "";
@@ -1579,11 +1532,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * hubEmp.sort("lastName, firstName")
      * hubEmp.sort("lastName, age desc, weight desc")
      * 
-     * @property propertyPaths, list of propertypaths, separated by comma, can also include " asc" or " desc" to override sort ordering.
-     * @property bAscending true=sort ascending, false=descending
-     * @see HubSorter
-     * @see #cancelSort
-     * @see HubSortListener#
+     * @param propertyPaths, list of propertypaths, separated by comma, can also include " asc" or " desc" to override sort ordering.
+     * @param bAscending true=sort ascending, false=descending
      */
     public void sort(String propertyPaths, boolean bAscending) {
         HubSortDelegate.sort(this, propertyPaths, bAscending, null);
@@ -1593,8 +1543,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Reorder objects in this Hub, sorted by the value(s) from propertyPath(s).
      * 
      * @see sort(String,boolean)
-     * @see HubSorter
-     * @see #cancelSort
+     * see HubSorter
+     * see #cancelSort
      */
     public void sort(String propertyPaths, boolean bAscending, Comparator comp) {
         HubSortDelegate.sort(this, propertyPaths, bAscending, comp);
@@ -1648,11 +1598,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @param propertyPath
      *            property to use to find value
-     * @param findObject value to find
-     * @param bSetAO if true, then set active object to object found (null if
-     *        not found), else dont set active object.
-     * @see #findNext
-     * @see HubFinder#equals(Object)
+     * @param findValue value to find
      */
     public TYPE find(String propertyPath, Object findValue) {
         return (TYPE) HubFindDelegate.findFirst(this, propertyPath, findValue, false, null);
@@ -1742,8 +1688,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * <p>
      * Note: orderBy clause is blank, there will not be a sort order.
      * 
-     * @see #executeSelect()
-     * @see #select(clause)
+
+
      * @see OASelect
      */
     public void select() {
@@ -1758,9 +1704,9 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * If this hub does not have a masterObject, then it will select all objects
      * and the supplied clause will be used for the where clause.
      * 
-     * @param clause
-     *            if
-     * @see OASelect
+
+
+
      */
     public void select(String whereClause) {
         HubSelectDelegate.select(this, null, whereClause, null, null, false);
@@ -1833,7 +1779,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * 
      * @see OASelect
      * @see #loadAllData
-     * @see #hasMoreData
+     * @see #isMoreData
      */
     public void select(OASelect select) { // This is the main select method for
         // Hub that all of the other select
@@ -1896,9 +1842,9 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     /**
      * Set the property in a Hub to the position of the active object in this
      * Hub.
-     * 
-     * @see Hub#setLink(Hub,String) Full Description of Linking Hubs
-     * @see HubLink
+ 
+
+
      */
     public void setLinkHubOnPos(Hub linkHub, String property) {
         setLinkHub(null, linkHub, property, true);
@@ -1962,7 +1908,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *                                       // be created with a reference to the
      * // selected Item object.
      * 
-     * <pre>
+     * </pre>
      * &lt;br&gt;
      * 
      *         &#064;param linkHub hub that this hub will change
@@ -1980,10 +1926,10 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Have this Hub linked to another Hub. If property is not known, then
      * OAObjectInfo, OALinkInfo will be used to find the correct property to
      * link to.
-     * 
-     * @see #setLinkProperty
-     * @see Hub#setLink(Hub,String) Full Description of Linking Hubs
-     * @see HubLink
+ 
+
+
+
      */
     public void setLinkHub(Hub linkHub) {
         // setLinkHub(Hub thisHub, String propertyFrom, Hub linkHub, String
@@ -1998,7 +1944,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            is property active object of this Hub
      * @param toProperty
      *            is property in link Hub to set.
-     * @see Hub#setLink(Hub,String) Full Description of Linking Hubs
+     * @see Hub#setLinkHub(Hub, boolean, boolean) Full Description of Linking Hubs
      * @see HubLink
      */
     public void setLinkHub(String fromProperty, Hub linkHub, String toProperty) {
@@ -2009,9 +1955,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     /**
      * Remove the link that this Hub has with another Hub.
-     * 
-     * @see Hub#setLink(Hub,String) Full Description of Linking Hubs
-     * @see HubLink
      */
     public void removeLinkHub() {
         // setLinkHub(Hub thisHub, String propertyFrom, Hub linkHub, String
@@ -2026,8 +1969,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @param bAutoCreate
      *            if true then a new object will be created and added to
      *            linkHub.
-     * @see Hub#setLink(Hub,String) Full Description of Linking Hubs
-     * @see HubLink
      */
     public void setLinkHub(Hub linkHub, boolean bAutoCreate, boolean bAutoCreateAllowDups) {
         // setLinkHub(Hub thisHub, String propertyFrom, Hub linkHub, String
@@ -2050,8 +1991,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      *            linkHub.
      * @param property
      *            is name of property in link Hub that will be set.
-     * @see Hub#setLink(Hub,String) Full Description of Linking Hubs
-     * @see HubLink
      */
     public void setLinkHub(Hub linkHub, String property, boolean bAutoCreate, boolean bAutoCreateAllowDups) {
         // setLinkHub(Hub thisHub, String propertyFrom, Hub linkHub, String
@@ -2066,8 +2005,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     }
 
     /**
-     * @see Hub#setLink(Hub,String) Full Description of Linking Hubs
-     * @see HubLink
+
+
      */
     protected void setLinkHub(String propertyFrom, Hub linkHub, String propertyTo, boolean linkPosFlag) {
         // setLinkHub(Hub thisHub, String propertyFrom, Hub linkHub, String

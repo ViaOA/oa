@@ -15,7 +15,8 @@ import com.viaoa.util.*;
 /**
     Convert to/from a Boolean value.
     <br>
-    <ul><b>Converts the following to a Boolean</b>
+    <b>Converts the following to a Boolean</b>
+    <ul>
     <li>String: 
         if fmt is not null, then compares with true, false format values (case insensitive).  
         If none match then null is returned.
@@ -26,7 +27,8 @@ import com.viaoa.util.*;
     <li>All others value will return null.
     </ul>
     <br>
-    <ul><b>Converts a Boolean to any of the following</b>
+    <b>Converts a Boolean to any of the following</b>
+    <ul>
     <li>String, using an optional format.
     </ul>
 

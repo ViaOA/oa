@@ -22,14 +22,16 @@ import com.viaoa.util.*;
 /**
     Convert to/from a Timestamp value.
     <br>
-    <ul><b>Converting the following to a Date</b>
+    <b>Converting the following to a Date</b>
+    <ul>
     <li>String, using optional format for parsing.
     <li>OADateTime
     <li>Date
     <li>All others value will return null.
     </ul>
     <br>
-    <ul><b>Converts a Time to any of the following</b>
+    <b>Converts a Time to any of the following</b>
+    <ul>
     <li>String, using an optional format.
     </ul>
     

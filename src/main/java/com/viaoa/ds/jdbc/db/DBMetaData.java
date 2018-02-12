@@ -67,7 +67,7 @@ public class DBMetaData extends OAObject {
     public boolean fkeysAutoCreateIndex = false;
     public int maxVarcharLength;
     
-    /**
+    /*
         DERBY:                   "org.apache.derby.jdbc.EmbeddedDriver"
         MS SQL Server            "com.microsoft.sqlserver.jdbc.SQLServerDriver"      
 
@@ -81,7 +81,7 @@ public class DBMetaData extends OAObject {
     public String driverJDBC;
 
     
-    /**
+    /*
         Derby:                   "jdbc:derby:database"   to create: "jdbc:derby:database;create=true;collation=TERRITORY_BASED"
         MS SQL Server            "jdbc:sqlserver://localhost;port=1433;database=vetjobs;sendStringParametersAsUnicode=false;SelectMethod=cursor;ConnectionRetryCount=2;ConnectionRetryDelay=2"      
 

@@ -134,7 +134,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
      * @param object root object to serialize.
      * @param bCompress use compression
      * @param bAllReferences flag to know if all references or no references should be serialized with object.
-     * @see #setExcludedClasses(Class[]) to include reference classes should not be serialized.
+     * see #setExcludedClasses(Class[]) to include reference classes should not be serialized.
      */
     public OAObjectSerializer(TYPE object, boolean bCompress, boolean bAllReferences) {
         this.object = object;
@@ -284,7 +284,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     /**
      * Called by OAObjectSerializeDelegate._writeObject() to determine if an object reference property
      * should be included for serialization.
-     * If the levelsDeep is > overflowLimit, then the reference will be added to a list to serialize 
+     * If the levelsDeep is &gt; overflowLimit, then the reference will be added to a list to serialize 
      * once the wrapper object is serialized.
      */
     protected boolean shouldSerializeReference(OAObject oaObj, String propertyName, Object obj) {

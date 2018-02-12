@@ -1035,7 +1035,6 @@ public class OAObjectReflectDelegate {
      * objects, call getReferenceHub(name) or getReferenceObject(name)
      * 
      * @return one of the following: null, OAObjectKey, OAObject, Hub of OAObjects, Hub of OAObjectKeys
-     * @see #isPropertyLoaded
      * @see #getReferenceObject to have the OAObject returned.
      * @see #getReferenceHub to have a Hub of OAObjects returned.
      */
@@ -1311,7 +1310,7 @@ public class OAObjectReflectDelegate {
      *            then the current object references will not be loaded
      * @param cascade
      *            used to impl visitor pattern
-     * @param maxResults maximum recursive objects to call loadAllRefereces on.        
+     * @param maxRefsToLoad maximum recursive objects to call loadAllRefereces on.        
      */
     public static int loadAllReferences(OAObject obj, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad,
             boolean bIncludeCalc, OACallback callback, OACascade cascade, final int maxRefsToLoad) {
@@ -1439,7 +1438,7 @@ public class OAObjectReflectDelegate {
      * DataSource independent method to retrieve a reference property.
      * <p>
      * If reference object is not already loaded, then OADataSource will be used to retrieve object.
-     * @param bForce, if false and there is not 
+ 
      */
     
     
@@ -1645,11 +1644,11 @@ public class OAObjectReflectDelegate {
      * <br>
      * 
      * @return the OAObjectKey of a ONE reference. Does not call getMethod, but internally stored value.
-     * @see isLoaded to see if object has been loaded and exists in memory. isLoaded will return false
+     * see isLoaded to see if object has been loaded and exists in memory. isLoaded will return false
      *      if the property has never been set, or loaded, or if the objectKey has been set and the
      *      object for the key is not in memory. This method will always return the objectKey for the
      *      reference.
-     * @see getObject, which will loaded the object from memory or datasource.
+     * see getObject, which will loaded the object from memory or datasource.
      */
     public static OAObjectKey getPropertyObjectKey(OAObject oaObj, String property) {
         if (property == null) return null;
@@ -2176,7 +2175,7 @@ public class OAObjectReflectDelegate {
     /**
      * Find the common Hub that two objects are descendants of.
      * 
-     * @param currentLevel
+     * param currentLevel
      *            current level of parents that have been checked
      * @param maxLevelsToCheck
      *            total number of parents to check

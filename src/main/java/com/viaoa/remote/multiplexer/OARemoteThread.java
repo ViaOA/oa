@@ -47,7 +47,7 @@ public class OARemoteThread extends Thread {
     /**
      * Flag to know if the addRunnable was overwritten to handle in another thread (pool).
      * Otherwise, calling addRunnable will call the run() method directly.
-     * @return default is false
+
      */
     public void setAllowRunnable(boolean b) {
         bAllowRunnable = b;

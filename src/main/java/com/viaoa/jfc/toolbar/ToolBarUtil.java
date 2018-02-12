@@ -44,7 +44,7 @@ import java.awt.*;
  *   frame.getContentPane().add(MoreButton.wrapToolBar(toolBar), BorderLayout.NORTH); 
  * 
  * @author Santhosh Kumar T 
- * @email  santhosh@in.fiorano.com 
+ * email  santhosh@in.fiorano.com 
  */ 
 
 public class ToolBarUtil extends JToggleButton implements ActionListener{ 

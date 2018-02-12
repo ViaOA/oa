@@ -77,7 +77,7 @@ public class OAString {
     }
 
     /**
-        Encode/Replace chars that are illegal for XML/HTML with &amp codes.
+        Encode/Replace chars that are illegal for XML/HTML with &amp; codes.
         @see #convertToXML(String,boolean)
     */
     public static String encodeIllegalXML(String value) {
@@ -105,7 +105,7 @@ public class OAString {
 
     /**
         Convert a String to a valid XML String, using special coding for illegal characters. <br>
-        Converts &amp; to &amp;amp;, &quot to &amp;quot, &apos to &amp;apos, &lt; to &amp;lt;, &gt; to &amp;gt;<br>
+        Converts &amp; to &amp;amp;, &quot; to &amp;quot, &#39; to &amp;apos, &lt; to &amp;&lt;, &gt; to &amp;gt;<br>
         For characters less then 32, it calls encodeIllegalXML().
         <p>
         Note:  Some characters are illegal even within CDATA blocks.
@@ -170,7 +170,7 @@ public class OAString {
 
     /**
         Used to determine if a String has any illegal XML characters in it.
-        @return false if any of the following characters are found: &amp; &quot; \ &lt; &gt; LF CR or char<32.  
+        @return false if any of the following characters are found: &amp; &quot; \ &lt; &gt; LF CR or char&lt;32.  
         If value is null then false is returned.
     */
     public static boolean isLegalXML(String value) {
@@ -271,7 +271,7 @@ public class OAString {
     /**
      * Remove any and all characters that are not in string
      * @param line original data
-     * @param search characters to keep
+     * param search characters to keep
      */
     public static String removeOtherCharacters(String line, String keep) {
         if (line == null || keep == null) return line;
@@ -676,7 +676,7 @@ public class OAString {
         return makeFirstUpperCharsLower(s);
     }
     /**
-     * Example:  GSMRServer -> gsmrServer
+     * Example:  GSMRServer -&gt; gsmrServer
      */
     public static String makeFirstUpperCharsLower(String s) {
         if (s == null) return null; 
@@ -753,7 +753,7 @@ public class OAString {
     
     /**
      * @param basedOn is another name that this one should use to figure out which letters to capitalize.
-     * ex: gsmrServer, GSMRServer   => GSMRServer
+     * ex: gsmrServer, GSMRServer   =&gt; GSMRServer
      */
     public static String getTitle(String s, String basedOn) {
         if (s == null) return "";
@@ -917,7 +917,7 @@ public class OAString {
         If length of value is greater then the width, then the beginning/ending width amount of characters will be returned.
 
         @param value is String to alter.  If null, then it will be initialized to an empty string.
-        @param width is number of characters for the converted string.  If <= 0, then a blank string is returned.
+        @param width is number of characters for the converted string.  If &lt;= 0, then a blank string is returned.
         @param bAlignLeft if true then value is right aligned, else left aligned.
         @param charPad is the character to use to pad the value, if length of value is less then width.  The 
         value will then have this character either at the beginning or ending, depending on value of bAlignLeft.
@@ -939,7 +939,7 @@ public class OAString {
 
     /**
         Calls OAConverter to convert/format number.
-        @see OAConverterNumber
+        see OAConverterNumber
     */
     public static String format(long value, String format) {
         return OAConv.toString(value, format);
@@ -948,10 +948,10 @@ public class OAString {
     
     /**
         Used to convert an integer to a formatted String, either using OAConverter or OAString.format()
-        @param vaule integer to format
+        param vaule integer to format
         @param format if String has an "L", "R", or "C" in it, then OAString.format(String,String) will be used, else
         OAConverter.toString() will be called.
-        @see OAConverterNumber
+        see OAConverterNumber
         @see #fmt(String,String)
     */
     public static String format(int value, String format) {
@@ -965,10 +965,10 @@ public class OAString {
 
     /**
         Used to convert an double to a formatted String, either using OAConverter or OAString.format()
-        @param vaule integer to format
+        param vaule integer to format
         @param format if String has an "L", "R", or "C" in it, then OAString.format(String,String) will be used, else
         OAConverter.toString() will be called, which uses Java formatting.
-        @see OAConverterNumber
+        see OAConverterNumber
         @see #fmt(String,String)
     */
     public static String format(double value, String format) {
@@ -982,21 +982,21 @@ public class OAString {
 
     /**
         Calls OAConverter to format boolean to a String.
-        @see OAConverterBoolean
+        see OAConverterBoolean
     */
     public static String format(boolean value, String format) {
         return OAConv.toString(value, format);
     }
     /**
         Calls OAConverter to convert and format OADateTime.
-        @see OAConverterOADateTime
+        see OAConverterOADateTime
     */
     public static String format(OADateTime value, String format) {
         return OAConv.toString(value, format);
     }
     /**
         Calls OAConverter to convert and format OADate.
-        @see OAConverterOADate
+        see OAConverterOADate
     */
     public static String format(OADate value) {
         return OAConv.toString(value, OADate.getGlobalOutputFormat());
@@ -1365,7 +1365,7 @@ public class OAString {
     /**
         Removes characters from a String.
         @param value is String to strip from.
-        @param characters values to remove from value
+        @param chars values to remove from value
     */
     public static String strip(String value, String chars) {
         return stripChars(value, chars, false);
@@ -1595,7 +1595,7 @@ public class OAString {
         This will try to convert the String to a Double.
         @param str String to check
         @return true if String can be converted to a Double.  If str is null then false is returned.
-        @see OAConverterNumber
+        see OAConverterNumber
     */
     public static boolean isNumber(String str) {
         if (str == null || str.length() == 0) return false;
@@ -1614,7 +1614,7 @@ public class OAString {
         This will try to convert the String to a OADate.
         @param s String to check
         @return true if String can be converted to a OADate.
-        @see OAConverterOADate
+        see OAConverterOADate
     */
     public static boolean isDate(String s) {
         if (s == null || s.length() == 0) return false;
@@ -1626,7 +1626,7 @@ public class OAString {
         This will try to convert the String to a OATime.
         @param s String to check
         @return true if String can be converted to a OATime.
-        @see OAConverterOATime
+        see OAConverterOATime
     */
     public static boolean isTime(String s) {
         if (s == null || s.length() == 0) return false;
@@ -1638,7 +1638,7 @@ public class OAString {
         This will try to convert the String to a OADateTime.
         @param s String to check
         @return true if String can be converted to a OADateTime.
-        @see OAConverterOADateTime
+        see OAConverterOADateTime
     */
     public static boolean isDateTime(String s) {
         if (s == null || s.length() == 0) return false;
@@ -1671,7 +1671,7 @@ public class OAString {
     }
 
 
-/****
+/* ***
     public static void main(String[] argv) {
 //        String s = OAString.fmt("1234.5678", "12R2,");
         OAString oas = new OAString();
@@ -1735,9 +1735,9 @@ public class OAString {
     
     /**
      * Split text into lines, and adding a line seperator between the breaks.
-     * @param line
+
      * @param width
-     * @parma delim, string to insert at line break
+     * @param delim, string to insert at line break
      * @param maxLines, the max amount of lines to create. If longer, then "..." will be added
      * @return
      */
@@ -1792,8 +1792,7 @@ public class OAString {
      * @param max maximum amount of chars in the result.
      * @param bUseDigits if true will use chars 0-9
      * @param bUseAlpha if true will use chars a-z
-     * @parma  bCapFirstChar if true and bUseAlpha, then the first char will be capitalized, otherwise all chars will be lowercase.
-     * @return
+     * @param bCapFirstChar if true and bUseAlpha, then the first char will be capitalized, otherwise all chars will be lowercase.
      */
     public static String createRandomString(int min, int max, boolean bUseDigits, boolean bUseAlpha, boolean bCapFirstChar) {
         return getRandomString(min, max, bUseDigits, bUseAlpha, bCapFirstChar);
@@ -2243,7 +2242,7 @@ public class OAString {
     }
 
     /**
-     * Removes any leading & trailing whitespace chars, but will leave single space chars
+     * Removes any leading &amp; trailing whitespace chars, but will leave single space chars
      * within text. 
      */
     public static String trimWhitespace(String text) {
@@ -2286,7 +2285,7 @@ public class OAString {
     
     
     /**
-     * Convert '&' prefixed html codes to character.
+     * Convert '&amp;' prefixed html codes to character.
      */
     public static String convertFromHtml(String html) {
         if (html == null) return null;
@@ -2302,7 +2301,7 @@ public class OAString {
     }
    
     /**
-     * Make sure that all chars value is <= 127, otherwise convert to a space char 
+     * Make sure that all chars value is &lt;= 127, otherwise convert to a space char 
      */
     public static String convertToAscii(String text) {
         if (text == null) return text;
@@ -2345,8 +2344,8 @@ public class OAString {
      * @param text
      * @param delimChar ex: '=', or ':'
      * @param bIncludeDelim if true then the delim will be included in the tokens
-     * @param begChar ex: '<'
-     * @param endChar ex: '>'
+     * @param begChar ex: '&lt;'
+     * @param endChar ex: '&gt;'
      * @param eovChar end of value, ex: ';'
      * @return
      */

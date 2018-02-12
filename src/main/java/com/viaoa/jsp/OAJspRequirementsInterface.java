@@ -5,7 +5,7 @@ public interface OAJspRequirementsInterface {
     
     /**
      * names of CSS to include on page
-     * see {@link OAJspDelegate#registerRequiredCss(String, String)} 
+     * see OAJspDelegate#registerRequiredCss(String, String) 
      */
     public String[] getRequiredCssNames();
     
@@ -13,7 +13,7 @@ public interface OAJspRequirementsInterface {
     
     /**
      * names of JS to include on page
-     * see {@link OAJspDelegate#registerRequiredCss(String, String)} 
+     * see OAJspDelegate#registerRequiredCss(String, String) 
      */
     public String[] getRequiredJsNames();
 }

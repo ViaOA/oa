@@ -192,7 +192,6 @@ public abstract class OADataSource implements OADataSourceInterface {
     }
     /**
         Used to know if autonumber properties should be assigned on create or on save.
-        @see #setAssignNumberOnCreate
     */
     @Override
     public boolean getAssignIdOnCreate() {
@@ -343,7 +342,7 @@ public abstract class OADataSource implements OADataSourceInterface {
 	
 	/**
 	    Returns the position of this OADataSource within the list of registered datasources.
-	    @returns -1 if not found, else position (0 based)
+	    @return -1 if not found, else position (0 based)
 	*/
 	public int getPosition() {
 	    return vecDataSource.indexOf(this);
@@ -401,8 +400,6 @@ public abstract class OADataSource implements OADataSourceInterface {
         Add/Insert a new Object into DataSource.
         <p>
         Called directly by OAObject.save()
-        @param bForce is true, then object should be inserted without verifying.
-        @see OAObject#save
     */
     @Override
     public abstract void insert(OAObject obj);
@@ -421,8 +418,6 @@ public abstract class OADataSource implements OADataSourceInterface {
         Update an existing Object to DataSource.
         <p>
         Called directly by OAObject.save()
-        @param bForce is true, then object should be inserted without verifying.
-        @see OAObject#save
     */
     @Override
     public abstract void update(OAObject obj, String[] includeProperties, String[] excludeProperties);
@@ -441,8 +436,6 @@ public abstract class OADataSource implements OADataSourceInterface {
         Used to save an object to DataSource.
         <p>
         If object is an OAObject, then update() or insert() will be called, else nothing is done.
-        @see #insert
-        @see #update
     */
     @Override
     public void save(OAObject obj) {
@@ -459,7 +452,7 @@ public abstract class OADataSource implements OADataSourceInterface {
 
     /**
         Perform a count on the DataSource using a query.
-        @param clazz Class to perform query on
+        @param selectClass Class to perform query on
         @param queryWhere query using property paths based on Object structure.
         @see OASelect
     */
@@ -526,7 +519,7 @@ public abstract class OADataSource implements OADataSourceInterface {
     
     /**
         Performs a count using native query language for DataSource.
-        @param query query based on DataSource structure.
+        @param queryWhere query based on DataSource structure.
         @see OASelect
     */
 	@Override
@@ -669,7 +662,7 @@ public abstract class OADataSource implements OADataSourceInterface {
     /**
         Performs a select using native query language for DataSource.
         @param selectClass Class of object to create and return
-        @param query query based on DataSource structure.
+        @param queryWhere query based on DataSource structure.
         @see OASelect
         @return OADataSourceIterator that is used to return objects of type selectClass
     */
@@ -735,7 +728,6 @@ public abstract class OADataSource implements OADataSourceInterface {
     /**
         Defaults to return true, allowing object Id properties to be changed.  Most DataSources that use foreign keys
         for references will not allow the object id to be changed after the object has been saved.
-        @see OADataSourceJDBC#getAllowIdChange
     */
     @Override
     public boolean getAllowIdChange() {

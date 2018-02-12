@@ -40,14 +40,14 @@ public abstract class OAObjectCacheTrigger<T extends OAObject> implements OAFilt
     
     
     /**
-     * Create new cache trigger.  Cached objects that are true for isUsedFromObjectCache & isUsed will then call onTrigger.
+     * Create new cache trigger.  Cached objects that are true for isUsedFromObjectCache &amp; isUsed will then call onTrigger.
      */
     public OAObjectCacheTrigger(Class clazz) {
         this(clazz, null);
     }
     
     /**
-     * Create new cache trigger.  Cached objects that are true for isUsedFromObjectCache & isUsed will then call onTrigger.
+     * Create new cache trigger.  Cached objects that are true for isUsedFromObjectCache &amp; isUsed will then call onTrigger.
      */
     public OAObjectCacheTrigger(Class clazz, OAFilter<T> filter) {
         this(clazz, filter, null);

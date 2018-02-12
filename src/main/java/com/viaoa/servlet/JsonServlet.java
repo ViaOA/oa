@@ -35,7 +35,7 @@ import com.viaoa.object.OAPropertyInfo;
 import com.viaoa.util.OAJsonWriter;
 import com.viaoa.util.OAString;
 
-/**
+/*
  * Get JSON data.
  *
  * Example:

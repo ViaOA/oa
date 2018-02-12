@@ -129,7 +129,7 @@ public class RemoteMultiplexerClient {
      *            name used on server, see: RemoteMultiplexerServer.createClientBroadcast
      * @param callback
      *            an impl used when receiving messages from other clients
-     * @see RemoteMultiplexerServer#createClientBroadcast(String, Class)
+     * see RemoteMultiplexerServer#createClientBroadcast(String, Class)
      */
     public void registerBroadcast(final String lookupName, Object callback) throws Exception {
         lookupBroadcast(lookupName, callback);

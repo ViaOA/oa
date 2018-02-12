@@ -24,7 +24,7 @@ import com.viaoa.object.OAObjectInfoDelegate;
     // get the original root
     this.hub = hubModel.getDetailHub(Model.P_Containers).createSharedHub();
     // create empty hub that will then always contain the root hub objects
-    this.hubRoot = new Hub<Container>(Container.class);
+    this.hubRoot = new Hub&lt;Container&gt;(Container.class);
     new HubRoot(hub, hubRoot);  // hubRoot will always have top level hub, initially using hub
     ...
     OATreeNode node = new OATreeNode(App.P_Label, hubRoot, hub) ... 
@@ -44,7 +44,6 @@ public class HubRoot {
      * This is used for recursive hubs, so that a Hub will stay at the root.
      * By default, a shared hub that is recursive could change to be shared with a child hub.
      * This class is used to make sure that the hub does not change to share a child hub.
-     * @param initial hub that is top/root level to use to update the hubRoot.
      * @param hubRoot Hub to use as the root, it will auto populated to always be the root hub.
      */
     public HubRoot(Hub hub, Hub hubRoot) {

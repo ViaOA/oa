@@ -67,7 +67,7 @@ public class OATree extends OAHtmlComponent {
         root = new OATreeNode(""); 
     }
 
-    /** @returns the selected object. */
+    /** @return the selected object. */
     public Object getSelectedObject() {
         if (selectObject != null) return selectObject;
         if (selectData == null) return null;

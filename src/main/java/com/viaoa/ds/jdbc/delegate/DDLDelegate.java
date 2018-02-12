@@ -256,7 +256,7 @@ public class DDLDelegate {
 
     /**
      * Used to create the sql for adding a new column within a create new table command.
-     * @param parms example: "NOT NULL"
+     * @param params example: "NOT NULL"
      * @param bLastColumn true if this is the last column being added for table.
      */
     public static String getAddColumnSQL(DBMetaData dbmd, String columnName, String type, String params, boolean bLastColumn) {

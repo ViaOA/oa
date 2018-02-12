@@ -27,7 +27,7 @@ import com.viaoa.util.OAString;
 
 /*qqqqqqqqqqqqqqqqqq replaced by OAList.java qqqqqqqqqqqq*/
 
-/**
+/*
  * Used with an HTML <UL> or <OL> to replace the <LI> with hub objects.
  * 
  * @author vvia

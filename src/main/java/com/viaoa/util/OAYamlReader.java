@@ -42,7 +42,7 @@ public class OAYamlReader {
     
     /**
      * @param rootClass class for the root object.  If it is a Hub, then it needs to be the OAObjectClass of the Hub.
-     * @param rootPropertyName name of property for top level values in yaml
+     * param rootPropertyName name of property for top level values in yaml
      */
     public Object[] parse(String yaml, Class rootClass) {
         try {

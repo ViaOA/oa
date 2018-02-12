@@ -122,8 +122,8 @@ public class OAFrameSet implements Serializable {
         vecListener.removeElement(l);
     }
     
-    /** called by (oaform.jsp -> form -> frame) 
-        @returns forwardPage
+    /** called by (oaform.jsp .. form .. frame) 
+        @return forwardPage
     */
     public String processRequest(OASession session, OAForm form, String forwardUrl) {
 

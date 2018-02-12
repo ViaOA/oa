@@ -29,8 +29,6 @@ public class HubFindDelegate {
 	    Returns first object in Hub that is Like propertyPath findValue.
 	    Returns null if not found.
 	    @param bSetAO if true then the active object is set to the found object.
-	    @see OAFinder#
-	    @see OACompare#isLike(Object, Object)
 	*/
     public static Object findFirst(Hub thisHub, String propertyPath, final Object findValue, final boolean bSetAO, OAObject lastFoundObject) {
         if (thisHub == null) return null;

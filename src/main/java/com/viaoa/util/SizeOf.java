@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 
 
-/**
+/*
  * Used to get the actual object size, similar to C sizeof method.
  *
  * Create manifest file "sizeof.mf", with this line: (no begin/ending spaces)

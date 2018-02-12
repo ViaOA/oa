@@ -37,7 +37,7 @@ import com.viaoa.jfc.table.*;
     <pre>
     public Component getTreeCellRendererComponent(Component comp,JTree tree,Object value,boolean selected,boolean expanded,boolean leaf,int row,boolean hasFocus) {
         // NOTE: row is the row in tree, not the row within the node
-        if (row < 0) return; // only checking
+        if (row &lt; 0) return; // only checking
         JLabel lbl = (JLabel)comp;
         lbl.setOpaque(true);
 
@@ -174,7 +174,7 @@ public class OATreeNode implements Cloneable {
         }
         
         hubMaster.addHubListener(new HubListenerAdapter() {
-            @Override
+            Override
             public void afterChangeActiveObject(HubEvent e) {
                 OATreeNode.this.hub.clear();
                 if (hubCopy != null) hubCopy.close();
@@ -393,25 +393,25 @@ public class OATreeNode implements Cloneable {
     
     /**
      * This can be overwritten to provide a HubFilter for the Hub that will be used for each instanceof of this OATreeNode.
-     * <code><pre>
+     * <code>
      * ex:
       
-            @Override
+            Override
             public HubFilter getHubFilter(OATreeNode tn) {
                 Hub h = new Hub(Pet.class);
                 HubFilter hf = new HubFilter(tn.getHub(), h) {
-                    @Override
+                    Override
                     public boolean isUsed(Object object) {
                         Pet p = (Pet) object;
-                        return (p != null && p.getInactiveDate() == null);
+                        return (p != null &amp;&amp; p.getInactiveDate() == null);
                     }
                 };
                 return hf;
             }
      
       
-     * </pre></code>
-     * @param hubData the Hub that is used for the node.
+     * </code>
+     * 
      * @return HubFilter 
      */
     public HubFilter getHubFilter(OATreeNodeData parentTnd, Hub hub) {
@@ -1088,7 +1088,7 @@ public class OATreeNode implements Cloneable {
     }
 
     /** Method to override and create a different object then the default that is moved.
-        @returns object to insert/add or null to cancel */
+        @return object to insert/add or null to cancel */
     public Object getDropObject(Hub hubDrag, Object objectDrag, Point pt, Hub hubDrop) {
         return objectDrag;
     }

@@ -42,7 +42,7 @@ public class OAJspUtil {
     }
 */
     
-    /**
+    /*
      * This is only needed when putting html code/data inside of something that is quoted.
      * 
      * where data = "John's" and would need to be convertedto "John&#39;s"
@@ -58,8 +58,8 @@ public class OAJspUtil {
         return s;
     }
 
-    /**
-     * Javascript code that is inside of JS > Html 
+    /*
+     * Javascript code that is inside of JS &gt; Html 
      * example:   $('#id').html(" ..  <button onclick='embedded'>");
      */
     public static String createEmbeddedJsString(final String text, final char jsQuoteChar) {
@@ -71,7 +71,7 @@ public class OAJspUtil {
         return _createJsString(text, jsQuoteChar, false);
     }
     
-    /**
+    /*
      * First checks to see if it might be html.  If so, returns text, else converts [NL] to <br> and < > to html codes.
      */
     public static String convertToHtml(final String text) {
@@ -121,7 +121,7 @@ public class OAJspUtil {
         
     }
     
-    /**
+    /*
      * Converts a string to be used inside of a codegen Javascript screen
      * @param text
      * @param jsQuoteChar the char used for quoting the string

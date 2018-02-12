@@ -28,7 +28,7 @@ import com.viaoa.jfc.editor.image.control.BrightnessPanelController;
 /**
  * Panel used to enter information for changing an image scale.
  * @author vincevia
- * @see ScalePanelController controller for this panel.
+ * see ScalePanelController controller for this panel.
  */
 public abstract class ZoomPanel extends JPanel {
     private NumberTextField txtScalePercent, txtScaleWidth, txtScaleHeight;

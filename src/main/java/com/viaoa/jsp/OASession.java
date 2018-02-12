@@ -181,14 +181,14 @@ public class OASession extends OABase {
     }
 
 
-    /** For this to work oaheader.jsp needs to call setResponse() & setRequest()*/
+    /** For this to work oaheader.jsp needs to call setResponse() &amp; setRequest()*/
     public void putCookie(String name, String value) {
         setCookie(name,value);
     }
     public void putCookie(String name, int x) {
         setCookie(name,x+"");
     }
-    /** For this to work oaheader.jsp needs to call setResponse() & setRequest().
+    /** For this to work oaheader.jsp needs to call setResponse() &amp; setRequest().
         Uses Servlet.Response to create a cookie.  MaxAge is set to max. */
     public void setCookie(String name, String value) {
         HttpServletResponse resp = getResponse();
@@ -198,7 +198,7 @@ public class OASession extends OABase {
         resp.addCookie(c);
     }
     /** uses Servlet.Request to get a cookie.
-        For this to work oaform.jsp & oabeans.jsp need to call setResponse() & setRequest()
+        For this to work oaform.jsp &amp; oabeans.jsp need to call setResponse() &amp; setRequest()
     */
     public String getCookie(String name) {
         HttpServletRequest req = getRequest();

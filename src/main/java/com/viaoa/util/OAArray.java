@@ -127,7 +127,7 @@ public class OAArray {
      * ss = (String[]) OAArray.add(String.class, ss, s); 
      * @param c
      * @param array
-     * @param searchValue
+     * param searchValue
      * @return
      */
 	public static Object[] add(Class c, Object[] array, Object addValue) {

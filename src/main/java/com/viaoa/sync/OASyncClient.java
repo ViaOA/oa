@@ -569,7 +569,7 @@ public class OASyncClient {
 
     /**
      * called when object is removed from object cache (called by oaObject.finalize)
-     * @param bInServerSideCache if the object is in the serverSide cache.
+     * 
      */
     public void objectRemoved(int guid) {
         try {

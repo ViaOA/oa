@@ -27,16 +27,21 @@ import com.viaoa.jfc.print.OAPrintUtil;
 import com.viaoa.jfc.print.OAPrintable;
 import com.viaoa.util.OAString;
 
+/*
+ 
+   <pre>
+   <div style="height:840; background-repeat:no-repeat; background-image:url(oaproperty://com.tmgsc.hifive.model.oa.ImageStore/Bytes?23342&h=840&w=1140); width:1140">
+   </pre> 
+
+ */
+
 /**
    This uses HTML that has a (hi-res) background image to create a certificate 
    the size of the background image.
    
    This is used with OAPdf to create the pdf.
 
-   This is based on the fact that OAHTMLTextPane was used to create a <DIV> with a background image:
-   <pre>
-   <div style="height:840; background-repeat:no-repeat; background-image:url(oaproperty://com.tmgsc.hifive.model.oa.ImageStore/Bytes?23342&h=840&w=1140); width:1140">
-   </pre> 
+   This is based on the fact that OAHTMLTextPane was used to create a &lt;DIV&gt; with a background image:
  */
 public class OAHTMLCertificatePdf implements OAPrintable {
 

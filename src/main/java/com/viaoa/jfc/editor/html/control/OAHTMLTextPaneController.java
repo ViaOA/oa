@@ -538,7 +538,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }
     
     
-/************************************   
+/* ***********************************   
 >>   COMMAND: Space  <space>
 *************************************/
     // this is used in combination with 
@@ -558,8 +558,8 @@ public class OAHTMLTextPaneController extends OATextController {
     }
     
 
-/************************************   
->>   COMMAND: ParagraphBreak <br> ^Enter   (creates a new Paragraph)
+/* ***********************************   
+   COMMAND: ParagraphBreak <br> ^Enter   (creates a new Paragraph)
 *************************************/    
     // see OAHTMLEditorKit for InsertBreakAction class
     // have [ctrl][Enter] create a <p>.  [Enter] is already mapped in JTextPane, and is changed to use <br>
@@ -610,7 +610,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return cmdParagraphBreak;
     }    
 
-/************************************   
+/* ***********************************   
 >>   COMMAND: Bold ^B
 *************************************/    
     protected KeyStroke getBoldKeyStroke() {
@@ -666,7 +666,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return cmdBold;
     }
     
-/************************************   
+/* ***********************************   
 >>   COMMAND: Italic ^I
 *************************************/    
     protected KeyStroke getItalicKeyStroke() {
@@ -723,7 +723,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }
 
     
-/************************************   
+/* ***********************************   
 >>   COMMAND: Underline ^U
 *************************************/    
     protected KeyStroke getUnderlineKeyStroke() {
@@ -779,7 +779,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return cmdUnderline;
     }
     
-/****************************    
+/* ***************************    
 >>   COMMAND: SelectLine
 *****************************/    
     protected KeyStroke getSelectLineKeyStroke() {
@@ -830,7 +830,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return cmdSelectLine;
     }    
 
-/****************************    
+/* ***************************    
 >>   COMMAND: SelectParagraph
 *****************************/    
     protected KeyStroke getSelectParagraphKeyStroke() {
@@ -882,7 +882,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }    
 
     
-/****************************    
+/* ***************************    
 >>   COMMAND: InsertImage
 *****************************/    
     protected KeyStroke getInsertImageKeyStroke() {
@@ -955,7 +955,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return cmdSplitImage;
     }    
     
-/****************************    
+/* ***************************    
 >>   COMMAND: EditImage
 *****************************/    
     protected KeyStroke getEditImageKeyStroke() {
@@ -1013,7 +1013,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }    
 
         
-    /****************************    
+    /* ***************************    
     >>   COMMAND: InsertHyperLink
     *****************************/    
         protected KeyStroke getInsertHyperLinkKeyStroke() {
@@ -1083,7 +1083,7 @@ public class OAHTMLTextPaneController extends OATextController {
             return cmdSplitHyperLink;
         }    
         
-/****************************    
+/* ***************************    
 >>   COMMAND: InsertMailto
 *****************************/    
     protected KeyStroke getInsertMailtoKeyStroke() {
@@ -1137,7 +1137,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return cmdInsertMailto;
     }    
         
-    /****************************    
+    /* ***************************    
     >>   COMMAND: InsertField
     *****************************/    
         protected KeyStroke getInsertFieldKeyStroke() {
@@ -1191,7 +1191,7 @@ public class OAHTMLTextPaneController extends OATextController {
             return cmdInsertField;
         }    
 
-/****************************    
+/* ***************************    
 >>   COMMAND: EditSource
 *****************************/    
     protected KeyStroke getEditSourceKeyStroke() {
@@ -1248,7 +1248,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }    
     
 
-/****************************    
+/* ***************************    
 >>   COMMAND: BackgroundColor
 *****************************/    
     protected KeyStroke getBackgroundColorKeyStroke() {
@@ -1312,7 +1312,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return cmdBackgroundColor;
     }
 
-/****************************    
+/* ***************************    
 >>   COMMAND: FontColor
 *****************************/    
     protected KeyStroke getFontColorKeyStroke() {
@@ -1377,7 +1377,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }
     
     
-/****************************    
+/* ***************************    
 >>   COMMAND: Alignment
 *****************************/    
     private JToggleButton cmdCenter, cmdLeft, cmdRight;
@@ -1485,7 +1485,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }   
     
     
-/****************************    
+/* ***************************    
 >>   COMMAND: Insert Table
 *****************************/    
     protected KeyStroke getInsertTableKeyStroke() {
@@ -1545,7 +1545,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }
     
 
-/****************************    
+/* ***************************    
 >>   COMMAND: Insert Table Row
 *****************************/    
     protected KeyStroke getInsertTableRowKeyStroke() {
@@ -1585,7 +1585,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return pmiInsertTableRow;
     }   
 
-/****************************    
+/* ***************************    
 >>   COMMAND: Insert Table Col
 *****************************/    
     protected KeyStroke getInsertTableColumnKeyStroke() {
@@ -1625,7 +1625,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return pmiInsertTableColumn;
     }   
     
-/****************************    
+/* ***************************    
 >>   COMMAND: Insert Div
 *****************************/    
     protected KeyStroke getInsertDivKeyStroke() {
@@ -1681,7 +1681,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return cmdInsertDiv;
     }
     
-/****************************    
+/* ***************************    
 >>   COMMAND: FontName combo
 *****************************/
     private String[] fontNames;
@@ -1767,7 +1767,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }
 
     
-/****************************    
+/* ***************************    
 >>   COMMAND: FontSize combo
 *****************************/
     private JComboBox cboFontSize;
@@ -1894,7 +1894,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }
     
     
-/****************************    
+/* ***************************    
 >>   COMMAND: Font dialog
 *****************************/
     private Action actionFontDialog;
@@ -1928,7 +1928,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }
 
 
-/************************************    
+/* ***********************************    
 >>   COMMAND: Insert Unordered List
 *************************************/
     private Action actionInsertUnorderedList;
@@ -1974,7 +1974,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }
     
     
-/************************************    
+/* ***********************************    
 >>   COMMAND: Insert Ordered List
 *************************************/
     // this has inconsistent issues, esp when inserting at begin or end of doc, or at the end of a line.
@@ -2023,7 +2023,7 @@ public class OAHTMLTextPaneController extends OATextController {
     }
 
     
-/****************************    
+/* ***************************    
 >>   COMMAND: Follow Link href/mailto
 *****************************/    
     protected KeyStroke getFollowLinkKeyStroke() {
@@ -2068,7 +2068,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return pmiFollowLink;
     }   
 
-/****************************    
+/* ***************************    
 >>   COMMAND: InsertImageDiv
 *****************************/    
     
@@ -2130,7 +2130,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return cmdInsertImageDiv;
     }    
 
-/****************************    
+/* ***************************    
 >>   COMMAND: EditBlock (paragraph)
 *****************************/    
     protected KeyStroke getEditBlockKeyStroke() {
@@ -2187,7 +2187,7 @@ public class OAHTMLTextPaneController extends OATextController {
         return cmdEditBlock;
     }    
     
-/****************************    
+/* **************************    
 >>   COMMAND: InsertDialog
 *****************************/    
     protected KeyStroke getInsertDialogKeyStroke() {
@@ -3397,7 +3397,6 @@ System.out.println("View Font="+fontView);//qqqqqqqqq
      * element tree above a given <code>Element</code>
      *
      * @param name the name of the <code>Element</code> to search for
-     * @param parent the <code>Element</code> to start looking
      *
      * @return the found <code>Element</code> or null if none is found
      */

@@ -861,14 +861,14 @@ public class OAImageUtil {
         }
     }
 
-    /**
+    /*
      * Examples: "classpath://com.viaoa.jfc.editor.html.image/test.jpg"
      * "oaproperty://com.vetplan.oa.Pet/picture?932" will load from
      * OAObject.property, using Id = 932 "file://c:/projects/cdi/logo.gif"
      * "jar:file:schedulercdi.jar!/com/viaoa/scheduler/help.gif"
-     * 
-     * @param urlString
-     * @return
+ 
+
+
      */
     public static BufferedImage loadImageUsingURL(URL url) {
         return loadImage(url);
@@ -951,7 +951,7 @@ public class OAImageUtil {
      * ex: /com/vetplan/view/image, or com.vetplan.view.image
      * 
      * will return: <img src='classpath://com.vetplan.view.image/test.gif'
-     * width='15' height='12'>
+     * width='15' height='12' alt="">
      * 
      * @see com.viaoa.jfc.editor.html.protocol.classpath.Handler
      */
@@ -1023,7 +1023,7 @@ public class OAImageUtil {
     public static String convertOAPropertyToImageServlet(String html) {
         return convertOAPropertyToImageServlet(html, "");
     }
-    /** Convert from "img src" format used by OAHTMLTextEditor to ImageServlet
+    /* Convert from "img src" format used by OAHTMLTextEditor to ImageServlet
         
         src='oaproperty://com.tmgsc.hifive.model.ImageStore/Bytes?2'
         src='../servlet/img?c=ImageStore&i=8105&p=bytes'

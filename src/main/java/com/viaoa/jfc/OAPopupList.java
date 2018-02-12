@@ -42,7 +42,7 @@ public class OAPopupList extends OAList {
     /**
         Create a new Popup List that is bound to a Hub.
         @param visibleRowCount number of rows to visually display.
-        @param cols is width of list using character width size.
+        @param columns is width of list using character width size.
     */
     public OAPopupList(Hub hub, String propertyPath, int visibleRowCount, int columns) {
         super(hub, propertyPath, visibleRowCount, columns);

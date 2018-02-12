@@ -14,9 +14,9 @@ import com.viaoa.object.OAObject;
 import com.viaoa.util.OAPropertyPath;
 
 /**
- * Takes a single Hub<A>, and a property path to create two new Hubs that are
+ * Takes a single Hub&lt;A&gt;, and a property path to create two new Hubs that are
  * are master/detail, where the master is the groupBy hub, and the detail is group of
- * objects in Hub<A> that are under the AO in the groupBy hub.
+ * objects in Hub&lt;A&gt; that are under the AO in the groupBy hub.
  *
  * Example: from hubOrders, propPath: "employee.department"
  *    getGroupByHub: hub of Departments
@@ -27,8 +27,8 @@ import com.viaoa.util.OAPropertyPath;
  * @param <B> type of objects that will be in the group by Hub.
  * 
  * 
- * @see HubLeftJoinDetail#
- * @see HubLeftJoin#
+ * see HubLeftJoinDetail#
+ * see HubLeftJoin#
  */
 public class HubGroupByOrig<A extends OAObject, B extends OAObject> {
     // 20141117 support for reverse propertyPaths that dont have methods

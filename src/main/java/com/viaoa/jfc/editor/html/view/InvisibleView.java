@@ -60,8 +60,8 @@ public class InvisibleView extends View {
    * Determines the maximum span for this view along an
    * axis.
    *
-   * @param axis may be either <code>View.X_AXIS</code> or
-   *		<code>View.Y_AXIS</code>
+
+
    * @return  the maximum span the view can be rendered into
    * @see View#getPreferredSpan
    */
@@ -73,8 +73,8 @@ public class InvisibleView extends View {
    * Determines the minimum span for this view along an
    * axis.
    *
-   * @param axis may be either <code>View.X_AXIS</code> or
-   *		<code>View.Y_AXIS</code>
+
+
    * @return  the minimum span the view can be rendered into
    * @see View#getPreferredSpan
    */
@@ -107,11 +107,11 @@ public class InvisibleView extends View {
    * closer to the next character in the model or the previous
    * character in the model.
    *
-   * @param x the X coordinate >= 0
-   * @param y the Y coordinate >= 0
+   * @param x the X coordinate &gt;= 0
+   * @param y the Y coordinate &gt;= 0
    * @param a the allocated region in which to render
    * @return the location within the model that best represents the
-   *  given point in the view >= 0.  The <code>biasReturn</code>
+   *  given point in the view &gt;= 0.  The <code>biasReturn</code>
    *  argument will be
    * filled in to indicate that the point given is closer to the next
    * character in the model or the previous character in the model.
@@ -125,7 +125,7 @@ public class InvisibleView extends View {
    * from the document model coordinate space
    * to the view coordinate space.
    *
-   * @param pos the position of the desired character (>=0)
+   * @param pos the position of the desired character (&gt;=0)
    * @param a the area of the view, which encompasses the requested character
    * @param b the bias toward the previous character or the
    *  next character represented by the offset, in case the

@@ -155,7 +155,6 @@ if (sel.getNextCount() != thisHub.getCurrentSize()) {
 
 	/**
 	    Find out if more objects are available from last select from OADataSource.
-	    @see Hub#needsToSelect
 	*/
 	public static boolean isMoreData(Hub thisHub) {
 	    OASelect sel = getSelect(thisHub);
@@ -254,10 +253,6 @@ if (sel.getNextCount() != thisHub.getCurrentSize()) {
 	    be called, and the first 45 objects will be added to Hub and active object will be
 	    set to null.  As the Hub is accessed for more objects, more will be returned until
 	    the query is exhausted of objects.
-	    @see OASelect
-	    @see #loadAllData
-	    @see #hasMoreData
-	    @see #isFetching
 	*/
 	public static void select(final Hub thisHub, OASelect select) {  // This is the main select method for Hub that all of the other select methods call.
         cancelSelect(thisHub, true);

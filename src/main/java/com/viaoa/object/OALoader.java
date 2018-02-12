@@ -15,7 +15,7 @@ import com.viaoa.hub.*;
 import com.viaoa.util.*;
 
 // 20170611
-/**
+/*
  * This is used to load a property path in parallel using multiple threads.
  *
  * @param <F>

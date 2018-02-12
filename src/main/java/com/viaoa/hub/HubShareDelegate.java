@@ -50,8 +50,6 @@ public class HubShareDelegate {
      * @param bChildrenOnly only include Hubs that are shared from thisHub.  Otherwise, go to root of shared hubs
      * @param filter used to determine if a shared hub that is found should be included.
      * @param bIncludeFilteredHubs if true then HubFilter will also be include
-     * @param bMustShareAO if true, then only sharedAO will be returned.  If includeFilteredHub, then the HubFilter 
-     * must have shareAO as true.
      * @return array (could be size 0) of found hubs, including thisHub.
      */
     public static Hub[] getAllSharedHubs(Hub thisHub, boolean bChildrenOnly, OAFilter<Hub> filter, boolean bIncludeFilteredHubs, boolean bOnlyIfSharedAO) {
@@ -323,7 +321,6 @@ public class HubShareDelegate {
 	    Used to set the active object in all shared Hubs after an object is removed.
 	    Used bNullOnRemove to determine which object to make the active object.
 	    Note: If Hub is using a Link Hub, then active object is not set.
-	    @see #setNullOnRemove
 	*/
 	protected static void setSharedHubsAfterRemove(Hub thisHub, Object objRemoved, int posRemoved) {
 	    if (thisHub.dataa.activeObject == objRemoved) {

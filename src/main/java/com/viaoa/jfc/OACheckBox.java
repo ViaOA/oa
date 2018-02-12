@@ -201,7 +201,6 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
 
     /**
         Property path used to retrieve/set value for this component.
-        @see HubGuiAdapter#setPropertyPath(String)
     */
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);
@@ -209,7 +208,6 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     }
     /**
         Property path used to retrieve/set value for this component.
-        @see HubGuiAdapter#setPropertyPath(String)
     */
     public String getPropertyPath() {
         return control.getPropertyPath();
@@ -218,14 +216,12 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     
     /**
         Column heading when this component is used as a column in an OATable.
-        @see OATable#add
     */
     public String getTableHeading() {
         return heading;   
     }
     /**
         Column heading when this component is used as a column in an OATable.
-        @see OATable#add
     */
     public void setTableHeading(String heading) { //zzzzz
         this.heading = heading;
@@ -417,10 +413,6 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     
     /**
      * 
-     * @param hub
-     * @param prop
-     * @param bCompareValue compare value to use against property. If true, then prop must be not null/>0/or true - depending
-     *   on the type of value.
      */
     public void setEnabled(Hub hub, String prop, Object compareValue) {
         control.getEnabledController().add(hub, prop, compareValue);

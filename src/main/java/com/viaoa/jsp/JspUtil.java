@@ -69,9 +69,9 @@ public class JspUtil {
     }
 
     /** get the id from an Id encoded name 
-        @nameUsed created by getEncodedName()
-        @cnt is the number of id to use.  The first one is 0.
-        @returns object or null if encoding was not done on nameUsed
+        @param nameUsed created by getEncodedName()
+
+        @return object or null if encoding was not done on nameUsed
     */
     public static Object getDecodedObject(String nameUsed, Hub hub) {
         return getDecodedObject(nameUsed, hub, 0);
@@ -377,7 +377,7 @@ j:      12
    
 
     
-/** 20171017 removed, replaced with OAJsUtil.java  OAHtmlUtil.java   
+/* * 20171017 removed, replaced with OAJsUtil.java  OAHtmlUtil.java   
     
     public static String toString(OAObject obj, String prop, int value) {
         return toString(obj,prop,new Integer(value));

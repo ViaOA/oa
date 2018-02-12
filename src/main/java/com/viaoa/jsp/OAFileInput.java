@@ -22,7 +22,7 @@ import com.viaoa.object.*;
 import com.viaoa.util.*;
 
 
-/**
+/*
  * Used to upload a file from a browser form, input file element.
  * 
  * <input type="file" id="fiFile" name="fiFile" size="40">

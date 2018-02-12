@@ -129,7 +129,7 @@ public class OAObjectDSDelegate {
 	
     
     
-    /** @param bFullSave false=dont flag as unchanged, used when object needs to be saved twice. First to create
+    /* param bFullSave false=dont flag as unchanged, used when object needs to be saved twice. First to create
 	    object in datasource so that reference objects can refer to it
 	*/
 	protected static void save(OAObject oaObj) {

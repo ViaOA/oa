@@ -196,7 +196,6 @@ public class MultiplexerClient {
     
     /**
      * Used to set the limit on the number of bytes that can be written per second (in MB).  
-     * @see MultiplexerOutputStreamController#
      */
     public void setThrottleLimit(int mbPerSecond) {
         mbThrottleLimit = mbPerSecond;

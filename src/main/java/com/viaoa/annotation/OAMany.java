@@ -29,22 +29,22 @@ public @interface OAMany {
     String displayName() default "";
     String description() default "";
     
-    /** true if this object is the owner */
+    /**  @return true if this object is the owner */
     boolean owner() default false;
     
-    /** true if this is a recursive relationship. */
+    /**  @return true if this is a recursive relationship. */
     boolean recursive() default false;
     
-    /** name used in the toClass that refers to this class. */
+    /**  @return name used in the toClass that refers to this class. */
     String reverseName() default "";
     
-    /** true if saving this class will save the many objects */
+    /**  @return true if saving this class will save the many objects */
     boolean cascadeSave() default false;
 
-    /** true if deleting this class will delete the many objects */
+    /**  @return true if deleting this class will delete the many objects */
     boolean cascadeDelete() default false;
     
-    /** property name used to store the order position for each object in the Hub */
+    /**  @return property name used to store the order position for each object in the Hub */
     String seqProperty() default "";
     
     String toolTip() default "";
@@ -52,21 +52,22 @@ public @interface OAMany {
     boolean hasCustomCode() default false;
     int cacheSize() default 0;
     
-    /** true if there is a a method for this method. */
+    /** @return true if there is a a method for this method. */
     boolean createMethod() default true;
     
-    /** path to find another hub to use for autocreating objects in this hub. */
-    String matchHub() default "";  
-    /** works with matchHub, to know what property should match the objects in the matchHub. */
+    /**  @return path to find another hub to use for autocreating objects in this hub. */
+    String matchHub() default "";
+    
+    /**  @return works with matchHub, to know what property should match the objects in the matchHub. */
     String matchProperty() default "";   // property that matchHub will use
     
-    /** true if this must be empty (hub.size=0) to delete the other object */
+    /**  @return true if this must be empty (hub.size=0) to delete the other object */
     boolean mustBeEmptyForDelete() default false;
     
-    /** true if this is a calculated Hub. */
+    /**  @return true if this is a calculated Hub. */
     boolean isCalculated() default false;
 
-    /** true if calc hub is to be done on server side. */
+    /**  @return true if calc hub is to be done on server side. */
     boolean isServerSideCalc() default false;
     
     String uniqueProperty() default ""; 

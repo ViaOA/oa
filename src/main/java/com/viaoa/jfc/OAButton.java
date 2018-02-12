@@ -256,7 +256,6 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     }
     /**
         Retrieve an Icon from the viaoa.gui.icons directory.
-        @param name name of file in icons directory.
     */
     public static Icon getDefaultIcon(ButtonCommand cmd) {
         if (cmd == null) return null;
@@ -305,7 +304,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         @param bSetup if true, calls setup(this) to set border, mouseover.
         @param bIcon if true, calls getIcon(command) to set icon
         @param bText if true, set to command name
-        @parma bToolTip if true, set to command name plus name of object in Hub
+        @param bToolTip if true, set to command name plus name of object in Hub
     */
     public void setup(boolean bSetup, boolean bIcon, boolean bText, boolean bToolTip) {
         if (bSetup) this.setup(this);
@@ -356,14 +355,12 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
 
     /**
         Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
     */
     public void setUndoDescription(String s) {
         control.setUndoDescription(s);
     }
     /**
         Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
     */
     public String getUndoDescription() {
         return control.getUndoDescription();
@@ -470,7 +467,6 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     
     /**
         Same as setupButton.
-        @see #setupButton
     */
     public static void setup(AbstractButton cmd) {
         setupButton(cmd);
@@ -488,8 +484,6 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         <li>public void mouseEntered(MouseEvent e) { setBorderPainted(true) }
         <li>public void mouseExited(MouseEvent e)  { setBorderPainted(false) }
         </ul>
-        @see #setAutoSetup
-        @see JComponent#setRequestFocusEnabled
     */
     public static void setupButton(AbstractButton cmd) {
         _setupButton(cmd);
@@ -752,8 +746,6 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
 
     /**
      * Other Hub/Property used to determine if component is enabled.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
      */
     public void setEnabled(Hub hub) {
         control.getEnabledController().add(hub);
@@ -770,8 +762,8 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     
     /**
      * Other Hub/Property used to determine if component is visible.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
+ 
+
      */
     public void setVisible(Hub hub) {
         control.getVisibleController().add(hub);

@@ -21,7 +21,7 @@ import com.viaoa.util.OAString;
  * Example:  if image is in object Employee.ImageStore.bytes
  * OAImage(hubEmployee, Employee.P_EmpImageStore);
  * 
- * this will change the <img src=".."> to use the "/servlet/img" url
+ * this will change the &lt;img src=".."&gt; to use the "/servlet/img" url
  * 
  * Note: to make responsive, set the max-height: 100%
  * 

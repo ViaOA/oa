@@ -679,9 +679,9 @@ System.out.println("MyImageView.getScale exception:"+t+", will use 1.0");//qqqqq
      * any layout duties.
      * 
      * @param width
-     *            the width >= 0
+     *            the width &gt;= 0
      * @param height
-     *            the height >= 0
+     *            the height &gt;= 0
      */
     public void setSize(float width, float height) {
         sync();

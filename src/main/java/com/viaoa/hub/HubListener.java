@@ -21,7 +21,7 @@ import java.util.*;
     
     @see HubEvent
     @see Hub#addListener Hub.addListener
-    @see OAObjectCacheController#addListener 
+ 
 */
 public interface HubListener<T> extends EventListener {
 
@@ -31,8 +31,6 @@ public interface HubListener<T> extends EventListener {
         Hub: allowDelete, allowNew, allowEdit, eof, bof<br>
         <p>
         Note: propertyChanges are sent for any changed object, not just the ActiveObject 
-        @see OAObject#fireBeforePropertyChange(String,Object,Object) OAObject.fireBeforePropertyChange
-        @see Hub#firePropertyChange(OAObject,String,Object,Object) Hub.firePropertyChange
     */
     public void beforePropertyChange(HubEvent<T> e);
     public void afterPropertyChange(HubEvent<T> e);
@@ -87,14 +85,12 @@ public interface HubListener<T> extends EventListener {
 	public void beforeMove(HubEvent<T> e);
     /** 
         Event sent at the end of a Hub move(). 
-        @see Hub#move Hub.move
     */
     public void afterMove(HubEvent<T> e);
 
 
     /** 
         Event sent after ActiveObject has been set.
-        @see Hub#setActiveObject(Object,int,boolean,boolean,boolean,boolean) Hub.setActiveObject
     */
     public void afterChangeActiveObject(HubEvent<T> e);
 
@@ -111,20 +107,17 @@ public interface HubListener<T> extends EventListener {
 
     /**
         Event sent from OAObject when save() is being performed.
-        @see OAObject#save OAObject.save
     */
     public void beforeSave(HubEvent<T> e);
     
     /**
         Event sent from OAObject when save() is being performed.
-        @see OAObject#save OAObject.save
     */
     public void afterSave(HubEvent<T> e);
 
 
     /**
         Event sent from OAObject during delete().
-        @see OAObject#delete OAObject.delete
     */
     public void beforeDelete(HubEvent<T> e);
     public void afterDelete(HubEvent<T> e);

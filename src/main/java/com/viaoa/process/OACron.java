@@ -26,7 +26,7 @@ import com.viaoa.util.OAString;
  Each field needs to be separate by space or tab.
  Field values can use a single number, "-" for a range, and commas to separate more then one.
 
- @see OACronProcessor# to register cron to be processed
+ see OACronProcessor# to register cron to be processed
 
  @author vvia
  */

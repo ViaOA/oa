@@ -84,7 +84,7 @@ public class DiscoveryClient {
         return iaBroadcast;
     }
     
-    /**
+    /*
      * Runs thread to send udp broadcast messages, and listen for discoveryServer messages.
      */
     public void start() throws Exception {
@@ -149,9 +149,8 @@ public class DiscoveryClient {
         LOG.config("stopping");
     }
 
-    /**
+    /*
      * This should be overwritten to capture all new servers.
-     * @param serverHostName
      */
     public void onNewServerMessage(String serverMessage) {
         System.out.println("New Server Message: " + serverMessage);

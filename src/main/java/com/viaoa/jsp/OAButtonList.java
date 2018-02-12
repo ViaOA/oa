@@ -3,7 +3,7 @@ package com.viaoa.jsp;
 import com.viaoa.hub.Hub;
 
 
-/**
+/* *
  * Adds a popup list to a button, and sets the button text to the selected value.
  * 
  * Example:

@@ -291,8 +291,6 @@ public class HubAddRemoveDelegate {
         Calls all HubListeners.hubBeforeAdd() where HubEvent.object and pos are both set.
         If objects are OAObjets, then canAdd is called for each object.
         If it is a recursive Hub, then it will verify that it can have the parent set.
-        @see OAObject#canAdd
-        @see #setObjectClass
     */
     public static boolean canAdd(final Hub thisHub, final Object obj) {
         if (obj instanceof OAObject) {
@@ -567,9 +565,6 @@ public class HubAddRemoveDelegate {
         @param obj Object to insert, must be from the same class that was used when creating the Hub
         @param pos position to insert the object into the Hub.  If greater then size of Hub, then it will be added to the end.
         @return true if object was added else false (event hubBeforeAdd() threw an exception)
-        @see #getObjectClass
-        @see #add
-        @see #sort
     */
     public static boolean insert(final Hub thisHub, final Object obj, final int pos) {
         if (obj == null) return false;

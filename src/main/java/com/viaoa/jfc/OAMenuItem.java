@@ -243,9 +243,6 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
     }
     /**
      * Retrieve an Icon from the viaoa.gui.icons directory.
-     * 
-     * @param name
-     *            name of file in icons directory.
      */
     public static Icon getDefaultIcon(ButtonCommand cmd) {
         if (cmd == null) return null;
@@ -261,8 +258,6 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
     /**
      * Sets the default icon, and tooltip (if they are not already set) based on the value of command.
      * Also calls setup(this). Note: does not set default Text.
-     * 
-     * @see #setup(boolean,boolean,boolean,boolean)
      */
     public void setup() {
         boolean bIcon = (getIcon() == null);
@@ -276,13 +271,11 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
     /**
      * Sets the default icon, text, and tooltip based on the value of command.
      * 
-     * @param bSetup
-     *            if true, calls setup(this) to set border, mouseover.
      * @param bIcon
      *            if true, calls getIcon(command) to set icon
      * @param bText
      *            if true, set to command name
-     * @parma bToolTip if true, set to command name plus name of object in Hub
+     * @param bToolTip if true, set to command name plus name of object in Hub
      */
     public void setup(boolean bIcon, boolean bText, boolean bToolTip) {
         ButtonCommand cmd = getCommand();
@@ -328,8 +321,6 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
 
     /**
      * Description to use for Undo and Redo presentation names.
-     * 
-     * @see OAUndoableEdit#setPresentationName
      */
     public void setUndoDescription(String s) {
         control.setUndoDescription(s);
@@ -337,8 +328,6 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
 
     /**
      * Description to use for Undo and Redo presentation names.
-     * 
-     * @see OAUndoableEdit#setPresentationName
      */
     public String getUndoDescription() {
         return control.getUndoDescription();
@@ -519,10 +508,6 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
 
     /**
      * Other Hub/Property used to determine if component is enabled.
-     * 
-     * @param hub
-     * @param prop
-     *            if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
      */
     public void setEnabled(Hub hub) {
         control.getEnabledController().add(hub);
@@ -542,10 +527,6 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
 
     /**
      * Other Hub/Property used to determine if component is visible.
-     * 
-     * @param hub
-     * @param prop
-     *            if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
      */
     public void setVisible(Hub hub) {
         control.getVisibleController().add(hub);

@@ -117,7 +117,7 @@ public class OAProperties extends java.util.Properties implements Serializable {
 
     /**
         Converts fileName path to correct system file.separator chars and saves name/value properties to file.
-        @see #ssave(String,String)
+        see #ssave(String,String)
     */
     public void save(String fileName) {
         save(fileName, "");
@@ -242,7 +242,7 @@ public class OAProperties extends java.util.Properties implements Serializable {
    
     /**
         Add/replace a name/value.
-        @param name is name of property and is not case sensitive.
+        param name is name of property and is not case sensitive.
     */
     @Override
     public synchronized Object put(Object key, Object obj) {
@@ -272,7 +272,7 @@ public class OAProperties extends java.util.Properties implements Serializable {
 
     /**
         Remove a name/value.
-        @param name is name of property and is not case sensitive.
+        param name is name of property and is not case sensitive.
     */
     @Override
     public synchronized Object remove(Object key) {
@@ -296,7 +296,7 @@ public class OAProperties extends java.util.Properties implements Serializable {
     /**
         Add/replace a name/value.
         @param name is name of property and is not case sensitive.
-        @see #put(String,Object)
+        see #put(String,Object)
     */
     public void put(String name, int i) {
         if (name != null) put(name, (i+""));
@@ -304,7 +304,7 @@ public class OAProperties extends java.util.Properties implements Serializable {
     /**
         Add/replace a name/value.
         @param name is name of property and is not case sensitive.
-        @see #put(String,Object)
+        see #put(String,Object)
     */
     public void put(String name, boolean b) {
         if (name != null) put(name, b+"");
@@ -312,7 +312,7 @@ public class OAProperties extends java.util.Properties implements Serializable {
     /**
         Add/replace a name/value.
         @param name is name of property and is not case sensitive.
-        @see #put(String,Object)
+        see #put(String,Object)
     */
     public void putInt(String name, int i) {
         this.put(name, i);

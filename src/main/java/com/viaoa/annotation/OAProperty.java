@@ -36,7 +36,7 @@ public @interface OAProperty {
     int decimalPlaces() default -1;
     int displayLength() default 0;
     
-    /** length of the column in a table/grid UI component. */
+    /** @return length of the column in a table/grid UI component. */
     int columnLength() default 0;
     
     String inputMask() default "";
@@ -46,7 +46,7 @@ public @interface OAProperty {
     String validCharacters() default "";
     String invalidCharacters() default "";
 
-    /** column name used for table/grid UI component */
+    /** @return column name used for table/grid UI component */
     String columnName() default "";
     String toolTip() default "";
     String help() default "";
@@ -69,11 +69,11 @@ public @interface OAProperty {
     boolean isPhone() default false;
     boolean isZipCode() default false;
     
-    /** if true, then the property value must be unique. */
+    /** @return if true, then the property value must be unique. */
     boolean isUnique() default false;
     boolean isCurrency() default false;
 
-    /** will be used to know if there is a validation method (not yet used at this time) */
+    /** @return will be used to know if there is a validation method (not yet used at this time) */
     boolean hasValidationMethod() default false;//qqqq new, if true, then call delegate to verify? or put verify in code?    
     
 

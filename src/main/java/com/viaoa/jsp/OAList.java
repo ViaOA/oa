@@ -21,7 +21,7 @@ import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.*;
 
-/**
+/*
  * Used with an HTML <UL/OL> or <OL/OL> to replace the <LI> with hub objects.
  * 
  * @author vvia
@@ -750,7 +750,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         this.template = temp;
     }
     
-    /**
+    /*
      * Callback from {@link #getTemplate(Object, int, int, int)}
      */
     public String getTemplateValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, String defaultValue) {

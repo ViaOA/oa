@@ -350,14 +350,12 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
 
     /**
         Property path used to retrieve/set value for this component.
-        @see HubGuiAdapter#setPropertyPath(String)
     */
     public String getPropertyPath() {
         return control.getPropertyPath();
     }
     /**
         Property path used to retrieve/set value for this component.
-        @see HubGuiAdapter#setPropertyPath(String)
     */
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);
@@ -426,7 +424,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         public void dragDropEnd(DragSourceDropEvent e) {
         }
     }
-    /** Flag to allow drag & drop. default=true */
+    /** Flag to allow drag &amp; drop. default=true */
     public void setAllowDnD(boolean b) {
         setAllowDrop(b);
         setAllowDrag(b);
@@ -804,8 +802,8 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
 
     /**
      * Other Hub/Property used to determine if component is enabled.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
+ 
+
      */
     public void setEnabled(Hub hub) {
         control.getEnabledController().add(hub);
@@ -832,8 +830,8 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     */
     /**
      * Other Hub/Property used to determine if component is visible.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
+ 
+
      */
     public void setVisible(Hub hub) {
         control.getVisibleController().add(hub);

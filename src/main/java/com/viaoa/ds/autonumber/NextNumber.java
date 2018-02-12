@@ -51,7 +51,6 @@ public class NextNumber extends OAObject {
 
     /**
         Set automatically to the full Class name when the Class is assigned.
-        @see #setClass
     */
     public void setId(String id) {
         String old = this.id;

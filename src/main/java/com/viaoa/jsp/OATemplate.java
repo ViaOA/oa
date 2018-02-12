@@ -9,7 +9,7 @@ import com.viaoa.util.OAProperties;
  * 
  * Template builder that uses special tags to insert and build an output html template:
  *
- * @see OAHTMLConverter# for more details.
+ * see OAHTMLConverter# for more details.
  */
 public class OATemplate<F extends OAObject> extends OAHTMLConverter {
 

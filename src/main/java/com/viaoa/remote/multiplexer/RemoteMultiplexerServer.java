@@ -51,8 +51,8 @@ import com.viaoa.util.OAReflect;
  * Server component used to allow remoting method calls with Clients. Uses a MultiplexerServer for
  * communication with clients.
  * <p>
- * <ol>
  * Different ways to create a remote object:
+ * <ol>
  * <li>Server can bind an Object so that clients can then do a lookup to get the object, and all method
  * calls will be invoked on the server.
  * <li>A method that has a remote class parameter. This can be used by client or server - where a method
@@ -936,7 +936,7 @@ public class RemoteMultiplexerServer {
      * @param queueSize
      *            size of circularQueue
      * @return proxy instance where all methods will be sent to and invoked on all clients
-     * @see RemoteMultiplexerClient#createBroadcastProxy(String, Object)
+     * see RemoteMultiplexerClient#createBroadcastProxy(String, Object)
      */
     public Object createBroadcast(String bindName, Object callback, Class interfaceClass, String queueName, int queueSize) {
         if (bindName == null) throw new IllegalArgumentException("bindName can not be null");

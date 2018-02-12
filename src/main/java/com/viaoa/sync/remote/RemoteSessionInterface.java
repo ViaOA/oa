@@ -32,7 +32,7 @@ public interface RemoteSessionInterface {
     /**
      * Used to make sure that object is stored in the server side 
      * @param obj
-     * @param bAddToCache
+
      */
     @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
     void addToCache(OAObject obj);

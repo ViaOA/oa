@@ -387,7 +387,7 @@ public class JFCController extends HubListenerAdapter {
     }
     /**
         A dot (".") separated list of property names.
-        @see HubGuiAdapter#setPropertyPath(String)
+
     */
     public String getPropertyPath() {
         return propertyPath;
@@ -433,7 +433,7 @@ public class JFCController extends HubListenerAdapter {
 
     /**
         Get the property name used for displaying an image with component.
-        @see HubGuiAdapter#setPropertyPath(String)
+
     */
     public void setImageProperty(String prop) {
         if (OAString.isEqual(prop, imageProperty, true)) return;;
@@ -445,7 +445,7 @@ public class JFCController extends HubListenerAdapter {
     }
     /**
         Get the property name used for displaying an image with component.
-        @see HubGuiAdapter#setPropertyPath(String)
+
     */
     public String getImageProperty() {
         return imageProperty;
@@ -570,7 +570,7 @@ public class JFCController extends HubListenerAdapter {
     /** 20120821
      * Find any hub in the propertyPath to use as the actualHub.
      * This is when a propertyPath is used to get a hub from another reference object.
-     * Example:  from Employee -> dept.employees.fullName
+     * Example:  from Employee -&gt; dept.employees.fullName
      */
     protected void resetActualHub() {
         actualHub = this.hub;
@@ -877,7 +877,7 @@ public class JFCController extends HubListenerAdapter {
      * Sets up the validation delegate class to use for validating changes.
      * 
      * @param delegteClass
-     * @param propertyName must be for a method that params for: 
+     * @param methodName must be for a method that params for: 
      * object, new value, and OAEditMessage, that returns null or boolean.  
      * If it returns a String, then it will be used as the error message text.
      * @return true if method was found, else false.
@@ -924,7 +924,7 @@ public class JFCController extends HubListenerAdapter {
     /**
         Returns format to use for displaying value as a String.
         @see OADate#OADate
-        @see OAConverterNumber#OAConverterNumber
+        see OAConverterNumber#OAConverterNumber
     */
     public String getFormat() {
         if (format == null && oaPropertyPath != null) {
@@ -950,7 +950,7 @@ public class JFCController extends HubListenerAdapter {
     /** 
         Format used to display this property.  Used to format Date, Times and Numbers.
         @see OADate#OADate
-        @see OAConverterNumber#OAConverterNumber
+        see OAConverterNumber#OAConverterNumber
     */
     public void setFormat(String fmt) {
         this.format = fmt;

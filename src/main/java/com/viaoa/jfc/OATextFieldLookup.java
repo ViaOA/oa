@@ -76,7 +76,6 @@ public class OATextFieldLookup extends OATextField {
     /**
         Create TextFieldLookup that is bound to a property path in an Object.
         @param propertyPath path from Hub, used to find bound property to build query for.
-        @param cols is the width
     */
     public OATextFieldLookup(OAObject hubObject, String propertyPath) {
         control = new Hub2TextFieldLookup(hubObject,this,propertyPath);

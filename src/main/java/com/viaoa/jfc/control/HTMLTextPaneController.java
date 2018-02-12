@@ -319,8 +319,8 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
      * Note: if a property is being edited (hasFocus), then propertyChanges are ignored.
      * 
      * @param origValue value of the data when the editing started.
-     * @param currentValue current property value
-     * @param newValue new value entered by this user
+     * @param currentPropertyValue current property value
+     * @param newValueFromThisUser new value entered by this user
      * @return returns the newValue
      */
     protected String getValueToUse(String origValue, String currentPropertyValue, String newValueFromThisUser) {

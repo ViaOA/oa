@@ -184,7 +184,7 @@ public class OATextController {
     }
     
     
-/****************************    
+/* ***************************    
 >>   COMMAND: Find ^F
 *****************************/    
     protected KeyStroke getFindKeyStroke() {
@@ -241,7 +241,7 @@ public class OATextController {
     
     
     
-/****************************    
+/* ***************************    
 >>   COMMAND: Replace ^R
 *****************************/    
     protected KeyStroke getReplaceKeyStroke() {
@@ -283,7 +283,7 @@ public class OATextController {
     }
     
     
-/****************************    
+/* ***************************    
 >>   COMMAND: SpellCheck ^F7
 *****************************/    
     protected KeyStroke getSpellCheckKeyStroke() {
@@ -340,7 +340,7 @@ public class OATextController {
     }    
 
     
-/****************************    
+/* ***************************    
 >>   COMMAND: Undo ^Z
 *****************************/    
     protected KeyStroke getUndoKeyStroke() {
@@ -395,7 +395,7 @@ public class OATextController {
     }    
     
 
-/****************************    
+/* ***************************    
 >>   COMMAND: Redo ^Y
 *****************************/    
     protected KeyStroke getRedoKeyStroke() {
@@ -449,7 +449,7 @@ public class OATextController {
         return cmdRedo;
     }    
 
-/****************************    
+/* ***************************    
 >>   COMMAND: Cut
 *****************************/    
     protected KeyStroke getCutKeyStroke() {
@@ -504,7 +504,7 @@ public class OATextController {
     }
     
     
-/****************************    
+/* ***************************    
 >>   COMMAND: Copy
 *****************************/    
     protected KeyStroke getCopyKeyStroke() {
@@ -559,7 +559,7 @@ public class OATextController {
     }    
     
     
-/****************************    
+/* ***************************    
 >>   COMMAND: Paste
 *****************************/    
     protected KeyStroke getPasteKeyStroke() {
@@ -613,7 +613,7 @@ public class OATextController {
         return cmdPaste;
     }    
     
-/****************************    
+/* ***************************    
 >>   COMMAND: SelectAll ^A
 *****************************/    
     protected KeyStroke getSelectAllKeyStroke() {
@@ -668,7 +668,7 @@ public class OATextController {
     }    
     
     
-/****************************    
+/* ***************************    
 >>   COMMAND: Unselect
 *****************************/    
     protected KeyStroke getUnselectKeyStroke() {
@@ -724,7 +724,7 @@ public class OATextController {
         
     
 
-/*********************************
+/* ********************************
 >>   COMMAND: AutoComplete ^Space
 **********************************/    
     protected KeyStroke getAutoCompleteKeyStroke() {

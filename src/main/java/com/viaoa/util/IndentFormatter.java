@@ -12,7 +12,7 @@ package com.viaoa.util;
 
 import java.util.logging.*;
 
-/**
+/*
  * This works with Logger.entering() and Logger.exiting() to create an indentation output.
    Note: you can use the following instead of entering() or exiting() methods
   		LOG.finest("ENTRY");  // or ">", "START", "BEGIN"

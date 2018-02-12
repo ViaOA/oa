@@ -22,7 +22,7 @@ import com.viaoa.util.converter.*;
 
     <p>
     contains two key static methods:
-    toString(Object, format) & toObject(class, String, format)
+    toString(Object, format) &amp; toObject(class, String, format)
     @see OAConverterNumber
     @see OAConverterOADate
     @see OAString#format(String,String) OAString.format()
@@ -175,7 +175,7 @@ public class OAConverter {
         Note: OAConverter.toString() will not automatically use this format 
         unless it is sent as a parameter.  This method is to be used as a global area for other APIs to store 
         default system formatting.
-        @see OANumberConverter#OANumberConverter for format options
+        see OANumberConverter#OANumberConverter for format options
     */
     public static String getIntegerFormat() {
         return integerFormat;
@@ -242,7 +242,7 @@ public class OAConverter {
         Note: OAConverter.toString() will not automatically use this format 
         unless it is sent as a parameter.  This method is to be used as a global area for other APIs to store 
         default system formatting.
-        @param fmt is a String with a semicolon seperating the three values "true;false;null"
+        param fmt is a String with a semicolon seperating the three values "true;false;null"
         Example: ("true;false");
     */
     public static String getBooleanFormat() {
@@ -614,7 +614,7 @@ public class OAConverter {
         <p>
         <b>Note:</b> If clazz is String and value is null, then a blank String "" is returned.
         @param fmt is format to use for parsing/formatting.
-        @returns converted object of type clazz or null if converstion can not be done. 
+        returns converted object of type clazz or null if converstion can not be done. 
         @see #getConverter
     */
     public static Object convert(Class clazz, Object value, String fmt) {

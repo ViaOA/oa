@@ -21,7 +21,7 @@ import java.awt.print.*;
     multiplying the following by the amount of points.
     pointToPixel = (float) (Toolkit.getDefaultToolkit().getScreenResolution() / 72.0)
     
-    @see OAImageUtil#convertPointsToPixels
+    see OAImageUtil#convertPointsToPixels
 */
 public interface OAPrintable extends Printable {
 

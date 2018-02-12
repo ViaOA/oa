@@ -49,7 +49,7 @@ import javax.swing.event.*;
         int i = fc.showOpenDialog(this);
         if (i == JFileChooser.APPROVE_OPTION) {
             File[] files = fc.getSelectedFiles();
-            for (i=0; i<files.length; i++) {
+            for (i=0; i&lt;files.length; i++) {
                 System.out.println("" + files[i] );
                 if (!files[i].exists()) continue;
                 if (files[i].isDirectory()) continue;

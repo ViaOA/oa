@@ -88,7 +88,7 @@ public class OATableColumn implements java.io.Serializable {
     /**
         Returns format to use for displaying value as a String.
         @see OADate#OADate
-        @see OAConverterNumber#OAConverterNumber
+        see OAConverterNumber#OAConverterNumber
     */
     public String getFormat() {
         if (format == null) getDefaultFormat();

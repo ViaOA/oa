@@ -835,7 +835,7 @@ sb.append("}\n");
         this.template = temp;
     }
     
-    /**
+    /*
      * Callback from {@link #getTemplate(Object, int, int, int)}
      */
     public String getTemplateValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, String defaultValue) {

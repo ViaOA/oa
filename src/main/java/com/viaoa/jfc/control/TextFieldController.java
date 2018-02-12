@@ -221,7 +221,7 @@ public class TextFieldController extends JFCController implements FocusListener,
 
 
 
-    /**20151002 moved to jfccontroller
+    /* *20151002 moved to jfccontroller
     public int getDataSourceMax() {
         if (dataSourceMax == -2) {
             if (hub != null) {
@@ -232,7 +232,7 @@ public class TextFieldController extends JFCController implements FocusListener,
                     Method method = getLastMethod();
                     if (method != null) {
                         if (method.getReturnType().equals(String.class)) {
-                            if (dataSourceMax > 254) dataSourceMax = -1;
+                            if (dataSourceMax &gt; 254) dataSourceMax = -1;
                         }
                         else dataSourceMax = -1;
                     }
@@ -252,7 +252,7 @@ public class TextFieldController extends JFCController implements FocusListener,
             Method method = getLastMethod();
             if (method != null) {
                 if (method.getReturnType().equals(String.class)) {
-                    if (propertyInfoMax > 254) propertyInfoMax = -1;
+                    if (propertyInfoMax &gt; 254) propertyInfoMax = -1;
                 }
                 else propertyInfoMax = -1;
             }
@@ -263,12 +263,12 @@ public class TextFieldController extends JFCController implements FocusListener,
     public int getMax() {
         // getDataSourceMax();
         getPropertyInfoMax();
-        if (max < 0) {
-            // if (dataSourceMax > 0) return dataSourceMax;
-            if (propertyInfoMax > 0) return propertyInfoMax;
+        if (max &lt; 0) {
+            // if (dataSourceMax &gt; 0) return dataSourceMax;
+            if (propertyInfoMax &gt; 0) return propertyInfoMax;
         }
-        //if (dataSourceMax > 0 && max > dataSourceMax) return dataSourceMax; 
-        if (propertyInfoMax > 0 && max > propertyInfoMax) return propertyInfoMax; 
+        //if (dataSourceMax &gt; 0 && max &gt; dataSourceMax) return dataSourceMax; 
+        if (propertyInfoMax &gt; 0 && max &gt; propertyInfoMax) return propertyInfoMax; 
         return max;
     }
     */

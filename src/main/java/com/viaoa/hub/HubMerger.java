@@ -43,7 +43,7 @@ import com.viaoa.util.OAPropertyPath;
  * new HubMerger(hubForm, hubItem, &quot;formRows.formSections.formItems.item&quot;);
  * </pre>
  * 
- * @created 2004/08/20, rewritten 20080804, added recursive links 20120527
+ * created 2004/08/20, rewritten 20080804, added recursive links 20120527
  * @see OAPropertyPath for more information about property paths
  */
 public class HubMerger<F extends OAObject, T extends OAObject> {

@@ -655,7 +655,7 @@ public class OAXMLReader {
 
     /**
         Convert from String to correct type.
-        @param clazz type of object to convert value to
+        param clazz type of object to convert value to
         @return null to skip property.
     */
     public Object convertToObject(String propertyName, String value, Class propertyClass) {

@@ -212,7 +212,7 @@ public class OAObjectEventDelegate {
 	    3: update object hubs if this is a reference property change
 	    4: Send "hubPropertyChange()" to all listeners of the Hubs that this object is a member of.
 	    5: Send event to Server.
-	    @see OAThreadLocalDelegate#setSuppressFirePropertyChange(boolean) to suppress this method from running by the current thread.
+	    see OAThreadLocalDelegate#setSuppressFirePropertyChange(boolean) to suppress this method from running by the current thread.
 	*/
     protected static void firePropertyChange(final OAObject oaObj, final String propertyName, Object oldObj, Object newObj, boolean bLocalOnly, boolean bSetChanged) {
         firePropertyChange(oaObj, propertyName, oldObj, newObj, bLocalOnly, bSetChanged, false);

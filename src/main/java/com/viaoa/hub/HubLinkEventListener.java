@@ -15,7 +15,7 @@ import com.viaoa.object.*;
 /** 
  	Used/created by HubLinkDelegate to "track" the Linked "To" Hub, so that the AO for the Linked "From" hub can
     changed to match the AO in the Link "To" Hub.
-	@see Hub#setLink(Hub,String) Full Description of Linking Hubs
+	see Hub#setLink(Hub,String) Full Description of Linking Hubs
 */
 class HubLinkEventListener extends HubListenerAdapter implements java.io.Serializable {
 	Hub linkToHub;

@@ -338,7 +338,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
 
     /** This is called when isUsed() is true, to get the object to use. <br>
         This can be overwritten to replace the object with another object.
-        @returns object to insert into hub.  Default is to use object.
+        @return object to insert into hub.  Default is to use object.
     */
     public T getObject(T object) {
         return object;

@@ -74,8 +74,8 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     
     /**
         Create an OARadioButton that is bound to a Hub.
-        @param objOn value to set property to when radio is selected.
-        @param objOff value to set property to when radio is not selected.
+        @param onValue value to set property to when radio is selected.
+        @param offValue value to set property to when radio is not selected.
     */  
     public OARadioButton(Hub hub, String propertyPath, Object onValue, Object offValue) {
         control = new OARadioButtonController(hub, propertyPath,onValue, offValue);
@@ -83,8 +83,8 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
 
     /**
         Create an OARadioButton that is bound to a Hub.
-        @param objOn value to set property to when radio is selected.
-        @param objOff value to set property to when radio is not selected.
+        @param onValue value to set property to when radio is selected.
+        @param offValue value to set property to when radio is not selected.
     */  
     public OARadioButton(Hub hub, String propertyPath, boolean onValue, boolean offValue) {
         control = new OARadioButtonController(hub, propertyPath, new Boolean(onValue), new Boolean(offValue));
@@ -239,8 +239,6 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     
     /**
      * Other Hub/Property used to determine if component is enabled.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
      */
     public void setEnabled(Hub hub) {
         control.getEnabledController().add(hub);
@@ -268,8 +266,6 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     
     /**
      * Other Hub/Property used to determine if component is visible.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
      */
     public void setVisible(Hub hub) {
         control.getVisibleController().add(hub);

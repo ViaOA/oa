@@ -19,11 +19,9 @@ import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
 
-/**
- *  Dynamically converts html text with custom property and processing tags into pure html text, by
- *  using a supplied OAObject or Hub to plug into the text.
-  
- *  <ul>Tags that are supported:  
+/*  
+    <br>Tags that are supported:
+ *  <ul>  
  *  <li><%=prop[,width||fmt]%>  to use value from OAProperties, or one of the values from setProperty()
  *  
  *  <li><%=foreach [prop]%>  to loop through a list of values (hub elements). Note: all tag properties in the scope of for loop will be based on this object.
@@ -85,6 +83,11 @@ import com.viaoa.util.*;
  * 
 * @see #getProperty(OAObject, String) that can be overwritten to handle custom/dynamic values.
  */
+
+/**
+ *  Dynamically converts html text with custom property and processing tags into pure html text, by
+ *  using a supplied OAObject or Hub to plug into the text.
+ */  
 public class OAHTMLConverter {
 
     private static Logger LOG = Logger.getLogger(OAHTMLConverter.class.getName());
@@ -129,7 +132,7 @@ public class OAHTMLConverter {
         return s;
     }
 
-    /**
+    /*
      * set a property, that is then referenced using <%=$name%> in the html.
      */
     public void setProperty(String name, Object value) {
@@ -730,7 +733,7 @@ public class OAHTMLConverter {
         return s;
     }
     
-    /**
+    /*
      * Called to get the value of a property.
      * @param obj Object parameter from getHtml()
      * @param propertyName name of property parsed between <%=XX%> parameters.
@@ -816,7 +819,7 @@ public class OAHTMLConverter {
 
     /**
      * Method that is called to get an object property value.
-     * @param obj object that is currently active.  Either the report object or the object in foreach loop.
+     * @param oaObj object that is currently active.  Either the report object or the object in foreach loop.
      */
     protected Object getProperty(OAObject oaObj, String propertyName) {
         if (oaObj == null) return null;

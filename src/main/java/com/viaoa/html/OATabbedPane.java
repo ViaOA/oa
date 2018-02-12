@@ -21,7 +21,7 @@ import java.util.Vector;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 
-/**
+/*
 
 OATabbedPane tab = new OATabbedPane();
 tab.add("Title");
@@ -101,7 +101,7 @@ public class OATabbedPane extends OAHtmlComponent {
     }
 
 
-    /** 
+    /* 
         htmlBefore, htmlAfter are used for each tab.        
         Example:
         OATabbedPane pane = new OATabbedPane();

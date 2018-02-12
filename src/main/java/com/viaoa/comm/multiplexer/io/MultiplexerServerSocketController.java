@@ -24,7 +24,6 @@ import java.util.logging.Logger;
  * MultiplexerSocketController so that new sockets can be multiplexed inside the "real" socket.
  * 
  * @author vvia
- * @see com.ice.comm.server.MultiplexerServer#
  */
 public class MultiplexerServerSocketController {
     private static Logger LOG = Logger.getLogger(MultiplexerServerSocketController.class.getName());
@@ -165,7 +164,6 @@ public class MultiplexerServerSocketController {
 
     /**
      * Used to set the limit on the number of bytes that can be written per second (in MB).  
-     * @see MultiplexerOutputStreamController#
      */
     public void setThrottleLimit(int mbPerSecond) {
         LOG.config("new value="+mbPerSecond);
@@ -344,9 +342,6 @@ public class MultiplexerServerSocketController {
     /**
      * Create a new ServerSocket that will accept new client MultiplexerSockets through a multiplexed
      * connection. This is used by MultiplexerServer to create new server sockets.
-     * 
-     * @see com.MultiplexerServer.comm.server.MultiplexerServer#createServerSocket(String,
-     *      com.VirtualSocket.comm.socket.MultiplexerSocket.Type)
      */
     public VirtualServerSocket getServerSocket(final String serverSocketName) throws IOException {
         if (serverSocketName == null || serverSocketName.length() == 0) return null;

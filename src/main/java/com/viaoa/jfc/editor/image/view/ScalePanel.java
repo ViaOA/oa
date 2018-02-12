@@ -23,7 +23,7 @@ import javax.swing.*;
 /**
  * Panel used to enter information for changing an image scale.
  * @author vincevia
- * @see ScalePanelController controller for this panel.
+ * see ScalePanelController controller for this panel.
  */
 public abstract class ScalePanel extends JPanel {
     private NumberTextField txtScalePercent, txtScaleWidth, txtScaleHeight;

@@ -28,11 +28,11 @@ import java.util.logging.Logger;
  *  URL url = new URL("classpath://com.viaoa.jfc.editor.html.css/html.css");
  *  
  *  Ex:
- *  <img src='classpath://com.vetplan.view.image/exam.jpg' height='10' width='8'>
+ *  <img src='classpath://com.vetplan.view.image/exam.jpg' height='10' width='8' alt="">
  *  
  *  !!! NOTE !!!: must call static method "register()" or "jwsregister" to have this URL Handler used/registered.
- *  
- 
+ */  
+ /*
     NOTES: 3 ways to "register" URL protocol handlers:
     
     1: System Property on the command line or as a JWS property

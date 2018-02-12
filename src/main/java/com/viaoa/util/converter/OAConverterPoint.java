@@ -18,10 +18,12 @@ import java.awt.*;
 /**
     Convert to/from a Point value.
     <br>
-    <ul><b>Converts the following to a  Point</b>
+    <b>Converts the following to a  Point</b>
+    <ul>
     </ul>
     <br>
-    <ul><b>Converts a Point to any of the following Classes</b>
+    <b>Converts a Point to any of the following Classes</b>
+    <ul>
     <li>String, using a comma separated list.  Ex: "x,y"
     </ul>
 

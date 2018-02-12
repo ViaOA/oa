@@ -1679,7 +1679,8 @@ public class OAForm extends OABase implements Serializable {
     
     /**
      * add names of CSS to include on page
-     * @param name of css to include,  see {@link OAJspDelegate#registerRequiredCss(String, String)} 
+     * @param name of css to include,  
+     * @see OAJspDelegate#registerRequiredCssName(String, String) 
      */
     public void addRequiredCssName(String name) {
         if (name == null) return;
@@ -1689,7 +1690,8 @@ public class OAForm extends OABase implements Serializable {
     }
     /**
      * add names of JS to include on page
-     * @param name of js to include,  see {@link OAJspDelegate#registerRequiredJs(String, String)} 
+     * @param name of js to include,  
+     * @see OAJspDelegate#registerRequiredJsName(String, String) 
      */
     public void addRequiredJsName(String name) {
         if (name == null) return;

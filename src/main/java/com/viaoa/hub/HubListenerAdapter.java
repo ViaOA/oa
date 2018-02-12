@@ -13,7 +13,7 @@ package com.viaoa.hub;
 /** 
     Adapter class that implements HubListener Interface.  
     <p>
-    @See HubListener
+    @see HubListener
 */
 public class HubListenerAdapter<T> implements HubListener<T> {
     

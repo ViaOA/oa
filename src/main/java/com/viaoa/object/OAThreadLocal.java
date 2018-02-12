@@ -71,7 +71,7 @@ public class OAThreadLocal {
     /**
      * List of objects that are locked by this thread.  Should only be used by
      * OAThreadLocalDelegate, where a rwLock used when accessing it.
-     * @see OAThreadLocalDelegate#lock(OAThreadInfo, Object)  
+     * see OAThreadLocalDelegate#lock(OAThreadInfo, Object)  
      */
     protected volatile Object[] locks; 
     protected boolean bIsWaitingOnLock;  // used on last lock - which is the only one that this could be waiting on.
@@ -79,7 +79,7 @@ public class OAThreadLocal {
     protected Object[] flags;
 
     /** used by OAUndoManager.start/endCapturePropertyChanges - to create undoable for oaObj.propertyChanges
-     *  @see OAUndoableManager#startCapturePropertyChanges
+     *  see OAUndoableManager#startCapturePropertyChanges
     */
     protected boolean createUndoablePropertyChanges;
     protected String compoundUndoableName;

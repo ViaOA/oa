@@ -29,7 +29,7 @@ import com.viaoa.jfc.print.OAPrintUtil;
 import com.viaoa.jfc.print.OAPrintable;
 import com.viaoa.util.OAString;
 
-/**
+/*
    This uses HTML that has a (hi-res) background image to create a certificate 
    the size of the background image.
    

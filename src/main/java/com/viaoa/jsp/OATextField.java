@@ -1542,7 +1542,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
      * Must be json string using double quotes, and "id", "display" for values
      *    ex:  String s = "{\"id\":1,\"display\":\"m-1-1\"},{\"id\":2,\"display\":\"m-2-1\"}"; 
      * 
-     * @param value user input
+     * @param searchText user input
      * @return list of values to send back to browser.
      */
     public String getTypeAheadJson(String searchText) {
