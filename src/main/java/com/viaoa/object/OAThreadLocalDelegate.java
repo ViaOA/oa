@@ -1148,5 +1148,12 @@ static volatile int unlockCnt;
         return getThreadLocal(true).ignoreTreeListenerProperty;            
     }
 
+    // 20180223
+    public static int getOASyncEventCount() {
+        return getThreadLocal(true).oaSyncEventCount;            
+    }
+    public static void incrOASyncEventCount() {
+        getThreadLocal(true).oaSyncEventCount++;            
+    }
 }
 

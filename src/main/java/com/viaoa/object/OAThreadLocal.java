@@ -103,5 +103,11 @@ public class OAThreadLocal {
     
     // 20160625
     protected int recursiveTriggerCount;
+    
+    // 20180223 
+    public int oaSyncEventCount;
+    
+    
+    
 }
 
