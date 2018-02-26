@@ -37,7 +37,6 @@ public interface RemoteClientInterface {
     Object getDetailNow(int id, Class masterClass, OAObjectKey masterObjectKey, 
             String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger);
 
-    
     Object datasource(int command, Object[] objects);
 
     boolean delete(Class objectClass, OAObjectKey objectKey);

@@ -27,7 +27,7 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
     // protected ConcurrentHashMap<Object, Object> hashCache = new ConcurrentHashMap<Object, Object>();
     // protected ConcurrentHashMap<Object, Object> hashLock = new ConcurrentHashMap<Object, Object>();
     private ClientGetDetail clientGetDetail; 
-    private RemoteDataSource remoteDataSource;
+    private volatile RemoteDataSource remoteDataSource;
     private int sessionId;
     
     public RemoteClientImpl(int sessionId) {
@@ -91,19 +91,29 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         return obj;
     }
 
-    public Object datasource(int command, Object[] objects) {
+    
+    public RemoteDataSource getRemoteDataSource() {
         if (remoteDataSource == null) {
-            remoteDataSource = new RemoteDataSource() {
-                // used when an object from ds is not already in a hub with master.
-                @Override
-                public void setCached(OAObject obj) {
-                    RemoteClientImpl.this.setCached(obj);
+            synchronized (this) {
+                if (remoteDataSource == null) {
+                    remoteDataSource = new RemoteDataSource() {
+                        // used when an object from ds is not already in a hub with master.
+                        @Override
+                        public void setCached(OAObject obj) {
+                            RemoteClientImpl.this.setCached(obj);
+                        }
+                    };            
                 }
-            };            
+            }
         }
-        Object result = remoteDataSource.datasource(command, objects);
+        return remoteDataSource;
+    }
+    @Override
+    public Object datasource(int command, Object[] objects) {
+        Object result = getRemoteDataSource().datasource(command, objects);
         return result;
     }
+
     protected OADataSource getDataSource(Class c) {
         if (c != null) {
             OADataSource ds = OADataSource.getDataSource(c);
