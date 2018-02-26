@@ -14,9 +14,11 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -48,9 +50,12 @@ import com.viaoa.util.OAString;
  */
 public class ImageServlet extends HttpServlet {
     private static Logger LOG = Logger.getLogger(JsonServlet.class.getName());
-    private final String packageName;
-    private final String defaultPropertyName;
+    private String packageName;
+    private String defaultPropertyName;
     private Class defaultClass;
+
+    public ImageServlet() {
+    }
 
     public ImageServlet(String packageName, Class defaultClass, String defaultPropertyName) {
         if (!OAString.isEmpty(packageName)) this.packageName = packageName + ".";
@@ -59,6 +64,29 @@ public class ImageServlet extends HttpServlet {
         this.defaultPropertyName = defaultPropertyName;
     }
 
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        String s = getValue("packageName", config);
+        if (!OAString.isEmpty(s)) {
+            this.packageName = s + ".";
+        }
+        else this.packageName = "";
+
+        defaultPropertyName = getValue("defaultPropertyName", config);
+    }
+    private String getValue(String name, ServletConfig config) {
+        Enumeration<String> enumx = config.getInitParameterNames();
+        for ( ; enumx.hasMoreElements(); ) {
+            String s = enumx.nextElement();
+            if (name.equals(s)) {
+                name = s;
+                break;
+            }
+        }
+        return config.getInitParameter(name);
+    }
+    
+    
     // keep track of the size of image, so that it wont have to resend to browser
     private ConcurrentHashMap<String, Integer> hmLastSize = new ConcurrentHashMap<String, Integer>();
     

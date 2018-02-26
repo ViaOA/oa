@@ -13,8 +13,10 @@ package com.viaoa.servlet;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -55,11 +57,35 @@ public class JsonServlet extends HttpServlet {
     private static Logger LOG = Logger.getLogger(JsonServlet.class.getName());
     private String packageName;
 
+    public JsonServlet() {
+    }
+    
     public JsonServlet(String packageName) {
         if (!OAString.isEmpty(packageName)) this.packageName = packageName + ".";
         else packageName = "";
     }
 
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        String s = getValue("packageName", config);
+        if (!OAString.isEmpty(s)) {
+            this.packageName = s + ".";
+        }
+        else this.packageName = "";
+    }
+    private String getValue(String name, ServletConfig config) {
+        Enumeration<String> enumx = config.getInitParameterNames();
+        for ( ; enumx.hasMoreElements(); ) {
+            String s = enumx.nextElement();
+            if (name.equals(s)) {
+                name = s;
+                break;
+            }
+        }
+        return config.getInitParameter(name);
+    }
+    
+    
     // class, id, [prop]
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         // Get the absolute path of the image

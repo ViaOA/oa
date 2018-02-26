@@ -12,9 +12,11 @@ package com.viaoa.servlet;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -75,6 +77,10 @@ public class PdfServlet extends HttpServlet {
         hmRandomRequestString.put(rand, ri);
         return rand;
     }
+
+
+    public PdfServlet() {
+    }
     
     public PdfServlet(String packageName, Class defaultClass, String defaultPropertyName) {
         if (!OAString.isEmpty(packageName)) this.packageName = packageName + ".";
@@ -83,6 +89,29 @@ public class PdfServlet extends HttpServlet {
         this.defaultPropertyName = defaultPropertyName;
     }
 
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        String s = getValue("packageName", config);
+        if (!OAString.isEmpty(s)) {
+            this.packageName = s + ".";
+        }
+        else this.packageName = "";
+        defaultPropertyName = getValue("defaultPropertyName", config);
+    }
+    private String getValue(String name, ServletConfig config) {
+        Enumeration<String> enumx = config.getInitParameterNames();
+        for ( ; enumx.hasMoreElements(); ) {
+            String s = enumx.nextElement();
+            if (name.equals(s)) {
+                name = s;
+                break;
+            }
+        }
+        return config.getInitParameter(name);
+    }
+
+    
+    
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         // Get the absolute path of the image
         ServletContext sc = getServletContext();

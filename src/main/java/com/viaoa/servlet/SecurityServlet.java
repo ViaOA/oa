@@ -15,9 +15,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -54,10 +56,32 @@ public class SecurityServlet extends HttpServlet {
     private String userId;
     private String password;
     
+    public SecurityServlet() {
+    }
     public SecurityServlet(String userId, String password) {
         this.userId = userId;
         this.password = password;
     }
+
+    
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        userId = getValue("userId", config);
+        password = getValue("password", config);
+    }
+    private String getValue(String name, ServletConfig config) {
+        Enumeration<String> enumx = config.getInitParameterNames();
+        for ( ; enumx.hasMoreElements(); ) {
+            String s = enumx.nextElement();
+            if (name.equals(s)) {
+                name = s;
+                break;
+            }
+        }
+        return config.getInitParameter(name);
+    }
+    
+    
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         ServletContext sc = getServletContext();

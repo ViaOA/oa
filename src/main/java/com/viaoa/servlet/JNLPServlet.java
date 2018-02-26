@@ -45,6 +45,7 @@ public class JNLPServlet extends HttpServlet
     public void addNameValue(String name, String value) {
         hmNameValue.put(name, value);
     }
+
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
