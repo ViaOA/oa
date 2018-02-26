@@ -3463,6 +3463,9 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             if (x >= 0) lsm.addSelectionInterval(x, x);
             return;
         }
+        if (hubSelect.getMasterObject() != null) { // 20180225
+            return;
+        }
 
         // update hubSelect, to see if objects are in table.hub
         for (int i = 0;; i++) {
