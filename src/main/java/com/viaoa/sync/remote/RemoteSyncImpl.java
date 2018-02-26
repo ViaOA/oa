@@ -28,6 +28,7 @@ import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
+import com.viaoa.util.OAThrottle;
 
 /**
  * Remote broadcast methods used to keep OAObjects, Hubs in sync with all computers.
@@ -37,16 +38,17 @@ import com.viaoa.sync.OASyncDelegate;
 public class RemoteSyncImpl implements RemoteSyncInterface {
     private static Logger LOG = Logger.getLogger(RemoteSyncImpl.class.getName());
 
+    private final OAThrottle throttlePropertyChangeError = new OAThrottle(5000);  
+    
     @Override
     public boolean propertyChange(Class objectClass, OAObjectKey origKey, String propertyName, Object newValue, boolean bIsBlob) {
         OAObject obj = getObject(objectClass, origKey);
         if (obj == null) {
-        /* TEST
-        String s = objectClass.getSimpleName();            
-        if ("application".equalsIgnoreCase(s)) {
-            System.out.println("property change not found, app.guid="+origKey.getGuid()+", prop="+propertyName);
-        }
-        */            
+            if (OASync.isServer()) {
+                if (throttlePropertyChangeError.check()) {
+                    LOG.warning("Object not found, class="+objectClass+", key="+origKey+", propName="+propertyName);
+                }
+            }
             return false;
         }
         OAObjectReflectDelegate.setProperty((OAObject)obj, propertyName, newValue, null);
