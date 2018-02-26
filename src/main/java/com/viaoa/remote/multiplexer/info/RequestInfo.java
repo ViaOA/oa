@@ -119,6 +119,9 @@ public class RequestInfo {
     public volatile boolean processedByServerQueue;  // flag set on server after it's processed
 //    public boolean isFromRemoteThread; // know if the thread making the remote call is a remoteThread
     
+    public boolean bHadOASyncEvent;  // 20180223 flag to know if there was an oasync event while calling this remote method
+    
+    
     public RequestInfo() {
         this.cnt = aiCount.incrementAndGet();
     }
