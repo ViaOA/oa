@@ -164,9 +164,10 @@ public class MultiplexerSocketController {
                     MultiplexerSocketController.this.getInputStreamController().readRealSocketLoop();
                 }
                 catch (Exception e) {
-                    LOG.log(Level.FINE, "error in socket thread for connection "+_connectionId, e);
+                    boolean b = wasCloseAlreadyCalled();
+                    LOG.log(Level.FINE, "error in socket thread for connection "+_connectionId+", wasSocketClosed="+b, e);
                     // if (Log.DEBUG) Log.debug("MultiplexerSocketController: error reading real socket, " + e +", vsc.id="+MultiplexerSocketController.this._vscId);
-                    if (!wasCloseAlreadyCalled()) {
+                    if (!b) {
                         onSocketException(e);
                     }
                 }
