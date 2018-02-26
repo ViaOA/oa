@@ -959,6 +959,16 @@ public class RemoteMultiplexerClient {
                             }
                         }
 
+                        // 20180225                        
+                        if (ri.type == RequestInfo.Type.CtoS_QueuedRequest || ri.type == RequestInfo.Type.CtoS_ReturnOnQueueSocket) {
+                            synchronized (ri) {
+                                ri.methodInvoked = true;
+                                ri.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+                            }
+                            continue;
+                        }
+                        
+                        
                         int maxSeconds = Math.max(ri.methodInfo == null ? 0 : ri.methodInfo.timeoutSeconds, 0);
                         if (maxSeconds < 3) maxSeconds = 3;
 
@@ -1137,6 +1147,12 @@ public class RemoteMultiplexerClient {
             // 5:CtoS_QueuedRequest get back from server
             // response for CtoS_QueuedRequest
             int x = ois.readByte();
+            
+            // 20180225
+            if (ri.type == RequestInfo.Type.StoC_QueuedResponse && x == 3) {
+                ri.bHadOASyncEvent = ois.readBoolean();
+            }
+            
             Object objx = ois.readObject();
             
             ri.messageId = ois.readInt();
@@ -1174,13 +1190,21 @@ public class RemoteMultiplexerClient {
                 if (ri.response != null && rix.methodInfo.compressedReturn && rix.methodInfo.remoteReturn == null) {
                     ri.response = ((OACompressWrapper) ri.response).getObject();
                 }
+                
                 synchronized (rix) {
                     rix.response = ri.response;
                     rix.exception = ri.exception;
                     rix.exceptionMessage = ri.exceptionMessage;
-                    rix.methodInvoked = true;
-                    // 6:CtoS_QueuedRequest  notify waiting thread from #4
-                    rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+                    rix.bHadOASyncEvent = ri.bHadOASyncEvent;
+                    if (ri.bHadOASyncEvent) {
+                        // 20180225 need to put on sync que, so that it waits for sync events to be processed first
+                        queSyncRequestInfo.put(rix);
+                    }
+                    else {
+                        rix.methodInvoked = true;
+                        // 6:CtoS_QueuedRequest  notify waiting thread from #4
+                        rix.notifyAll(); // wake up waiting thread that made this request.  See onInvokeForCtoS(..)
+                    }
                 }
             }
             return true;

@@ -540,6 +540,7 @@ public class RemoteMultiplexerServer {
             ri.args = args;
             ri.messageId = aiMessageId.incrementAndGet();
             ri.isRemoteThread = (Thread.currentThread() instanceof OARemoteThread);
+            
             onInvokeForStoC(session, ri);
         }
         catch (Exception e) {
@@ -564,16 +565,17 @@ public class RemoteMultiplexerServer {
     // "dummy" object, that is used when methods are not supported in proxy interface, but are in Object class
     private final Object stuntObject = new Object();
 
-    protected void onInvokeForStoC(Session session, RequestInfo ri) throws Exception {
-        ri.bind = session.getBindInfo(ri.bindName);
-        if (ri.bind == null) ri.bind = getBindInfo(ri.bindName);
+    private void onInvokeForStoC(Session session, RequestInfo ri) throws Exception {
         if (ri.bind == null) {
-            ri.exceptionMessage = "object was removed on client (GCd)";
-            return;
-        }
-        if (ri.bind != null) {
-            ri.methodInfo = ri.bind.getMethodInfo(ri.method);
-        }
+            ri.bind = session.getBindInfo(ri.bindName);
+            if (ri.bind == null) ri.bind = getBindInfo(ri.bindName);
+            if (ri.bind == null) {
+                ri.exceptionMessage = "object was removed on client (GCd)";
+                return;
+            }
+        }        
+        
+        ri.methodInfo = ri.bind.getMethodInfo(ri.method);
 
         if (ri.methodInfo == null) {
             // check to see if method from Object.class is being invoked
@@ -988,6 +990,11 @@ public class RemoteMultiplexerServer {
         ri.methodInfo = ri.bind.getMethodInfo(ri.method);
         ri.object = ri.bind.getObject();
 
+        // 20180225
+        if (ri.bind.isOASync) {
+            OAThreadLocalDelegate.incrOASyncEventCount();
+        }
+        
         if (ri.methodInfo == null) {
             // check to see if method from Object.class is being invoked
             if (ri.method.getDeclaringClass().equals(Object.class)) {
@@ -1259,7 +1266,12 @@ public class RemoteMultiplexerServer {
             if (!ri.bind.isBroadcast) {
                 OARemoteThreadDelegate.sendMessages(true);
             }
+
+            // 20180225 added code for threadlocal.oasynceventcount
+            int x = OAThreadLocalDelegate.getOASyncEventCount();
             ri.response = ri.method.invoke(ri.bind.getObject(), ri.args);
+            int x2 = OAThreadLocalDelegate.getOASyncEventCount();
+            ri.bHadOASyncEvent = (x != x2);
         }
         catch (InvocationTargetException e) {
             Exception ex = e;
@@ -1881,6 +1893,8 @@ public class RemoteMultiplexerServer {
                             }
                             else {
                                 oos.writeByte(3);
+                                // 20180225
+                                oos.writeBoolean(ri.bHadOASyncEvent);
                                 oos.writeObject(ri.response);
                             }
                             oos.writeInt(ri.messageId);
