@@ -66,14 +66,21 @@ public class SecurityServlet extends HttpServlet {
     
     @Override
     public void init(ServletConfig config) throws ServletException {
-        userId = getValue("userId", config);
-        password = getValue("password", config);
+        super.init(config);
+        
+        if (OAString.isEmpty(userId)) {
+            userId = getValue("userId", config);
+        }
+        if (OAString.isEmpty(password)) {
+            password = getValue("password", config);
+        }
     }
     private String getValue(String name, ServletConfig config) {
+        if (name == null) return null;
         Enumeration<String> enumx = config.getInitParameterNames();
         for ( ; enumx.hasMoreElements(); ) {
             String s = enumx.nextElement();
-            if (name.equals(s)) {
+            if (name.equalsIgnoreCase(s)) {
                 name = s;
                 break;
             }

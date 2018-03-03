@@ -61,23 +61,31 @@ public class JsonServlet extends HttpServlet {
     }
     
     public JsonServlet(String packageName) {
-        if (!OAString.isEmpty(packageName)) this.packageName = packageName + ".";
-        else packageName = "";
+        if (!OAString.isEmpty(packageName)) {
+            this.packageName = packageName;
+            if (!this.packageName.endsWith(".")) this.packageName += ".";
+        }
+        else this.packageName = "";
     }
 
     @Override
     public void init(ServletConfig config) throws ServletException {
-        String s = getValue("packageName", config);
-        if (!OAString.isEmpty(s)) {
-            this.packageName = s + ".";
+        super.init(config);
+        
+        if (OAString.isEmpty(packageName)) {
+            this.packageName = getValue("packageName", config);
+            if (!OAString.isEmpty(this.packageName)) {
+                if (!this.packageName.endsWith(".")) this.packageName += ".";
+            }
+            else this.packageName = "";
         }
-        else this.packageName = "";
     }
     private String getValue(String name, ServletConfig config) {
+        if (name == null) return null;
         Enumeration<String> enumx = config.getInitParameterNames();
         for ( ; enumx.hasMoreElements(); ) {
             String s = enumx.nextElement();
-            if (name.equals(s)) {
+            if (name.equalsIgnoreCase(s)) {
                 name = s;
                 break;
             }

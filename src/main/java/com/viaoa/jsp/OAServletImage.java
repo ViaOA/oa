@@ -71,41 +71,42 @@ public class OAServletImage extends OAHtmlElement {
     }
     
     
-    public String getHtmlSource(Object objx) {
-        String src = _getHtmlSource(objx);
+    public String getHtmlSource(Object obj) {
+        String src = _getHtmlSource(obj);
         if (src == null) src = "";
-        src = getSource(objx, src);
+        src = getSource(obj, src);
         return src;
     }
     private String _getHtmlSource(Object objx) {
-        String src = null;
-
-        if (!(objx instanceof OAObject)) return src;
-        if (hub == null || propertyPath == null || bytePropertyName == null) return src;
-
-        OAObject obj = (OAObject) hub.getAO();
-        Object value = obj.getProperty(propertyPath);
+        if (!(objx instanceof OAObject)) return null;
+        OAObject obj = (OAObject) objx;
+        
+        Object value = OAString.isEmpty(propertyPath) ? obj : obj.getProperty(propertyPath);
         String className;
 
-        if (value instanceof OAObject) {
-            className = value.getClass().getName();
-            value = ((OAObject) value).getProperty("id");
-        }
-        else {
-            className = obj.getClass().getName();
+        if (value instanceof Hub) {
+            Hub h = (Hub) value;
+            value = h.getAO();
+            if (value == null) value = h.getAt(0);
         }
         if (value == null) return null;
         
-        int len = 0;
-        if (value instanceof byte[]) {
-            len = ((byte[]) value).length;
-        }
-                
-        src = String.format("/servlet/img?c=%s&id=%s&p=%s", className, value+"", getBytePropertyName());
+        if (!(value instanceof OAObject)) return null;
+        className = value.getClass().getName();
+        Object idValue = ((OAObject) value).getProperty("id");
+        
+        String src = String.format("/servlet/img?c=%s&id=%s&p=%s", className, idValue+"", getBytePropertyName());
         if (maxHeightServlet > 0) src = String.format("%s&mh=%d", src, maxHeightServlet);
         if (maxWidthServlet > 0) src = String.format("%s&mw=%d", src, maxWidthServlet);
 
-        if (len > 0) src = String.format("%s&len=%d", src, len); // 20171014 make it unique so that imageServlet can create an ETAG for the browser to cache
+        if (value instanceof OAObject) {
+            value = ((OAObject) value).getProperty(getBytePropertyName());
+            if (value instanceof byte[]) {
+                int len = ((byte[]) value).length;
+                if (len > 0) src = String.format("%s&len=%d", src, len); // 20171014 make it unique so that imageServlet can create an ETAG for the browser to cache
+            }
+        }
+        
         return src;
     }
 

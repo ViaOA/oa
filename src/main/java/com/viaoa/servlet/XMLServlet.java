@@ -14,8 +14,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Enumeration;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -38,11 +40,43 @@ public class XMLServlet extends HttpServlet {
     private static Logger LOG = Logger.getLogger(JsonServlet.class.getName());
     private String packageName;
 
+    public XMLServlet() {
+    }
+    
     public XMLServlet(String packageName) {
-        if (!OAString.isEmpty(packageName)) this.packageName = packageName + ".";
-        else packageName = "";
+        if (!OAString.isEmpty(packageName)) {
+            this.packageName = packageName;
+            if (!this.packageName.endsWith(".")) this.packageName += ".";
+        }
+        else this.packageName = "";
     }
 
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        
+        if (OAString.isEmpty(packageName)) {
+            packageName = getValue("packageName", config);
+            if (!OAString.isEmpty(packageName)) {
+                if (!this.packageName.endsWith(".")) this.packageName += ".";
+            }
+            else this.packageName = "";
+        }
+    }
+    private String getValue(String name, ServletConfig config) {
+        if (name == null) return null;
+        Enumeration<String> enumx = config.getInitParameterNames();
+        for ( ; enumx.hasMoreElements(); ) {
+            String s = enumx.nextElement();
+            if (name.equalsIgnoreCase(s)) {
+                name = s;
+                break;
+            }
+        }
+        return config.getInitParameter(name);
+    }
+    
+    
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // TODO Auto-generated method stub

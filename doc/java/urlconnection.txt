@@ -31,6 +31,41 @@ public static String httpGet(String urlStr) throws IOException {
 }
 
 
+qqqqqqqqqqqqqqqqqqq 
+ 
+    public void loadFile(String toFileName) throws Exception {
+        
+        System.out.println("Loading http file, will write to "+toFileName);
+        URL url = new URL("https://feeds.constructionjobs.com/vetjobs/all.xml");
+        System.out.println("Loading http file, url="+url);
+        
+        URLConnection con = url.openConnection();
+        InputStream is = con.getInputStream();
+        System.out.println("Loading http file, reading");
+
+        
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        
+        File file = new File(toFileName);
+        FileOutputStream fos = new FileOutputStream(file);
+        Writer w = new OutputStreamWriter(fos);
+        BufferedWriter bw = new BufferedWriter(w); 
+        
+        int cnt = 0;
+        for (;;cnt++) {
+            String line = br.readLine();
+            if (line == null) break;
+            bw.write(line+"\n");
+            if (cnt % 500 == 0) {
+                System.out.println("Loading http file, read lines="+cnt);
+            }
+        }
+        System.out.println("Loading http file, DONE, total lines="+cnt);
+        
+        bw.flush();
+        bw.close();
+        fos.close();
+    }
  
  
  

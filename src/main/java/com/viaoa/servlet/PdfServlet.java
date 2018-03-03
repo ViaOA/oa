@@ -83,33 +83,44 @@ public class PdfServlet extends HttpServlet {
     }
     
     public PdfServlet(String packageName, Class defaultClass, String defaultPropertyName) {
-        if (!OAString.isEmpty(packageName)) this.packageName = packageName + ".";
-        else packageName = "";
+        if (!OAString.isEmpty(packageName)) {
+            this.packageName = packageName;
+            if (!this.packageName.endsWith(".")) this.packageName += ".";
+        }
+        else this.packageName = "";
         this.defaultClass = defaultClass;
         this.defaultPropertyName = defaultPropertyName;
     }
 
     @Override
     public void init(ServletConfig config) throws ServletException {
-        String s = getValue("packageName", config);
-        if (!OAString.isEmpty(s)) {
-            this.packageName = s + ".";
+        super.init(config);
+        
+        if (OAString.isEmpty(this.packageName)) {
+            this.packageName = getValue("packageName", config);
+            if (!OAString.isEmpty(this.packageName)) {
+                if (!this.packageName.endsWith(".")) this.packageName += ".";
+            }
+            else this.packageName = "";
         }
-        else this.packageName = "";
-        defaultPropertyName = getValue("defaultPropertyName", config);
+
+        if (OAString.isEmpty(defaultPropertyName)) {
+            defaultPropertyName = getValue("defaultPropertyName", config);
+            if (defaultPropertyName == null) this.defaultPropertyName = "";
+        }
     }
     private String getValue(String name, ServletConfig config) {
+        if (name == null) return null;
         Enumeration<String> enumx = config.getInitParameterNames();
         for ( ; enumx.hasMoreElements(); ) {
             String s = enumx.nextElement();
-            if (name.equals(s)) {
+            if (name.equalsIgnoreCase(s)) {
                 name = s;
                 break;
             }
         }
         return config.getInitParameter(name);
     }
-
     
     
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
