@@ -3,5 +3,5 @@ Permissions: all-permissions
 Codebase: *
 Application-Name: OA
 Implementation-Title: com.viaoa 
-Implementation-Version: 3.5.38
+Implementation-Version: 3.5.40
 Implementation-Vendor: ViaOA, Inc.

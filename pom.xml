@@ -3,15 +3,19 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.viaoa</groupId>
 	<artifactId>oa</artifactId>
-	<version>3.5.39-SNAPSHOT</version>
-
+	<version>3.5.40</version>
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
-
 	<description>
         Object Automation library
     </description>
+
+    <scm>
+        <connection>scm:git:https://github.com/ViaOA/oa.git</connection>
+        <developerConnection>scm:git:https://github.com/ViaOA/oa.git</developerConnection>
+        <url>https://github.com/ViaOA/oa/tree/master</url>
+    </scm>
 
 	<url>http://www.viaoa.com</url>
     <inceptionYear>1999</inceptionYear>
@@ -24,11 +28,9 @@
 		</license>
 	</licenses>
 
-	<scm>
-		<connection>scm:git:https://github.com/ViaOA/oa.git</connection>
-		<developerConnection>scm:git:https://github.com/ViaOA/oa.git</developerConnection>
-		<url>https://github.com/ViaOA/oa/tree/master</url>
-	</scm>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
 	<developers>
 		<developer>
@@ -39,16 +41,10 @@
 		</developer>
 	</developers>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
-
 	<repositories>
 	</repositories>
 
 	<dependencies>
-	
-	
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>javax.mail-api</artifactId>
@@ -62,13 +58,13 @@
 			<scope>compile</scope>
 		</dependency>
 
-<!-- not needed 
+        <!-- not needed 
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>jsp-api</artifactId>
 			<version>6.0.53</version>
 		</dependency>
- -->
+        -->
 		<dependency>
 			<groupId>itext</groupId>
 			<artifactId>itext</artifactId>
@@ -202,6 +198,7 @@
 				</executions>
 			</plugin>
 
+<!-- qqqqqqqqqqqqqqq need to have this run when sending to maven central repo, a password window will popup when building --> 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
@@ -225,11 +222,14 @@
 				<configuration>
 					<serverId>ossrh</serverId>
 					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-					<!-- Set this to true and the release will automatically proceed and 
-						sync to Central Repository will follow -->
+                     
+                    
+                    <!--  Set this to true and the release will automatically proceed and sync to Central Repository will follow  --> 
+
 					<autoReleaseAfterClose>false</autoReleaseAfterClose>
 				</configuration>
 			</plugin>
+			
 		</plugins>
 	</build>
 </project>
