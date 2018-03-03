@@ -399,7 +399,7 @@ public class OASyncServer {
             serverInfo.getHostName(),
             serverInfo.getIpAddress(),
             serverInfo.isDiscoveryEnabled(),
-            OAObject.version,
+            OAObject.getOAVersion(),
             ccnt, 
             hmClientInfoExt.size()
         );
