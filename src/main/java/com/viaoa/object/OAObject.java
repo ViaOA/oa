@@ -11,6 +11,7 @@
 package com.viaoa.object;
 
 import java.io.*;
+import java.util.Properties;
 import java.util.logging.*;
 import java.lang.ref.*;  // java1.2
 
@@ -100,17 +101,27 @@ public class OAObject implements java.io.Serializable, Comparable {
 
     private static final long serialVersionUID = 1L; // internally used by Java Serialization to identify this version of OAObject.
     
-    public static final int version = 180125;   // NOTE: also need to update manifest.mf
+    private static final String oaversion;
+    
+    public static String getOAVersion() {
+        return oaversion;
+    }
+    
     static {
-        /*
-        Properties props = System.getProperties();
-        System.out.println("OA version 3.6.0_" + version + " ViaOA, all rights reserved");
-        System.out.println(String.format("Java version=%s, name=%s", 
-                System.getProperty("java.version"), 
-                System.getProperty("java.vm.name")
-        ));
-        */
-        System.out.println("oa_3.5.38_" + version);
+        String ver = "3.5.40_20180226";
+        try {
+            InputStream resourceAsStream = OAObject.class.getResourceAsStream("/META-INF/maven/com.viaoa/oa/pom.properties");
+            Properties props = new Properties();
+            props.load(resourceAsStream);
+
+            // String g = props.getProperty("groupId");
+            // String a = props.getProperty("artifactId");
+            ver = props.getProperty("version");
+        }
+        catch (Exception e) {
+        }
+        oaversion = ver;
+        System.out.println("OA "+oaversion);
     }
     
     
