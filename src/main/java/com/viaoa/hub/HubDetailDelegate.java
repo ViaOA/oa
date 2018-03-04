@@ -16,6 +16,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.object.*;
@@ -1125,9 +1126,18 @@ public class HubDetailDelegate {
      * @return
      */
     public static Hub getRealHub(Hub thisHub) {
+        return _getRealHub(thisHub, 0);
+    }
+    public static Hub _getRealHub(Hub thisHub, int cnt) {
         Hub hubMaster = HubDetailDelegate.getMasterHub(thisHub);
         if (hubMaster == null) return thisHub;
-        hubMaster = getRealHub(hubMaster);
+        
+        if (cnt > 10) {
+            LOG.log(Level.WARNING, "", new Exception("possible stackoverflow, thisHub="+thisHub+", masterHub="+hubMaster));
+        }
+        else {
+            hubMaster = _getRealHub(hubMaster, cnt+1);
+        }
         
         Hub h = thisHub;
         OAObject o = HubDetailDelegate.getMasterObject(thisHub);
