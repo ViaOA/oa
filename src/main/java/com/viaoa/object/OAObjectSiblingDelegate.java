@@ -61,13 +61,23 @@ public class OAObjectSiblingDelegate {
         Hub getDetailHub = OAThreadLocalDelegate.getGetDetailHub();
         String getDetailPropertyPath = OAThreadLocalDelegate.getGetDetailPropertyPath();
 
+        OAPropertyPath ppGetDetailPropertyPath = null;
+        if (getDetailHub != null && getDetailPropertyPath != null) {
+            try {
+                ppGetDetailPropertyPath = new OAPropertyPath(getDetailHub.getObjectClass(), getDetailPropertyPath);
+            }
+            catch (Exception e) {
+                getDetailHub = null;
+                getDetailPropertyPath = null;
+            }
+        }
+        
         String ppPrefix = null;
         boolean bValid = false;
-        if (getDetailHub != null && getDetailPropertyPath != null) {
+        if (ppGetDetailPropertyPath != null) {
             // see if property is in the detailPP
-            OAPropertyPath pp = new OAPropertyPath(getDetailHub.getObjectClass(), getDetailPropertyPath);
             boolean b = false;
-            for (OALinkInfo li : pp.getLinkInfos()) {
+            for (OALinkInfo li : ppGetDetailPropertyPath.getLinkInfos()) {
                 if (property.equalsIgnoreCase(li.getName())) {
                     bValid = true;
                     break;
@@ -98,7 +108,7 @@ public class OAObjectSiblingDelegate {
             if (!bValid) {
                 // see if property is off of the detailPP
                 ppPrefix = null;
-                for (OALinkInfo li : pp.getLinkInfos()) {
+                for (OALinkInfo li : ppGetDetailPropertyPath.getLinkInfos()) {
                     Class c = li.getToClass();
                     OALinkInfo lix = OAObjectInfoDelegate.getLinkInfo(c, mainObject.getClass());
                     if (lix != null) {

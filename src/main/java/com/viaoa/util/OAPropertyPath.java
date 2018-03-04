@@ -88,7 +88,7 @@ public class OAPropertyPath<F> {
         }
         catch (Exception e) {
             try {
-                //setup(fromClass);  // for debugging
+                //setup(fromClass);  // for debugging only
             }
             catch (Exception e2) {
                 // TODO: handle exception
