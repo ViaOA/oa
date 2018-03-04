@@ -2006,4 +2006,23 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
     	if (root != null) root.updateUICalled();
     	cntUpdateUI++;
     }
+    
+    // 20180303 hack for JTree.setExpandedState
+    //   so that it does not unselect descendents and select this node
+    private boolean bIgnoreCollapse;
+    @Override
+    public void fireTreeCollapsed(TreePath path) {
+        bIgnoreCollapse = true;
+        super.fireTreeCollapsed(path);
+    }
+    @Override
+    protected boolean removeDescendantSelectedPaths(TreePath path, boolean includePath) {
+        if (bIgnoreCollapse) {
+            bIgnoreCollapse = false;
+            return false;
+        }
+        return super.removeDescendantSelectedPaths(path, includePath);
+    }
+    
+    
 }
