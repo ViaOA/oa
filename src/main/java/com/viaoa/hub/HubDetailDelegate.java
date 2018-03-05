@@ -1120,11 +1120,24 @@ public class HubDetailDelegate {
     
     /** 
      * Get the real hub that this hub should be using.
-     * This could be based on the fact that this hub has not yet been updated after a masterHub.AO 
-     * has been changed.
-     * @param thisHub
-     * @return
+     * This could be based on the fact that this hub has not yet been updated (new list) after a masterHub.AO 
      */
+    public static Hub getRealHub(Hub thisHub) {
+        Hub hubMaster = HubDetailDelegate.getMasterHub(thisHub);
+        if (hubMaster == null) return thisHub;
+        
+        Hub h = thisHub;
+        OAObject o = HubDetailDelegate.getMasterObject(thisHub);
+        if (o != null && o != hubMaster.getAO()) {
+            h = (Hub) OAObjectReflectDelegate.getProperty(o, getPropertyFromMasterToDetail(hubMaster));
+            if (h == null) {
+                h = thisHub; // should not happen
+            }
+        }
+        return h;
+    }
+    
+    /*20180305 was:   not sure why this was 
     public static Hub getRealHub(Hub thisHub) {
         return _getRealHub(thisHub, 0);
     }
@@ -1149,6 +1162,7 @@ public class HubDetailDelegate {
         }
         return h;
     }
+    */
 
     public static boolean hasDetailHubs(Hub thisHub) {
         if (thisHub == null || thisHub.datau == null) return false;
