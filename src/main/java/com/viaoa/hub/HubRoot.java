@@ -84,6 +84,9 @@ public class HubRoot {
         hubListener = new HubListenerAdapter() {
             @Override
             public void afterChangeActiveObject(HubEvent e) {
+                if (lastAO != null) { // 20180305 ao could be the same as before
+                    if (lastAO == e.getObject()) return;
+                }
                 HubRoot.this.update();
             }
         };
@@ -91,6 +94,7 @@ public class HubRoot {
         
         update();
     }
+    private Object lastAO;
     
     private void update() {
         if (hubCopy != null) {
@@ -100,6 +104,7 @@ public class HubRoot {
         this.hubRoot.clear();
 
         OAObject obj = (OAObject) hubMaster.getAO();
+        lastAO = obj;
         if (obj == null) return;
         
         Hub h = (Hub) obj.getProperty(propertyFromMaster);
