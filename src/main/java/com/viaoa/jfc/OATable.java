@@ -2257,6 +2257,10 @@ if (!getKeepSorted()) hub.cancelSort();
         if (row < 0) return;
         aiRow.set(row);
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        
+        // 20180305 set AO, but not detailHubs
+        HubAODelegate.setActiveObject(hub, hub.getAt(row), row, true, false, false, false);
+        
         SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
@@ -2268,7 +2272,7 @@ if (!getKeepSorted()) hub.cancelSort();
                 if (aiRow.get() == row) {
                     try {
                         hubAdapter._bIsRunningValueChanged = true;
-                        hub.setPos(row);
+                        HubAODelegate.updateDetailHubs(hub); 
                     }
                     finally {
                         hubAdapter._bIsRunningValueChanged = false;
