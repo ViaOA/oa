@@ -444,8 +444,8 @@ public class HubEventDelegate {
 	    @param propertyName name of property that changed. This is case insensitive
 	 */
 	public static void fireCalcPropertyChange(Hub thisHub, final Object object, final String propertyName) {
-	    // 20120104
-	    if (OAThreadLocalDelegate.hasSentCalcPropertyChange(object, propertyName)) return;
+	    // 20180304
+	    if (OAThreadLocalDelegate.hasSentCalcPropertyChange(thisHub, propertyName)) return;
 	    
 	    HubListener[] hl = HubEventDelegate.getAllListeners(thisHub);
 	    int x = hl.length;

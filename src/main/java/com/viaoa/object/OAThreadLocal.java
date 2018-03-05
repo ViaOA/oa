@@ -83,7 +83,7 @@ public class OAThreadLocal {
     */
     protected boolean createUndoablePropertyChanges;
     protected String compoundUndoableName;
-    protected Tuple<Object, String>[] calcPropertyEvents;
+    protected Tuple<Hub, String>[] calcPropertyEvents;
     
     
     protected Hub getDetailHub; // hub that a get detail is being called for. This is a helper for getting detail from server

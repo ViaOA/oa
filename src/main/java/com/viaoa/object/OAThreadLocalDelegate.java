@@ -863,25 +863,31 @@ static volatile int unlockCnt;
         }
     }
 
-    public static boolean hasSentCalcPropertyChange(Object object, String propertyName) {
-        if (object == null || propertyName == null) return false;
+    public static boolean hasSentCalcPropertyChange(Hub thisHub, String propertyName) {
+        if (thisHub == null || propertyName == null) return false;
         if (!isSendingEvent()) return false;
+        
+        Hub hubMain = thisHub;
+        for ( ; hubMain.getSharedHub() != null ; ) {
+            hubMain = hubMain.getSharedHub();
+        }
+        
         OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
         
         if (tl.calcPropertyEvents == null) {
             tl.calcPropertyEvents = new Tuple[1];
-            tl.calcPropertyEvents[0] = new Tuple<Object, String>(object, propertyName);
+            tl.calcPropertyEvents[0] = new Tuple(hubMain, propertyName);
             return false;
         }
-        for (Tuple<Object, String> tup : tl.calcPropertyEvents) {
-            if (tup.a == object) {
+        for (Tuple<Hub, String> tup : tl.calcPropertyEvents) {
+            if (tup.a == hubMain) {
                 if (propertyName.equalsIgnoreCase(tup.b)) return true;
             }
         }
         int x = tl.calcPropertyEvents.length;
-        Tuple<Object, String>[] temp = new Tuple[x+1];
+        Tuple<Hub, String>[] temp = new Tuple[x+1];
         System.arraycopy(tl.calcPropertyEvents, 0, temp, 0, x);
-        temp[x] = new Tuple<Object, String>(object, propertyName);
+        temp[x] = new Tuple<Hub, String>(hubMain, propertyName);
         tl.calcPropertyEvents = temp;
         
         return false;
