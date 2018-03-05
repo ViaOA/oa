@@ -384,8 +384,8 @@ public class HubShareDelegate {
 	    // if (getMasterHub() != null) throw new OAHubException(this,61);
 	
 	    HubDataDelegate.incChangeCount(thisHub);
-	    Hub hubOrigSharedHub = thisHub.datau.getSharedHub();
-	    if (thisHub.datau.getSharedHub() == sharedMasterHub) {
+	    final Hub hubOrigSharedHub = thisHub.datau.getSharedHub();
+	    if (hubOrigSharedHub == sharedMasterHub) {
 	        if (sharedMasterHub == null) return;
 	        if (shareActiveObject == (thisHub.dataa == sharedMasterHub.dataa)) {
 	            
@@ -400,7 +400,14 @@ public class HubShareDelegate {
 	            // 20130331 since the SharedHub is the same, do more checking to see if thisHub has changed or not
 	            if (!shareActiveObject || (thisHub.dataa.activeObject == sharedMasterHub.dataa.activeObject))  {
 	                if (thisHub.datau.getLinkToHub() == null) {
-	                    if (!shareActiveObject) thisHub.setPos(-1);  // in case masterHub was re-shared after a new select
+	                    if (!shareActiveObject) {
+	                        // 20180305
+	                        Object objx = thisHub.getAO();
+	                        if (objx != null && !thisHub.contains(objx)) {
+	                            thisHub.setPos(-1);  // in case masterHub was re-shared after a new select
+	                        }
+	                        // was: thisHub.setPos(-1);  // in case masterHub was re-shared after a new select
+	                    }
 	                    return;
 	                }
 	                
