@@ -610,8 +610,8 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     	}
 //qqqqqqqqqqqqqqqqqqqqqqqqq    	
         if (totalObjectsWritten > 120000 || totalObjectsWritten < 0) {
-            msg = " ALERT, totalObjectsWritten is wrong";
-            LOG.warning(rcnter+") "+msg);
+            msg += " ALERT, totalObjectsWritten is wrong";
+            // LOG.warning(rcnter+") "+msg);
         }
     	
     	rcnter++;
