@@ -24,6 +24,7 @@ import com.viaoa.transaction.OATransaction;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OADateTime;
 import com.viaoa.util.Tuple;
+import com.viaoa.util.Tuple3;
 
 /**
  * Delegate class used to store information about the local thread. 
@@ -863,8 +864,8 @@ static volatile int unlockCnt;
         }
     }
 
-    public static boolean hasSentCalcPropertyChange(Hub thisHub, String propertyName) {
-        if (thisHub == null || propertyName == null) return false;
+    public static boolean hasSentCalcPropertyChange(Hub thisHub, OAObject thisObj, String propertyName) {
+        if (thisHub == null || propertyName == null || thisObj == null) return false;
         if (!isSendingEvent()) return false;
         
         Hub hubMain = thisHub;
@@ -875,20 +876,26 @@ static volatile int unlockCnt;
         OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
         
         if (tl.calcPropertyEvents == null) {
-            tl.calcPropertyEvents = new Tuple[1];
-            tl.calcPropertyEvents[0] = new Tuple(hubMain, propertyName);
+            tl.calcPropertyEvents = new Tuple3[1];
+            tl.calcPropertyEvents[0] = new Tuple3(hubMain, thisObj, propertyName);
             return false;
         }
-        for (Tuple<Hub, String> tup : tl.calcPropertyEvents) {
-            if (tup.a == hubMain) {
-                if (propertyName.equalsIgnoreCase(tup.b)) return true;
+        for (Tuple3<Hub, OAObject, String> tup : tl.calcPropertyEvents) {
+            if (tup.a == hubMain && tup.b == thisObj) {
+                if (propertyName.equalsIgnoreCase(tup.c)) return true;
             }
         }
         int x = tl.calcPropertyEvents.length;
-        Tuple<Hub, String>[] temp = new Tuple[x+1];
+        Tuple3<Hub, OAObject, String>[] temp = new Tuple3[x+1];
         System.arraycopy(tl.calcPropertyEvents, 0, temp, 0, x);
-        temp[x] = new Tuple<Hub, String>(hubMain, propertyName);
+        temp[x] = new Tuple3<Hub, OAObject, String>(hubMain, thisObj, propertyName);
         tl.calcPropertyEvents = temp;
+        
+        /*
+        if (x % 100 == 0) {
+            LOG.warning("tl.calcPropertyEvents.size = "+tl.calcPropertyEvents.length);
+        }
+        */
         
         return false;
     }

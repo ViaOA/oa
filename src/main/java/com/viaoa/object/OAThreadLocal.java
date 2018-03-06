@@ -14,7 +14,7 @@ import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubMerger;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.transaction.OATransaction;
-import com.viaoa.util.Tuple;
+import com.viaoa.util.Tuple3;
 
 /**
  * Used/created by OAThreadInfoDelegate to manage "flags" for threads.
@@ -83,7 +83,7 @@ public class OAThreadLocal {
     */
     protected boolean createUndoablePropertyChanges;
     protected String compoundUndoableName;
-    protected Tuple<Hub, String>[] calcPropertyEvents;
+    protected Tuple3<Hub, OAObject, String>[] calcPropertyEvents;
     
     
     protected Hub getDetailHub; // hub that a get detail is being called for. This is a helper for getting detail from server
