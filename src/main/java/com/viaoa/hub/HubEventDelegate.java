@@ -445,7 +445,7 @@ public class HubEventDelegate {
 	 */
 	public static void fireCalcPropertyChange(Hub thisHub, final Object object, final String propertyName) {
 	    // 20180304
-	    if (OAThreadLocalDelegate.hasSentCalcPropertyChange(thisHub, propertyName)) return;
+	    if (OAThreadLocalDelegate.hasSentCalcPropertyChange(thisHub, (OAObject) object, propertyName)) return;
 	    
 	    HubListener[] hl = HubEventDelegate.getAllListeners(thisHub);
 	    int x = hl.length;
