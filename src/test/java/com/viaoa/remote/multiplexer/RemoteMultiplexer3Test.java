@@ -69,7 +69,7 @@ public class RemoteMultiplexer3Test extends OAUnitTest {
         if (multiplexerServer != null) multiplexerServer.stop();
     }
     
-    private int serverPingCount, serverPingCount2;
+    private volatile int serverPingCount, serverPingCount2;
     private RemoteServerInterface createRemoteServerInterface(final String name) {
         RemoteServerInterface rsi = new RemoteServerImpl() {
             public String ping(String msg) {
@@ -156,6 +156,7 @@ public class RemoteMultiplexer3Test extends OAUnitTest {
             String s = "test2 "+i;
             remoteServer.ping2(s);  // async call
         }
+        if (serverPingCount2 == 0) Thread.sleep(25);
         assertTrue("serverPingCount2="+serverPingCount2, serverPingCount2 > 0);
         
         // C2S using queued request/reply

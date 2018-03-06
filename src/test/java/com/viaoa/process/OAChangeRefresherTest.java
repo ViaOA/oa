@@ -50,7 +50,7 @@ public class OAChangeRefresherTest {
         
         p.setCode("x");
 
-        Thread.sleep(200);
+        Thread.sleep(500);
 
         assertEquals(3, ai.get());
     }    

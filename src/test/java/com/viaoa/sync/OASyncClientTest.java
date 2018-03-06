@@ -222,7 +222,7 @@ public class OASyncClientTest extends OAUnitTest {
         site.setName("xx");
         
         assertEquals(0, aiServerCalledPropChange.get());
-        site.setProduction(true);  // this will trigger the server
+        site.setProduction(true);  // this will trigger the server to send 2000 changes to site.abbrevName
         
         for (int i=0; i<120; i++) {
             if (!site.getProduction()) break;
@@ -230,6 +230,13 @@ public class OASyncClientTest extends OAUnitTest {
             if (bStopCalled) break;
         }
         boolean b = site.getProduction();
+
+        // the afterPropertyChange are sent in another queue, so it can be behind, wait up to 5 seconds
+        for (int i=0; i<5; i++) {
+            if (aiServerCalledPropChange.get() == 2000) break;
+            Thread.sleep(1000);
+            if (bStopCalled) break;
+        }
         
         assertEquals(2000, aiServerCalledPropChange.get());
         assertFalse(site.getProduction());
