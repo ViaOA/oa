@@ -132,6 +132,10 @@ public class RemoteMultiplexer3Test extends OAUnitTest {
                     //System.out.println(clientPingCount+" client callback ping");
                     return "client recvd "+msg;
                 }
+                @Override
+                public String performThreadDump(String msg) {
+                    return null;
+                }
             };
         }
         return remoteCallback;

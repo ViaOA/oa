@@ -243,8 +243,8 @@ public class HubListenerTest extends OAUnitTest {
         OAFinder<Environment, Server> finder = new OAFinder<Environment, Server>(EnvironmentPP.silos().servers().pp);
         cChange2 += finder.find(server.getSilo().getEnvironment()).size();
         
-        assertEquals(cntChange2, cChange2); 
-        assertEquals(cntChange, cChange2); 
+        assertEquals(cChange2, cntChange2); 
+        assertEquals(cChange2, cntChange); 
         
         cntChange = cntChange2 = cChange2 = 0;
         

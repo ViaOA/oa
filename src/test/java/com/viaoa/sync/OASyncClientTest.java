@@ -205,7 +205,7 @@ public class OASyncClientTest extends OAUnitTest {
                 if (!Site.P_AbbrevName.equalsIgnoreCase(e.getPropertyName())) return;
                 if (site != e.getObject()) return;
                 if (site == null) return;
-                if (!site.getProduction()) return;
+                //if (!site.getProduction()) return;
                 aiServerCalledPropChange.incrementAndGet();
             }
         });
