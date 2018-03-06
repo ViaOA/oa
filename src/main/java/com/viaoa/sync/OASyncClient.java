@@ -326,6 +326,12 @@ public class OASyncClient {
                 public String ping(String msg) {
                     return "client recvd "+msg;
                 }
+                @Override
+                public String performThreadDump(String msg) {
+                    String s = OAThreadLocalDelegate.getAllStackTraces();
+                    LOG.warning(msg + "\n" + s);
+                    return s;
+                }
             };
         }
         return remoteCallback;

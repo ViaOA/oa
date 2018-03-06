@@ -11,6 +11,7 @@
 package com.viaoa.sync.remote;
 
 import java.lang.reflect.Method;
+import java.util.logging.Logger;
 
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
@@ -20,6 +21,7 @@ import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAObjectKey;
+import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.sync.model.ClientInfo;
 
@@ -27,7 +29,8 @@ import com.viaoa.sync.model.ClientInfo;
  * Server side remote object for clients to use.
  */
 public abstract class RemoteServerImpl implements RemoteServerInterface {
-
+    private static Logger LOG = Logger.getLogger(RemoteServerImpl.class.getName());
+    
     @Override
     public String ping(String msg) {
         return msg;
@@ -124,5 +127,12 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
     
     @Override
     public abstract RemoteSessionInterface getRemoteSession(ClientInfo clientInfo, RemoteClientCallbackInterface callback);
+
+    @Override
+    public String performThreadDump(String msg) {
+        String s = OAThreadLocalDelegate.getAllStackTraces();
+        LOG.warning(msg + "\n" + s);
+        return s;
+    }
     
 }

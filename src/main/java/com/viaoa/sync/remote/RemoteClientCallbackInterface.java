@@ -21,4 +21,8 @@ public interface RemoteClientCallbackInterface {
     
     @OARemoteMethod(dontUseQueue=true)
     String ping(String msg);
+    
+    @OARemoteMethod(dontUseQueue=true)
+    public String performThreadDump(String msg);
+
 }

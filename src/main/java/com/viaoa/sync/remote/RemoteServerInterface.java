@@ -57,4 +57,8 @@ public interface RemoteServerInterface {
      */
     @OARemoteMethod
     Object runRemoteMethod(Hub hub, String methodName, Object[] args);
+    
+    @OARemoteMethod(dontUseQueue=true)
+    public String performThreadDump(String msg);
+    
 }
