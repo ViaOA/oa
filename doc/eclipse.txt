@@ -1,4 +1,20 @@
 
+20180307 convert maven project to work with tomcat
+    convert to maven project
+        right click and choose "configure / maven"
+    convert to dynamic web
+        project properties / project facets
+            dynamic web module
+    change web directory from /WebContent to src/main/webapp 
+        project properties / deployment assemble
+            add button, choose maven
+            change             
+                source=  /src/main/java    deploy path= WEB-INF/classes
+                         /src/main/webapp               /
+                         Maven Dependencies             WEB-INF/lib            
+                           
+                
+
 20171228 speed up eclipse
     http://www.nicolasbize.com/blog/7-tips-to-speed-up-eclipse/
 
