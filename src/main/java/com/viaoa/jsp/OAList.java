@@ -43,6 +43,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     protected boolean bSubmit=false;
     protected String forwardUrl;
     protected String nullDescription = "";
+    private boolean bShowNullDescriptionFirst;  // false=bottom of list
     protected boolean bRequired;
     protected String name;
 
@@ -440,6 +441,18 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         
         String ppHeading = getHeadingPropertyPath();
         String lastHeading = null;
+
+        if (getShowNullDescriptionFirst()) {
+            String s = getHtml(null, -1);
+            if (s != null) {
+                if (s.length() == 0) s += "&nbsp;";
+                sb.append("<li");
+                if (hub.getAO() == null) sb.append(" class='oaSelected'");
+                sb.append(" oarow='-1'>");
+                sb.append(s);
+                sb.append("</li>");
+            }
+        }
         
         for (int pos=0; ;pos++) {
             Object obj = hub.getAt(pos);
@@ -471,15 +484,17 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         }
         //if (bInOptGroup) sb.append("</optgroup>");
 
-        String s = getHtml(null, -1);
-        if (s != null) {
-            if (s.length() == 0) s += "&nbsp;";
-            sb.append("<li");
-            if (hub.getAO() == null) sb.append(" class='oaSelected'");
-            sb.append(" oarow='-1'>");
-            sb.append(s);
-            sb.append("</li>");
-        }        
+        if (!getShowNullDescriptionFirst()) {
+            String s = getHtml(null, -1);
+            if (s != null) {
+                if (s.length() == 0) s += "&nbsp;";
+                sb.append("<li");
+                if (hub.getAO() == null) sb.append(" class='oaSelected'");
+                sb.append(" oarow='-1'>");
+                sb.append(s);
+                sb.append("</li>");
+            }
+        }
         
         String strListing = sb.toString();
         //strListing = Util.convert(strListing, "\\", "\\\\");
@@ -787,4 +802,11 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         return result;
     }
     */
+
+    public void setShowNullDescriptionFirst(boolean b) {
+        this.bShowNullDescriptionFirst = b;
+    }
+    public boolean getShowNullDescriptionFirst() {
+        return bShowNullDescriptionFirst;
+    }
 }

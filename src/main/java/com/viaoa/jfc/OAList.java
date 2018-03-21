@@ -912,5 +912,6 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     public JLabel getLabel() {
         return getController().getLabel();
     }
+    
 }
 
