@@ -74,21 +74,26 @@ public class OASession extends OABase {
         }
     }
 
+    public OAForm getForm(OAForm form) {
+        if (form == null) return null;
+        OAForm formx = getForm(form.getUrl(),false,0);
+        return formx;
+    }
 
 
     /** Store/Retreive forms by name for this session. 
-        Note: Sets currentForm
-        @param name is not case sensitive
+        @param url is not case sensitive
         @see OABase#get
     */
-    public OAForm getForm(String name) {
-        return getForm(name,false,0);
+    public OAForm getForm(String url) {
+        OAForm form = getForm(url,false,0);
+        return form;
     }
-    public OAForm getForm(String name, boolean bWait) {
-        return getForm(name, bWait, 0);
+    public OAForm getForm(String url, boolean bWait) {
+        return getForm(url, bWait, 0);
     }
-    private OAForm getForm(String name, boolean bWait, int waitCnt) {
-        Object obj = get(name);
+    private OAForm getForm(String url, boolean bWait, int waitCnt) {
+        Object obj = get(url);
         if (obj == null || !(obj instanceof OAForm)) {
             if (bWait) {
                 if (waitCnt > 10) return null;
@@ -99,24 +104,21 @@ public class OASession extends OABase {
                     catch (Exception e) {
                     }
                 }
-                return getForm(name, true, ++waitCnt);
+                return getForm(url, true, ++waitCnt);
             }
             return null;
         }
-        currentForm = (OAForm) obj;
-        return currentForm;
+        return (OAForm) obj;
     }
     
     /** 
         Adds a form to oasession using the form's url as a key.
-        Note: Sets currentForm
     */
     public void put(OAForm form) {
         if (form == null) return;
         super.put(form.getUrl(), form);
         form.session = this;
         assignFrame(form);  // this is used to assign a form (using it's url) to a frame that has already been created.
-        currentForm = form;
         getBreadcrumbForms().add(form); 
     }
 
