@@ -3,6 +3,8 @@ package com.viaoa.sync;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
@@ -687,6 +689,22 @@ public class OASyncClientTest extends OAUnitTest {
 
         tearDown();
     }
+
+    public void test2() throws Exception {
+        setup();
+        HashSet<MRADServerCommand> hs = new HashSet<>();
+        for (int i=0; i<5000; i++) {
+            MRADServerCommand msc = remoteApp.createMRADServerCommand();
+            if (hs.contains(msc)) {
+                int xx = 4;
+                xx++;
+            }
+            hs.add(msc);
+        }
+        int xx = 4;
+        xx++;
+    }
+
     
     
     public static void main(String[] args) throws Exception {
@@ -700,9 +718,10 @@ public class OASyncClientTest extends OAUnitTest {
         test.testA();
         */
         
-        test.runLocalClientTest();
+//        test.runLocalClientTest();
         //test.tsamTest();        
-        
+test.test2();
+
         System.out.println("DONE running test, exiting program");
     }
 }

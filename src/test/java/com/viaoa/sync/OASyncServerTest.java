@@ -39,6 +39,7 @@ import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAThreadLocalDelegate;
+import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.sync.remote.RemoteBroadcastInterface;
 import com.viaoa.sync.remote.RemoteTestInterface;
 import com.viaoa.sync.remote.RemoteTsamInterface;
@@ -134,6 +135,12 @@ public class OASyncServerTest {
                 super.onClientDisconnect(connectionId);
                 //OASyncServerTest.this.onClientDisconnect(connectionId);
             }
+            int cnt=0;
+            @Override
+            protected void afterInvokeRemoteMethod(RequestInfo ri) {
+//                super.afterInvokeRemoteMethod(ri);
+System.out.println((++cnt)+") "+ri.toLogString());
+            }
         };
 
         // setup remote objects
@@ -168,6 +175,12 @@ public class OASyncServerTest {
             @Override
             public boolean writeToClientLogFile(int clientId, ArrayList al) {
                 return false;
+            }
+            @Override
+            public MRADServerCommand createMRADServerCommand() {
+                MRADServerCommand msc = new MRADServerCommand();
+msc.save();                
+                return msc;
             }
         };
         

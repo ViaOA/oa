@@ -51,7 +51,7 @@ public class OAConverterBoolean implements OAConverterInterface {
     }        
 
     private static final Boolean bFalse = new Boolean(false);
-    protected Boolean convertToBoolean(Object value, String fmt) {
+    public Boolean convertToBoolean(Object value, String fmt) {
         if (value instanceof Boolean) {
             return (Boolean) value;
         }
@@ -120,8 +120,7 @@ public class OAConverterBoolean implements OAConverterInterface {
         return (value != null);
     }
 
-
-    protected Object convertFromBoolean(Class toClass, Boolean bValue, String fmt) {
+    public Object convertFromBoolean(Class toClass, Boolean bValue, String fmt) {
         if (toClass.equals(String.class)) {
             // fmt is three values to use for true/false/null sep by ';'  ex: "yes;no;none"
             if (fmt != null) {

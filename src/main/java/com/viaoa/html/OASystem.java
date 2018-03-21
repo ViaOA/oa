@@ -100,8 +100,6 @@ public class OASystem extends OABase {
         OASession oasession = (OASession) session.getValue(applicationName+".OA");
         if (oasession == null) {
             oasession = new OASession();
-            // System.out.println("OASystem.getSession() new session for "+applicationName); //qqqqqqqqq
-            //NEW JDK: session.setAttribute(applicationName, oasession);
             session.putValue(applicationName+".OA", oasession);
         }
         oasession.setApplication(oaapplication);
@@ -109,6 +107,5 @@ public class OASystem extends OABase {
         oasession.setResponse((HttpServletResponse)response);
         return oasession;
     }
-
 }
 

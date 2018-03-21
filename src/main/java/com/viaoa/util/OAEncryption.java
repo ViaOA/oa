@@ -36,6 +36,9 @@ public class OAEncryption {
      * Example: used when the real password is not stored.  Instead
      * the hash is stored and is used to compare the hash of user input.
      */
+    public static String getSHAHash(String input){
+        return getHash(input);
+    }
     public static String getHash(String input){
         if (input == null) return null;
         MessageDigest md = null;

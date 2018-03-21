@@ -263,7 +263,7 @@ public class OACompare {
     /**
      * Checks to see if the value of an object can be considered empty.
      * 
-     * example:  null, an empty array, an collection with no elements, a primitive set to 0, a string with only spaces (if using bTrim)
+     * example:  null, an empty array, an collection with no elements, a primitive set to 0, primitive boolean that is false, a string with only spaces (if using bTrim)
      * @param obj
      * @param bTrim if true and object is a string, then spaces will be ignored.
      */

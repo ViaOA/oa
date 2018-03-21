@@ -7,6 +7,7 @@ import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 import com.viaoa.util.OAProperties;
 
 import test.theice.tsam.model.oa.AdminUser;
+import test.theice.tsam.model.oa.MRADServerCommand;
 import test.theice.tsam.model.oa.cs.ClientRoot;
 import test.theice.tsam.model.oa.cs.ServerRoot;
 
@@ -31,6 +32,8 @@ public interface RemoteAppInterface {
     public String getResourceValue(String name);
     
     public boolean writeToClientLogFile(int clientId, ArrayList al);
+    
+    public MRADServerCommand createMRADServerCommand();
 
     // remote clients
     /*$$Start: RemoteAppInterface.remoteClient $$*/
