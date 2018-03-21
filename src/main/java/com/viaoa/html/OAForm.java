@@ -477,7 +477,7 @@ public class OAForm extends OABase implements Serializable {
         &lt;form method="post" action="oaform.jsp" enctype="multipart/form-data"&gt;&lt;input type="hidden" name="oaform" value="formName"&gt;       
     */
     public String getAction() {
-        if (session != null) session.setCurrentForm(this);
+        // if (session != null) session.setCurrentForm(this);
         
         bNeedsRefreshed = false;
         bFormEnded = false;
@@ -1240,6 +1240,12 @@ vvvvvvvvvvvvvvvvvvvvvvqqqqqqqqqqqqqqqqqqqqq*/
         return getEndHtml();
     }
 
+    // 20180317
+    public void onBegin() {
+    }
+    // 20180317
+    public void onEnd() {
+    }
 }
 
 
