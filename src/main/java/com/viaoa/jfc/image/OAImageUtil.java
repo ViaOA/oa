@@ -820,14 +820,14 @@ public class OAImageUtil {
         return bi;
     }
 
-    public static Image setTransparentColor(Image img, final Color color) {
+    public static BufferedImage setTransparentColor(Image img, final Color color) {
         ImageFilter filter = new RGBImageFilter() {
-            // the color we are looking for... Alpha bits are set to opaque
-            public int markerRGB = color.getRGB() | 0xFF000000;
+            public int markerRGB = color.getRGB();
+            public int min = markerRGB - 25;
+            public int max = markerRGB + 25;
 
             public final int filterRGB(int x, int y, int rgb) {
-                if ((rgb | 0xFF000000) == markerRGB) {
-                    // Mark the alpha bits as zero - transparent
+                if ( rgb > min && rgb < max ) {
                     return 0x00FFFFFF & rgb;
                 }
                 else {
@@ -837,9 +837,17 @@ public class OAImageUtil {
             }
         };
         ImageProducer ip = new FilteredImageSource(img.getSource(), filter);
-        return Toolkit.getDefaultToolkit().createImage(ip);
+        Image image = Toolkit.getDefaultToolkit().createImage(ip);
+        
+        final BufferedImage bufferedImage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        
+        final Graphics2D g2 = bufferedImage.createGraphics();
+        g2.drawImage(image, 0, 0, null);
+        g2.dispose();
+        
+        return bufferedImage;
     }
-
+    
     public static void saveAsGif(Image image, File file) {
         // String[] formats = ImageIO.getWriterFormatNames();
         // http://java.sun.com/docs/books/tutorial/2d/images/saveimage.html
@@ -1102,7 +1110,7 @@ public class OAImageUtil {
     }
 
     
-    public static void main(String[] args) throws Exception {
+    public static void mainA(String[] args) throws Exception {
         File file = new File("\\c:\\temp\\1.0.png");
         
         BufferedInputStream bs = new BufferedInputStream(new FileInputStream(file)); 
@@ -1128,14 +1136,40 @@ public class OAImageUtil {
         System.out.println("Done");
     }
     
-    public static void mainA(String[] args) throws Exception {
-        BufferedImage bi = loadImage("C:\\projects\\java\\OABuilder_git\\src\\com\\viaoa\\builder\\view\\image\\MoveMode.gif");
+    public static void main(String[] args) throws Exception {
+        final String dir = "\\temp\\images";
+        File fileDir = new File(dir);
         
-        if (bi != null) {
-            System.out.println("converting");
-            setTransparentColor(bi, Color.green);
-            saveAsGif(bi, new File("c:\\temp\\test.gif"));
+        System.out.println("Starting");
+        File[] files = fileDir.listFiles();
+
+        for (File file : files) {
+            String s = file.getPath();
+            if (!s.endsWith(".jpg")) continue;
+            
+            String s2 = s.substring(0, s.length() - 3) + "png";
+            File f2 = new File(s2);
+            if (f2.exists()) continue;
+
+            System.out.println("converting "+s+" to .png file");
+            
+            BufferedImage bi = loadImage(s);
+            
+            bi = setTransparentColor(bi, Color.green);
+            
+            saveAsPng(bi, f2);
+            
         }
+        System.out.println("Done");
+        
+        
+    }
+
+    public static void mainB(String[] args) throws Exception {
+        String s = "\\temp\\shutterstock_425802652.jpg";
+        BufferedImage bi = loadImage(s);
+        //saveAsGif(bi, new File("c:\\temp\\test.gif"));
+        saveAsPng(bi, new File("c:\\temp\\test.png"));
         System.out.println("Done");
     }
     
