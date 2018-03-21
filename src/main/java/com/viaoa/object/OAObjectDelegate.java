@@ -259,8 +259,10 @@ public class OAObjectDelegate {
 	 * Used when "reading" serialized objects.
 	 */
     protected static void updateGuid(int guid) {
-        if (guidCounter.get() < guid) {
-            guidCounter.set(guid);
+        for (;;) {
+            int g = guidCounter.get();
+            if (g >= guid) break;
+            if (guidCounter.compareAndSet(g, guid)) break;
         }
     }
 	
