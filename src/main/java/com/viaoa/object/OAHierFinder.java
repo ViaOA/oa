@@ -13,6 +13,7 @@ package com.viaoa.object;
 import java.util.HashSet;
 
 import com.viaoa.util.*;
+import com.viaoa.util.converter.OAConverterBoolean;
 import com.viaoa.util.filter.OAEmptyFilter;
 import com.viaoa.util.filter.OANotEmptyFilter;
 import com.viaoa.util.filter.OANotNullFilter;
@@ -73,6 +74,21 @@ public class OAHierFinder<F extends OAObject> {
     }
     public Object findFirstNotNull(F fromObject) {
         return findFirst(fromObject, new OANotNullFilter());
+    }
+
+    /**
+     * Find first that is converts to True.
+     */
+    public Object findFirstTrue(F fromObject) {
+        Object objx = findFirst(fromObject, new OAFilter() {
+            OAConverterBoolean cb = new OAConverterBoolean(); 
+            @Override
+            public boolean isUsed(Object obj) {
+                Boolean boo = (Boolean) cb.convert(Boolean.class, obj, null);
+                return (boo != null && ((Boolean) boo).booleanValue());
+            }
+        });
+        return objx;
     }
     
     protected boolean findFirstValue(final OAObject obj, OAFilter filter, final int pos) {
