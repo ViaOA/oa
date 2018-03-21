@@ -354,7 +354,7 @@ public class SelectDelegate {
         ResultSetIterator rsi;
         DataAccessObject dao = table.getDataAccessObject();
         if (!bDirty && dao != null) {
-            rsi = new ResultSetIterator(ds, clazz, dao, query, null, max);
+            rsi = new ResultSetIterator(ds, clazz, dao, "SELECT "+query, null, max);
         }       
         else {      
             Column[] columns = qc.getSelectColumnArray(clazz);
