@@ -47,6 +47,35 @@ public class OAString {
         return new String(sb);
     }
 
+    /**
+     * get last N chars from string.
+     * @param len number of chars to get
+     */
+    public static String getEnd(String text, int len) {
+       if (text == null) return null;
+       int x = text.length();
+       if (x <= len) return text;
+       String s = text.substring(x - len);
+       return s;
+    }
+    public static String getLast(String text, int len) {
+        return getEnd(text, len);
+    }
+    
+    /**
+     * get first N chars from string.
+     * @param len number of chars to get
+     */
+    public static String getBegin(String text, int len) {
+       if (text == null) return null;
+       int x = text.length();
+       if (x <= len) return text;
+       String s = text.substring(0, len);
+       return s;
+    }
+    public static String getFirst(String text, int len) {
+        return getBegin(text, len);
+    }
 
     /** 
         converts null to "" and does other xml/html conversions for &lt;, &gt; &amp; &quot; &#39; 
