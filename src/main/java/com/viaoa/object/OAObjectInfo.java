@@ -60,6 +60,8 @@ public class OAObjectInfo { //implements java.io.Serializable {
     // All primitive properties, in uppercase and sorted.
     // This is used by OAObject.nulls, to get the bit position for an objects primitive properties.
     protected String[] primitiveProps;
+    protected byte[] primitiveMask; // used to mask boolean and int+nm (name/value) to not default to null, instead false and 0
+    
 
     // 20120827 hubs that have a size of 0
     protected String[] hubProps;
@@ -295,6 +297,44 @@ public class OAObjectInfo { //implements java.io.Serializable {
     //   used for the bit position for OAObject.nulls
     public String[] getPrimitiveProperties() {
         return primitiveProps;
+    }
+    
+    
+    // 20180325
+    /**
+     * used to set which primitive properties should be set to null for new instances.
+     * boolean props will not be set to null.
+     * int that have isNameValue = true will not be set to null.
+     * @return
+     */
+    public byte[] getPrimitiveMask() {
+        if (primitiveMask != null) return primitiveMask; 
+        
+        String[] ps = getPrimitiveProperties();
+        int x = (ps==null) ? 0 : ((int) Math.ceil(ps.length / 8.0d));
+        primitiveMask = new byte[x];
+        for (int i=0; i<x; i++) {
+            primitiveMask[i] = ((byte) 0xFF);
+        }
+        
+        int pos = -1;  // bit pos 
+        for (String prop : ps) {
+            pos++;
+            OAPropertyInfo pi = getPropertyInfo(prop);
+            if (pi == null) continue;
+            if (!pi.isNameValue()) {
+                Class c = pi.getClassType();
+                if (!c.equals(boolean.class)) continue;
+            }
+            int posByte = (pos / 8);
+            int posBit = 7 - (pos % 8);
+
+            byte b = (byte) 0;
+            b |= ((byte) 1) << posBit;
+            
+            primitiveMask[posByte] ^= b;
+        }
+        return primitiveMask;
     }
     
     // 20120827

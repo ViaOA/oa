@@ -214,6 +214,7 @@ public class OAObjectInfoDelegate {
         Collections.sort(alPrimitive);
         thisOI.primitiveProps = new String[alPrimitive.size()];
         alPrimitive.toArray(thisOI.primitiveProps);
+        thisOI.primitiveMask = null;
         
         // 20120827 track empty hubs
         // this must be sorted, so that they will be in the same order used by OAObject.nulls, and created the same on all other computers
@@ -337,6 +338,7 @@ public class OAObjectInfoDelegate {
         Collections.sort(alPrimitive);
         thisOI.primitiveProps = new String[alPrimitive.size()];
         alPrimitive.toArray(thisOI.primitiveProps);
+        thisOI.primitiveMask = null;
         
         
         // combine LinkInfos
@@ -755,19 +757,26 @@ public class OAObjectInfoDelegate {
         return objs;
     }   
 
+    public static byte[] getNullBitMask(OAObject oaObj) {
+        if (oaObj == null) return null;
+        return oaObj.nulls;
+    }
+    
     public static boolean isPrimitiveNull(OAObject oaObj, String propertyName) {
+        if (oaObj == null || propertyName == null) return false;
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
         String[] ss = oi.getPrimitiveProperties();
         propertyName = propertyName.toUpperCase();
         for (int i=0; i<ss.length; i++) {
             int x = propertyName.compareTo(ss[i]);
             if (x == 0) {
-                int pos = (i/8);
-                if (pos >= oaObj.nulls.length) return false;
-                byte b = oaObj.nulls[pos];
-                int bit = i % 8;
+                int posByte = (i / 8);
+                int posBit = 7 - (i % 8);
+                if (posByte >= oaObj.nulls.length) return false;
+                byte b = oaObj.nulls[posByte];
+
                 byte b2 = 1;
-                b2 = (byte) (b2<<bit);
+                b2 = (byte) (b2<<posBit);
                 b = (byte) ((byte)b & (byte)b2);
                 return b != 0;                   
             }
@@ -785,25 +794,23 @@ public class OAObjectInfoDelegate {
         for (int i=0; i<ss.length; i++) {
             int x = propertyName.compareTo(ss[i]);
             if (x == 0) {
-                int pos = (i/8);
-                
-                if (pos >= oaObj.nulls.length) {
-                    int x2 = (ss==null) ? 0 : ((int) Math.ceil(ss.length / 8.0d));
-                    oaObj.nulls = new byte[x2];
+                int posByte = (i / 8);
+                if (posByte >= oaObj.nulls.length) {
+                    continue;
                 }
                 
-                byte b = oaObj.nulls[pos];
-                int bit = i % 8;
+                byte b = oaObj.nulls[posByte];
+                int posBit = 7 - (i % 8);
 
-                byte b2 = 1;
-                b2 = (byte) (b2<<bit);
+                byte b2 = (byte) 1;
+                b2 = (byte) (b2 << posBit);
                 if (bSetToNull) {
                     b |= b2; 
                 }
                 else {
                     b &= ~b2; 
                 }
-                oaObj.nulls[pos] = b;
+                oaObj.nulls[posByte] = b;
                 break;
             }
             if (x < 0) break; // list is sorted

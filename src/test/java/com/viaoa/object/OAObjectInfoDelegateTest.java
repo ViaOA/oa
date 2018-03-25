@@ -179,7 +179,110 @@ public class OAObjectInfoDelegateTest extends OAUnitTest {
        
        assertNotNull(li);
    }
-   
+
+   @Test
+   public void testNulls() {
+       OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(EmailType.class);
+       
+       //           7=128  6=64  5=32   4=16  3=8  2=4  1=2 0=1 
+       // bit[7]=aTestFlag, 6=id, 5=seq, 4=testflag, 5=type
+
+       String[] ss = oi.getPrimitiveProperties();
+       assertNotNull(ss);
+       assertEquals(5, ss.length);
+       assertEquals("ATESTFLAG", ss[0]);
+       assertEquals("ID", ss[1]);
+       assertEquals("SEQ", ss[2]);
+       assertEquals("TESTFLAG", ss[3]);
+       assertEquals("TYPE", ss[4]);
+       
+       
+       byte[] bs = oi.getPrimitiveMask();
+       assertNotNull(bs);
+       assertEquals(1, bs.length);
+       assertEquals(103, bs[0]);
+       
+
+       
+       EmailType et = new EmailType();
+
+       byte[] bsx = OAObjectInfoDelegate.getNullBitMask(et);
+       assertNotNull(bsx);
+       assertEquals(bsx.length, 1);
+       
+       assertEquals(103, bsx[0]);
+       
+       boolean b = OAObjectInfoDelegate.isPrimitiveNull(et, "Testflag");
+       assertFalse(b);
+       b = OAObjectInfoDelegate.isPrimitiveNull(et, "aTestflag");        
+       assertFalse(b);
+       b = OAObjectInfoDelegate.isPrimitiveNull(et, "type");
+       assertFalse(b);
+       b = OAObjectInfoDelegate.isPrimitiveNull(et, "seq");
+       assertTrue(b);
+       b = OAObjectInfoDelegate.isPrimitiveNull(et, "id");
+       assertTrue(b);
+
+       assertEquals(103, bsx[0]);
+       
+       et.setNull("aTestflag");
+       b = OAObjectInfoDelegate.isPrimitiveNull(et, "aTestflag");        
+       assertTrue(b);
+       assertEquals(-25, bsx[0]);
+
+       et.setATestFlag(true);
+       b = OAObjectInfoDelegate.isPrimitiveNull(et, "aTestflag");        
+       assertFalse(b);
+       assertEquals(103, bsx[0]);
+       
+       et.setSeq(0);
+       b = OAObjectInfoDelegate.isPrimitiveNull(et, "seq");
+       assertFalse(b);
+       assertEquals(71, bsx[0]);
+   }
     
+   @Test
+   public void testNulls2() {
+       OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(CurrencyType.class);
+
+       String[] ss = oi.getPrimitiveProperties();
+       assertNotNull(ss);
+       assertEquals(9, ss.length);
+       assertEquals("EXCHANGERATE", ss[0]);
+       assertEquals("ID", ss[1]);
+       for (int i=2; i<9; i++) {
+           assertEquals("ID"+(i-1), ss[i]);
+       }
+       
+       byte[] bs = oi.getPrimitiveMask();
+       assertNotNull(bs);
+       assertEquals(2, bs.length);
+       assertEquals(-1, bs[0]);
+       assertEquals(-1, bs[1]);
+       
+
+       CurrencyType ct = new CurrencyType();
+       byte[] bsx = OAObjectInfoDelegate.getNullBitMask(ct);
+       assertNotNull(bsx);
+       assertEquals(bsx.length, 2);
+       assertEquals(-1, bsx[0]);
+       assertEquals(-1, bsx[1]);
+       
+       boolean b = OAObjectInfoDelegate.isPrimitiveNull(ct, "id7");
+       assertTrue(b);
+       
+       ct.setId7(1);
+       b = OAObjectInfoDelegate.isPrimitiveNull(ct, "id7");        
+       assertFalse(b);
+       assertEquals(-1, bsx[0]);
+       assertEquals(127, bsx[1]);
+
+       ct.setId6(1);
+       b = OAObjectInfoDelegate.isPrimitiveNull(ct, "id6");        
+       assertFalse(b);
+       assertEquals(-2, bsx[0]);
+       assertEquals(127, bsx[1]);
+       
+   }
     
 }

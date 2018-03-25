@@ -175,5 +175,86 @@ public class CurrencyType extends OAObject {
         changedFlag = false;
         newFlag = false;
     }
+
+    public static final String P_Id1 = "Id1";
+    public static final String P_Id2 = "Id2";
+    public static final String P_Id3 = "Id3";
+    public static final String P_Id4 = "Id4";
+    public static final String P_Id5 = "Id5";
+    public static final String P_Id6 = "Id6";
+    public static final String P_Id7 = "Id7";
+    
+    protected int id1,id2,id3,id4,id5,id6,id7;
+    @OAProperty()
+    public int getId1() {
+        return id1;
+    }
+    public void setId1(int newValue) {
+        fireBeforePropertyChange(P_Id1, this.id1, newValue);
+        int old = id1;
+        this.id1 = newValue;
+        firePropertyChange(P_Id1, old, this.id1);
+    }
+    @OAProperty()
+    public int getId2() {
+        return id2;
+    }
+    public void setId2(int newValue) {
+        fireBeforePropertyChange(P_Id2, this.id2, newValue);
+        int old = id2;
+        this.id2 = newValue;
+        firePropertyChange(P_Id2, old, this.id2);
+    }
+    @OAProperty()
+    public int getId3() {
+        return id3;
+    }
+    public void setId3(int newValue) {
+        fireBeforePropertyChange(P_Id3, this.id3, newValue);
+        int old = id3;
+        this.id3 = newValue;
+        firePropertyChange(P_Id3, old, this.id3);
+    }
+    @OAProperty()
+    public int getId4() {
+        return id4;
+    }
+    public void setId4(int newValue) {
+        fireBeforePropertyChange(P_Id4, this.id4, newValue);
+        int old = id4;
+        this.id4 = newValue;
+        firePropertyChange(P_Id4, old, this.id4);
+    }
+    @OAProperty()
+    public int getId5() {
+        return id5;
+    }
+    public void setId5(int newValue) {
+        fireBeforePropertyChange(P_Id5, this.id, newValue);
+        int old = id5;
+        this.id5 = newValue;
+        firePropertyChange(P_Id5, old, this.id5);
+    }
+    @OAProperty()
+    public int getId6() {
+        return id6;
+    }
+    public void setId6(int newValue) {
+        fireBeforePropertyChange(P_Id6, this.id6, newValue);
+        int old = id6;
+        this.id6 = newValue;
+        firePropertyChange(P_Id6, old, this.id6);
+    }
+    @OAProperty()
+    public int getId7() {
+        return id7;
+    }
+    public void setId7(int newValue) {
+        fireBeforePropertyChange(P_Id7, this.id7, newValue);
+        int old = id7;
+        this.id7 = newValue;
+        firePropertyChange(P_Id7, old, this.id7);
+    }
+
 }
  

@@ -47,7 +47,9 @@ public class EmailType extends OAObject {
     public static final String P_LocationEmailTypes = "LocationEmailTypes";
     public static final String PROPERTY_ProgramEmailTypes = "ProgramEmailTypes";
     public static final String P_ProgramEmailTypes = "ProgramEmailTypes";
-     
+
+    protected boolean testFlag;
+    protected boolean aTestFlag;
     protected int id;
     protected OADate created;
     protected int seq;
@@ -327,5 +329,28 @@ public class EmailType extends OAObject {
         changedFlag = false;
         newFlag = false;
     }
+
+    @OAProperty(displayLength = 5)
+    public boolean getTestFlag() {
+        return testFlag;
+    }
+    public void setTestFlag(boolean newValue) {
+        fireBeforePropertyChange("TestFlag", this.testFlag, newValue);
+        boolean old = testFlag;
+        this.testFlag = newValue;
+        firePropertyChange("TestFlag", old, this.testFlag);
+    }
+    
+    @OAProperty(displayLength = 5)
+    public boolean getATestFlag() {
+        return aTestFlag;
+    }
+    public void setATestFlag(boolean newValue) {
+        fireBeforePropertyChange("ATestFlag", this.aTestFlag, newValue);
+        boolean old = aTestFlag;
+        this.aTestFlag = newValue;
+        firePropertyChange("ATestFlag", old, this.aTestFlag);
+    }
+    
 }
  
