@@ -200,7 +200,7 @@ public class OAObjectInfoDelegateTest extends OAUnitTest {
        byte[] bs = oi.getPrimitiveMask();
        assertNotNull(bs);
        assertEquals(1, bs.length);
-       assertEquals(103, bs[0]);
+       assertEquals(111, bs[0]);
        
 
        
@@ -210,35 +210,35 @@ public class OAObjectInfoDelegateTest extends OAUnitTest {
        assertNotNull(bsx);
        assertEquals(bsx.length, 1);
        
-       assertEquals(103, bsx[0]);
+       assertEquals(111, bsx[0]);
        
        boolean b = OAObjectInfoDelegate.isPrimitiveNull(et, "Testflag");
        assertFalse(b);
        b = OAObjectInfoDelegate.isPrimitiveNull(et, "aTestflag");        
        assertFalse(b);
        b = OAObjectInfoDelegate.isPrimitiveNull(et, "type");
-       assertFalse(b);
+       assertTrue(b);
        b = OAObjectInfoDelegate.isPrimitiveNull(et, "seq");
        assertTrue(b);
        b = OAObjectInfoDelegate.isPrimitiveNull(et, "id");
        assertTrue(b);
 
-       assertEquals(103, bsx[0]);
+       assertEquals(111, bsx[0]);
        
        et.setNull("aTestflag");
        b = OAObjectInfoDelegate.isPrimitiveNull(et, "aTestflag");        
        assertTrue(b);
-       assertEquals(-25, bsx[0]);
+       assertEquals(-17, bsx[0]);
 
        et.setATestFlag(true);
        b = OAObjectInfoDelegate.isPrimitiveNull(et, "aTestflag");        
        assertFalse(b);
-       assertEquals(103, bsx[0]);
+       assertEquals(111, bsx[0]);
        
        et.setSeq(0);
        b = OAObjectInfoDelegate.isPrimitiveNull(et, "seq");
        assertFalse(b);
-       assertEquals(71, bsx[0]);
+       assertEquals(79, bsx[0]);
    }
     
    @Test
