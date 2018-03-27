@@ -786,17 +786,18 @@ public class OAObjectReflectDelegate {
                             if (idsx == null || idsx.length != 1) continue;
                             
                             OAObject objx = OAObjectCacheDelegate.get(oaObj.getClass(), keyx);
-                            if (objx != null) {
-                                if (OAObjectPropertyDelegate.attemptPropertyLock(objx, linkPropertyName)) {
-                                    hmSiblingHub.put(keyx, new Hub(linkClass, objx, liReverse, false));
-                                    if (sibIds == null) sibIds = "" + idsx[0];
-                                    else sibIds += "," + idsx[0];
-                                }
-                            }
+                            if (objx == null) continue;
+                            if (!OAObjectPropertyDelegate.attemptPropertyLock(objx, linkPropertyName)) continue;
+                            hmSiblingHub.put(keyx, new Hub(linkClass, objx, liReverse, false));
+                            if (sibIds == null) sibIds = "" + idsx[0];
+                            else sibIds += "," + idsx[0];
                         }
                         if (sibIds != null) {
                             Object[] idsx = oaObj.getObjectKey().getObjectIds();
-                            if (idsx == null || idsx.length != 1) sibIds = null;
+                            if (idsx == null || idsx.length != 1) {
+                                sibIds = null;
+                                hmSiblingHub = null;
+                            }
                             else sibIds = idsx[0] + "," + sibIds;
                         }
                     }   
@@ -907,6 +908,10 @@ public class OAObjectReflectDelegate {
                             Hub hx = hmSiblingHub.get(okx);
                             if (hx != null) {
                                 hx.add(objx);
+                            }
+                            else {
+                                int xx = 4;
+                                xx++;
                             }
                         }                    
                     }

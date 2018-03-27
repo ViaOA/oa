@@ -45,7 +45,7 @@ public class OAObjectSiblingDelegate {
         long x = (System.currentTimeMillis()-msStarted);         
         if (throttle.check() || x > (MaxMs*2)) {
             if (OAObject.getDebugMode()) {
-                System.out.println((throttle.getCheckCount())+") OAObjectSiblingDelegate ----> "+x+"  obj="+mainObject.getClass().getSimpleName()+", prop="+property+",  hmIgnore="+(hmIgnore==null?0:hmIgnore.size())+", alRemove="+keys.length);
+                System.out.println((throttle.getCheckCount())+") OAObjectSiblingDelegate "+x+"ms, obj="+mainObject.getClass().getSimpleName()+", prop="+property+", hmIgnore="+(hmIgnore==null?0:hmIgnore.size())+", alRemove="+keys.length);
             }
         }
         return keys;
