@@ -783,7 +783,7 @@ public class OAObjectReflectDelegate {
                         hmSiblingHub = new HashMap<>();
                         for (OAObjectKey keyx : siblingKeys) {
                             Object[] idsx = keyx.getObjectIds();
-                            if (idsx == null || idsx.length != 1) continue;
+                            if (idsx == null || idsx.length != 1 || idsx[0] == null) continue;
                             
                             OAObject objx = OAObjectCacheDelegate.get(oaObj.getClass(), keyx);
                             if (objx == null) continue;
@@ -794,7 +794,7 @@ public class OAObjectReflectDelegate {
                         }
                         if (sibIds != null) {
                             Object[] idsx = oaObj.getObjectKey().getObjectIds();
-                            if (idsx == null || idsx.length != 1) {
+                            if (idsx == null || idsx.length != 1 || idsx[0] == null) {
                                 sibIds = null;
                                 hmSiblingHub = null;
                             }
@@ -910,8 +910,7 @@ public class OAObjectReflectDelegate {
                                 hx.add(objx);
                             }
                             else {
-                                int xx = 4;
-                                xx++;
+                                // LOG.warn
                             }
                         }                    
                     }
