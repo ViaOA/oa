@@ -167,6 +167,9 @@ public class DBMetaDataDelegate {
 	    else if (name.equalsIgnoreCase("count")) {
 	    	name = "CountXvXvX";
 	    }
+        else if (name.equalsIgnoreCase("group")) {
+            name = "GroupXvXvX";
+        }
 		return name;
 	}
 
