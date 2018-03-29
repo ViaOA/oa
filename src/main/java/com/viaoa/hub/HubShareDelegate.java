@@ -12,8 +12,10 @@ package com.viaoa.hub;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectHubDelegate;
 import com.viaoa.util.OAFilter;
@@ -380,9 +382,24 @@ public class HubShareDelegate {
 	    setSharedHub(thisHub, sharedMasterHub, shareActiveObject, null);
 	}
     protected static void setSharedHub(Hub thisHub, Hub sharedMasterHub, boolean shareActiveObject, Object newLinkValue) {
+        if (thisHub == null) return;
 	    // added: 2004/05/13, removed 2004/05/14
 	    // if (getMasterHub() != null) throw new OAHubException(this,61);
 	
+        // 20180328 check to see if thisHub has masterObject and no masterHub
+        if (thisHub.datam.getMasterObject() != null) {
+            if (thisHub.datam.getMasterHub() == null) {
+                OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
+                if (li != null && !li.getCalculated()) {
+                    li = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(thisHub);
+                    if (li != null && li.getType() == OALinkInfo.ONE) {
+                        LOG.log(Level.WARNING, "thisHub should not be used for sharing, thisHub="+thisHub+", sharedMasterHub="+sharedMasterHub, new Exception("illegal hub share"));
+                        return;
+                    }
+                }
+            }
+        }
+        
 	    HubDataDelegate.incChangeCount(thisHub);
 	    final Hub hubOrigSharedHub = thisHub.datau.getSharedHub();
 	    if (hubOrigSharedHub == sharedMasterHub) {
