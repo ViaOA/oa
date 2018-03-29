@@ -12,6 +12,7 @@ package com.viaoa.hub;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.viaoa.object.*;
@@ -133,6 +134,18 @@ public class HubAODelegate {
     protected static void setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub) {
         setActiveObject(thisHub, object, pos, bUpdateLink, bForce, bCalledByShareHub, true);
     }
+    
+    
+    protected static final HashSet<Hub> hsWarnOnSettingAO = new HashSet<>();
+    public static void warnOnSettingAO(Hub thisHub) {
+        if (thisHub == null) return;
+        if (thisHub.datam.getMasterObject() != null) {
+            if (thisHub.datam.getMasterHub() == null) {
+                return;  // already will warn if AO is set
+            }
+        }
+        hsWarnOnSettingAO.add(thisHub);
+    }
 
     /** Main setActiveObject
         Naviagational method that sets the current active object.
@@ -144,7 +157,25 @@ public class HubAODelegate {
         if (thisHub == null) return;
         if (thisHub.dataa.activeObject == object && !bForce) return;
         if (thisHub.datau.isUpdatingActiveObject()) return;
-    
+        
+        // 20180328 check to see if thisHub has masterObject and no masterHub, which is the real hub and should not setAO on it since other "users" could be doing the same
+        if (OAObject.getDebugMode()) {
+            if (thisHub.datam.getMasterObject() != null && thisHub.getSharedHub() == null) {
+                if (thisHub.datam.getMasterHub() == null) {
+                    if (!thisHub.getOAObjectInfo().getLocalOnly()) {
+                        if (thisHub.dataa.activeObject != object || !bForce) {
+                            LOG.log(Level.WARNING, "Note/FYI only: should not setAO on thisHub="+thisHub+" (use sharedHub), will continue", new Exception("showing thread stack"));
+                        }
+                    }
+                }
+            }
+            if (hsWarnOnSettingAO.contains(thisHub) && thisHub.getSharedHub() == null) {
+                if (thisHub.dataa.activeObject != object || !bForce) {
+                    LOG.log(Level.WARNING, "Note/FYI only: should not setAO on thisHub="+thisHub+" (use sharedHub), will continue", new Exception("showing thread stack"));
+                }
+            }
+        }
+        
         OAThreadLocalDelegate.lock(thisHub);
         Object origActiveObject = thisHub.dataa.activeObject;
         thisHub.dataa.activeObject = object;
