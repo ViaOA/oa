@@ -7,7 +7,10 @@
 package com.viaoa.object;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.viaoa.concurrent.OAExecutorService;
 import com.viaoa.ds.OASelect;
@@ -37,6 +40,7 @@ import com.viaoa.util.*;
  * 
  */
 public class OALoader<F extends OAObject, T extends OAObject> {
+    private static Logger LOG = Logger.getLogger(OALoader.class.getName());
     private String strPropertyPath;
     private OAPropertyPath<T> propertyPath;
 
@@ -103,12 +107,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         }
         finally {
             OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
-            this.hubFrom = null;
-            cascades = null;
-            if (executorService != null) {
-                executorService.close();
-                executorService = null;
-            }
+            onThreadDone(true);
         }
     }
     
@@ -136,15 +135,9 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         }
         finally {
             OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
-            this.hubFrom = null;
-            cascades = null;
-            if (executorService != null) {
-                executorService.close();
-                executorService = null; 
-            }
+            onThreadDone(true);
         }
     }
-    
     
     public void load(F objectRoot) {
         if (objectRoot == null) return;
@@ -164,14 +157,37 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         }
         finally {
             OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
-            this.hubFrom = null;
-            cascades = null;
-            if (executorService != null) {
+            onThreadDone(true);
+        }
+    }
+    
+    private final AtomicBoolean abMainThreadRunning = new AtomicBoolean(true); 
+    private void onThreadDone(boolean bMainThread) {
+        if (bMainThread) abMainThreadRunning.set(false);
+        else if (abMainThreadRunning.get()) return;
+        
+        if (aiThreadsUsed.get() == 0) {
+            if (executorService != null) {  
                 executorService.close();
                 executorService = null;
             }
+            this.hubFrom = null;
+            this.cascades = null;
         }
     }
+    
+    public void waitUntilDone() {
+        for (;;) {
+            if (executorService == null) {
+                if (!abMainThreadRunning.get()) break;
+            }
+            try {
+                Thread.sleep(250);
+            }
+            catch (Exception e) {}
+        }
+    }
+    
     
     protected void _load(F object) {
         if (object == null) return;
@@ -220,9 +236,13 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                                 Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
                                 _load(objx, pos);
                             }
+                            catch (Exception e) {
+                                LOG.log(Level.WARNING, "OALoader error while in run", e);
+                            }
                             finally {
                                 OAThreadLocalDelegate.resetGetDetailHub(null, null);
                                 aiThreadsUsed.decrementAndGet();
+                                onThreadDone(false);
                             }
                         }
                     });
@@ -251,9 +271,13 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                                 Object objx = linkInfos[pos].getValue(obj);
                                 _load(objx, pos+1);
                             }
+                            catch (Exception e) {
+                                LOG.log(Level.WARNING, "OALoader error while in run", e);
+                            }
                             finally {
                                 OAThreadLocalDelegate.resetGetDetailHub(null, null);
                                 aiThreadsUsed.decrementAndGet();
+                                onThreadDone(false);
                             }
                         }
                     });
@@ -268,25 +292,6 @@ public class OALoader<F extends OAObject, T extends OAObject> {
     }
 
 
-    public void waitUntilDone() {
-        for (;;) {
-            if (executorService == null) break;
-            int x = executorService.getActiveThreads();
-            
-            if (x < 1) break;
-            try {
-                Thread.sleep(250);
-            }
-            catch (Exception e) {}
-        }
-        
-        if (executorService != null) {
-            executorService.close();
-            executorService = null;
-        }
-    }
-    
-    
     protected void setup(Class c) {
         if (bSetup) return;
         bSetup = true;
