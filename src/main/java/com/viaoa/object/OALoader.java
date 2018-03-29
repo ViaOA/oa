@@ -222,9 +222,11 @@ public class OALoader<F extends OAObject, T extends OAObject> {
             }
         }
         else if (recursiveLinkInfos != null && pos <= recursiveLinkInfos.length && (recursiveLinkInfos[pos - 1] != null)) {
-            boolean b = recursiveLinkInfos[pos - 1].isLoaded(obj);
-            if (!b) aiNotLoadedCnt.incrementAndGet();
-            if (executorService != null && !b && aiThreadsUsed.get() < threadCount) {
+            boolean bLoaded = recursiveLinkInfos[pos - 1].isLoaded(obj);
+            boolean bLocked = executorService != null && recursiveLinkInfos[pos - 1].isLocked(obj);
+            if (!bLoaded && !bLocked) aiNotLoadedCnt.incrementAndGet();
+            
+            if (executorService != null && !bLoaded && !bLocked && aiThreadsUsed.get() < threadCount) {
                 int x = aiThreadsUsed.incrementAndGet();
                 if (x <= threadCount) {
                     executorService.submit(new Runnable() {
@@ -251,15 +253,19 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                 aiThreadsUsed.decrementAndGet();
             }
             
-            Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
-            _load(objx, pos);
+            if (!bLocked) {
+                Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
+                _load(objx, pos);
+            }
             if (bStop) return;
         }
 
         if (linkInfos != null && pos < linkInfos.length) {
-            boolean b = linkInfos[pos].isLoaded(obj);
-            if (!b) aiNotLoadedCnt.incrementAndGet();
-            if (executorService != null && !b && aiThreadsUsed.get() < threadCount) {
+            boolean bLoaded = linkInfos[pos].isLoaded(obj);
+            boolean bLocked = linkInfos[pos].isLocked(obj);
+            if (!bLoaded && !bLocked) aiNotLoadedCnt.incrementAndGet();
+            
+            if (executorService != null && !bLoaded && !bLocked && aiThreadsUsed.get() < threadCount) {
                 int x = aiThreadsUsed.incrementAndGet();
                 if (x <= threadCount) {
                     executorService.submit(new Runnable() {
@@ -285,8 +291,10 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                 }
                 aiThreadsUsed.decrementAndGet();
             }
-            Object objx = linkInfos[pos].getValue(obj);
-            _load(objx, pos+1);
+            if (!bLocked) {
+                Object objx = linkInfos[pos].getValue(obj);
+                _load(objx, pos+1);
+            }
             if (bStop) return;
         }
     }
