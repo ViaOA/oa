@@ -349,6 +349,7 @@ public class ConnectionPool implements Runnable {
             if (con != null && con.connection.isClosed()) return getStatement(message);
             throw e;
         }
+        statement.setMaxRows(0);
         if (dbmd.databaseType != dbmd.ACCESS) {
             statement.setQueryTimeout(0);  // Access wont allow using JDBC Bridge
         }
@@ -403,6 +404,7 @@ public class ConnectionPool implements Runnable {
         if (dbmd.databaseType != dbmd.ACCESS) {
             ps.setQueryTimeout(0);  // Access wont allow using JDBC Bridge
         }
+        ps.setMaxRows(0);
         return ps;
     }
 

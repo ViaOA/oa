@@ -210,6 +210,7 @@ public class ResultSetIterator implements OADataSourceIterator {
                 for (int i=0; arguments!=null && i < arguments.length; i++) {
                     preparedStatement.setObject(i+1, arguments[i]);
                 }
+                preparedStatement.setMaxRows( Math.max(0, max));
                 rs = preparedStatement.executeQuery();
             }
             else if (statement == null && ds != null) {
@@ -308,6 +309,7 @@ public class ResultSetIterator implements OADataSourceIterator {
                         }
                         else throw new RuntimeException("parameter mismatch in query "+query2);
                     }
+                    statement2.setMaxRows(0);
                     rs2 = statement2.executeQuery(newQuery);
                     if (rs2.next()) {
                         resultSet = rs2;
