@@ -50,7 +50,7 @@ public class ResultSetIterator implements OADataSourceIterator {
     Column[] columns;
     Object[] values;
     ColumnInfo[] columnInfos;
-    boolean bMore = false;
+    volatile boolean bMore = false;
     int lastPkeyColumn;  // last column needed to be able to create an ObjectKey, to do a cache lookup
     int max;
     int cnter;
@@ -214,7 +214,7 @@ public class ResultSetIterator implements OADataSourceIterator {
             }
             else if (statement == null && ds != null) {
                 statement = ds.getStatement(query);
-                if (max > 0) statement.setMaxRows(max);
+                statement.setMaxRows( Math.max(0, max));
                 rs = statement.executeQuery(query);
             }
             bIsSelecting = true;
