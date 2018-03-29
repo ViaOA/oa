@@ -387,7 +387,7 @@ public class HubShareDelegate {
 	    // if (getMasterHub() != null) throw new OAHubException(this,61);
 	
         // 20180328 check to see if thisHub has masterObject and no masterHub
-        if (thisHub.datam.getMasterObject() != null) {
+        if (OAObject.getDebugMode() && thisHub.datam.getMasterObject() != null) {
             if (thisHub.datam.getMasterHub() == null) {
                 OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
                 if (li != null && !li.getCalculated()) {
