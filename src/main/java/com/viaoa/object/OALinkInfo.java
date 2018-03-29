@@ -227,6 +227,11 @@ public class OALinkInfo { //implements java.io.Serializable {
         OAObject oaObj = (OAObject) obj;
         return OAObjectPropertyDelegate.isPropertyLoaded(oaObj, name);
     }
+    public boolean isLocked(Object obj) {
+        if (!(obj instanceof OAObject)) return true;
+        OAObject oaObj = (OAObject) obj;
+        return OAObjectPropertyDelegate.isPropertyLocked(oaObj, name);
+    }
     
     public void setMatchProperty(String prop) {
         this.matchProperty = prop;
