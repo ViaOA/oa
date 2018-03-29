@@ -463,7 +463,7 @@ public class OAObjectPropertyDelegate {
             if (lock.thread == Thread.currentThread()) return bCheckIfThisThread;
             if (!bWaitIfNeeded) return false;
             for (int i=0; ;i++) {
-                if (i >= 25) {
+                if (i >= 20) {  // 5 seconds
                     String s = "wait time exceeded for lock, obj="+oaObj+", prop="+name+", this.Thread="+Thread.currentThread().getName()+", waiting on Thread="+lock.thread.getName()+" (see next stacktrace), will continue";
                     LOG.log(OAObject.getDebugMode()?Level.WARNING:Level.FINE, s, new Exception("fyi: wait time exceeded, will continue"));
 
@@ -480,12 +480,7 @@ public class OAObjectPropertyDelegate {
                 if (lock.done) break;
                 lock.hasWait = true;
                 try {
-/*qqqq
-if (OAObject.getDebugMode()) {                    
-    System.out.println("OAObjectPropertyDelegate._setPropertyLock(..), thread="+Thread.currentThread()+" is waiting on "+oaObj+", prop="+name);
-}
-*/
-                    lock.wait(100); 
+                    lock.wait(250); 
                 }
                 catch (Exception e) {
                 }
