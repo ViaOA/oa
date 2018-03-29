@@ -244,6 +244,36 @@ public class HubAODelegate {
             }
         }
     }
+
+    // 20180329 always keep first object as AO
+    public static void keepActiveObject(final Hub thisHub) {
+        if (thisHub == null) return;
+        thisHub.addHubListener(new HubListenerAdapter() {
+            @Override
+            public void afterNewList(HubEvent e) {
+                update();
+            }
+            @Override
+            public void afterAdd(HubEvent e) {
+                update();
+            }
+            @Override
+            public void afterRemove(HubEvent e) {
+                update();
+            }
+            @Override
+            public void afterInsert(HubEvent e) {
+                update();
+            }
+            @Override
+            public void afterRemoveAll(HubEvent e) {
+                update();
+            }
+            void update() {
+                thisHub.setPos(0);
+            }
+        });
+    }
     
 }
 
