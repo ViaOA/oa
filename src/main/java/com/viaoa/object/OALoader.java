@@ -262,7 +262,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
 
         if (linkInfos != null && pos < linkInfos.length) {
             boolean bLoaded = linkInfos[pos].isLoaded(obj);
-            boolean bLocked = linkInfos[pos].isLocked(obj);
+            boolean bLocked = executorService != null && linkInfos[pos].isLocked(obj);
             if (!bLoaded && !bLocked) aiNotLoadedCnt.incrementAndGet();
             
             if (executorService != null && !bLoaded && !bLocked && aiThreadsUsed.get() < threadCount) {
