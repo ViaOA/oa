@@ -17,6 +17,7 @@ All rights reserved.
 */ 
 package com.viaoa.html;
 
+import com.viaoa.util.OAConv;
 
 /**
 Component for uploading a file from the browser to the server.  OAForm.getAction() will automatically
@@ -34,9 +35,10 @@ the file on the server.
 */
 public class OAFileInput extends OAHtmlComponent {
     private static final long serialVersionUID = 1L;
-    protected String fileName;
+    protected String saveAsFileName;
     protected int max=-1;
     protected boolean bSaved;
+    protected String originalFileName;
 
     public OAFileInput(String fileName) {
         setFileName(fileName);
@@ -44,13 +46,26 @@ public class OAFileInput extends OAHtmlComponent {
 
     /** name of file on server to write to. */
     public String getFileName() {
-        return fileName;
+        return saveAsFileName;
     }
     public void setFileName(String fileName) {
-        this.fileName = fileName;
+        this.saveAsFileName = fileName;
+    }
+
+    public String getSaveAsFileName() {
+        return saveAsFileName;
+    }
+    public void setSaveAsFileName(String fileName) {
+        this.saveAsFileName = fileName;
     }
     
-
+    public String getOriginalFileName() {
+        return originalFileName;
+    }
+    public void setOriginalFileName(String fileName) {
+        this.originalFileName = fileName;
+    }
+    
     public int getMax() {
         return max;
     }
@@ -72,5 +87,12 @@ public class OAFileInput extends OAHtmlComponent {
     }
 
     protected void setValuesInternal(String nameUsed, String[] values) { // called by OAForm
+        String svalue;
+        if (values == null || values.length != 1 || values[0] == null || values[0].length() == 0) {
+            setOriginalFileName(null);
+        }
+        else {
+            setOriginalFileName(values[0]);
+        }
     }
 }
