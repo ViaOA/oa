@@ -1044,6 +1044,7 @@ vvvvvvvvvvvvvvvvvvvvvvqqqqqqqqqqqqqqqqqqqqq*/
 	                    String sx = fi.getFileName();
 	                    OAFile.mkdirsForFile(sx);
 	                    File file = new File(sx);
+String sz = file.getAbsolutePath();	                    
 	                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
 	                    getNext(bis, bos, "\r\n"+sep);  // this will write to file
 	                    bos.flush();
