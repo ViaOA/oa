@@ -17,6 +17,7 @@ import java.io.Serializable;
  * Used to filter a collection of TYPE objects. 
  * @author vvia
  */
+@FunctionalInterface
 public interface OAFilter<TYPE> extends Serializable {
     boolean isUsed(TYPE obj);
 }
