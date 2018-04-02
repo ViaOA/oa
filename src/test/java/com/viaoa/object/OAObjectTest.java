@@ -32,7 +32,8 @@ public class OAObjectTest extends OAUnitTest {
         String[] ps = oi.getPrimitiveProperties();
         assertTrue(ps != null && ps.length == 4);
         for (String s : ps) {
-            assertTrue(server.isNull(s));
+            if ("verifiedVersion".equalsIgnoreCase(s)) assertFalse(server.isNull(s));
+            else assertTrue(server.isNull(s));
         }
         assertTrue(server.isNull(Server.P_Id));
 
