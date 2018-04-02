@@ -160,11 +160,15 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
     }
     
     /** 
-        Calls cancel() and clears out previous where,order, count,amountRead.
+        Calls reset(false)
     */
     public void reset() {
         reset(false);
     }
+    /** 
+        Reset so that select can be used again
+        @param bClearOutValues if true then clears where, order, whereObject 
+    */
     public void reset(boolean bClearOutValues) {
         closeQuery();
         if (bClearOutValues) {
