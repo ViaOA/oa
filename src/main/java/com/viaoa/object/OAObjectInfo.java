@@ -300,12 +300,12 @@ public class OAObjectInfo { //implements java.io.Serializable {
     }
     
     
-    // 20180325
+    // 20180325  20180403 removed, not used
     /**
      * used to set which primitive properties should be set to null for new instances.
      * boolean props will not be set to null.
      * @return
-     */
+     * /
     public byte[] getPrimitiveMask() {
         if (primitiveMask != null) return primitiveMask; 
         
@@ -335,6 +335,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         }
         return primitiveMask;
     }
+    */
     
     // 20120827
     public String[] getHubProperties() {

@@ -69,12 +69,8 @@ public class OAObjectDelegate {
          */
     	OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
     	
-        byte[] bsMask = oi.getPrimitiveMask();
-    	int x = bsMask.length; 
-    	/*was
     	String[] ps = oi.getPrimitiveProperties();
         int x = (ps==null) ? 0 : ((int) Math.ceil(ps.length / 8.0d));
-        */
         oaObj.nulls = new byte[x];
 
         if (OAThreadLocalDelegate.isLoading()) return;
@@ -97,16 +93,16 @@ public class OAObjectDelegate {
             if (oi == null) oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
 
     	    if (bInitializeNulls) {
-                // 20180325
+                /* 20180325 20180403 removed,not used
     	        byte[] bsMask = oi.getPrimitiveMask();
                 for (int i=0; i<oaObj.nulls.length; i++) {
                     oaObj.nulls[i] |= (byte) bsMask[i]; 
                 }
-                /*was
+                */
+                // put this back
                 for (int i=0; i<oaObj.nulls.length; i++) {
                     oaObj.nulls[i] = (byte) ~oaObj.nulls[i];  
                 }
-                */
             }
             
             // 20140307
