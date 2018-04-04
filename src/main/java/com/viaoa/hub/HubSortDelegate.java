@@ -10,6 +10,7 @@
 */
 package com.viaoa.hub;
 
+import java.io.Serializable;
 import java.util.*;
 
 import com.viaoa.object.*;
@@ -34,6 +35,7 @@ public class HubSortDelegate {
     }
     
     public static void sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp, boolean bAlreadySortedAndLocalOnly) {
+        if (thisHub == null) return;
         // 20110204 added locking
         boolean b = false;
         try {
@@ -47,11 +49,16 @@ public class HubSortDelegate {
     }
     
     public static HubSortListener getSortListener(Hub thisHub) {
+        if (thisHub == null) return null;
         return thisHub.data.getSortListener();
     }
     
     private static boolean _sort(Hub thisHub, String propertyPaths, final boolean bAscending, Comparator comp, boolean bAlreadySortedAndLocalOnly) {
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
+
+        if (comp != null && !(comp instanceof Serializable)) {
+            throw new RuntimeException("comparator is not Serializable");
+        }
         
         boolean bSame = false;
         HubSortListener hsl = thisHub.data.getSortListener();
@@ -115,6 +122,7 @@ public class HubSortDelegate {
 	    Re-sort using parameters from last sort or select.
 	*/
 	public static void sort(Hub thisHub) {
+        if (thisHub == null) return;
         // 20131014 added locking
         try {
             OAThreadLocalDelegate.lock(thisHub);
