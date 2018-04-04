@@ -489,39 +489,68 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         if (pos == 0) {
             // see if root object is recursive
             if (bEnableRecursiveRoot && liRecursiveRoot != null) {
-                if (getUseOnlyLoadedData() && !liRecursiveRoot.isLoaded(obj)) {
-                    onDataNotFound();
+                if (getUseOnlyLoadedData()) {
+                    if (!liRecursiveRoot.isLoaded(obj)) {
+                        onDataNotFound();
+                        return;
+                    }
+                    if ((obj instanceof OAObject) && getNeedsToBeSorted((OAObject) obj, liRecursiveRoot)) {
+                        onDataNotFound();
+                        return;
+                    }
                 }
-                else {
-                    Object objx = liRecursiveRoot.getValue(obj);
-                    find(objx, pos); // go up a level to then go through hub
-                }
+                Object objx = liRecursiveRoot.getValue(obj);
+                find(objx, pos); // go up a level to then go through hub
                 if (bStop) return;
             }
         }
         else if (recursiveLinkInfos != null && pos <= recursiveLinkInfos.length) {
             if (recursiveLinkInfos[pos - 1] != null) {
-                if (getUseOnlyLoadedData() && !recursiveLinkInfos[pos - 1].isLoaded(obj)) {
-                    onDataNotFound();
+                if (getUseOnlyLoadedData()) {
+                    if (!recursiveLinkInfos[pos - 1].isLoaded(obj)) {
+                        onDataNotFound();
+                        return;
+                    }
+                    if ((obj instanceof OAObject) && getNeedsToBeSorted((OAObject) obj, recursiveLinkInfos[pos - 1])) {
+                        onDataNotFound();
+                        return;
+                    }
                 }
-                else {
-                    Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
-                    find(objx, pos);
-                }
+                Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
+                find(objx, pos);
                 if (bStop) return;
             }
         }
 
         if (linkInfos != null && pos < linkInfos.length) {
-            if (getUseOnlyLoadedData() && !linkInfos[pos].isLoaded(obj)) {
-                onDataNotFound();
-                return;
+            if (getUseOnlyLoadedData()) {
+                if (!linkInfos[pos].isLoaded(obj)) {
+                    onDataNotFound();
+                    return;
+                }
+                if ((obj instanceof OAObject) && getNeedsToBeSorted((OAObject) obj, linkInfos[pos])) {
+                    onDataNotFound();
+                    return;
+                }
             }
             Object objx = linkInfos[pos].getValue(obj);
             find(objx, pos + 1);
             if (bStop) return;
         }
     }
+    
+    private boolean getNeedsToBeSorted(OAObject obj, OALinkInfo li) {
+        if (obj == null || li == null) return false;
+        if (li.type != OALinkInfo.MANY) return false;
+        if (OAString.isEmpty(li.getSortProperty())) return false;
+        
+        Hub hx = (Hub) OAObjectPropertyDelegate.getProperty((OAObject)obj, li.name, false, true); 
+        if (hx == null || HubSortDelegate.getSortListener(hx) == null) {
+            return true;
+        }
+        return false;
+    }
+    
 
     /**
      * This will be called to create a filter that is in the propertyPaths.
