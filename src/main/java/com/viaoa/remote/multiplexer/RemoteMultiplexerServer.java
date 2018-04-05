@@ -1585,7 +1585,7 @@ public class RemoteMultiplexerServer {
                         alSocketFromStoC.wait(250);
                         bWaitedForFirst = true;
                     }
-                    else if (i > 20) {
+                    else if (i > 50) {
                         throw new Exception("no StoC sockets available for connection/session=" + connectionId);
                     }
                     else {
