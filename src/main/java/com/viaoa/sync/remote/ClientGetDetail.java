@@ -104,10 +104,6 @@ public class ClientGetDetail {
             }
         }
 
-//qqqqqqqqqqqqq        
-final long ms1 = System.currentTimeMillis();
-final long d1 = ms1-msStart;
-        
         // 20171224 need to put siblings and masterObject in a Hub and call OAThreadLocal.detailHub        
         Hub hubHold = new Hub(masterClass);
         hubHold.add(masterObject);
@@ -120,10 +116,6 @@ final long d1 = ms1-msStart;
             }
         }
 
-//qqqqqqqqqqqqq        
-final long ms2 = System.currentTimeMillis();
-final long d2 = ms2-ms1;
-        
         Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
         String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
         Object detailValue = null;
@@ -145,11 +137,6 @@ final long d2 = ms2-ms1;
             }
         }
 
-//qqqqqqqqqqqqq        
-final long ms3 = System.currentTimeMillis();
-final long d3 = ms3-ms2;
-        
-        
         int cntMasterPropsLoaded=0;
         if (masterProps != null && masterObject instanceof OAObject) {
             boolean bx = true;
@@ -162,19 +149,8 @@ final long d3 = ms3-ms2;
                 else {
                     loadDataInBackground((OAObject)masterObject, s);
                 }
-final long ms4a = System.currentTimeMillis();
-final long d4a = ms4a-ms3;
-long xz = 75;
-if (d4a > xz) {
-    int xx = 4;
-    xx++;//qqqqqqqqq
-}
             }
         }
-        
-//qqqqqqqqqqqqq        
-final long ms4 = System.currentTimeMillis();
-final long d4 = ms4-ms3;
         
         int cntSib=0;
         if (b && cntMasterPropsLoaded == 0) {
@@ -197,17 +173,8 @@ final long d4 = ms4-ms3;
             returnValue = os;
         }
 
-//qqqqqqqqqqqqq        
-final long ms5 = System.currentTimeMillis();
-final long d5 = ms5-ms4;
-        
         long diff = System.currentTimeMillis() - msStart;
         String s = (diff > 1000) ? " ALERT" : "";
-        
-if (diff > 3000) {
-    int xx = 4;//qqqqqq
-    xx++;
-}
         
         s = String.format(
             "client=%d, id=%,d, Obj=%s, prop=%s, siblings=%,d/%,d, masterProps=%s, ms=%,d%s",
