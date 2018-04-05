@@ -598,9 +598,11 @@ public class HubDataDelegate {
      *    1 found
      *    2 not found
      */
-    private static int findUsingQuickSort(Hub thisHub, Object obj) {
+    private static int findUsingQuickSort(final Hub thisHub, final Object obj) {
         if (thisHub == null || obj == null) return -1;
-        if (thisHub.data.getSortListener() == null) return -2;
+        
+        HubSortListener hsl = thisHub.data.getSortListener(); 
+        if (hsl == null) return -2;
         if (!thisHub.getObjectClass().equals(obj.getClass())) return -3;
         
         int head = -1;
@@ -618,20 +620,22 @@ public class HubDataDelegate {
             
             Object cobj = thisHub.elementAt(i);
             if (obj == cobj || obj.equals(cobj)) return 1;
-            int c = thisHub.data.getSortListener().comparator.compare(obj, cobj);
+            int c = hsl.comparator.compare(obj, cobj);
 
             if (c == 0) {
                 int iHold = i;
                 // see if it's already in the list
-                for ( ; i>=head; i--) {
+                for ( ; i>head; i--) {
                     cobj = thisHub.elementAt(i);
+                    if (cobj == null) continue;
                     if (obj == cobj || obj.equals(cobj)) return 1;
-                    if (thisHub.data.getSortListener().comparator.compare(obj, cobj) != 0) break;;
+                    if (hsl.comparator.compare(obj, cobj) != 0) break;
                 }
                 for (i=iHold+1; i < tail;i++) {
                     cobj = thisHub.elementAt(i);
+                    if (cobj == null) continue;
                     if (obj == cobj || obj.equals(cobj)) return 1;
-                    if (thisHub.data.getSortListener().comparator.compare(obj, cobj) != 0) break;;
+                    if (hsl.comparator.compare(obj, cobj) != 0) break;
                 }
                 break;
             }
