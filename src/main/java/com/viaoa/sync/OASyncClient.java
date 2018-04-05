@@ -169,7 +169,7 @@ public class OASyncClient {
                 if (bUsesDetail) max *= 3;
                 
                 siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max, hmIgnoreSibling);
-                additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName);
+                additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName, false);
               
                 try {
                     cntDup = OAObjectSerializeDelegate.cntDup;

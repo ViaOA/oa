@@ -1071,10 +1071,12 @@ public class OAObjectReflectDelegate {
         return false;
     }
     public static String[] getUnloadedReferences(OAObject obj, boolean bIncludeCalc) {
-        return getUnloadedReferences(obj, bIncludeCalc, null);
+        return getUnloadedReferences(obj, bIncludeCalc, null, true);
     }
-
     public static String[] getUnloadedReferences(OAObject obj, boolean bIncludeCalc, String exceptPropertyName) {
+        return getUnloadedReferences(obj, bIncludeCalc, exceptPropertyName, true);
+    }
+    public static String[] getUnloadedReferences(OAObject obj, boolean bIncludeCalc, String exceptPropertyName, boolean bIncludeLarge) {
         if (obj == null) return null;
         OAObjectInfo io = OAObjectInfoDelegate.getObjectInfo(obj.getClass());
         ArrayList<String> al = null;
@@ -1082,6 +1084,7 @@ public class OAObjectReflectDelegate {
         for (OALinkInfo li : alLinkInfo) {
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
+            if (!bIncludeLarge && li.getCouldBeLarge()) continue;
             String property = li.getName();
             
             if (exceptPropertyName != null && exceptPropertyName.equalsIgnoreCase(property)) continue;
