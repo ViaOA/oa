@@ -28,6 +28,7 @@ import com.viaoa.object.OACascade;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
+import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerServer;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
@@ -687,6 +688,9 @@ public class OASyncServer {
                     continue;
                 }
                 LOG.finer("loading obj="+ls.obj.getClass().getSimpleName()+", prop="+ls.property);
+                
+                if (OAObjectPropertyDelegate.isPropertyLocked(ls.obj, ls.property)) continue;
+                
                 OAObjectReflectDelegate.getProperty(ls.obj, ls.property); // load from DS
             }
             catch (Exception e) {
