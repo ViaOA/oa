@@ -28,7 +28,7 @@ import com.viaoa.sync.model.ClientInfo;
 
 public abstract class RemoteSessionImpl implements RemoteSessionInterface {
     private static Logger LOG = Logger.getLogger(RemoteSessionImpl.class.getName());
-    protected ConcurrentHashMap<Integer, OAObject> hashCache = new ConcurrentHashMap<Integer, OAObject>();
+    protected ConcurrentHashMap<Integer, OAObject> hashServerCache = new ConcurrentHashMap<Integer, OAObject>();
     protected ConcurrentHashMap<OAObject, OAObject> hashLock = new ConcurrentHashMap<OAObject, OAObject>();
     protected int sessionId;
     
@@ -37,28 +37,31 @@ public abstract class RemoteSessionImpl implements RemoteSessionInterface {
     }
     
     @Override
-    public void addToCache(OAObject obj) {
+    public void addToServerCache(OAObject obj) {
         int guid = OAObjectDelegate.getGuid(obj);
-        hashCache.put(guid, obj);
-        int x = hashCache.size();
+        hashServerCache.put(guid, obj);
+        int x = hashServerCache.size();
         if (x % 250 == 0) {
             LOG.fine("sessionId="+sessionId+", cache size="+x+", obj="+obj+", guid="+guid);
         }
     }
     @Override
-    public void removeFromCache(int guid) {
-        OAObject obj = hashCache.remove(guid);
-        int x = hashCache.size();
+    public void removeFromServerCache(int[] guids) {
+        if (guids == null) return;
+        for (int guid : guids) {
+            OAObject obj = hashServerCache.remove(guid);
+        }
+        int x = hashServerCache.size();
         if (x>0 && x % 100 == 0) {
-            LOG.fine("sessionId="+sessionId+", cache size="+x+", obj="+obj+", guid="+guid);
+            LOG.fine("sessionId="+sessionId+", cache size="+x);
         }
     }
 
     
     // called by server to save any client cached objects
     public void saveCache(OACascade cascade, int iCascadeRule) {
-        LOG.fine("sessionId="+sessionId+", cache size="+hashCache.size());
-        for (Map.Entry<Integer, OAObject> entry : hashCache.entrySet()) {
+        LOG.fine("sessionId="+sessionId+", cache size="+hashServerCache.size());
+        for (Map.Entry<Integer, OAObject> entry : hashServerCache.entrySet()) {
             OAObject obj = entry.getValue();
             if (!obj.wasDeleted()) {
                 OAObjectSaveDelegate.save(obj, iCascadeRule, cascade);
@@ -75,8 +78,8 @@ public abstract class RemoteSessionImpl implements RemoteSessionInterface {
     
     // called by server when client is disconnected
     public void clearCache() {
-        hashCache.clear();
-        LOG.fine("sessionId="+sessionId+", cache size="+hashCache.size());
+        hashServerCache.clear();
+        LOG.fine("sessionId="+sessionId+", cache size="+hashServerCache.size());
     }
 
     @Override
@@ -110,7 +113,7 @@ public abstract class RemoteSessionImpl implements RemoteSessionInterface {
     public OAObject createNewObject(Class clazz) {
         OAObject obj = (OAObject) OAObjectReflectDelegate.createNewObject(clazz);
         LOG.fine("sessionId="+sessionId+", obj="+obj);
-        addToCache(obj);
+        addToServerCache(obj);
         return obj;
     }
     

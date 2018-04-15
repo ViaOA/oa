@@ -35,10 +35,13 @@ public interface RemoteSessionInterface {
 
      */
     @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
-    void addToCache(OAObject obj);
+    void addToServerCache(OAObject obj);
 
+    /**
+     * Objects on server side cache, that are on client that might get gc'd on server.
+     */
     @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
-    void removeFromCache(int guid);
+    void removeFromServerCache(int[] guids);
 
     
     boolean setLock(Class objectClass, OAObjectKey objectKey, boolean bLock);
@@ -54,9 +57,8 @@ public interface RemoteSessionInterface {
 
     @OARemoteMethod(noReturnValue=true, dontUseQueue=true)
     /**
-     * Objects that have been GDd on the client, so that the server can remove from
-     * the session - so that it can be resent if needed.
-     * note: if the guid < 0, then the object is also in the serverSide cache (and the guid needs to be absolute value)
+     * Objects that have been GDd on the client, so that the server can be remove them from
+     * the session cache and guid tree of objects that have been sent to client - so they can be resent if needed again.
      */
     void removeGuids(int[] guids);
     
