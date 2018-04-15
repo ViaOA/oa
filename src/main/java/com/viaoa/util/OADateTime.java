@@ -293,9 +293,13 @@ public class OADateTime implements java.io.Serializable, Comparable {
         Creates new datetime, using OADateTime parameter.
     */
     public OADateTime(OADateTime odt) {
-        if (odt == null) this._time = System.currentTimeMillis();
-        else this._time = odt.getTime();
-        this.timeZone = odt.timeZone;
+        if (odt == null) {
+            this._time = System.currentTimeMillis();
+        }
+        else {
+            this._time = odt.getTime();
+            this.timeZone = odt.timeZone;
+        }
     }
 
     /**
