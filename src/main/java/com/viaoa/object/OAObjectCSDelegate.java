@@ -83,6 +83,7 @@ public class OAObjectCSDelegate {
     /**
      * called when an object has been removed from a client.
      * Need to remove on server side session
+     * called by OAObject.finalize
      */
     protected static void objectRemovedFromCache(OAObject obj, int guid) {
         if (guid < 0) return;
@@ -109,7 +110,6 @@ public class OAObjectCSDelegate {
     public static void addToServerSideCache(OAObject oaObj, boolean bSendToServer) {
         // CACHE_NOTE: this "note" is added to all code that needs to work with the server cache for a client
         if (oaObj == null) return;
-        
         Class c = oaObj.getClass();
         if (!OASyncDelegate.isClient(c)) return;
         int guid = oaObj.getObjectKey().getGuid();
@@ -118,7 +118,7 @@ public class OAObjectCSDelegate {
         if (bSendToServer) {
             RemoteSessionInterface ri = OASyncDelegate.getRemoteSession(c);
             if (ri != null) {
-                ri.addToCache(oaObj);
+                ri.addToServerCache(oaObj);
             }
         }
         hashServerSideCache.put(guid, guid);
@@ -139,10 +139,18 @@ public class OAObjectCSDelegate {
         if (hashServerSideCache.size() == 0) return;
         int guid = oaObj.getObjectKey().getGuid();
         if (hashServerSideCache.remove(guid) != null) {
+            // 20180412 send in batch is ok
+            OASyncClient sc = OASyncDelegate.getSyncClient(c);
+            if (sc != null) {
+                if (guid > 0) sc.removeFromServerCache(guid);
+            }
+            
+            /* was:
             RemoteSessionInterface ri = OASyncDelegate.getRemoteSession(c);
             if (ri != null) {
                 ri.removeFromCache(oaObj.getObjectKey().getGuid());
             }
+            */
         }
     }
     
