@@ -78,6 +78,7 @@ public class OAApplication extends OABase implements Serializable {
             oasession = createSession();
             session.setAttribute(this.getName()+".OA", oasession);
         }
+        oasession.update(session);
         return oasession;
     }
 

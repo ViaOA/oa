@@ -95,7 +95,6 @@ public class OASystem extends OABase {
         The main purpose for this is for systems that have multiple applications running.
     */
     public OASession getSession(String applicationName, OAApplication oaapplication, HttpSession session, ServletRequest request, ServletResponse response) {
-
         //NEW JDK: OASession oasession = (OASession) session.getAttribute(applicationName);
         OASession oasession = (OASession) session.getValue(applicationName+".OA");
         if (oasession == null) {
@@ -105,6 +104,7 @@ public class OASystem extends OABase {
         oasession.setApplication(oaapplication);
         oasession.setRequest((HttpServletRequest) request);
         oasession.setResponse((HttpServletResponse)response);
+        oasession.update(session);
         return oasession;
     }
 }

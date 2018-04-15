@@ -22,6 +22,7 @@ import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import com.viaoa.hub.*;
+import com.viaoa.util.OADateTime;
 
 
 /** Object used by one user.  This has methods for storing
@@ -116,13 +117,25 @@ public class OASession extends OABase {
     */
     public void put(OAForm form) {
         if (form == null) return;
-        super.put(form.getUrl(), form);
+        String furl = form.getUrl();
+        super.put(furl, form);
         form.session = this;
         assignFrame(form);  // this is used to assign a form (using it's url) to a frame that has already been created.
-        getBreadcrumbForms().add(form); 
+        
+        OAForm formOld = null;
+        int pos = -1;
+        for (OAForm f : getBreadcrumbForms()) {
+            pos++;
+            if (furl.equals(f.getUrl())) {
+                formOld = f;
+                break;
+            }
+        }
+        if (formOld != null) getBreadcrumbForms().set(pos, form);
+        else getBreadcrumbForms().add(form);
     }
 
-    private ArrayList getBreadcrumbForms() {
+    private ArrayList<OAForm> getBreadcrumbForms() {
         if (alBreadcrumbForm == null) {
             alBreadcrumbForm = new ArrayList<OAForm>(10);
         }
@@ -671,6 +684,36 @@ public class OASession extends OABase {
     public String getBrowserName() {
         return request.getHeader("User-Agent");
     }
+    
+
+    protected OADateTime dtCreated;
+    protected String sessionId;
+    protected OADateTime dtLastAccessed;
+    protected int maxInactiveSeconds;
+    
+    public OADateTime getCreated() {
+        return dtCreated;
+    }
+    public String getSessionId() {
+        return sessionId;
+    }
+    public OADateTime getLastAccessed() {
+        return dtLastAccessed;
+    }
+    public int getMaxInactiveSeconds() {
+        return maxInactiveSeconds;
+    }
+    
+    protected void update(HttpSession session) {
+        long ts = session.getCreationTime();
+        this.dtCreated = new OADateTime(dtCreated);
+        this.sessionId = session.getId();
+        long tsLast = session.getLastAccessedTime();
+        this.dtLastAccessed = new OADateTime(tsLast);
+        this.maxInactiveSeconds = session.getMaxInactiveInterval();
+    }
+    
+    
 }
 
 

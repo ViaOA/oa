@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.*;
 
+import com.viaoa.util.OADateTime;
 import com.viaoa.util.OAString;
 
 /**
@@ -272,5 +273,32 @@ public class OASession extends OABase {
             }
         }
         return timeZone;
+    }
+
+    protected OADateTime dtCreated;
+    protected String sessionId;
+    protected OADateTime dtLastAccessed;
+    protected int maxInactiveSeconds;
+    
+    public OADateTime getCreated() {
+        return dtCreated;
+    }
+    public String getSessionId() {
+        return sessionId;
+    }
+    public OADateTime getLastAccessed() {
+        return dtLastAccessed;
+    }
+    public int getMaxInactiveSeconds() {
+        return maxInactiveSeconds;
+    }
+    
+    protected void update(HttpSession session) {
+        long ts = session.getCreationTime();
+        this.dtCreated = new OADateTime(ts);
+        this.sessionId = session.getId();
+        long tsLast = session.getLastAccessedTime();
+        this.dtLastAccessed = new OADateTime(tsLast);
+        this.maxInactiveSeconds = session.getMaxInactiveInterval();
     }
 }
