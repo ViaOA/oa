@@ -145,8 +145,12 @@ public class ResultSetIterator implements OADataSourceIterator {
             String s = query;
             int pos = s.toUpperCase().indexOf("FROM");
             if (pos > 0) s = s.substring(pos);
-            s = throttle.getCheckCount()+") ResultSetIterator: query="+s;
             
+            pos = s.toUpperCase().indexOf("PASSWORD");
+            if (pos > 0) s = s.substring(0, pos) + "****";
+            
+            s = throttle.getCheckCount()+") ResultSetIterator: query="+s;
+
             LOG.fine(s);
             if (OAObject.getDebugMode()) {
                 System.out.println(s);
@@ -484,7 +488,10 @@ public class ResultSetIterator implements OADataSourceIterator {
 
     // 20110407 added synchronized, since OASelectManager could close iterator while it is performing next()
     public synchronized void close() {
-        hubReadAhead = null;
+        if (hubReadAhead != null) {
+            hubReadAhead.clear();
+            hubReadAhead = null;
+        }
         bClosed = true;
         bMore = false;
         _close();
