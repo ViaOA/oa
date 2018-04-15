@@ -185,10 +185,7 @@ public class OASyncServer {
             @Override
             public void removeGuids(int[] guids) {
                 if (guids == null) return;
-                int x = guids.length;
-                for (int i=0; i<x; i++) {
-                    removeFromCache(guids[i]);
-                }
+                removeFromServerCache(guids);
                 if (cx.remoteClient != null) {
                     cx.remoteClient.removeGuids(guids);  // remove from getDetail cache/tree
                 }
@@ -249,7 +246,7 @@ public class OASyncServer {
              */
             @Override
             public void setCached(OAObject obj) {
-                cx.remoteSession.addToCache(obj);
+                cx.remoteSession.addToServerCache(obj);
             }
             @Override
             protected void loadDataInBackground(OAObject obj, String property) {
@@ -361,7 +358,8 @@ public class OASyncServer {
         if (cx != null) {
             cx.ci.setDisconnected(new OADateTime());
             cx.remoteSession.clearLocks();
-            cx.remoteSession.clearCache();
+            // 20180415 dont clear until after save is done
+            // cx.remoteSession.clearCache();
             // 20160101 need to release so that it can be gc'd
             if (cx.remoteClient != null) {
                 cx.remoteClient.close();

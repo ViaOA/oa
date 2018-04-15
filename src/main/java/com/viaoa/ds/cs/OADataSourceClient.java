@@ -367,8 +367,8 @@ public class OADataSourceClient extends OADataSource {
             for (Object obj : cache) {
                 if (obj == null) break;
                 // the server will add the object to the session cache (server side) if it is not in a hub w/master 
-                if (!OAObjectHubDelegate.isInHubWithMaster((OAObject) obj)) {
-                    OAObjectCSDelegate.addToServerSideCache((OAObject)obj, false);
+                if (OAObjectHubDelegate.isInHubWithMaster((OAObject) obj)) {
+                    OAObjectCSDelegate.removeFromServerSideCache((OAObject) obj);
                 }
             }
         }

@@ -392,7 +392,10 @@ public class OASyncClient {
         getRemoteSync();
         getRemoteSession();
         getRemoteClient();
-        if (bUpdateSyncDelegate) startQueueGuidThread();
+        if (bUpdateSyncDelegate) {
+            startQueueGuidThread();
+            startQueueGuidThread2();
+        }
 
         if (bUpdateSyncDelegate) {
             LOG.fine("creating OADataSourceClient for remote database access");
@@ -574,7 +577,9 @@ public class OASyncClient {
 
 
     /**
-     * called when object is removed from object cache (called by oaObject.finalize)
+     * called when object is removed from object cache 
+     * 
+     * called by oaObject.finalize, and removeFromServerSideCache
      * 
      */
     public void objectRemoved(int guid) {
@@ -635,4 +640,72 @@ public class OASyncClient {
         threadRemoveGuid.setDaemon(true);
         threadRemoveGuid.start();
     }
+    
+    
+    /**
+     * called when object is removed from object cache 
+     * 
+     * called by oaObject.finalize, and removeFromServerSideCache
+     * 
+     */
+    public void removeFromServerCache(int guid) {
+        try {
+            if (guid > 0 && bUpdateSyncDelegate) {
+                LinkedBlockingQueue<Integer> q = queRemoveGuid2;
+                if (q != null) q.add(guid);
+            }
+        }
+        catch (Exception e) {
+        }
+    }
+
+    private volatile LinkedBlockingQueue<Integer> queRemoveGuid2;
+    private Thread threadRemoveGuid2;
+    private void startQueueGuidThread2() {
+        if (queRemoveGuid2 != null) return;
+        queRemoveGuid2 = new LinkedBlockingQueue<Integer>();
+        threadRemoveGuid2 = new Thread(new Runnable() {
+            long msLastError;
+            int cntError;
+            int[] guids = new int[150];
+            @Override
+            public void run() {
+                RemoteSessionInterface rsi = null;
+                for (int guidPos = 0;;) {
+                    try {
+                        int guid = queRemoveGuid2.take(); 
+                        guids[guidPos++ % 150] = guid;
+                        if (guidPos % 150 == 0) {
+                            if (rsi == null) {
+                                rsi = OASyncClient.this.getRemoteSession();
+                            }
+                            if (rsi != null) {
+                                rsi.removeFromServerCache(guids);
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        LOG.log(Level.WARNING, "Error in removeGuid thread", e);
+                        long ms = System.currentTimeMillis();
+                        if (++cntError > 5) {
+                            if (ms - 2000 < msLastError) {
+                                LOG.warning("too many errors, will stop this GuidRemove thread (not critical)");
+                                queRemoveGuid2 = null;
+                                break;
+                            }
+                            else {
+                                cntError = 0;
+                            }
+                        }
+                        msLastError = ms;
+                    }
+                }
+            }
+        }, "OASyncClient.RemoveGuid2");
+        threadRemoveGuid2.setPriority(Thread.MIN_PRIORITY);
+        threadRemoveGuid2.setDaemon(true);
+        threadRemoveGuid2.start();
+    }
+    
+    
 }
