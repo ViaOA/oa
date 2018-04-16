@@ -256,9 +256,10 @@ public class OASyncServer {
         cx.remoteClient = rc;
         return rc;
     }
-    
-    // qqqq needs to be called by server   qqqqqqqqq need something similar ?? this should already be working
-    //   for query objects/hubs, etc 
+
+    /**
+     * Saved serverSide cached objects from clients.
+     */
     public void saveCache(OACascade cascade, int iCascadeRule) {
         for (Map.Entry<Integer, ClientInfoExt> entry : hmClientInfoExt.entrySet()) {
             ClientInfoExt cx = entry.getValue();
