@@ -280,7 +280,7 @@ public class OAObjectSiblingDelegate {
                 }
             }
             
-            if (hubx == null) {
+            if (hubx == null && hub != null) {
                 if (ppPrefix == null) ppPrefix = lix.getName();
                 else ppPrefix = lix.getName() + "." + ppPrefix;
                 

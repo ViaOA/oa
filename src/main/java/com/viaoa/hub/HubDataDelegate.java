@@ -603,7 +603,8 @@ public class HubDataDelegate {
         
         HubSortListener hsl = thisHub.data.getSortListener(); 
         if (hsl == null) return -2;
-        if (!thisHub.getObjectClass().equals(obj.getClass())) return -3;
+        Class cx = thisHub.getObjectClass();
+        if (cx == null || !cx.equals(obj.getClass())) return -3;
         
         int head = -1;
         int tail = thisHub.data.vector.size();
