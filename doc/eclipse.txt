@@ -1,4 +1,8 @@
 
+20180422 docker
+    eclipse docker tooling plugin from marketplace
+    https://devops.stackexchange.com/questions/1511/how-to-configure-docker-tooling-on-eclipse
+
 20180307 convert maven project to work with tomcat
     convert to maven project
         right click and choose "configure / maven"

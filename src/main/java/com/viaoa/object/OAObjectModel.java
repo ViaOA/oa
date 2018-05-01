@@ -28,7 +28,8 @@ public class OAObjectModel {
     protected boolean bAllowAdd;
     protected boolean bAllowNew;
     protected boolean bAllowAutoCreate;
-    
+
+    protected boolean bAllowSave;
     protected boolean bAllowRemove;
     protected boolean bAllowDelete;
     protected boolean bAllowClear;  // set to null / set AO to null
@@ -56,6 +57,7 @@ public class OAObjectModel {
         setAllowAdd(true);
         setAllowNew(true);
         setAllowRemove(true);
+        setAllowSave(true);
         setAllowDelete(true);
         setAllowClear(true);
         setAllowCut(true);
@@ -130,7 +132,12 @@ public class OAObjectModel {
         bAllowAutoCreate = b;
     }
     
-    
+    public boolean getAllowSave() {
+        return bAllowSave;
+    }
+    public void setAllowSave(boolean b) {
+        bAllowSave = b;
+    }
     public boolean getAllowRemove() {
         return bAllowRemove;
     }

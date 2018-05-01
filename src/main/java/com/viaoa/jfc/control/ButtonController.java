@@ -1352,6 +1352,17 @@ public class ButtonController extends JFCController implements ActionListener {
                 flag = (obj != null);
                 if (oaObj != null) {
                     flag = bAnyTime || oaObj.getChanged();
+                    if (flag && hub != null && !bAnyTime && oaObj.isNew()) {  // 20180429 dont use save button if master is new and owns child hub 
+                        Object objx = hub.getMasterObject();
+                        if (objx instanceof OAObject) {
+                            if ( ((OAObject) objx).isNew()) {
+                                OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(hub);
+                                if (li != null && li.getOwner()) {
+                                    flag = false;
+                                }
+                            }
+                        }
+                    }
                 }
                 break;
             case Cancel:
