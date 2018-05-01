@@ -480,7 +480,6 @@ class MyColorPanel extends JPanel {
             for ( ; row < valuesA.length-(bDown?0:1); row++) {
                 int zero = 0;
                 int max = 255;
-
                 if (bDown) zero = valuesA[valuesA.length-1-row];
                 else max = valuesA[valuesA.length-1-row];
                 
@@ -498,6 +497,7 @@ class MyColorPanel extends JPanel {
 		            p.add(pn);
 		            m_panes.put(c, pn);
                 }
+
                 // red=255  green=0-255
                 for (int g=1; g<values.length; g++) {
 		            int green = values[g];
@@ -596,9 +596,9 @@ class MyColorPanel extends JPanel {
 	public void setColor(Color c) {
         if (c == null) c = Color.black;
 		Object obj = m_panes.get(c);
-		if (obj == null) return;
 		if (m_selected != null) m_selected.setSelected(false);
 		m_selected = (ColorPane)obj;
+        if (obj == null) return;
 		m_selected.setSelected(true);
 	}
 
