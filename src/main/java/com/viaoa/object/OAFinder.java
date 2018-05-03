@@ -35,12 +35,18 @@ import com.viaoa.util.filter.*;
     UserLogin userLogin = f.findFirst(router);
     
     OAFinder<Program, Employee> f = new OAFinder<Program, Employee>(ProgramPP.locations().employees().pp) {
-        protected void onFound(Employee obj) {
+        @Override
+        protected boolean isUsed(Employee emp) {
+            return super.isUsed(emp);
+        }
+        @Override
+        protected void onFound(Employee emp) {
             //todo: 
         }
     };
-    f.find(program);
-    
+    // f.setMaxFound(50);
+    f.addEqualFilter(EmployeePP.employeeAward().awardType().name(), "some name");
+    ArrayList<Employee> al = f.find(program);
     
     </code>
  * 
