@@ -34,6 +34,7 @@ import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAThreadLocalDelegate;
+import com.viaoa.web.OATreeNode;
 import com.viaoa.hub.*;
 import com.viaoa.hub.HubListener.InsertLocation;
 
@@ -541,6 +542,10 @@ refreshHub();
                 hubFlattened.setAO(e.getObject());                
             }
         });
+    }
+    public void add(OATreeNode node) {
+        // TODO Auto-generated method stub
+        
     }
 }
 

@@ -12,7 +12,6 @@ package com.viaoa.jfc.editor.image;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -26,7 +25,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.*;
 import javax.swing.undo.AbstractUndoableEdit;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
 import com.viaoa.jfc.image.OAImageUtil;
 import com.viaoa.util.Tuple;
 

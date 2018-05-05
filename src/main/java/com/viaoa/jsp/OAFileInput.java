@@ -250,7 +250,7 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
             s = placeholder;
             if (OAString.isEmpty(s)) s = id;
         }
-        sb.append("if ($('#\"+id+\"').files === undefined || $('#"+id+"').files.length == 0) requires.push('\" + s + \"');\n");
+        sb.append("if ($('#"+id+"').files === undefined || $('#"+id+"').files.length == 0) requires.push('" + s + "');\n");
         
         sb.append("}\n");
         
