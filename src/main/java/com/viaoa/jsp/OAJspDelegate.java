@@ -21,6 +21,7 @@ public class OAJspDelegate {
     public static final String CSS_bootstrap_ladda = "bootstrap-ladda";
     public static final String CSS_summernote = "summernote";
     public static final String CSS_oajsp = "oajsp";
+    public static final String CSS_croppie = "croppie";
 
     /**
      * name/file location for CSS resources.
@@ -49,6 +50,7 @@ public class OAJspDelegate {
         registerRequiredCssName(CSS_bootstrap_ladda, "vendor/bootstrap-spinner/ladda-themeless.css");
         registerRequiredCssName(CSS_summernote, "vendor/summernote/summernote.css");
         registerRequiredCssName(CSS_oajsp, "vendor/viaoa/oajsp.css");
+        registerRequiredCssName(CSS_croppie, "vendor/Croppie-2.6.2/croppie.css");
     }
     
 
@@ -70,6 +72,7 @@ public class OAJspDelegate {
     public static final String JS_summernote = "summernote";
     public static final String JS_jquery_autonumeric = "jquery-autonumeric";
     public static final String JS_jquery_validation = "jquery-validation";
+    public static final String JS_croppie = "croppie";
     
     static {
         registerRequiredJsName(JS_jquery, "vendor/jquery-3.1.1/jquery.js");
@@ -89,10 +92,9 @@ public class OAJspDelegate {
         registerRequiredJsName(JS_summernote, "vendor/summernote/summernote.js");
         registerRequiredJsName(JS_jquery_autonumeric, "vendor/jquery-autonumeric/autoNumeric.js");
         registerRequiredJsName(JS_jquery_validation, "vendor/jquery-validation/jquery.validate.js");
+        registerRequiredJsName(JS_croppie, "vendor/Croppie-2.6.2/croppie.min.js");
     }
 
-
-    
     
     /**
      * Add a name / filepath of a CSS.

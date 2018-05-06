@@ -13,10 +13,38 @@ import com.viaoa.util.*;
 import com.viaoa.util.Base64;
 
 /**
+ * Allows for uploading and saving (as java jpg) using the Croppie + File input.
  * 
  * http://foliotek.github.io/Croppie/#documentation
+ *
+ * This uses an Html Label, or other component that supports onClick, to then
+ * popup a file input and then croppie, and then uses ajax submit to save the 
+ * image.
  * 
- * 
+ *   <label id="cfiUpload" style="cursor: pointer;">Add a new photo</label>
+ 
+    protected OACroppieFileInput cfi;
+    public OACroppieFileInput getCroppieFileInput() {
+        if (cfi != null) return cfi;
+        cfi = new OACroppieFileInput("cfiUpload", modelEmployee.getHub(), EmployeePP.avatar().bytes()) {
+            @Override
+            protected void onSetValue(byte[] bs) {
+                if (bs == null) return;
+                Employee emp = modelEmployee.getEmployee();
+                if (emp != null) {
+                    // make sure that an Avatar exists
+                    if (emp.getAvatar() == null) {
+                        emp.setAvatar(new ImageStore());
+                    }
+                }
+                super.onSetValue(bs);
+                if (emp != null) emp.save();
+            }
+        };
+        return cfi;
+    }
+ 
+ 
  * @author vvia
  *
  */
@@ -30,10 +58,6 @@ public class OACroppieFileInput implements OAJspComponent, OAJspRequirementsInte
     protected OAForm form;
     protected String lastAjaxSent;
     
-    
-    public OACroppieFileInput(String id) {
-        this(id, null, null);
-    }
     public OACroppieFileInput(String id, Hub hub, String property) {
         this.id = id;
         this.hub = hub;
@@ -150,7 +174,6 @@ public class OACroppieFileInput implements OAJspComponent, OAJspRequirementsInte
 
         sb.append("\n");
 
-//qqqqqqqqqqqqqqqqqq        
         // Bind OACroppieFileInput to id='cfiUpload'
         
         // create hidden input for storing base64 img
@@ -234,7 +257,7 @@ public class OACroppieFileInput implements OAJspComponent, OAJspRequirementsInte
         sb.append("    });\n");
         sb.append("}\n");
         
-//qqqqqqqqqqqqqqqqqqqq        
+        
         String s = getAjaxScript();
         if (s != null) sb.append(s);
         
@@ -289,7 +312,8 @@ public class OACroppieFileInput implements OAJspComponent, OAJspRequirementsInte
         ArrayList<String> al = new ArrayList<>();
 
         al.add(OAJspDelegate.JS_jquery);
-//qqqqqqqqq
+        al.add(OAJspDelegate.JS_croppie);
+
         String[] ss = new String[al.size()];
         return al.toArray(ss);
     }
@@ -299,7 +323,8 @@ public class OACroppieFileInput implements OAJspComponent, OAJspRequirementsInte
         ArrayList<String> al = new ArrayList<>();
 
         al.add(OAJspDelegate.CSS_bootstrap);
-//qqqqqqqq
+        al.add(OAJspDelegate.CSS_croppie);
+
         String[] ss = new String[al.size()];
         return al.toArray(ss);
     }
