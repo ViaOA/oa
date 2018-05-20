@@ -100,8 +100,18 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         this.id = id;
         this.hub = hub;
     }
+    public OAHtmlElement(Hub hub) {
+        this.hub = hub;
+    }
     public OAHtmlElement(String id, Hub hub, String propertyPath, int width) {
         this.id = id;
+        this.hub = hub;
+        setHtmlPropertyPath(propertyPath);
+        setLineWidth(width);
+        setMinLineWidth(width-3);
+        setMaxRows(0);
+    }
+    public OAHtmlElement(Hub hub, String propertyPath, int width) {
         this.hub = hub;
         setHtmlPropertyPath(propertyPath);
         setLineWidth(width);
@@ -116,8 +126,22 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
         setMinLineWidth(0);
         setMaxRows(0);
     }
+    public OAHtmlElement(Hub hub, String propertyPath) {
+        this.hub = hub;
+        setHtmlPropertyPath(propertyPath);
+        setLineWidth(0);
+        setMinLineWidth(0);
+        setMaxRows(0);
+    }
     public OAHtmlElement(String id, Hub hub, String propertyPath, int width, int minWidth, int maxRows) {
         this.id = id;
+        this.hub = hub;
+        setHtmlPropertyPath(propertyPath);
+        setLineWidth(width);
+        setMinLineWidth(minWidth);
+        setMaxRows(maxRows);
+    }
+    public OAHtmlElement(Hub hub, String propertyPath, int width, int minWidth, int maxRows) {
         this.hub = hub;
         setHtmlPropertyPath(propertyPath);
         setLineWidth(width);
@@ -146,6 +170,10 @@ public class OAHtmlElement implements OAJspComponent, OAJspRequirementsInterface
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

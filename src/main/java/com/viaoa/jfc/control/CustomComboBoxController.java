@@ -32,13 +32,14 @@ import com.viaoa.jfc.undo.OAUndoableEdit;
 public class CustomComboBoxController extends JFCController {
     JComboBox comboBox;
     public boolean bDisplayPropertyOnly; // 2007/05/25 used by OATreeComboBox so that setSelectedItem() does not try to update property
+    protected boolean bTypeEditProperty; // if true, then this will edit hub.property, else it updates hub.ao
     
-    public CustomComboBoxController(Hub hub, JComboBox cb, String propertyPath) {
+    public CustomComboBoxController(Hub hub, JComboBox cb, String propertyPath, boolean bTypeEditProperty) {
         super(hub, propertyPath, cb); // this will add hub listener
         create(cb);
     }
 
-    public CustomComboBoxController(Object obj, JComboBox cb, String propertyPath) {
+    public CustomComboBoxController(Object obj, JComboBox cb, String propertyPath, boolean bTypeEditProperty) {
         super(obj, propertyPath, cb); // this will add hub listener
         create(cb);
     }
@@ -66,14 +67,17 @@ public class CustomComboBoxController extends JFCController {
         Hub h = getHub();
         if (h == null) return;
 
-        // there are two different options
-        //  1: this combo.hub is linked
-        if (h.getLinkHub() != null) {
-            getEnabledController().add(h, null, OAAnyValueObject.instance); // so that it will verify that hub is valid
+        if (bTypeEditProperty) {
+            getEnabledController().add(h, null, OANotNullObject.instance); //was: OAAnyValueObject.instance); // so that Hub.isValid will be the only check
         }
         else {
-            // 2: this combo edits the hub.ao
-            getEnabledController().add(h, null, OANotNullObject.instance);//was: OAAnyValueObject.instance); // so that Hub.isValid will be the only check
+            Hub hx = HubLinkDelegate.getHubWithLink(h, true);
+            if (hx != null) {
+                getEnabledController().add(h.getLinkHub(), null, OANotNullObject.instance); // so that it will verify that hub is valid
+            }
+            if (h.getMasterHub() != null) {
+                getEnabledController().add(h.getMasterHub(), null, OANotNullObject.instance);//was: OAAnyValueObject.instance); // so that Hub.isValid will be the only check
+            }
         }
     }
 

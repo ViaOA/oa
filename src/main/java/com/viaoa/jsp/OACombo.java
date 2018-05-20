@@ -78,6 +78,9 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
     public OACombo(String id, Hub hub, String propertyPath) {
         this(id, hub, propertyPath, 0);
     }
+    public OACombo(Hub hub, String propertyPath) {
+        this(null, hub, propertyPath, 0);
+    }
     
     public OACombo(String id, Hub hub, String propertyPath, int columns) {
         this.id = id;
@@ -85,8 +88,19 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
         this.propertyPath = propertyPath;
         this.columns = columns;
     }
+    public OACombo(Hub hub, String propertyPath, int columns) {
+        this.hub = hub;
+        this.propertyPath = propertyPath;
+        this.columns = columns;
+    }
     public OACombo(String id, Hub hub, String propertyPath, int columns, int rows) {
         this.id = id;
+        this.hub = hub;
+        this.propertyPath = propertyPath;
+        this.columns = columns;
+        this.rows = rows;
+    }
+    public OACombo(Hub hub, String propertyPath, int columns, int rows) {
         this.hub = hub;
         this.propertyPath = propertyPath;
         this.columns = columns;
@@ -108,6 +122,10 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Hub getHub() {

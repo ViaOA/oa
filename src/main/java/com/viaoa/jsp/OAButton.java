@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.util.*;
 
 
@@ -31,12 +32,26 @@ import com.viaoa.util.*;
  * @author vvia
  *
  */
-public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
+public class OAButton<T extends OAObject> implements OAJspComponent, OAJspRequirementsInterface {
     private static final long serialVersionUID = 1L;
 
-//qqqqqqq get command types/logic from OAButton
+    public static enum CommandType {
+        Up, 
+        Down, 
+        Save, 
+        First, 
+        Last, 
+        Next, 
+        Previous, 
+        Delete, 
+        Remove, 
+        New, 
+        ClearAO, 
+        Return
+    }
     
-    protected Hub hub;
+    protected CommandType commandType;
+    protected Hub<T> hub;
     protected String id;
     protected OAForm form;
     protected boolean bEnabled = true;
@@ -53,16 +68,49 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     protected String enablePropertyPath;
     protected String visiblePropertyPath;
 
+    protected OAFilter<T> filterEnabled;
+    protected OAFilter<T> filterVisible;
     
-    public OAButton(String id, Hub hub) {
+    public OAButton(String id, Hub<T> hub) {
+        this(id, hub, null);
+    }
+    public OAButton(String id, Hub<T> hub, CommandType ct) {
         this.id = id;
         this.hub = hub;
+        this.commandType = ct;
         setSubmit(true);
     }
 
+    public OAButton(Hub<T> hub) {
+        this(null, hub, null);
+    }
+    public OAButton(Hub<T> hub, CommandType ct) {
+        this(null, hub, ct);
+    }
+
+    public OAButton() {
+        setSubmit(true);
+    }
+    public OAButton(CommandType ct) {
+        this.commandType = ct;
+        setSubmit(true);
+    }
+    
+    public OAButton(String id, CommandType ct) {
+        this.id = id;
+        this.commandType = ct;
+        setSubmit(true);
+    }
     public OAButton(String id) {
         this.id = id;
         setSubmit(true);
+    }
+    
+    public void setCommandType(CommandType ct) {
+        this.commandType = ct;
+    }
+    public CommandType getCommandType() {
+        return this.commandType;
     }
     
     public void setForwardUrl(String forwardUrl) {
@@ -81,6 +129,11 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     public String getId() {
         return id;
     }
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
+    
 
     public void setAjaxSubmit(boolean b) {
         bAjaxSubmit = b;
@@ -159,8 +212,79 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
     
     @Override
     public String onSubmit(String forwardUrl) {
+        if (commandType == null) return forwardUrl;
+        
+        switch (commandType) {
+            case Up:
+                if (hub == null) break;
+                int pos = hub.getPos();
+                if (pos < 1) break;
+                hub.move(pos, pos-1);
+                break;
+            case Down:
+                if (hub == null) break;
+                pos = hub.getPos();
+                hub.move(pos, pos+1);
+                break;
+            case Save:
+                if (hub == null) break;
+                T obj = hub.getAO();
+                if (obj == null) break;
+                obj.save();
+                break;
+            case First:
+                if (hub == null) break;
+                hub.setPos(0);
+                break;
+            case Last:
+                if (hub == null) break;
+                hub.setPos(hub.getSize()-1);
+                break;
+            case Next:
+                if (hub == null) break;
+                hub.setPos(hub.getPos()+1);
+                break;
+            case Previous:
+                if (hub == null) break;
+                hub.setPos(hub.getPos()-1);
+                break;
+            case Delete:
+                if (hub == null) break;
+                obj = hub.getAO();
+                if (obj == null) break;
+                obj.delete();
+                break;
+            case Remove:
+                if (hub == null) break;
+                obj = hub.getAO();
+                if (obj != null) hub.remove(obj);
+                break;
+            case New:
+                if (hub == null) break;
+                T objx = (T) OAObjectReflectDelegate.createNewObject(hub.getObjectClass());
+                hub.add(objx);
+                hub.setAO(objx);
+                break;
+            case ClearAO:
+                if (hub == null) break;
+                hub.setAO(null);
+                break;
+            case Return:
+                OAForm form = getForm();
+                if (form  == null) break;
+                OASession ses = form.getSession();
+                if (ses == null) break;
+                form = ses.getPreviousForm();
+                if (form == null) break;
+                forwardUrl = form.getUrl();
+                break;
+        }
+        
         return forwardUrl;
     }
+    
+    
+    
     
     private String lastAjaxSent;
     
@@ -274,11 +398,16 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
 
         if (!hub.isValid()) return false;
         
-        if (OAString.isEmpty(enablePropertyPath)) return true;
-
-        OAObject obj = (OAObject) hub.getAO();
-        if (obj == null) return false;
+        T obj = hub.getAO();
         
+        if (filterEnabled != null) {
+            boolean b = (obj != null) && filterEnabled.isUsed(obj);
+            if (!b) return false;
+        }
+
+        if (OAString.isEmpty(enablePropertyPath)) return true;
+        
+        if (obj == null) return false;
         Object value = obj.getProperty(enablePropertyPath);
         boolean b;
         if (value instanceof Hub) {
@@ -304,9 +433,14 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         if (!bVisible) return false;
         if (hub == null) return true;
 
-        if (OAString.isEmpty(visiblePropertyPath)) return true;
+        T obj = hub.getAO();
         
-        OAObject obj = (OAObject) hub.getAO();
+        if (filterVisible != null) {
+            boolean b = (obj != null) && filterVisible.isUsed(obj);
+            if (!b) return false;
+        }
+        
+        if (OAString.isEmpty(visiblePropertyPath)) return true;
         if (obj == null) return false;
         
         Object value = obj.getProperty(visiblePropertyPath);
@@ -453,4 +587,15 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         String s = templateConfirmMessage.process(obj);
         return s;
     }
+
+    public void setEnabledFilter(OAFilter<T> filter) {
+        this.filterEnabled = filter;
+    }
+    
+    public void setVisibleFilter(OAFilter<T> filter) {
+        this.filterVisible = filter;
+    }
+
+    
+    
 }

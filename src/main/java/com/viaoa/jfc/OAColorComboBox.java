@@ -45,7 +45,7 @@ public class OAColorComboBox extends OACustomComboBox {
         @param columns is width to use, using average character width
     */
     public OAColorComboBox(Hub hub, String propertyPath, int columns) {
-        super(hub,propertyPath, columns);
+        super(hub,propertyPath, columns, true);
         setupRenderer();
     }
 
@@ -55,7 +55,7 @@ public class OAColorComboBox extends OACustomComboBox {
         @param propertyPath is color property to display/edit
     */
     public OAColorComboBox(Hub hub, String propertyPath) {
-        super(hub, propertyPath);
+        super(hub, propertyPath, true);
         setupRenderer();
     }
 
@@ -66,7 +66,7 @@ public class OAColorComboBox extends OACustomComboBox {
         @param columns is width to use, using average character width
     */
     public OAColorComboBox(Object obj, String propertyPath, int columns) {
-        super(obj,propertyPath, columns);
+        super(obj,propertyPath, columns, true);
         setupRenderer();
     }
 
@@ -76,7 +76,7 @@ public class OAColorComboBox extends OACustomComboBox {
         @param propertyPath is color property to display/edit
     */
     public OAColorComboBox(Object obj, String propertyPath) {
-        super(obj, propertyPath);
+        super(obj, propertyPath, true);
         setupRenderer();
     }
 

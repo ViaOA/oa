@@ -10,16 +10,8 @@
 */
 package com.viaoa.hub;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
-import com.viaoa.object.*;
-import com.viaoa.util.*;
-import com.viaoa.util.filter.*;
 
 /**
  * Combines multiple hubs into one.

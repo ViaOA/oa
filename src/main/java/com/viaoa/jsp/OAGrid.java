@@ -60,6 +60,10 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         this.hub = hub;
         this.columns = columns;
     }
+    public OAGrid(Hub hub, int columns) {
+        this.hub = hub;
+        this.columns = columns;
+    }
     
     public Hub getHub() {
         return hub;
@@ -87,6 +91,10 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

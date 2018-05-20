@@ -315,6 +315,7 @@ public class OAForm extends OABase implements Serializable {
             OAJspComponent comp = alComponent.get(i);
             if (comp._onFormSubmitted(req, resp, hmNameValue)) compSubmit = comp;
         }
+        
         return compSubmit;
     }
     protected String afterSubmit(String forwardUrl) {
@@ -1139,7 +1140,12 @@ public class OAForm extends OABase implements Serializable {
     }
     public void add(OAJspComponent comp) {
         if (comp == null) return;
-        String id = comp.getId();
+        add(null, comp);
+    }
+    public void add(String id, OAJspComponent comp) {
+        if (comp == null) return;
+        if (OAString.isEmpty(id)) id = comp.getId();
+        else comp.setId(id);
 
         if (!OAString.isEmpty(id)) {
             OAJspComponent compx = getComponent(id);
@@ -1306,16 +1312,22 @@ public class OAForm extends OABase implements Serializable {
             forward = getForwardUrl();
             if (OAString.isEmpty(forward)) forward = this.getUrl();
             
-            OAJspComponent compSubmit = onSubmit(request, response, hmNameValue);
+            compLastSubmit = onSubmit(request, response, hmNameValue);
             
-            forward = onSubmit(compSubmit, forward);
+            forward = onSubmit(compLastSubmit, forward);
             forward = afterSubmit(forward);
-            forward = onJspSubmit(compSubmit, forward);
+            forward = onJspSubmit(compLastSubmit, forward);
         }
         if (OAString.isEmpty(forward)) {
             forward = this.getUrl();
         }
         return forward;
+    }
+    
+
+    protected OAJspComponent compLastSubmit;
+    public OAJspComponent getLastSubmitComponent() {
+        return compLastSubmit;
     }
 
     protected String onSubmit(OAJspComponent compSubmit, String forward) {

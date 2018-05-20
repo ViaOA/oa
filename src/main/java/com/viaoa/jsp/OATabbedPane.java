@@ -23,8 +23,14 @@ public class OATabbedPane implements OAJspComponent, OAJspRequirementsInterface 
     public OATabbedPane(String id) {
         this(id, null);
     }
+    public OATabbedPane() {
+        this(null, null);
+    }
     public OATabbedPane(String id, Hub hub) {
         this.id = id;
+        this.hub = hub;
+    }
+    public OATabbedPane(Hub hub) {
         this.hub = hub;
     }
 
@@ -40,6 +46,10 @@ public class OATabbedPane implements OAJspComponent, OAJspRequirementsInterface 
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

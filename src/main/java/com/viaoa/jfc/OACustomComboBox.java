@@ -28,6 +28,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     OATable table;
     String heading = "";
     String format;
+    boolean bTypeEditProperty;
     
     /**
         Create an unbound ComboBox.
@@ -39,32 +40,32 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         Create a ComboBox that is bound to a property for the active object in a Hub.
         @param columns is width of list using character width size.
     */
-    public OACustomComboBox(Hub hub, String propertyPath, int columns) {
-        this(hub,propertyPath);
+    public OACustomComboBox(Hub hub, String propertyPath, int columns, boolean bTypeEditProperty) {
+        this(hub,propertyPath,bTypeEditProperty);
         setColumns(columns);
     }
 
     /**
         Create a ComboBox that is bound to a property for the active object in a Hub.
     */
-    public OACustomComboBox(Hub hub, String propertyPath) {
-        control = new OACustomComboBoxController(hub, propertyPath);
+    public OACustomComboBox(Hub hub, String propertyPath, boolean bTypeEditProperty) {
+        control = new OACustomComboBoxController(hub, propertyPath, bTypeEditProperty);
     }
 
     /**
         Create a ComboBox that is bound to a property for the active object in a Hub.
         @param columns is width of list using character width size.
     */
-    public OACustomComboBox(Object obj, String propertyPath, int columns) {
-        this(obj,propertyPath);
+    public OACustomComboBox(Object obj, String propertyPath, int columns, boolean bTypeEditProperty) {
+        this(obj, propertyPath, bTypeEditProperty);
         setColumns(columns);
     }
 
     /**
         Create a ComboBox that is bound to a property for an object.
     */
-    public OACustomComboBox(Object obj, String propertyPath) {
-        control = new OACustomComboBoxController(obj, propertyPath);
+    public OACustomComboBox(Object obj, String propertyPath, boolean bTypeEditProperty) {
+        control = new OACustomComboBoxController(obj, propertyPath, bTypeEditProperty);
     }
 
     /*
@@ -581,11 +582,11 @@ focusComp = this;
 
     
     class OACustomComboBoxController extends CustomComboBoxController {
-        public OACustomComboBoxController(Hub hub, String propertyPath) {
-            super(hub, OACustomComboBox.this, propertyPath);
+        public OACustomComboBoxController(Hub hub, String propertyPath, boolean bTypeEditProperty) {
+            super(hub, OACustomComboBox.this, propertyPath, bTypeEditProperty);
         }
-        public OACustomComboBoxController(Object obj, String propertyPath) {
-            super(obj, OACustomComboBox.this, propertyPath);
+        public OACustomComboBoxController(Object obj, String propertyPath, boolean bTypeEditProperty) {
+            super(obj, OACustomComboBox.this, propertyPath, bTypeEditProperty);
         }
         
         @Override

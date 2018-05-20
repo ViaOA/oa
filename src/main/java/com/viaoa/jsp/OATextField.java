@@ -123,6 +123,35 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     protected AutoNum autoNum;
     
 
+    public OATextField(String id, Hub hub, String propertyPath) {
+        this(id, hub, propertyPath, 0, 0);
+    }
+    public OATextField(Hub hub, String propertyPath) {
+        this(null, hub, propertyPath, 0, 0);
+    }
+
+    public OATextField(String id, Hub hub, String propertyPath, int width, int maxLength) {
+        this.id = id;
+        this.hub = hub;
+        this.width = width;
+        this.maxLength = maxLength;
+        setPropertyPath(propertyPath);
+    }
+    public OATextField(Hub hub, String propertyPath, int width, int maxLength) {
+        this(null, hub, propertyPath, width, maxLength);
+    }
+    public OATextField(Hub hub, String propertyPath, int maxLength) {
+        this(null, hub, propertyPath, 0, maxLength);
+    }
+
+    public OATextField(String id) {
+        this.id = id;
+    }
+    public OATextField() {
+    }
+    
+    
+    
     /**
      * Used to use the autoNumeric plugin 
      * @param min value
@@ -167,22 +196,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     }
 
 
-    public OATextField(String id, Hub hub, String propertyPath) {
-        this(id, hub, propertyPath, 0, 0);
-    }
-
-    public OATextField(String id, Hub hub, String propertyPath, int width, int maxLength) {
-        this.id = id;
-        this.hub = hub;
-        this.width = width;
-        this.maxLength = maxLength;
-        setPropertyPath(propertyPath);
-    }
-
-    public OATextField(String id) {
-        this.id = id;
-    }
-
     @Override
     public boolean isChanged() {
         if (value == lastValue) return false;
@@ -194,7 +207,12 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
     public String getId() {
         return id;
     }
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
 
+    
     @Override
     public void reset() {
         value = lastValue;

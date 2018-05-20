@@ -61,6 +61,9 @@ public class OATable implements OAJspComponent {
         this.id = id;
         this.hub = hub;
     }
+    public OATable(Hub hub) {
+        this.hub = hub;
+    }
         
     
     public Hub getHub() {
@@ -132,6 +135,10 @@ public class OATable implements OAJspComponent {
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

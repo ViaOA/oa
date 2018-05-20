@@ -28,15 +28,32 @@ public class OATextArea extends OATextField {
         super(id, hub, propertyPath, columns, maxWidth);
         this.rows = rows;
     }
+    public OATextArea(Hub hub, String propertyPath, int columns, int rows, int maxWidth) {
+        super(hub, propertyPath, columns, maxWidth);
+        this.rows = rows;
+    }
+
     public OATextArea(String id, Hub hub, String propertyPath) {
         super(id, hub, propertyPath, 0, 0);
     }
+    public OATextArea(Hub hub, String propertyPath) {
+        super(hub, propertyPath, 0, 0);
+    }
+
     public OATextArea(String id, int columns, int rows, int maxWidth) {
         super(id, null, null, columns, maxWidth);
         this.rows = rows;
     }
+    public OATextArea(int columns, int rows, int maxWidth) {
+        super(null, null, columns, maxWidth);
+        this.rows = rows;
+    }
+
     public OATextArea(String id) {
         super(id, null, null, 0, 0);
+    }
+    public OATextArea() {
+        super(null, null, null, 0, 0);
     }
     
     @Override

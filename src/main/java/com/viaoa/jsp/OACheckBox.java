@@ -70,9 +70,15 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
         this.hub = hub;
         setPropertyPath(propertyPath);
     }
+    public OACheckBox(Hub hub, String propertyPath) {
+        this.hub = hub;
+        setPropertyPath(propertyPath);
+    }
     
     public OACheckBox(String id) {
         this.id = groupName = id;
+    }
+    public OACheckBox() {
     }
     
     public void setOnValue(Object obj) {
@@ -97,6 +103,10 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

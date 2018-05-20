@@ -43,6 +43,12 @@ public class OAMail implements java.io.Serializable {
      * @param user  user id for mail server
      * @param pw  user password for mail server
      */
+    public OAMail(String host, String user, String pw) {
+        this.host = host;
+        this.port = 25;
+        this.userId = user;
+        this.password = pw;
+    }
     public OAMail(String host, int port, String user, String pw) {
         this.host = host;
         this.port = port;
@@ -94,6 +100,15 @@ public class OAMail implements java.io.Serializable {
     {
         sendSmtp(to, cc, from, subject, text, contentType, fileNames, null, null, null);
     }
+    public void sendSmtp( 
+            String[] to, String[] cc, String from, 
+            String subject, String text,
+            String contentType
+            ) throws Exception 
+    {
+        sendSmtp(to, cc, from, subject, text, contentType, null, null, null, null);
+    }
+
     public void sendSmtp( 
             String[] to, String[] cc, String from, 
             String subject, String text,

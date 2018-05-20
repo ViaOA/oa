@@ -48,6 +48,11 @@ public class OAExpander implements OAJspComponent, OAJspRequirementsInterface {
         this.expandText = expandText;
         this.collapseText = collapseText;
     }
+    public OAExpander(String clickId, String expandText, String collapseText) {
+        this.clickId = clickId;
+        this.expandText = expandText;
+        this.collapseText = collapseText;
+    }
 
     public void setHub(Hub hub) {
         this.hub = hub;
@@ -61,6 +66,10 @@ public class OAExpander implements OAJspComponent, OAJspRequirementsInterface {
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

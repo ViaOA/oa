@@ -63,6 +63,10 @@ public class OACroppieFileInput implements OAJspComponent, OAJspRequirementsInte
         this.hub = hub;
         this.property = property;
     }
+    public OACroppieFileInput(Hub hub, String property) {
+        this.hub = hub;
+        this.property = property;
+    }
 
     public Hub getHub() {
         return hub;
@@ -76,6 +80,10 @@ public class OACroppieFileInput implements OAJspComponent, OAJspRequirementsInte
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

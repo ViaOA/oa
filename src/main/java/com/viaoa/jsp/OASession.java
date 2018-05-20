@@ -17,8 +17,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.*;
 
-import com.viaoa.util.OADateTime;
-import com.viaoa.util.OAString;
+import com.viaoa.util.*;
 
 /**
     Object used by one user session.
@@ -34,8 +33,10 @@ public class OASession extends OABase {
     protected transient WeakReference<HttpServletResponse> wrefResponse;
 
 
-    protected transient ArrayList<OAForm> alBreadcrumbForm = new ArrayList<OAForm>();
+    protected transient ArrayList<OAForm> alBreadCrumbForm = new ArrayList<OAForm>();
     protected transient final ArrayList<OAForm> alForm = new ArrayList<OAForm>();
+    protected transient final HashMap<String, OAForm> hmForm = new HashMap<>();
+    protected OAForm currentForm;
 
     private TimeZone timeZone;
 
@@ -61,8 +62,9 @@ public class OASession extends OABase {
         super.removeAll();
         synchronized (alForm) {
             alForm.clear();
+            hmForm.clear();
         }
-        alBreadcrumbForm.clear();
+        alBreadCrumbForm.clear();
     }
 
     public void setApplication(OAApplication app) {
@@ -72,33 +74,44 @@ public class OASession extends OABase {
         return application;
     }
 
-    private ArrayList getBreadcrumbForms() {
-        if (alBreadcrumbForm == null) {
-            alBreadcrumbForm = new ArrayList<OAForm>(10);
-        }
-        return alBreadcrumbForm;
+    
+    public OAForm getCurrentForm() {
+        return currentForm;
+    }
+    public void setCurrentForm(OAForm f) {
+        currentForm = f;
+        setCurrentBreadCrumbForm(f);
     }
 
-    public void setLastBreadCrumbForm(OAForm f) {
-        int x = getBreadcrumbForms().indexOf(f);
-        if (x < 0) alBreadcrumbForm.add(f);
+    /**
+     * This can be used to find the return to page/form.
+     */
+    public OAForm getPreviousForm() {
+        if (currentForm == null) return null;
+        int x = alBreadCrumbForm.size();
+        if (x == 1) return null;
+        return alBreadCrumbForm.get(x-2);
+    }
+    public OAForm getReturnForm() {
+        return getPreviousForm();
+    }
+    
+    
+    public void setCurrentBreadCrumbForm(OAForm f) {
+        int x = alBreadCrumbForm.indexOf(f);
+        if (x < 0) alBreadCrumbForm.add(f);
         else {
-            while (alBreadcrumbForm.size() > (x+1)) {
-                alBreadcrumbForm.remove(x+1);
+            while (alBreadCrumbForm.size() > (x+1)) {
+                alBreadCrumbForm.remove(x+1);
             }
         }
     }
-    public void setBreadCrumbForms(OAForm f) {
-        if (f == null) return;
-        getBreadcrumbForms().clear();
-        alBreadcrumbForm.add(f);
-    }
     public void clearBreadCrumbForms() {
-        getBreadcrumbForms().clear();
+        alBreadCrumbForm.clear();
     }
 
     public OAForm[] getBreadCrumbForms() {
-        return (OAForm[]) getBreadcrumbForms().toArray(new OAForm[getBreadcrumbForms().size()]);
+        return (OAForm[]) alBreadCrumbForm.toArray(new OAForm[alBreadCrumbForm.size()]);
     }
 
 
@@ -109,10 +122,8 @@ public class OASession extends OABase {
         return f;
     }
     /**
-     * 
      * @param id ex: "employee"
      * @param page ex: "employee.jsp"
-     * @return
      */
     public OAForm createForm(String id, String page) {
         removeForm(getForm(id));
@@ -125,35 +136,42 @@ public class OASession extends OABase {
         String id = form.getId();
         if (id == null) return;
 
-        synchronized (alForm) {
-            for (int i=0; i<alForm.size(); i++) {
-                OAForm f = alForm.get(i);
-                if (id.equalsIgnoreCase(f.getId())) {
-                    LOG.fine("replacing form, id="+id+", from="+f+", to="+form);
-                }
-            }
+        OAForm f = getForm(id);
+        if (f != null) {
+            LOG.fine("replacing form, id="+id+", from="+f+", to="+form);
+            removeForm(f);
         }
         
-        removeForm(getForm(form.getId()));
         synchronized (alForm) {
             alForm.add(form);
+            hmForm.put(id, form);
         }
         form.setSession(this);
     }
     public OAForm getForm(String id) {
         if (id == null) return null;
         synchronized (alForm) {
-            for (int i=0; i<alForm.size(); i++) {
-                OAForm f = alForm.get(i);
-                if (id.equalsIgnoreCase(f.getId())) return f;
+            OAForm f = hmForm.get(id);
+            if (f != null) return f;
+            for (OAForm fx : alForm) {
+                if (id.equalsIgnoreCase(fx.getId())) return fx;
             }
         }
         return null;
     }
+    public OAForm getForm(OAForm form) {
+        if (form == null) return null;
+        if (alForm.indexOf(form) >= 0) return form;
+        OAForm f = getForm(form.getId());
+        return f;
+    }
     public void removeForm(OAForm form) {
         if (form != null) {
             synchronized (alForm) {
-                alForm.remove(form);
+                if (alForm.remove(form)) {
+                    String id = form.getId();
+                    if (id != null) hmForm.remove(id);
+                }
             }
         }
     }

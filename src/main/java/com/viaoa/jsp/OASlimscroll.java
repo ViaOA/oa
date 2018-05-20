@@ -23,9 +23,12 @@ public class OASlimscroll implements OAJspComponent, OAJspRequirementsInterface 
     protected String width;
 
 
-    
     public OASlimscroll(String id, String width, String height) {
         this.id = id;
+        this.height = height;
+        this.width = width;
+    }
+    public OASlimscroll(String width, String height) {
         this.height = height;
         this.width = width;
     }
@@ -38,6 +41,10 @@ public class OASlimscroll implements OAJspComponent, OAJspRequirementsInterface 
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

@@ -12,6 +12,8 @@ package com.viaoa.jfc.table;
 
 import java.awt.*;
 import java.lang.reflect.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -25,6 +27,7 @@ import com.viaoa.jfc.*;
  * Class used to <i>wrap</i> a Table column to work with an OATableComponent.
  */
 public class OATableColumn {
+    private static Logger LOG = Logger.getLogger(OATableColumn.class.getName());
     private OATableComponent oaComp;
     public String origPath;
     public String path;
@@ -447,7 +450,8 @@ public class OATableColumn {
                 opp.setup(hubTable.getObjectClass());
             }
             catch (Exception e) {
-                throw new RuntimeException(String.format("could not parse propertyPath=%s, hub=%s",path,hubTable), e);
+                LOG.log(Level.WARNING, String.format("could not parse propertyPath=%s, hub=%s, will use prop=id",path,hubTable), e);
+                path = "id";
             }
             methods = OAReflect.getMethods(hubTable.getObjectClass(), path);
         }

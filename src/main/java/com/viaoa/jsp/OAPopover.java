@@ -37,8 +37,14 @@ public class OAPopover implements OAJspComponent, OAJspRequirementsInterface {
     public OAPopover(String id) {
         this(id, null);
     }
+    public OAPopover() {
+    }
     public OAPopover(String id, Hub hub) {
         this.id = id;
+        this.hub = hub;
+        bOnClick = true;
+    }
+    public OAPopover(Hub hub) {
         this.hub = hub;
         bOnClick = true;
     }
@@ -74,6 +80,10 @@ public class OAPopover implements OAJspComponent, OAJspRequirementsInterface {
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

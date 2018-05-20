@@ -48,8 +48,16 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
     public OAFileInput(String id) {
         super(id);
     }
+    public OAFileInput() {
+        super();
+    }
     public OAFileInput(String id, Hub hub, String propertyPath) {
         super(id, hub);
+        // note: dont send propertyPath to super, since it is used to build the output html
+        setPropertyPath(propertyPath);
+    }
+    public OAFileInput(Hub hub, String propertyPath) {
+        super(hub);
         // note: dont send propertyPath to super, since it is used to build the output html
         setPropertyPath(propertyPath);
     }

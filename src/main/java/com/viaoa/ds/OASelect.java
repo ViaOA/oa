@@ -241,11 +241,16 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
         return clazz;
     }
 
-    /**
-        Where clause to use for query.  See notes at beginning of class.
-    */
     public void setWhere(String s) {
         where = s;
+    }
+    public void setWhere(String s, Object[] params) {
+        where = s;
+        setParams(params);
+    }
+    public void setWhere(String s, Object param) {
+        where = s;
+        setParams(new Object[] {params});
     }
     /**
         Where clause to use for query.  See notes at beginning of class.

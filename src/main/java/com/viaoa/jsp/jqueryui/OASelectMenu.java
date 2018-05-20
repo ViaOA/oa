@@ -67,6 +67,9 @@ public class OASelectMenu implements OAJspComponent, OATableEditor {
         this.propertyPath = propertyPath;
         this.columns = columns;
     }
+    public OASelectMenu(Hub hub, String propertyPath, int columns) {
+        this(null, hub, propertyPath, columns);
+    }
 
     public void setPropertyPath(String pp) {
         this.propertyPath = pp;
@@ -83,6 +86,10 @@ public class OASelectMenu implements OAJspComponent, OATableEditor {
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Hub getHub() {

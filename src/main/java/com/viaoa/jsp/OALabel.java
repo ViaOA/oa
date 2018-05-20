@@ -8,13 +8,28 @@ public class OALabel extends OAHtmlElement {
     public OALabel(String id, Hub hub, String propertyPath, int width) {
         super(id, hub, propertyPath, width);
     }
+    public OALabel(Hub hub, String propertyPath, int width) {
+        super(hub, propertyPath, width);
+    }
+
     public OALabel(String id, Hub hub, String propertyPath) {
         super(id, hub, propertyPath);
     }
+    public OALabel(Hub hub, String propertyPath) {
+        super(hub, propertyPath);
+    }
+
     public OALabel(String id, Hub hub, String propertyPath, int width, int minWidth, int maxRows) {
         super(id, hub, propertyPath, width, minWidth, maxRows);
     }
+    public OALabel(Hub hub, String propertyPath, int width, int minWidth, int maxRows) {
+        super(hub, propertyPath, width, minWidth, maxRows);
+    }
 
+    public OALabel() {
+        super();
+    }
+    
     @Override
     public void setMaxWidth(String val) {
         super.setMaxWidth(val);

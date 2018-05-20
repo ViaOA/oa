@@ -76,6 +76,9 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     public OAList(String id, Hub hub, String propertyPath) {
         this(id, hub, propertyPath, 0, 0);
     }
+    public OAList(Hub hub, String propertyPath) {
+        this(null, hub, propertyPath, 0, 0);
+    }
     public OAList(String id, Hub hub, String propertyPath, int cols, int rows) {
         this.id = id;
         this.hub = hub;
@@ -83,8 +86,20 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         this.columns = cols;
         this.rows = rows;
     }
+    public OAList(Hub hub, String propertyPath, int cols, int rows) {
+        this.hub = hub;
+        setPropertyPath(propertyPath);
+        this.columns = cols;
+        this.rows = rows;
+    }
     public OAList(String id, Hub hub, String propertyPath, String width, String height) {
         this.id = id;
+        this.hub = hub;
+        setPropertyPath(propertyPath);
+        this.width = width;
+        this.maxHeight = height;
+    }
+    public OAList(Hub hub, String propertyPath, String width, String height) {
         this.hub = hub;
         setPropertyPath(propertyPath);
         this.width = width;
@@ -158,6 +173,10 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getPropertyPath() {

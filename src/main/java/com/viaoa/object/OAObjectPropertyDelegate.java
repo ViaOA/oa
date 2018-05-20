@@ -464,14 +464,14 @@ public class OAObjectPropertyDelegate {
             if (!bWaitIfNeeded) return false;
             for (int i=0; ;i++) {
                 if (i >= 20) {  // 2 seconds
-                    String s = "wait time exceeded for lock, obj="+oaObj+", prop="+name+", this.Thread="+Thread.currentThread().getName()+", waiting on Thread="+lock.thread.getName()+" (see next stacktrace), will continue";
-                    LOG.log(OAObject.getDebugMode()?Level.WARNING:Level.FINE, s, new Exception("fyi: wait time exceeded, will continue"));
-
-                    StackTraceElement[] stes = lock.thread.getStackTrace();
-                    Exception ex = new Exception();
-                    ex.setStackTrace(stes);
-                    LOG.log(OAObject.getDebugMode()?Level.WARNING:Level.FINE, "... waiting on this Thread="+lock.thread.getName(), ex);
-
+                    if (OAObject.getDebugMode())  { 
+                        String s = "wait time exceeded for lock, obj="+oaObj+", prop="+name+", this.Thread="+Thread.currentThread().getName()+", waiting on Thread="+lock.thread.getName()+" (see next stacktrace), will continue";
+                        LOG.log(Level.WARNING, s, new Exception("fyi: wait time exceeded, will continue"));
+                        StackTraceElement[] stes = lock.thread.getStackTrace();
+                        Exception ex = new Exception();
+                        ex.setStackTrace(stes);
+                        LOG.log(Level.WARNING, "... waiting on this Thread="+lock.thread.getName(), ex);
+                    }        
                     return false;  // bail out, ouch
                 }
                 if (i == 0) {

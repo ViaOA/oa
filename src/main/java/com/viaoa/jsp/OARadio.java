@@ -39,8 +39,23 @@ public class OARadio extends OACheckBox {
         setGroupName(groupName);
         this.setOnValue(onValue);
     }
+
+    public OARadio(String groupName, Hub hub, String propertyPath, Object onValue) {
+        super(hub, propertyPath);
+        setGroupName(groupName);
+        this.setOnValue(onValue);
+    }
+    public OARadio(Hub hub, String propertyPath, Object onValue) {
+        super(hub, propertyPath);
+        this.setOnValue(onValue);
+    }
+
+    
     public OARadio(String id) {
         super(id);
+    }
+    public OARadio() {
+        super();
     }
 
     @Override

@@ -26,6 +26,7 @@ public interface OAJspComponent extends java.io.Serializable {
 
     boolean isChanged();
     String getId();
+    void setId(String id);
     void reset();
     
     void setForm(OAForm form);

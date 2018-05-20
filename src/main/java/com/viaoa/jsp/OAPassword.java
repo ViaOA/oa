@@ -27,14 +27,32 @@ public class OAPassword extends OATextField {
 //qqqqqqqqq passwords are not encrypted yet        
 //        setConversion('P');
     }
+    public OAPassword(Hub hub, String propertyPath) {
+        super(hub, propertyPath, 0, 0);
+//qqqqqqqqq passwords are not encrypted yet        
+//        setConversion('P');
+    }
     public OAPassword(String id, Hub hub, String propertyPath, int width, int maxWidth) {
         super(id, hub, propertyPath, width, maxWidth);
+//qqqqqqqqq passwords are not encrypted yet        
+//        setConversion('P');
+    }
+    public OAPassword(Hub hub, String propertyPath, int width, int maxWidth) {
+        super(hub, propertyPath, width, maxWidth);
+//qqqqqqqqq passwords are not encrypted yet        
+//        setConversion('P');
+    }
+
+    public OAPassword(Hub hub, String propertyPath, int maxWidth) {
+        super(hub, propertyPath, maxWidth);
 //qqqqqqqqq passwords are not encrypted yet        
 //        setConversion('P');
     }
 
     public OAPassword(String id) {
         super(id);
+    }
+    public OAPassword() {
     }
 
     @Override

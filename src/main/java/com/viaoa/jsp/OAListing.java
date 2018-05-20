@@ -57,6 +57,10 @@ public class OAListing implements OAJspComponent {
         this.hub = hub;
         setPropertyPath(propertyPath);
     }
+    public OAListing(Hub hub, String propertyPath) {
+        this.hub = hub;
+        setPropertyPath(propertyPath);
+    }
     
     public Hub getHub() {
         return hub;
@@ -78,6 +82,10 @@ public class OAListing implements OAJspComponent {
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getPropertyPath() {

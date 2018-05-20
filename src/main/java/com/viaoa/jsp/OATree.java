@@ -59,6 +59,11 @@ public class OATree implements OAJspComponent, OATableEditor, OAJspRequirementsI
         this.propertyPath = propertyPath;
         recursiveLinkInfo = OAObjectInfoDelegate.getRecursiveLinkInfo(OAObjectInfoDelegate.getObjectInfo(hub.getObjectClass()), OALinkInfo.MANY);
     }
+    public OATree(Hub hub, String propertyPath) {
+        this.hub = hub;
+        this.propertyPath = propertyPath;
+        recursiveLinkInfo = OAObjectInfoDelegate.getRecursiveLinkInfo(OAObjectInfoDelegate.getObjectInfo(hub.getObjectClass()), OALinkInfo.MANY);
+    }
 
     public void setPropertyPath(String pp) {
         this.propertyPath = pp;
@@ -89,6 +94,10 @@ public class OATree implements OAJspComponent, OATableEditor, OAJspRequirementsI
     @Override
     public String getId() {
         return id;
+    }
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Hub getHub() {
