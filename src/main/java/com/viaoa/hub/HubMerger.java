@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -83,9 +84,11 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
 
     // used to run onNewList in another thread that can be cancelled
     private final Object lockNewList = new Object();
-    private volatile boolean bRunningNewListThread; 
-    private volatile boolean bNewListCancel;
-    private volatile HubEvent hubEventBackgroundThread;
+    private final AtomicInteger aiNewList = new AtomicInteger();
+    private final AtomicBoolean abNewListWaiting = new AtomicBoolean(false);
+    private volatile MyThread threadNewList;
+    private volatile int currentNewListCnt;
+    
     
     private final int id;
     private static final AtomicInteger aiId = new AtomicInteger();
@@ -879,10 +882,20 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             }
         }
 
+        private boolean shouldQuit() {
+            Thread t = Thread.currentThread();
+            if (t instanceof MyThread) {
+                if (t != threadNewList) return true;
+                if (currentNewListCnt != aiNewList.get()) return true;
+            }
+            return false;
+            
+        }
+        
         void createChildren() {
             if (!bEnabled) return;
-            if (bNewListCancel) return;
-            // XOG.finer("createChildren");
+            
+            if (shouldQuit()) return;
 
             if (node.child != null || node.recursiveChild != null) {
                 try {
@@ -906,7 +919,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                         for (int i=0; ;i++) {
                             OAObject obj = (OAObject) hub.elementAt(i);
                             if (obj == null) break;
-                            if (bNewListCancel) return;
+                            if (shouldQuit()) return;
                             if (node.child != null && node.child.liFromParentToChild != null) {
                                 node.child.liFromParentToChild.getValue(obj);
                             }
@@ -918,7 +931,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                     for (int i=0; ;i++) {
                         OAObject obj = (OAObject) hub.elementAt(i);
                         if (obj == null) break;
-                        if (bNewListCancel) return;
+                        if (shouldQuit()) return;
                         createChild(obj);
                     }
                 }
@@ -934,7 +947,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                             for (int i=0; ;i++) {
                                 OAObject obj = (OAObject) hub.elementAt(i);
                                 if (obj == null) break;
-                                if (bNewListCancel) return;
+                                if (shouldQuit()) return;
                                 if (node.child != null && node.child.liFromParentToChild != null) {
                                     node.child.liFromParentToChild.getValue(obj);
                                 }
@@ -946,7 +959,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                         for (int i = 0;; i++) {
                             OAObject obj = (OAObject) hub.elementAt(i);
                             if (obj == null) break;
-                            if (bNewListCancel) return;
+                            if (shouldQuit()) return;
                             createChild(obj);
                         }
                     }
@@ -1042,7 +1055,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
 
         
         void _createChild(OAObject parent) {
-            if (bNewListCancel) return;
+            if (shouldQuit()) return;
             try {
                 if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
                 _createChild2(parent);
@@ -1126,7 +1139,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         void _createRecursiveChild(OAObject parent) {
             if (!bEnabled) return;
             if (node.recursiveChild == null) return;
-            if (bNewListCancel) return;
+            if (shouldQuit()) return;
 
             boolean bHadCascade;
             if (node.recursiveChild.cascade == null) {
@@ -1430,41 +1443,39 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         }
         
 
+        
         @Override
-        public void onNewList(HubEvent hubEvent) {
+        public void onNewList(final HubEvent hubEvent) {
+            
             if ((hub != hubRoot) || OASync.isServer()) {
                 _onNewList(hubEvent);
             }
             else {
-                synchronized (lockNewList) {
-                    bNewListCancel = true;
-                    hubEventBackgroundThread = hubEvent;
 
-                    if (bRunningNewListThread) return;
-                    bRunningNewListThread = true;
+                if (!abNewListWaiting.compareAndSet(false, true)) return;
+                final int thisNewListCnt = aiNewList.incrementAndGet();
+                
+                synchronized (lockNewList) {
+                    abNewListWaiting.set(false);
                 }
                 
                 getExecutorService().submit(new Runnable() {
                     @Override
                     public void run() {
-                        HubEvent hubEventCurrent;
-                        for (;;) {
-                            synchronized (lockNewList) {
-                                hubEventCurrent = hubEventBackgroundThread;
-                                bNewListCancel = false;
-                            }
+                        synchronized (lockNewList) {
+                            if (thisNewListCnt != aiNewList.get()) return;
+                            threadNewList = (MyThread) Thread.currentThread();
+                            currentNewListCnt = thisNewListCnt; 
                             try {
-                                _onNewList(hubEventCurrent);
+                                _onNewList(hubEvent);
+                                lockNewList.notifyAll();
                             }
                             catch (Exception e) {
                                 LOG.log(Level.WARNING, "exception running onNewList in HubMerger", e);
                             }
-                            
-                            synchronized (lockNewList) {
-                                if (!bNewListCancel) {
-                                    bRunningNewListThread = false;
-                                    lockNewList.notifyAll();
-                                    break;
+                            finally {
+                                if (thisNewListCnt == aiNewList.get()) {
+                                    threadNewList = null;
                                 }
                             }
                         }
@@ -1487,19 +1498,20 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             }
             
             synchronized (lockNewList) {
-                for (int i=0; i<10; i++) {
-                    if (!bRunningNewListThread) break;
-                    if (i > 5) {
+                for (int i=0; i<40; i++) {
+                    if (threadNewList == null) break;
+                    if (i > 20) {
                         LOG.warning("HubMerger lockNewList timeout waiting for HubMerger thread to finish");
                         break;
                     }
                     try {
-                        lockNewList.wait(100);
+                        lockNewList.wait(25);
                     }
                     catch (Exception e) {
                     }
                 }
             }
+            
         }
         
         public void _onNewList(HubEvent e) {
@@ -2000,7 +2012,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             executorService = Executors.newCachedThreadPool(new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable r) {
-                    Thread t = new Thread(r, "HubMerger."+aiThreadCnt.getAndIncrement());
+                    Thread t = new MyThread(r, "HubMerger."+aiThreadCnt.getAndIncrement());
                     t.setDaemon(true);
                     t.setPriority(Thread.MIN_PRIORITY);
                     return t;
@@ -2008,6 +2020,12 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             });
         }
         return executorService;
+    }
+    
+    private static class MyThread extends Thread {
+        public MyThread(Runnable r, String name) {
+            super(r, name);
+        }
     }
     
 }
