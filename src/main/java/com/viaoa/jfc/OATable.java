@@ -301,6 +301,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         try {
             hubAdapter.aiIgnoreValueChanged.incrementAndGet();
             _resetFilters();
+            
         }
         finally {
             hubAdapter.aiIgnoreValueChanged.decrementAndGet();
@@ -316,6 +317,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         else if (tableRight != null && tableRight.hubFilter != null) {
             tableRight.hubFilter.refresh();
         }
+        // 20180521
+        if (hubSelect != null) {
+            hubAdapter.rebuildListSelectionModel();
+        }        
+
         Container cont = getParent();
         for (int i=0; i<3 && cont!=null; i++) {
             cont.repaint();
@@ -1384,12 +1390,15 @@ if (!getKeepSorted()) hub.cancelSort();
                     getSelectionModel().addSelectionInterval(lastMouseDragRow, lastMouseDragRow);
                 }
             }
-
+            else {
+                // 20180521            
+                toggleUsingControlKey = true;            
+            }
             int addColumns = 0;
             if (tableLeft != null) {
                 addColumns = tableLeft.getColumnCount();
             }
-
+/*was
             if ((columnIndex + addColumns) == getColumnIndex(chkSelection)) {
                 if (!extendUsingShiftKey) {
                     if (!bIsProcessKeyBinding) {
@@ -1397,6 +1406,7 @@ if (!getKeepSorted()) hub.cancelSort();
                     }
                 }
             }
+*/            
         }
         try {
             super.changeSelection(rowIndex, columnIndex, toggleUsingControlKey, extendUsingShiftKey);
@@ -2964,8 +2974,19 @@ if (!getKeepSorted()) hub.cancelSort();
             // 20150810
             if (tc.getOATableComponent() == this.chkSelection) {
                 if (isAnySelected()) {
-                    getSelectHub().clear();
-                    getSelectionModel().clearSelection();
+                    // could be filtered
+                    if (hubFilter != null) {
+                        for (Object obj : getSelectHub()) {
+                            if (getHub().contains(obj)) {
+                                getSelectHub().remove(obj);
+                            }
+                        }
+                        hubAdapter.rebuildListSelectionModel();
+                    }
+                    else {
+                        getSelectHub().removeAll();
+                        getSelectionModel().clearSelection();
+                    }
                 }
                 else {
                     Hub h = getHub();
@@ -3468,7 +3489,8 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             return;
         }
         if (hubSelect.getMasterObject() != null) { // 20180225
-            return;
+//qqqqqqqqqqqqq  20180521 need this, ex: Program.ecards = table.hubSelect           
+            // return;
         }
 
         // update hubSelect, to see if objects are in table.hub
@@ -3526,6 +3548,11 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             ListSelectionModel lsm = table.getSelectionModel();
 
             boolean bWasEmpty = hubSelect.getSize() == 0;
+            if (bWasEmpty) {
+                if (row1 == row2) {
+                    bWasEmpty = false;
+                }
+            }
             if (bWasEmpty) OAThreadLocalDelegate.setLoading(true);
             try {
                 for (int i = row1;;) {
@@ -3557,7 +3584,8 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                     HubEventDelegate.fireOnNewListEvent(hubSelect, true);
                 }
             }
-            int newAoPos = getHub().getPos(hubSelect.getAt(hubSelect.size()-1));
+            Object objx = hubSelect.getAt(hubSelect.size()-1);
+            int newAoPos = getHub().getPos(objx);
             //newAoPos = table.getSelectionModel().getLeadSelectionIndex();
             
 // 20171230
@@ -3697,7 +3725,9 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         }
         else {
             // 20151225
-            table.hubSelect.add(getHub().getAO());
+            if (getHub().getAO() != null) {
+                table.hubSelect.add(getHub().getAO());
+            }
 /* 20160516 removed, so that it will add the AO to the selected list, and not replace the selected list.            
             for (Object obj : table.hubSelect) {
                 if (obj != getHub().getAO()) table.hubSelect.remove(obj);
