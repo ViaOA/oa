@@ -1,4 +1,15 @@
 
+My GIT ===========================
+/users/vvia/.gitconfig
+
+[core]
+    autocrlf = input
+    filemode = false
+    safecrlf = true
+
+
+
+
 ICE Git ========================
 
 Have project space created, then create repo
