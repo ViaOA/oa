@@ -35,6 +35,11 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
     private String heading = "";
     public int iDebug;  // used to help with debugging a specific ComboBox
 
+    static {
+        // UIManager.put( "ComboBox.disabledBackground", new Color(212,212,210) );
+        UIManager.put( "ComboBox.disabledForeground", Color.BLACK );        
+    }
+    
     /**
         Create an unbound ComboBox.
     */
