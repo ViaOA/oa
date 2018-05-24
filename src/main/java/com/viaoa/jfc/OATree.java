@@ -1718,8 +1718,8 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         HashSet<Hub> hsUpdateHub = new HashSet<Hub>(); // hubs that get updated
         
         for (int i = 1; i<lastSelection.length; i++) {
-            OATreeNodeData tnd = (OATreeNodeData) lastSelection[i];
-            boolean bLastNode = (i == lastSelection.length - 1);
+            final OATreeNodeData tnd = (OATreeNodeData) lastSelection[i];
+            final boolean bLastNode = (i == lastSelection.length - 1);
             
             // 20120228 if titleNode is selected, then find first child node to display
             OATreeNode tnUse = tnd.node;
@@ -1781,7 +1781,8 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                 if (bLastNode || tndUse.node.def.updateHub.getActiveObject() != tndUse.object) {
                     // 20120228 if selected treeNodeTitle, then tnd.object will be null - set AO=null
                     if (bLastNode) {
-                        HubAODelegate.setActiveObjectForce(tndUse.node.def.updateHub, tndUse.object);
+                        if (tnd.node instanceof OATreeTitleNode) HubAODelegate.setActiveObjectForce(tndUse.node.def.updateHub, null); 
+                        else HubAODelegate.setActiveObjectForce(tndUse.node.def.updateHub, tndUse.object);
                     }
                     else {
                         // update this node, only if none of the other nodes are using the same updateHub
