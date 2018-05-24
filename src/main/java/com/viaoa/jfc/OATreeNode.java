@@ -280,6 +280,10 @@ public class OATreeNode implements Cloneable {
                 public void afterInsert(HubEvent e) {
                     def.tree.repaint();
                 }
+                @Override
+                public void onNewList(HubEvent e) {
+                    def.tree.repaint();
+                }
             };
             hub.addHubListener(hlSelected);
         }
@@ -840,6 +844,12 @@ public class OATreeNode implements Cloneable {
             node.def = origNode.def;
             node.bRecursive = true;
             node.fullPath = propertyPath;
+        }
+        else {
+            if (node.hub != null && node.def.updateHub == null && !(this instanceof OATreeTitleNode)) {  // 20180522 node was created with OATreeNode(String path, Hub hub), need to use hub as updateHub
+                node.def.updateHub = node.hub;
+                node.hub = null;
+            }
         }
 
         int x = def.treeNodeChildren.length;
