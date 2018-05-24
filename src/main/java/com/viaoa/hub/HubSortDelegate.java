@@ -57,7 +57,9 @@ public class HubSortDelegate {
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
 
         if (comp != null && !(comp instanceof Serializable)) {
-            throw new RuntimeException("comparator is not Serializable");
+            if (thisHub.getMasterObject() != null) {
+                throw new RuntimeException("comparator is not Serializable");
+            }
         }
         
         boolean bSame = false;
