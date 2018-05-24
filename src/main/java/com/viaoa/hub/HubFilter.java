@@ -817,6 +817,27 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             HubFilter.this.afterRemoveFromFilteredHub(obj);
         }
     }
+    /**
+     * Called when an object is removed from the filtered Hub directly.
+     * This is used by HubCopy to then remove the object from the Master Hub.
+     * By default, this does nothing (it does not remove from hubMaster)
+     */
+    protected void afterRemoveFromFilteredHub(T obj) {
+    }
+
+    @Override
+    public void afterRemoveAll(HubEvent<T> e) {
+        if (aiClearing.get() == 0) {
+            afterRemoveAllFromFilteredHub();
+        }
+    }
+    /**
+     * Called when all objects are removed from the filtered Hub directly.
+     * This is used by HubCopy.
+     */
+    protected void afterRemoveAllFromFilteredHub() {
+    }
+    
     
     @Override
     public void afterChangeActiveObject(HubEvent<T> e) {
@@ -830,15 +851,6 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         }
     }
     
-    /**
-     * Called when an object is removed from the filtered Hub directly.
-     * This is used by HubCopy to then remove the object from the Master Hub.
-     * By default, this does nothing (it does not remove from hubMaster)
-     * @param obj
-     */
-    protected void afterRemoveFromFilteredHub(T obj) {
-    }
-
 
     private ArrayList<OAFilter> alFilters;
     private int iBlockPos = -1;

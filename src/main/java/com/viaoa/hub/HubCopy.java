@@ -32,4 +32,24 @@ public class HubCopy<T extends OAObject> extends HubFilter<T> {
 	public boolean isUsed(T object) {
 	    return true;
 	}
+	
+    @Override
+    public void afterRemoveAllFromFilteredHub() {
+        if (hubMaster != null) {
+            hubMaster.removeAll();
+        }
+    }
+    
+    @Override
+    public void onNewList(HubEvent<T> e) {
+        if (hubMaster != null) {
+            Hub h = weakHub.get();
+            if (h != null) {
+                for (Object obj : h) {
+                    hubMaster.add((T) obj);
+                };
+            }
+        }
+    }
+	
 }
