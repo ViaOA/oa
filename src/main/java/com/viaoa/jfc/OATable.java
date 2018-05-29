@@ -1352,6 +1352,7 @@ if (!getKeepSorted()) hub.cancelSort();
         if (x == 0) return false;
         if (getHub().getSize() > x) return false;
         
+        if (getHub().size() == 0) return false;
         for (Object obj : getHub()) {
             if (!h.contains(obj)) return false;
         }
@@ -3508,8 +3509,9 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 if (h == null && table.tableRight != null) h = table.tableRight.hubFilterMaster;
                 if (h != null) pos = h.indexOf(obj);
                 if (pos < 0) {
-                    hubSelect.removeAt(i);
-                    i--;
+// 20180525 other components (ex: treeNode) could be adding to the hubSelect                    
+//                    hubSelect.removeAt(i);
+//                    i--;
                 }
             }
             else {

@@ -100,8 +100,10 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         return d;
     }
     
-    boolean bRemoved;     
-    public void addNotify() {
+    boolean bRemoved;
+    
+// 20180526 replaced with OASplitPane    
+    public void XX_addNotify() {
         super.addNotify();
         if (bRemoved) control.setHub(control.getHub());
         

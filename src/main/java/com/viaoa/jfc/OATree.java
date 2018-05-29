@@ -17,7 +17,6 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.lang.reflect.*;
 import java.io.IOException;
 
 import javax.swing.*;
@@ -25,15 +24,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 
-import sun.swing.SwingUtilities2;
-
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.dnd.OATransferable;
 import com.viaoa.util.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.tree.*;
-import com.viaoa.jfc.table.*;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 
@@ -1006,11 +1002,13 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                 });
             }
         }
-        addNotify2();
+// 20180526 replaced with OASplitPane        
+//        addNotify2();
     }
 
     // 20120711 need to set divider if in a splitpane
     public void addNotify2() {
+// 20180526 not called, replaced with OASplitPane        
         Dimension d = this.getPreferredSize();
         if (d == null) return;
         

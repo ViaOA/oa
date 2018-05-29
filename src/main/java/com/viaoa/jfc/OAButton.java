@@ -93,6 +93,9 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     public OAButton(Hub hub, String text, Icon icon, ButtonEnabledMode enabledMode, ButtonCommand command) {
         this(hub, text, icon, enabledMode, command, true);
     }
+    public OAButton(Hub hub, String text, ButtonEnabledMode enabledMode, ButtonCommand command) {
+        this(hub, text, null, enabledMode, command, true);
+    }
     public OAButton(Hub hub, String text, Icon icon, ButtonEnabledMode enabledMode, ButtonCommand command, boolean bCallSetup) {
         if (text != null) setText(text);
         if (icon != null) setIcon(icon);

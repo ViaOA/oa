@@ -217,6 +217,10 @@ public class JFCController extends HubListenerAdapter {
         
         actualHub.removeHubListener(this);
 
+        if (hubMultiSelect != null) {
+            hubMultiSelect.removeHubListener(this);
+        }
+        
         String temp = null;
         if (propertyPathFromActualHub != null && propertyPathFromActualHub.indexOf('.') >= 0) {
             temp = propertyPathFromActualHub;
@@ -248,6 +252,9 @@ public class JFCController extends HubListenerAdapter {
                 hub.addHubListener(this, hubListenerPropertyName, props);
                 break;
             }
+        }
+        if (hubMultiSelect != null) {
+            hubMultiSelect.addHubListener(this);
         }
     }
 
@@ -326,7 +333,9 @@ public class JFCController extends HubListenerAdapter {
         Sets the MultiSelect that this component will work with. 
     */
     public void setMultiSelectHub(Hub newHub) {
+        if (hubMultiSelect != null) hubMultiSelect.removeHubListener(this);
         this.hubMultiSelect = newHub;
+        resetHubOrProperty();
     }
     /**
         Returns the Hub that this component will work with. 

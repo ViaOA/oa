@@ -256,11 +256,6 @@ public class ButtonController extends JFCController implements ActionListener {
         getVisibleController().update();
         update();
     }
-    
-    protected void resetHubOrProperty() { // called when Hub or PropertyName is changed
-        super.resetHubOrProperty();
-        if (button != null) create(button, enabledMode, command);
-    }
 
     /**
         Return actionListener and close.
@@ -268,7 +263,6 @@ public class ButtonController extends JFCController implements ActionListener {
     public void close() {
         if (button != null) button.removeActionListener(this);
 
-        // 20110111
         if (flavorListener != null) {
             Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
             cb.removeFlavorListener(flavorListener);
@@ -1372,7 +1366,7 @@ public class ButtonController extends JFCController implements ActionListener {
                 }
                 break;
             case Remove:
-                flag = obj != null;
+                flag = (obj != null) || (hubMultiSelect != null && hubMultiSelect.size() > 0);
                 if (flag && !HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
                     flag = false;
                 }
