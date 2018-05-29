@@ -847,8 +847,10 @@ public class OATreeNode implements Cloneable {
         }
         else {
             if (node.hub != null && node.def.updateHub == null && !(this instanceof OATreeTitleNode)) {  // 20180522 node was created with OATreeNode(String path, Hub hub), need to use hub as updateHub
-                node.def.updateHub = node.hub;
-                node.hub = null;
+                if (this.hub != null) {
+                    node.def.updateHub = node.hub;
+                    node.hub = null;
+                }
             }
         }
 
