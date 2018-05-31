@@ -60,11 +60,16 @@ public class HubListenerTree {
         */
         Object[] getRootValues(Object obj) {
             // 20171212 reworked to include option to use a finder
-            long ts = System.currentTimeMillis();//qqqq
-            
+            long ts = System.currentTimeMillis();//qqqqqqqq
             String spp = null;
             HubListenerTreeNode tn = this;
-            for ( ;tn != null; ) {
+            for ( ;tn != null && tn.parent != null; ) {
+                // 20180531
+                if (tn.liReverse == null) {
+                    Class c = tn.parent.hub.getObjectClass();
+                    OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(c, tn.property);
+                    tn.liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                }
                 if (tn.liReverse == null || tn.liReverse.getReverseLinkInfo() == null) {
                     spp = null;
                     break;
@@ -93,7 +98,7 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
     java.lang.Exception: Found HubListenerTree issue qqqqqq
      */
 }
-                        if (li.getReverseLinkInfo().getType() == OALinkInfo.TYPE_ONE) {
+                        if (li.getType() == OALinkInfo.TYPE_MANY) {
                             bUseOrig = true;
                             break;
                         }
@@ -102,7 +107,9 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
             }
             
             Object[] objs;
-            if (bUseOrig) objs = getRootValues_ORIG(obj, (spp != null));
+            if (bUseOrig) {
+                objs = getRootValues_ORIG(obj, (spp != null));
+            }
             else objs = null;
             
             if (objs == null && spp != null) {

@@ -439,7 +439,9 @@ public class OAObject implements java.io.Serializable, Comparable {
             boolean bOld = changedFlag;
             OAObjectEventDelegate.fireBeforePropertyChange(this, OAObjectDelegate.WORD_Changed, 
                     bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, 
-                            tf?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, false, false);
+                            tf?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, 
+                                    tf,  // local only  20150530 was: "false", now only sending if changed=false 
+                                    false);
             changedFlag = tf;
         	OAObjectEventDelegate.firePropertyChange(this, OAObjectDelegate.WORD_Changed, 
         	        bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, 
@@ -448,6 +450,24 @@ public class OAObject implements java.io.Serializable, Comparable {
             // 20141030
             if (changedFlag) {
                 OAObjectPropertyDelegate.setReferenceable(this, true);
+
+                // 20180520 notify owner
+                WeakReference<Hub<?>>[] refs = OAObjectHubDelegate.getHubReferencesNoCopy(this);
+                if (refs != null) {
+                    for (WeakReference wr : refs) {
+                        if (wr == null) continue;
+                        Hub hx = (Hub) wr.get();
+                        if (hx == null) continue;
+
+                        OAObject obj = hx.getMasterObject();
+                        if (obj != null) {
+                            OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(hx);
+                            if (li != null && (li.getCascadeSave() || li.getOwner())) {
+                                obj.setChanged(true);
+                            }
+                        }
+                    }
+                }
             }
         }
     }

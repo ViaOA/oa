@@ -132,11 +132,14 @@ public class OAHTMLConverter {
         return s;
     }
 
-    /*
-     * set a property, that is then referenced using <%=$name%> in the html.
+    /**
+     * Set a property, that is then referenced using <%=$name%> in the html.
+     * @param name name used in html tag, without the '$' prefix.  Note: it will remove '$' prefix if it is included.
      */
     public void setProperty(String name, Object value) {
         if (name == null) return;
+        if (name.startsWith("$")) name = name.substring(1);
+        
         if (propInternal == null) propInternal = new Properties();
         if (value == null) propInternal.remove(name);
         else propInternal.put(name, value);
@@ -762,7 +765,6 @@ public class OAHTMLConverter {
                         if (objx != null) result = objx.toString();
                     }
                 }
-
             }
             else {
                 if (props != null) result = props.getString(propertyName);

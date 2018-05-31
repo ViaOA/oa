@@ -235,14 +235,24 @@ public class JFCController extends HubListenerAdapter {
             temp
         };
         hubListenerPropertyName = propertyPathFromActualHub;
+// 20180531        
+/*was        
         int pos = hubListenerPropertyName==null ? -1 : hubListenerPropertyName.lastIndexOf('.');
         if (pos >= 0) {
             hubListenerPropertyName = hubListenerPropertyName.substring(pos+1);
         }
+*/        
         if (actualHub == hub) {
+            hubListenerPropertyName = hubListenerPropertyName.replace('.', '_');
             actualHub.addHubListener(this, hubListenerPropertyName, props, true);
         }
         else {
+            // 20180531
+            int pos = hubListenerPropertyName==null ? -1 : hubListenerPropertyName.lastIndexOf('.');
+            if (pos >= 0) {
+                hubListenerPropertyName = hubListenerPropertyName.substring(pos+1);
+            }
+            
             // listener for property change
             actualHub.addHubListener(this, hubListenerPropertyName);
             
@@ -733,12 +743,12 @@ public class JFCController extends HubListenerAdapter {
         if (!(obj instanceof OAObject)) return false;
         
         if (methodsFromActualHub.length == 1) {
-            return OAObjectReflectDelegate.getPrimitiveNull((OAObject)obj, hubListenerPropertyName);
+            return OAObjectReflectDelegate.getPrimitiveNull((OAObject)obj, propertyPath);
         }
         
         obj = OAReflect.getPropertyValue(obj, methodsFromActualHub, methodsFromActualHub.length-1);
         if (!(obj instanceof OAObject)) return false;
-        return OAObjectReflectDelegate.getPrimitiveNull((OAObject)obj, hubListenerPropertyName);
+        return OAObjectReflectDelegate.getPrimitiveNull((OAObject)obj, propertyPath);
     }
     
     
@@ -869,7 +879,11 @@ public class JFCController extends HubListenerAdapter {
         // was: if (value == null) {
             Class c = OAReflect.getClass(getLastMethod());
             if (c.isPrimitive() && obj instanceof OAObject) {
-                ((OAObject) obj).setNull(hubListenerPropertyName);
+                if (methodSet != null) {
+                    String s = methodSet.getName();
+                    if (s.startsWith("set")) s = s.substring(3);
+                    ((OAObject) obj).setNull(s);
+                }
             }
         }
     }

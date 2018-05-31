@@ -55,14 +55,28 @@ public class HubDataDelegate {
 		thisHub.data.vector.trimToSize();
 	}
 
-	protected static void setChanged(Hub thisHub, boolean b) {
+	protected static void setChanged(Hub thisHub, boolean bChanged) {
 	    if (thisHub == null) return;
         boolean old = thisHub.data.changed;
-        if (b == old) return;
-        thisHub.data.changed = b;
-        if (b != old) thisHub.data.changeCount++;
-        if (!b) {
+        if (bChanged == old) return;
+        thisHub.data.changed = bChanged;
+        if (bChanged != old) thisHub.data.changeCount++;
+        if (!bChanged) {
             clearHubChanges(thisHub);
+        }
+        else {  // 20180529 if changed, then masterObject needs to be flagged as changed
+            OAObject obj = thisHub.getMasterObject();
+            if (obj != null) {
+                OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(thisHub);
+                if (li != null && (li.getType() == li.MANY)) {
+                    boolean bx = (li.getOwner() || li.getCascadeSave());
+                    if (!bx) { 
+                        OALinkInfo rli = li.getReverseLinkInfo();
+                        bx = (rli != null && rli.getType() == li.MANY);
+                    }
+                    if (bx) obj.setChanged(true);
+                }
+            }
         }
     }
 	
@@ -81,9 +95,22 @@ public class HubDataDelegate {
                 bSendEvent = bSendEvent || v.size() > 0;
                 v.removeAllElements();
             }
-            // 20160407
+            
             if (thisHub.data.hubDatax != null) {
-                if (!thisHub.data.hubDatax.isNeeded()) thisHub.data.hubDatax = null;
+                if (!thisHub.data.hubDatax.isNeeded()) {
+                    thisHub.data.hubDatax = null;
+                }
+                if (thisHub.data.changed) {
+                    boolean b = (thisHub.data.hubDatax == null);
+                    if (!b) {
+                        b = (thisHub.data.hubDatax.vecAdd == null || thisHub.data.hubDatax.vecAdd.size() == 0);
+                        b &= (thisHub.data.hubDatax.vecRemove == null || thisHub.data.hubDatax.vecRemove.size() == 0);
+                    }
+                    if (b) {
+                        thisHub.data.changed = false;
+                        thisHub.data.changeCount++;
+                    }
+                }
             }
         }
         if (bSendEvent) {
@@ -514,9 +541,21 @@ public class HubDataDelegate {
             if (thisHub.data.hubDatax == null) return;
 	    	Vector v = thisHub.data.getVecAdd();
 	    	if (v != null) v.remove(obj);
-            // 20160407
             if (thisHub.data.hubDatax != null) {
-                if (!thisHub.data.hubDatax.isNeeded()) thisHub.data.hubDatax = null;
+                if (!thisHub.data.hubDatax.isNeeded()) {
+                    thisHub.data.hubDatax = null;
+                }
+                if (thisHub.data.changed) {
+                    boolean b = (thisHub.data.hubDatax == null);
+                    if (!b) {
+                        b = (thisHub.data.hubDatax.vecAdd == null || thisHub.data.hubDatax.vecAdd.size() == 0);
+                        b &= (thisHub.data.hubDatax.vecRemove == null || thisHub.data.hubDatax.vecRemove.size() == 0);
+                    }
+                    if (b) {
+                        thisHub.data.changed = false;
+                        thisHub.data.changeCount++;
+                    }
+                }
             }
 	    }
 	}
@@ -525,9 +564,21 @@ public class HubDataDelegate {
 	    synchronized (thisHub.data) {
 	    	Vector v = thisHub.data.getVecRemove();
 	    	if (v != null) v.remove(obj);
-            // 20160407
             if (thisHub.data.hubDatax != null) {
-                if (!thisHub.data.hubDatax.isNeeded()) thisHub.data.hubDatax = null;
+                if (!thisHub.data.hubDatax.isNeeded()) {
+                    thisHub.data.hubDatax = null;
+                }
+                if (thisHub.data.changed) {
+                    boolean b = (thisHub.data.hubDatax == null);
+                    if (!b) {
+                        b = (thisHub.data.hubDatax.vecAdd == null || thisHub.data.hubDatax.vecAdd.size() == 0);
+                        b &= (thisHub.data.hubDatax.vecRemove == null || thisHub.data.hubDatax.vecRemove.size() == 0);
+                    }
+                    if (b) {
+                        thisHub.data.changed = false;
+                        thisHub.data.changeCount++;
+                    }
+                }
             }
 	    }
 	}

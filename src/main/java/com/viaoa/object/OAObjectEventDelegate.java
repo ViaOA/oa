@@ -29,6 +29,7 @@ import com.viaoa.util.OAFilter;
 import com.viaoa.util.OANotExist;
 import com.viaoa.util.OANullObject;
 import com.viaoa.util.OAString;
+import com.viaoa.util.OAThrottle;
 
 
 public class OAObjectEventDelegate {
@@ -129,13 +130,15 @@ public class OAObjectEventDelegate {
         if (!OAThreadLocalDelegate.isDeleting() && OASync.isServer()) {
             OAObjectInfo oix = OAObjectInfoDelegate.getOAObjectInfo((OAObject)oldObj);
             if (!oix.getLookup() && !oix.getPreSelect()) {
-                String s = "FYI (no exception), reference is being set to null, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj+", old value="+oldObj;
-                RuntimeException e = new RuntimeException(s);
-                LOG.log(Level.FINE, s, e);
+                cntSetOwnerNull++;
+                if (throttleSetOwnerNull.check()) {
+                    String s = "FYI (no exception), reference is being set to null, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj+", old value="+oldObj;
+                    RuntimeException e = new RuntimeException(s);
+                    LOG.log(Level.FINE, "cnt="+(cntSetOwnerNull)+" " + s, e);
+                }
             }
         }
     }
-        
         
         
         if (linkInfo == null && !OARemoteThreadDelegate.isRemoteThread()) {
@@ -200,7 +203,9 @@ public class OAObjectEventDelegate {
         }
 	}
 	
-	
+	//qqqqqq
+	private static final OAThrottle throttleSetOwnerNull = new OAThrottle(500);
+	private static int cntSetOwnerNull;
 	
 	
 

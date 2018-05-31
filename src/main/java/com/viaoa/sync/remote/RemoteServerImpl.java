@@ -45,6 +45,7 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
 
     @Override
     public boolean save(Class objectClass, OAObjectKey objectKey, int iCascadeRule) {
+        boolean bPrev = OAThreadLocalDelegate.setSendMessages(true);
         OAObject obj = OAObjectCacheDelegate.getObject(objectClass, objectKey);
         boolean bResult;
         if (obj != null) {
@@ -52,6 +53,8 @@ public abstract class RemoteServerImpl implements RemoteServerInterface {
             bResult = true;
         }
         else bResult = false;
+        
+        OAThreadLocalDelegate.setSendMessages(bPrev);
         return bResult;
     }
 

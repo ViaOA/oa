@@ -528,6 +528,11 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         
         return template;
     }
+    
+    /**
+     * This should not be called directly, instead use setHtmlTemplate, 
+     * so that OAGrid will then create an OATemplate for it and manage it, along with calling callback getTemplateValue(obj, prop ...) 
+     */
     public void setTemplate(OATemplate temp) {
         this.template = temp;
     }

@@ -157,7 +157,20 @@ public class HubData implements java.io.Serializable {
         if (hubDatax != null || select != null) {
             getHubDatax().select = select;
             if (select == null) {
-                if (!hubDatax.isNeeded()) hubDatax = null;
+                if (!hubDatax.isNeeded()) {
+                    hubDatax = null;
+                }
+                if (changed) {
+                    boolean b = (hubDatax == null);
+                    if (!b) {
+                        b = (hubDatax.vecAdd == null || hubDatax.vecAdd.size() == 0);
+                        b &= (hubDatax.vecRemove == null || hubDatax.vecRemove.size() == 0);
+                    }
+                    if (b) {
+                        changed = false;
+                        changeCount++;
+                    }
+                }
             }
         }
     }
