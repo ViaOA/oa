@@ -27,8 +27,8 @@ public class OAConnection {
     protected Connection connection;
     protected Vector<Pool> vecStatement = new Vector<Pool>(5,5);
     protected Vector<PreparedStatement> vecUsedPreparedStatement = new Vector<PreparedStatement>(5,5);
-    protected boolean bAvailable;
-    protected boolean bGettingStatement;
+    protected volatile boolean bAvailable;
+    protected volatile boolean bGettingStatement;
     
     private ConcurrentHashMap<String, ArrayList<PreparedStatement>> hmSqlToPreparedStatements = new ConcurrentHashMap<String, ArrayList<PreparedStatement>>();
     private ConcurrentHashMap<PreparedStatement, String> hmPreparedStatementToSql = new ConcurrentHashMap<PreparedStatement, String>();
