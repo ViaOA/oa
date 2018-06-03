@@ -20,6 +20,7 @@ package com.viaoa.ds.jdbc.delegate;
 import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -527,5 +528,108 @@ public class SelectDelegate {
         }
         return result;
     }
+    
+    
+    /**
+     * 20180602 select Link table. 
+     */
+    public static ArrayList<ManyToMany> getManyToMany(OADataSourceJDBC ds, OALinkInfo linkInfo) {
+        if (linkInfo == null) return null;
+        
+        OALinkInfo revLinkInfo = linkInfo.getReverseLinkInfo();
+        
+        if (linkInfo.getType() != OALinkInfo.MANY) return null;
+        if (revLinkInfo.getType() != OALinkInfo.MANY) return null;
+        
+        Class classFrom = revLinkInfo.getToClass();
+        Class classTo = linkInfo.getToClass();
+        
+        // Note: this assumes that fkeys are only one column
+
+        DBMetaData dbmd = ds.getDBMetaData();
+        Table linkTable = null;
+
+        Table fromTable = ds.getDatabase().getTable(classFrom);
+        if (fromTable == null) return null;
+        Link[] fromTableLinks = fromTable.getLinks();
+        if (fromTableLinks == null) return null;
+        Column[] fromFKeys = null;
+
+        for (int i=0; i < fromTableLinks.length; i++) {
+            if (!fromTableLinks[i].toTable.bLink) continue;
+            if (!fromTableLinks[i].propertyName.equalsIgnoreCase(linkInfo.getName())) continue;
+            linkTable = fromTableLinks[i].toTable;
+            fromFKeys = fromTableLinks[i].fkeys;
+            break;
+        }
+        if (linkTable == null) return null;
+        if (fromFKeys == null) return null;
+
+        fromTableLinks = linkTable.getLinks();
+        if (fromTableLinks == null) return null;
+        Column[] linkTableFromFKeys = null;
+        for (int i=0; i < fromTableLinks.length; i++) {
+            if (fromTableLinks[i].toTable == fromTable) {
+                linkTableFromFKeys = fromTableLinks[i].fkeys;
+                break;
+            }
+        }
+        if (linkTableFromFKeys == null) return null;
+
+        Table toTable = ds.getDatabase().getTable(classTo);
+        if (toTable == null) return null;
+        Link[] toTableLinks = toTable.getLinks();
+        if (toTableLinks == null) return null;
+        Column[] toFKeys = null;
+
+        for (int i=0; i < toTableLinks.length; i++) {
+            if (!toTableLinks[i].toTable.bLink) continue;
+            if (!toTableLinks[i].propertyName.equalsIgnoreCase(revLinkInfo.getName())) continue;
+            linkTable = toTableLinks[i].toTable;
+            toFKeys = toTableLinks[i].fkeys;
+            break;
+        }
+        if (toFKeys == null) return null;
+
+        toTableLinks = linkTable.getLinks();
+        if (toTableLinks == null) return null;
+        Column[] linkTableToFKeys = null;
+        for (int i=0; i < toTableLinks.length; i++) {
+            if (toTableLinks[i].toTable == toTable && linkTableFromFKeys != toTableLinks[i].fkeys) {
+                linkTableToFKeys = toTableLinks[i].fkeys;
+                break;
+            }
+        }
+        if (linkTableToFKeys == null) return null;
+
+        
+        String query = "SELECT ";
+        query += linkTableFromFKeys[0].columnName;
+        query += ", " + linkTableToFKeys[0].columnName;
+        query += " FROM " + linkTable.name;
+        
+        
+        ArrayList<ManyToMany> al = null;
+        Statement st = null;
+        try {
+            st = ds.getStatement(query);
+            ResultSet rs = st.executeQuery(query);
+
+            al = new ArrayList<>();            
+            while ( rs.next() ) { 
+                OAObjectKey ok1 = new OAObjectKey(rs.getInt(1));
+                OAObjectKey ok2 = new OAObjectKey(rs.getInt(2));
+                al.add(new ManyToMany(ok1, ok2));
+            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException("OADataSourceJDBC.execute() " + query, e);
+        }
+        finally {
+            if (st != null) ds.releaseStatement(st);
+        }
+        return al;
+    }
+
 }
 
