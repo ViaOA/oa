@@ -406,6 +406,15 @@ public class OADataSourceJDBC extends OADataSource {
         super.setGuid(guid);
         getDBMetaData().guid = guid;
     }
+
+    /**
+     * Select the objectKeys from a link table.
+     */
+    public ArrayList<ManyToMany> getManyToMany(OALinkInfo linkInfo) {
+        if (linkInfo == null) return null;
+        ArrayList<ManyToMany> al = SelectDelegate.getManyToMany(this, linkInfo);
+        return al;
+    }
     
 }
 
