@@ -462,25 +462,29 @@ public class OAObjectPropertyDelegate {
         synchronized (lock) {
             if (lock.thread == Thread.currentThread()) return bCheckIfThisThread;
             if (!bWaitIfNeeded) return false;
+            long ms = 0;
             for (int i=0; ;i++) {
-                if (i >= 20) {  // 2 seconds
-                    if (OAObject.getDebugMode())  { 
-                        String s = "wait time exceeded for lock, obj="+oaObj+", prop="+name+", this.Thread="+Thread.currentThread().getName()+", waiting on Thread="+lock.thread.getName()+" (see next stacktrace), will continue";
-                        LOG.log(Level.WARNING, s, new Exception("fyi: wait time exceeded, will continue"));
-                        StackTraceElement[] stes = lock.thread.getStackTrace();
-                        Exception ex = new Exception();
-                        ex.setStackTrace(stes);
-                        LOG.log(Level.WARNING, "... waiting on this Thread="+lock.thread.getName(), ex);
-                    }        
-                    return false;  // bail out, ouch
-                }
                 if (i == 0) {
                     OARemoteThreadDelegate.startNextThread();
+                }
+                else if (i > 5) {
+                    if (ms == 0) ms = System.currentTimeMillis();
+                    else if (System.currentTimeMillis() - ms > 1000) {
+                        if (OAObject.getDebugMode())  { 
+                            String s = "wait time exceeded for lock, obj="+oaObj+", prop="+name+", this.Thread="+Thread.currentThread().getName()+", waiting on Thread="+lock.thread.getName()+" (see next stacktrace), will continue";
+                            LOG.log(Level.WARNING, s, new Exception("fyi: wait time exceeded, will continue"));
+                            StackTraceElement[] stes = lock.thread.getStackTrace();
+                            Exception ex = new Exception();
+                            ex.setStackTrace(stes);
+                            LOG.log(Level.WARNING, "... waiting on this Thread="+lock.thread.getName(), ex);
+                        }        
+                        return false;  // bail out, ouch
+                    }
                 }
                 if (lock.done) break;
                 lock.hasWait = true;
                 try {
-                    lock.wait(100); 
+                    lock.wait(50); 
                 }
                 catch (Exception e) {
                 }
