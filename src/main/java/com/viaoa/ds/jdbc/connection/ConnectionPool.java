@@ -11,6 +11,7 @@
 package com.viaoa.ds.jdbc.connection;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -188,6 +189,8 @@ public class ConnectionPool implements Runnable {
     }
 
     
+    private final AtomicInteger aiGetConnection = new AtomicInteger();
+    private int cntCreateConnection;
     protected OAConnection getOAConnection(boolean bForStatement, boolean bExclusive) throws Exception {
         OATransaction tran = OAThreadLocalDelegate.getTransaction();
 
@@ -201,8 +204,12 @@ public class ConnectionPool implements Runnable {
         
         try {
             lock.lock();
+         
+            final int max = alOAConnection.size();
+            final int spos = aiGetConnection.getAndIncrement();
             
-            for (OAConnection conx : alOAConnection) {
+            for (int i=0; i<max; i++) {
+                OAConnection conx = alOAConnection.get( (spos+i)%max );
                 if (!conx.bAvailable) continue;
                 int used = conx.getTotalUsed(); 
                 if (bExclusive) {
@@ -214,7 +221,7 @@ public class ConnectionPool implements Runnable {
                 }
             }
 
-            boolean bMaxed = (alOAConnection.size() >= dbmd.maxConnections);
+            boolean bMaxed = ((alOAConnection.size()+cntCreateConnection) >= dbmd.maxConnections);
             if (con != null) {
                 int used = con.getTotalUsed(); 
                 if (used > 0 && !bMaxed) {
@@ -230,10 +237,10 @@ public class ConnectionPool implements Runnable {
             }
         }
         finally {
+            if (con == null) cntCreateConnection++;
             lock.unlock();
         }
 
-        
         if (con == null) {
             con = createNewOAConnection();
             try {
@@ -243,6 +250,7 @@ public class ConnectionPool implements Runnable {
                 alOAConnection.add(con);
             }
             finally {
+                cntCreateConnection--;
                 lock.unlock();
             }
         }
@@ -288,14 +296,14 @@ public class ConnectionPool implements Runnable {
     }
     
     protected OAConnection getStatementConnection() throws Exception {
-        for (int i=0; i<100; i++) {
+        for (int i=0; ; i++) {
             OAConnection c = getOAConnection(true, false);
             if (c != null) {
                 return c;
             }
             Thread.sleep(2);
         }
-        return null;
+        // return null;
     }
         
     
