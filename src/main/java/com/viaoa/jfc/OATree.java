@@ -2023,5 +2023,36 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         return super.removeDescendantSelectedPaths(path, includePath);
     }
     
+    // 20180601
+    public void preload() {
+        try {
+            preload(root, null, 0, "");
+        }
+        catch (Exception e) {
+            System.out.println("preload exception: "+e);
+            e.printStackTrace();
+        }
+    }
+    protected void preload(final OATreeNode treeNode, final Hub hub, final int amt, final String ppPrefix) {
+        if (amt > 5) return;
+        if (treeNode == null) return;
+        if (treeNode.getChildrenTreeNodes() == null) return;
+        
+        for (OATreeNode tn : treeNode.getChildrenTreeNodes()) {
+            if (tn == treeNode) continue; 
+            if (hub != null) {
+                String pp = tn.fullPath;
+                if (OAString.isNotEmpty(pp) && pp.indexOf('.') > 0) {
+                    pp = OAString.field(pp, '.', 1);
+                    OAFinder finder = new OAFinder(hub, ppPrefix+pp);
+                    finder.find();
+                    preload(tn, hub, amt+1, ppPrefix+pp+".");
+                }
+            }
+            else {
+                preload(tn, tn.hub, amt+1, ppPrefix);
+            }
+        }
+    }
     
 }
