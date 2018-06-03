@@ -136,26 +136,38 @@ public class ResultSetIterator implements OADataSourceIterator {
         return this.bDirty;
     }
     
-    
     protected synchronized void init() {
         if (bInit) return;
         bInit = true;
 
-        if (throttle.check()) {
+        long ts = System.currentTimeMillis();
+        _init();
+        long msDiff = System.currentTimeMillis() - ts;
+        
+        if (throttle.check() || msDiff > 3000) {
             String s = query;
-            int pos = s.toUpperCase().indexOf("FROM");
-            if (pos > 0) s = s.substring(pos);
+            int pos = s.toUpperCase().indexOf(" FROM ");
+            if (pos > 0) s = s.substring(pos+1);
             
             pos = s.toUpperCase().indexOf("PASSWORD");
             if (pos > 0) s = s.substring(0, pos) + "****";
             
             s = throttle.getCheckCount()+") ResultSetIterator: query="+s;
 
+            s = msDiff+"ms " + s;
+            if (msDiff > 3000) {
+                s = "ALERT " + s;
+                OAPerformance.LOG.fine(s);
+            }
             LOG.fine(s);
             if (OAObject.getDebugMode()) {
                 System.out.println(s);
             }
+
         }
+    }
+    
+    private void _init() {
         /*
         if ( (qqq%(DisplayMod*4)==0)) {        
             Vector v = OADataSource.getInfo();
@@ -208,7 +220,6 @@ public class ResultSetIterator implements OADataSourceIterator {
         
         rs = null;
         try {
-            // 20121013
             if (bUsePreparedStatement) {
                 preparedStatement = ds.getConnectionPool().getPreparedStatement(query, false);
                 for (int i=0; arguments!=null && i < arguments.length; i++) {
@@ -222,8 +233,8 @@ public class ResultSetIterator implements OADataSourceIterator {
                 statement.setMaxRows( Math.max(0, max));
                 rs = statement.executeQuery(query);
             }
-            bIsSelecting = true;
             
+            bIsSelecting = true;
             bMore = rs != null && rs.next(); // goto first
             bIsSelecting = false;
             if (!bMore) _close();
