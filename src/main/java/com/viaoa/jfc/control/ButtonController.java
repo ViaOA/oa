@@ -257,11 +257,22 @@ public class ButtonController extends JFCController implements ActionListener {
         update();
     }
 
+    protected void resetHubOrProperty() { // called when Hub or PropertyName is changed
+        super.resetHubOrProperty();
+        if (button != null) {
+            button.removeActionListener(this);
+            create(button, enabledMode, command);
+        }
+    }
+    
+    
     /**
         Return actionListener and close.
     */
     public void close() {
-        if (button != null) button.removeActionListener(this);
+        if (button != null) {
+            button.removeActionListener(this);
+        }
 
         if (flavorListener != null) {
             Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
