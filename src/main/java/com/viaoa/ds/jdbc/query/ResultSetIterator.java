@@ -145,24 +145,22 @@ public class ResultSetIterator implements OADataSourceIterator {
         long msDiff = System.currentTimeMillis() - ts;
         
         if (throttle.check() || msDiff > 3000) {
+            String txt = throttle.getCheckCount()+") ResultSetIterator: ";
+            txt += msDiff+"ms";
+            if (msDiff > 5000) txt += " ALERT";
+
             String s = query;
             int pos = s.toUpperCase().indexOf(" FROM ");
             if (pos > 0) s = s.substring(pos+1);
-            
             pos = s.toUpperCase().indexOf("PASSWORD");
             if (pos > 0) s = s.substring(0, pos) + "****";
+            txt += " query="+s;
             
-            s = throttle.getCheckCount()+") ResultSetIterator: query="+s;
-
-            s = msDiff+"ms " + s;
-            if (msDiff > 3000) {
-                s = "ALERT " + s;
-                OAPerformance.LOG.fine(s);
-            }
-            LOG.fine(s);
-            if (OAObject.getDebugMode()) {
-                System.out.println(s);
-            }
+            if (msDiff > 3000) OAPerformance.LOG.fine(txt);
+            LOG.fine(txt);
+            //if (OAObject.getDebugMode()) {
+                System.out.println(txt);
+            //}
 
         }
     }
