@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -83,11 +82,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
     private boolean bServerSideOnly;
 
     // used to run onNewList in another thread that can be cancelled
-    private final Object lockNewList = new Object();
     private final AtomicInteger aiNewList = new AtomicInteger();
-    private final AtomicBoolean abNewListWaiting = new AtomicBoolean(false);
-    private volatile MyThread threadNewList;
-    private volatile int currentNewListCnt;
     
     
     private final int id;
@@ -885,8 +880,8 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         private boolean shouldQuit() {
             Thread t = Thread.currentThread();
             if (t instanceof MyThread) {
-                if (t != threadNewList) return true;
-                if (currentNewListCnt != aiNewList.get()) return true;
+                int x = ((MyThread) t).cntNewList;
+                if (x != aiNewList.get()) return true;
             }
             return false;
             
@@ -1441,43 +1436,37 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             }
             */
         }
-        
 
+        final Object LockNewList = new Object();
+        final HashSet<Thread> hsNewList = new HashSet<>();
         
         @Override
         public void onNewList(final HubEvent hubEvent) {
-            
             if ((hub != hubRoot) || OASync.isServer()) {
                 _onNewList(hubEvent);
             }
             else {
-
-                if (!abNewListWaiting.compareAndSet(false, true)) return;
-                final int thisNewListCnt = aiNewList.incrementAndGet();
-                
-                synchronized (lockNewList) {
-                    abNewListWaiting.set(false);
-                }
+                final int cnt = aiNewList.incrementAndGet();
+                final Thread threadEvent = Thread.currentThread();
                 
                 getExecutorService().submit(new Runnable() {
                     @Override
                     public void run() {
-                        synchronized (lockNewList) {
-                            if (thisNewListCnt != aiNewList.get()) return;
-                            threadNewList = (MyThread) Thread.currentThread();
-                            currentNewListCnt = thisNewListCnt; 
+                        ((MyThread) Thread.currentThread()).cntNewList = cnt;
+                        
+                        if (shouldQuit()) return;
+                        
+                        Hub h = hubEvent.getHub();
+                        synchronized (LockNewList) {
+                            hsNewList.add(threadEvent);
+                        }
+                        _onNewList(hubEvent);
+                        synchronized (LockNewList) {
+                            hsNewList.remove(threadEvent);
                             try {
-                                _onNewList(hubEvent);
-                                lockNewList.notifyAll();
+                                LockNewList.notifyAll();
                             }
-                            catch (Exception e) {
-                                LOG.log(Level.WARNING, "exception running onNewList in HubMerger", e);
-                            }
-                            finally {
-                                if (thisNewListCnt == aiNewList.get()) {
-                                    threadNewList = null;
-                                }
-                            }
+                            catch (Exception e) {}
                         }
                     }
                 });
@@ -1497,15 +1486,16 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                 return; // let run in the background
             }
             
-            synchronized (lockNewList) {
+            Thread t = Thread.currentThread();
+            synchronized (LockNewList) {
                 for (int i=0; i<40; i++) {
-                    if (threadNewList == null) break;
+                    if (!hsNewList.contains(t)) break;
                     if (i > 20) {
                         LOG.warning("HubMerger lockNewList timeout waiting for HubMerger thread to finish");
                         break;
                     }
                     try {
-                        lockNewList.wait(25);
+                        LockNewList.wait(25);
                     }
                     catch (Exception e) {
                     }
@@ -2023,6 +2013,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
     }
     
     private static class MyThread extends Thread {
+        int cntNewList;
         public MyThread(Runnable r, String name) {
             super(r, name);
         }
