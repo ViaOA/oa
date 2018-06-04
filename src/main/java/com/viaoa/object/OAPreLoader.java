@@ -76,7 +76,7 @@ public class OAPreLoader {
     protected ArrayList _load(OALinkInfo[] linkInfos) {
         final HashMap<Class, ArrayList> hm = new HashMap<>();
 
-        ArrayList al = load(classFrom, null);
+        final ArrayList al = load(classFrom, null);
         hm.put(classFrom, al);
 
         if (linkInfos != null) {
@@ -171,7 +171,7 @@ public class OAPreLoader {
     }
 
     // 1toM recursive - load all then populate f.hubChildren
-    protected ArrayList load(Class clazz, OALinkInfo linkInfo) {
+    protected ArrayList load(Class clazz, final OALinkInfo linkInfo) {
         OASelect sel = new OASelect<>(clazz);
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(clazz);
         OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(oi, OALinkInfo.MANY);
@@ -196,9 +196,11 @@ public class OAPreLoader {
         }
         
         if (liRecursive != null) {
+            loadRecursive(clazz, al, liRecursive);
+
             // might need to reselect if both had different sortOrder
             String s = liRecursive.getSortProperty();
-            if (OAString.isNotEmpty(s)) {
+            if (linkInfo != null && OAString.isNotEmpty(s)) {
                 String s2 = linkInfo.getSortProperty();
                 if (OAString.isNotEmpty(s2)) {
                     if (!OAString.isEqual(s, s2, true)) {
@@ -213,7 +215,6 @@ public class OAPreLoader {
                     }
                 }
             }
-            loadRecursive(clazz, al, liRecursive);
         }
         return al;
     }
@@ -234,7 +235,7 @@ public class OAPreLoader {
             }
             else {
                 hub = new Hub(clazz);
-                OAObjectPropertyDelegate.setProperty((OAObject) fParent, liOne.getName(), hub);
+                OAObjectPropertyDelegate.setProperty((OAObject) fParent, liMany.getName(), hub);
             }
             hub.add(f);
         }
