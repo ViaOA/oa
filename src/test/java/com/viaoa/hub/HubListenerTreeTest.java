@@ -262,10 +262,10 @@ public class HubListenerTreeTest extends OAUnitTest {
 
         Employee emp = new Employee();
         loc.getEmployees().add(emp);
-        assertEquals(1, ai.get());
+        assertEquals(2, ai.get());
 
         emp.setFirstName("zz");
-        assertEquals(2, ai.get());
+        assertEquals(3, ai.get());
         
         h.removeHubListener(hl);
         
@@ -296,10 +296,10 @@ public class HubListenerTreeTest extends OAUnitTest {
 
         Employee emp = new Employee();
         loc.getEmployees().add(emp);
-        assertEquals(1, ai.get());
+        assertEquals(2, ai.get());
 
         emp.setFirstName("fnx");
-        assertEquals(2, ai.get());
+        assertEquals(3, ai.get());
         
         h.removeHubListener(hl);
     }

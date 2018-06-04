@@ -185,7 +185,7 @@ public class OAObjectTest extends OAUnitTest {
         server.setHostName("");
         silo.getServers().add(server);
         
-        assertFalse(silo.isChanged());
+        assertTrue(silo.isChanged());
         assertTrue(silo.isChanged(true));
         
         silo.save();
