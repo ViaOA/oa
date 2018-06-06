@@ -13,6 +13,7 @@ package com.viaoa.jfc.control;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -573,6 +574,8 @@ public class ButtonController extends JFCController implements ActionListener {
         return b;
     }
     
+    private OAWaitDialog dlgWait;
+    
     protected boolean runActionPerformed2() throws Exception {
         Hub mhub = getMultiSelectHub();
         if (command == OAButton.ButtonCommand.Delete) {
@@ -610,7 +613,11 @@ public class ButtonController extends JFCController implements ActionListener {
         }
 
         final Window window = OAJFCUtil.getWindow(button);
-        final OAWaitDialog dlgWait = new OAWaitDialog(window, true);  // allowCancel, was false
+        if (dlgWait == null) {
+            dlgWait = new OAWaitDialog(window, true);  // allowCancel, was false
+        }
+        
+        
         dlgWait.getCancelButton().setText("Run in background");
         dlgWait.getCancelButton().setToolTipText("use this to close the dialog, and allow the the procss to run in the background");
         
@@ -725,6 +732,7 @@ public class ButtonController extends JFCController implements ActionListener {
                     if (dlgWait.wasCancelled()) {
                         dlgWait.setVisible(true, false);
                     }
+                    
                     reportActionCompleted(true, exception);
                 }
             }

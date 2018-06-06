@@ -760,6 +760,12 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         control.getEnabledController().add(hub, prop, compareValue);
     }
     protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+        // 20180605
+        if (!bIsCurrentlyEnabled) {
+            if (getHubMultiSelect() != null && getHubMultiSelect().size() > 0) {
+                if (getHub() == null || getHub().getAO() == null) bIsCurrentlyEnabled = true; 
+            }
+        }
         return bIsCurrentlyEnabled;
     }
     
