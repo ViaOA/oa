@@ -2044,9 +2044,13 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                 String pp = tn.fullPath;
                 if (OAString.isNotEmpty(pp) && pp.indexOf('.') > 0) {
                     pp = OAString.field(pp, '.', 1);
-                    OAFinder finder = new OAFinder(hub, ppPrefix+pp);
-                    finder.find();
-                    preload(tn, hub, amt+1, ppPrefix+pp+".");
+                    try {
+                        OAFinder finder = new OAFinder(hub, ppPrefix+pp);
+                        finder.find();
+                        preload(tn, hub, amt+1, ppPrefix+pp+".");
+                    }
+                    catch (Exception e) {
+                    }
                 }
             }
             else {
