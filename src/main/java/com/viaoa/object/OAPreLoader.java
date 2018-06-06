@@ -102,27 +102,28 @@ public class OAPreLoader {
         return al;
     }
 
-    protected void loadOtoM(OALinkInfo linkInfo, ArrayList al) {
+    protected void loadOtoM(OALinkInfo linkInfo, ArrayList alMany) {
         if (linkInfo == null || linkInfo.getType() != OALinkInfo.MANY) return;
+        if (linkInfo.getPrivateMethod()) return;
 
         OALinkInfo liMany = linkInfo;
         OALinkInfo liOne = linkInfo.getReverseLinkInfo();
         if (liOne == null || liOne.getType() != OALinkInfo.ONE) return;
         
-        for (Object obj : al) {
-            Object objOne = OAObjectPropertyDelegate.getProperty((OAObject) obj, liOne.getName(), false, true);
+        for (Object objFromMany : alMany) {
+            Object objOne = ((OAObject)objFromMany).getProperty(liOne.getName());
             if (!(objOne instanceof OAObject)) continue;
             
             Hub hub;
-            Object objHub = OAObjectPropertyDelegate.getProperty((OAObject)objOne, liMany.getName(), false, true); 
-            if (objHub instanceof Hub) {
-                hub = (Hub) objHub;
+            Object objOneHub = OAObjectPropertyDelegate.getProperty((OAObject)objOne, liMany.getName(), false, true); 
+            if (objOneHub instanceof Hub) {
+                hub = (Hub) objOneHub;
             }
             else {
                 hub = new Hub(liMany.getToClass());
                 OAObjectPropertyDelegate.setProperty((OAObject) objOne, liMany.getName(), hub);
             }
-            hub.add(objOne);
+            hub.add(objFromMany);
         }
     }
     
@@ -147,26 +148,31 @@ public class OAPreLoader {
             Object objB = OAObjectCacheDelegate.get(classB, mm.ok2);
             if (objA == null || objB == null) continue;
 
-            Hub hub;
-            Object objx = OAObjectPropertyDelegate.getProperty((OAObject) objA, liA.getName(), false, true);
-            if (objx instanceof Hub) {
-                hub = (Hub) objx;
+            if (!liA.getPrivateMethod()) {
+                Hub hub;
+                Object objx = OAObjectPropertyDelegate.getProperty((OAObject) objA, liA.getName(), false, true);
+                if (objx instanceof Hub) {
+                    hub = (Hub) objx;
+                }
+                else {
+                    hub = new Hub(classB);
+                    OAObjectPropertyDelegate.setProperty((OAObject) objA, liA.getName(), hub);
+                }
+                hub.add(objB);
             }
-            else {
-                hub = new Hub(classB);
-                OAObjectPropertyDelegate.setProperty((OAObject) objA, liA.getName(), hub);
+            
+            if (!liB.getPrivateMethod()) {
+                Hub hub;
+                Object objx = OAObjectPropertyDelegate.getProperty((OAObject) objB, liB.getName(), false, true);
+                if (objx instanceof Hub) {
+                    hub = (Hub) objx;
+                }
+                else {
+                    hub = new Hub(classA);
+                    OAObjectPropertyDelegate.setProperty((OAObject) objB, liB.getName(), hub);
+                }
+                hub.add(objA);
             }
-            hub.add(objB);
-
-            objx = OAObjectPropertyDelegate.getProperty((OAObject) objB, liB.getName(), false, true);
-            if (objx instanceof Hub) {
-                hub = (Hub) objx;
-            }
-            else {
-                hub = new Hub(classA);
-                OAObjectPropertyDelegate.setProperty((OAObject) objB, liB.getName(), hub);
-            }
-            hub.add(objA);
         }
     }
 
