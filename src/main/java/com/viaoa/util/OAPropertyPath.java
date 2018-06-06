@@ -82,13 +82,13 @@ public class OAPropertyPath<F> {
     public OAPropertyPath(Class<F> fromClass, String propertyPath) {
         this.propertyPath = propertyPath;
         this.fromClass = fromClass;
-        
+
         try {
             setup(fromClass);
         }
         catch (Exception e) {
             try {
-                //setup(fromClass);  // for debugging only
+                // setup(fromClass);  // for debugging only
             }
             catch (Exception e2) {
                 // TODO: handle exception
