@@ -83,6 +83,7 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
         fixedTable.setRightTable(mainTable);
         mainTable.setLeftTable(fixedTable);
         
+        
         boolean b = mainTable.getTableHeader().getReorderingAllowed();
         fixedTable.getTableHeader().setReorderingAllowed(b);
 

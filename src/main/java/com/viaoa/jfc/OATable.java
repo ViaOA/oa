@@ -816,6 +816,7 @@ if (!getKeepSorted()) hub.cancelSort();
         int x = (hub == null) ? ListSelectionModel.SINGLE_SELECTION : ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
         getSelectionModel().setSelectionMode(x);
         hubAdapter.setSelectHub(hubSelect);
+        bMultiSelectControlKey = (hub != null);
     }
 
     /**
@@ -1393,21 +1394,20 @@ if (!getKeepSorted()) hub.cancelSort();
             }
             else {
                 // 20180521            
-                toggleUsingControlKey = true;            
-            }
-            int addColumns = 0;
-            if (tableLeft != null) {
-                addColumns = tableLeft.getColumnCount();
-            }
-/*was
-            if ((columnIndex + addColumns) == getColumnIndex(chkSelection)) {
-                if (!extendUsingShiftKey) {
-                    if (!bIsProcessKeyBinding) {
-                        toggleUsingControlKey = true;
-                    }
+                if (!toggleUsingControlKey && bMultiSelectControlKey) {
+                    toggleUsingControlKey = true;            
                 }
             }
-*/            
+            
+            if (!extendUsingShiftKey && !toggleUsingControlKey && !bIsProcessKeyBinding && !bMultiSelectControlKey) {
+                int addColumns = 0;
+                if (tableLeft != null) {
+                    addColumns = tableLeft.getColumnCount();
+                }
+                if ((columnIndex + addColumns) == getColumnIndex(chkSelection)) {
+                    toggleUsingControlKey = true;
+                }
+            }
         }
         try {
             super.changeSelection(rowIndex, columnIndex, toggleUsingControlKey, extendUsingShiftKey);
@@ -1415,7 +1415,20 @@ if (!getKeepSorted()) hub.cancelSort();
         catch (Exception e) {
         }
     }
+    
+    private boolean bMultiSelectControlKey;
+    /**
+     * Mulitselect flag to know if clicking a row will always act like controlkey was used.
+     * @param bMultiSelectControlKey if true, then all row clicks will automaically turn on ctrol key.  
+     */
+    public void setMultiSelectControlKey(boolean b) {
+        this.bMultiSelectControlKey = b;
+        if (tableLeft != null) tableLeft.bMultiSelectControlKey = b;
+        if (tableRight != null) tableRight.bMultiSelectControlKey = b;
+    }
 
+    
+    
     // 20150423
     // was: qqqqqqq
     public void changeSelection_OLD(int rowIndex, int columnIndex, boolean toggleUsingControlKey, boolean extendUsingShiftKey) {
@@ -2315,6 +2328,18 @@ if (!getKeepSorted()) hub.cancelSort();
         if (hub.getPos() != row) {
             try {
                 hubAdapter._bIsRunningValueChanged = true; // 20131113
+                // 20180605
+                if (hubSelect != null) {
+                    if (hubSelect.size() > 1) return false;
+                    Object obj = hub.getAt(row);
+                    if (obj != null) {
+                        if (hubSelect.contains(obj)) { // removing from select hub
+                            hub.setAO(null);
+                            return false; 
+                        }
+                    }
+                }
+                
                 // 20171230
                 setHubPos(row);
                 //was: hub.setPos(row);
@@ -2817,6 +2842,7 @@ if (!getKeepSorted()) hub.cancelSort();
         setSelectionModel(table.getSelectionModel());
         setSelectHub(table.hubSelect);
         this.chkSelection = table.chkSelection;
+        this.bMultiSelectControlKey = table.bMultiSelectControlKey;
 
         setAllowDrag(table.getAllowDrag());
         setAllowDrop(table.getAllowDrop());
@@ -3476,6 +3502,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 // retry again 
             }
             finally {
+                if (hubSelect != null && hubSelect.size() == 0) hub.setPos(-1); //20180605
                 aiIgnoreValueChanged.decrementAndGet();
             }
         }
@@ -3556,10 +3583,21 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                 }
             }
             if (bWasEmpty) OAThreadLocalDelegate.setLoading(true);
+            
+            Object objClicked = null;
             try {
+                
                 for (int i = row1;;) {
                     Object obj = table.hub.elementAt(i);
                     boolean b = lsm.isSelectedIndex(i);
+                    
+                    if (b) {
+                        if (!hubSelect.contains(obj)) objClicked = obj;
+                    }
+                    else {
+                        if (hubSelect.contains(obj)) objClicked = obj;
+                    }
+                    
                     if (obj != null) {
                         if (b) {
                             if (bWasEmpty || !hubSelect.contains(obj)) {
@@ -3570,6 +3608,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
                             hubSelect.remove(obj);
                         }
                     }
+                    
                     if (row2 > row1) {
                         i++;
                         if (i > row2) break;
@@ -3590,9 +3629,16 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             int newAoPos = getHub().getPos(objx);
             //newAoPos = table.getSelectionModel().getLeadSelectionIndex();
             
+            // 20180605
+            if (objClicked == null || !hubSelect.contains(objClicked)) newAoPos = -1;
+            else newAoPos = getHub().getPos(objClicked);
+            
+            
 // 20171230
             _bIsRunningValueChanged = false;
-            table.setHubPos(newAoPos);
+            if (hubSelect.getSize() == 1) hub.setAO(hubSelect.getAt(0));
+            else if (newAoPos < 0 || hubSelect.size() > 1) hub.setAO(null); 
+            else table.setHubPos(newAoPos);
         }
         else {
             _bIsRunningValueChanged = false;
