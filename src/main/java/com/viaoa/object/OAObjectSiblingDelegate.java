@@ -237,7 +237,7 @@ public class OAObjectSiblingDelegate {
                 }
             }
             if (cnt > 3) break;
-            if (cascade.getVisitCount() > 500) break;
+            if (cascade.getVisitCount() > 750) break;
             
             // find next hub to use
             
@@ -365,7 +365,7 @@ public class OAObjectSiblingDelegate {
                 if (alFoundObjectKey.size() >= max) {
                     stop();
                 }
-                if (runCount > 0 && cascade.getVisitCount() > 500) {
+                if (runCount > 0 && cascade.getVisitCount() > 750) {
                     stop();
                 }
 
@@ -380,7 +380,7 @@ public class OAObjectSiblingDelegate {
                         stop();
                     }
                 }
-                if (runCount > 0 && cascade.getVisitCount() > 500) {
+                if (runCount > 0 && cascade.getVisitCount() > 750) {
                     stop();
                 }
             }

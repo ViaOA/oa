@@ -250,8 +250,8 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             dh = OAThreadLocalDelegate.getGetDetailHub();
             if (dh != null) {
                 dpp = OAThreadLocalDelegate.getGetDetailPropertyPath();
-                OAThreadLocalDelegate.setGetDetailHub(hubRoot, strPropertyPath);
             }
+            OAThreadLocalDelegate.setGetDetailHub(hubRoot, strPropertyPath);
             al = _find(hubRoot, objectLastUsed);
         }
         finally {
@@ -500,10 +500,12 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
                         onDataNotFound();
                         return;
                     }
+                    /* 20180606 all will be sorted, since they are same li
                     if ((obj instanceof OAObject) && getNeedsToBeSorted((OAObject) obj, liRecursiveRoot)) {
                         onDataNotFound();
                         return;
                     }
+                    */
                 }
                 Object objx = liRecursiveRoot.getValue(obj);
                 find(objx, pos); // go up a level to then go through hub
@@ -517,10 +519,12 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
                         onDataNotFound();
                         return;
                     }
+                    /* 20180606 all will be sorted, since they are same li
                     if ((obj instanceof OAObject) && getNeedsToBeSorted((OAObject) obj, recursiveLinkInfos[pos - 1])) {
                         onDataNotFound();
                         return;
                     }
+                    */
                 }
                 Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
                 find(objx, pos);
@@ -534,10 +538,12 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
                     onDataNotFound();
                     return;
                 }
+                /* 20180606 might need to put this back in
                 if ((obj instanceof OAObject) && getNeedsToBeSorted((OAObject) obj, linkInfos[pos])) {
                     onDataNotFound();
                     return;
                 }
+                */
             }
             Object objx = linkInfos[pos].getValue(obj);
             find(objx, pos + 1);
