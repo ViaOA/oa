@@ -255,7 +255,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             al = _find(hubRoot, objectLastUsed);
         }
         finally {
-            if (dh != null) OAThreadLocalDelegate.resetGetDetailHub(dh, dpp);
+            OAThreadLocalDelegate.resetGetDetailHub(dh, dpp);
         }
         return al;
     }
@@ -392,6 +392,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         if (bSetup) return;
         bSetup = true;
         if (propertyPath != null || c == null) return;
+
         propertyPath = new OAPropertyPath(c, strPropertyPath);
         
         linkInfos = propertyPath.getLinkInfos();
