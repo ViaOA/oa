@@ -826,7 +826,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
             
             bFound = findNode(al, nodeData, tn,  objFind);
             if (!bFound) {
-                System.out.println("setSelection failed, did not find path");
+                //System.out.println("setSelection failed, did not find path");
                 return null;
             }
             nodeData = al.get(al.size()-1);
