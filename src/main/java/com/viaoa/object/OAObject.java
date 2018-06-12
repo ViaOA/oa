@@ -898,8 +898,8 @@ public class OAObject implements java.io.Serializable, Comparable {
      * @param params
      * @return
      */
-    public static void callRemote(Hub hub, Object... args) {
-        if (hub == null) return;
+    public static Object callRemote(Hub hub, Object... args) {
+        if (hub == null) return null;
         
         StackTraceElement[] sts = Thread.currentThread().getStackTrace();
         String mname = sts[2].getMethodName();
@@ -927,7 +927,8 @@ public class OAObject implements java.io.Serializable, Comparable {
             throw new RuntimeException("method "+mname+", RemoteServerInterface=null, thread="+Thread.currentThread());
         }
         
-        rs.runRemoteMethod(hub, mname, args);
+        Object result = rs.runRemoteMethod(hub, mname, args);
+        return result;
     }
     
     public Object remote(Object... args) {

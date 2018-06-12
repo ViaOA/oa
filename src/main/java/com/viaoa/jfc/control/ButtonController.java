@@ -715,19 +715,15 @@ public class ButtonController extends JFCController implements ActionListener {
                         exception = e;
                     }
                     
-                    String s = completedMessage;
+                    String msg = "";
+                    msg = OAString.append(msg, getCompletedMessage(), ", ");
                     if (exception != null) {
-                        s = "Command had an exception, "+exception.getMessage(); 
+                        OAString.append(msg, "Command had an exception, "+exception.getMessage()); 
                     }
-                    else if (OAString.isEmpty(s)) s = "Command has completed";
-
-                    String returnMessage = getReturnMessage();
-                    if (returnMessage != null) {
-                        if (s.length() > 0) s += " ";
-                        s += returnMessage;
-                    }
+                    msg = OAString.append(msg, getReturnMessage(), ", ");
                     
-                    dlgWait.setStatus(s);
+                    msg = OAString.trunc(msg, 300);
+                    dlgWait.setStatus(msg);
                     dlgWait.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
                     if (dlgWait.wasCancelled()) {
                         dlgWait.setVisible(true, false);

@@ -815,8 +815,6 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     }
     
 
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
-
     // ActionPerformed methods
     public boolean beforeActionPerformed() {
         if (control == null) return false;
