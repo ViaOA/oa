@@ -359,7 +359,6 @@ public class HubAddRemoveDelegate {
         return null;
     }
 
-    
     public static void add(final Hub thisHub, final Object obj) {
         if (thisHub == null || obj == null) return;
         if (thisHub.datau.getSharedHub() != null) {
@@ -382,7 +381,6 @@ public class HubAddRemoveDelegate {
                 throw new RuntimeException("Cant add object, can add retured false");
             }
         }
-        
         
         boolean b = false;
         try {
@@ -427,7 +425,7 @@ public class HubAddRemoveDelegate {
         
         // 20160426 make sure that it has not been removed 
         if (obj instanceof OAObject) {
-            if (OAObjectHubDelegate.isInHub((OAObject)obj, thisHub)) {
+            if (HubDataDelegate.contains(thisHub, obj)) {
                 // this code has been moved before the listeners are notified.  Else listeners could ask for more objects
                 
                 if (thisHub.datam.getMasterObject() != null) {
