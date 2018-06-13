@@ -143,7 +143,7 @@ public class OAThreadLocalDelegate {
     		x2 = OAThreadLocalDelegate.TotalIsLoading.decrementAndGet();
 		}
         if (x > 50 || x < 0 || x2 > 50 || x2 < 0) {
-            msLoadingObject = throttleLOG("TotalIsLoadingObject="+x2+", ti="+x, msLoadingObject);
+            msLoadingObject = throttleLOG("TotalIsLoading="+x2+", ti="+x, msLoadingObject);
         }
         return bPreviousValue;
 	}
