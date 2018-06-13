@@ -664,12 +664,13 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             }
             
             try {
+                final boolean bx = bServerSideOnly;
                 try {
-                    if (!bServerSideOnly) OAThreadLocalDelegate.setLoading(true);
+                    if (!bx) OAThreadLocalDelegate.setLoading(true);
                     bCompleted = _initialize(cnt);
                 }
                 finally {
-                    if (!bServerSideOnly) OAThreadLocalDelegate.setLoading(false);
+                    if (!bx) OAThreadLocalDelegate.setLoading(false);
                 }
                 if (hub != null && bCompleted) {
                     bNewListFlag = true;                   
