@@ -65,7 +65,7 @@ public class OAObjectHubDelegate {
     public static boolean isInHubWithMaster(OAObject oaObj) {
         return isInHubWithMaster(oaObj, null);
     }
-
+    
     public static boolean isInHubWithMaster(OAObject oaObj, Hub hubToIgnore) {
         if (oaObj == null) return false;
         WeakReference<Hub<?>>[] refs = oaObj.weakhubs;
@@ -210,7 +210,9 @@ public class OAObjectHubDelegate {
         if (oaObj == null) return null;
         return oaObj.weakhubs;
     }
-
+    
+    /** removed 20180613
+    // note:  need to use HubDataDelegate.contains(..) instead, since a certain type of hub wont be stored in obj.weakrefs
     public static boolean isInHub(OAObject oaObj, Hub hub) {
         if (oaObj == null || hub == null) return false;
         WeakReference<Hub<?>>[] refs = oaObj.weakhubs;
@@ -221,7 +223,7 @@ public class OAObjectHubDelegate {
         }
         return false;
     }
-    
+    **/
     
     public static int getHubReferenceCount(OAObject oaObj) {
         if (oaObj == null) return 0;
