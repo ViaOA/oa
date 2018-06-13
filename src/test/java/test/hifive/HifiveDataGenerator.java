@@ -23,6 +23,12 @@ public class HifiveDataGenerator {
     
     public void createSampleData() {
         // OAThreadLocalDelegate.setLoadingObject(true); // dont set, since it wont set recursive parents
+
+        Hub<Ecard> hx = ModelDelegate.getEcards();
+        for (int i=0; i<200; i++) {
+            hx.add(new Ecard());
+        }
+        
         Hub<Program> hx1 = ModelDelegate.getPrograms();
         for (int i=0; i<5; i++) {
             Program program = new Program();
@@ -34,6 +40,13 @@ public class HifiveDataGenerator {
             for (int i2=0; i2<3; i2++) {
                 createLocations(program.getLocations(), 0, 3, 3);
             }
+            
+            if (i < 2) {
+                for (int j=0; j<90; j++) {
+                    program.getEcards().add(ModelDelegate.getEcards().getAt(j));
+                }
+            }
+            
         }        
 
         OAFinder<Program, Location> f = new OAFinder<Program, Location>(ProgramPP.locations().pp) {
