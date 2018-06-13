@@ -343,13 +343,13 @@ public class HubListenerTest extends OAUnitTest {
         assertTrue(hls != null && hls.length == 2);
 
         hub.getAt(1).getEnvironments().getAt(1).getSilos().getAt(1).getServers().getAt(0).setName("xx4");
-        assertEquals(cntChange, 1);
+        assertEquals(cntChange, 2); // site is owner of envs.sios.servers and will get a change event
 
         hub.getAt(1).getEnvironments().getAt(1).getSilos().getAt(0).setNetworkMask("xx5");
-        assertEquals(cntChange, 2);
+        assertEquals(cntChange, 3);
 
         hub.getAt(1).getEnvironments().getAt(0).setName("xx5");
-        assertEquals(cntChange, 3);
+        assertEquals(cntChange, 4);
         
         //---
         hub.removeHubListener(hl);
