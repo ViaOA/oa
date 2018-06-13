@@ -150,8 +150,6 @@ if (sel.getNextCount() != thisHub.getCurrentSize()) {
         }
         return cnt;
     }
-  //qqqqqqqqqqqqqqqqqq
-    private static long msLAST;
 
 	/**
 	    Find out if more objects are available from last select from OADataSource.
