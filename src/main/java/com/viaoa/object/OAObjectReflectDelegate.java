@@ -31,7 +31,6 @@ import com.viaoa.sync.*;
 import com.viaoa.sync.remote.RemoteSessionInterface;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.ds.OASelect;
-import com.viaoa.hub.CustomHubFilter;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDataDelegate;
 import com.viaoa.hub.HubDelegate;
@@ -46,7 +45,6 @@ import com.viaoa.util.OAConv;
 import com.viaoa.util.OAConverter;
 import com.viaoa.util.OANotExist;
 import com.viaoa.util.OANullObject;
-import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
 
@@ -948,11 +946,14 @@ public class OAObjectReflectDelegate {
                 else if (OAString.notEmpty(sortOrder) && HubSortDelegate.getSortListener(hub) == null) {
                     // keep the hub sorted on server only
                     HubSortDelegate.sort(hub, sortOrder, bSortAsc, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
+                    hub.resort(); // 20180613 dont trust db sorting, this will not send out event
+                    
                     if (hmSiblingHub != null) {
                         // need to loop thru and set Hubs for siblings
                         for (Entry<OAObjectKey, Hub> entry : hmSiblingHub.entrySet()) {
                             Hub hx = entry.getValue();
                             HubSortDelegate.sort(hx, sortOrder, bSortAsc, null, true);
+                            hx.resort(); // 20180613 dont trust db sorting, this will not send out event
                         }
                     }
                 }
