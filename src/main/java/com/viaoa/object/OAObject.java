@@ -108,7 +108,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     }
     
     static {
-        String ver = "3.5.52_20180606";
+        String ver = "3.5.53_20180613";
         try {
             InputStream resourceAsStream = OAObject.class.getResourceAsStream("/META-INF/maven/com.viaoa/oa/pom.properties");
             Properties props = new Properties();
