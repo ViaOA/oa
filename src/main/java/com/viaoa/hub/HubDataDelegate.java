@@ -619,17 +619,19 @@ public class HubDataDelegate {
             if (obj == null) return false;
         }        
         
-        if (hub.data.vector.size() < 20) {
+        if (hub.data.vector.size() < 25) {
             return containsDirect(hub, obj);
         }
         if (!hub.data.isOAObjectFlag()) {
             return containsDirect(hub, obj);
         }
-        return OAObjectHubDelegate.isAlreadyInHub((OAObject) obj, hub);
+        
+        boolean b = OAObjectHubDelegate.isAlreadyInHub((OAObject) obj, hub);
+        return b;
     }
     public static boolean containsDirect(Hub hub, Object obj) {
         if (hub == null || obj == null) return false;
-        if (hub.data.getSortListener() != null) {
+        if (hub.data.vector.size() > 125 && hub.data.getSortListener() != null) {
             int x = findUsingQuickSort(hub, obj);
             if (x == 1) return true;
             if (x == 2) return false;

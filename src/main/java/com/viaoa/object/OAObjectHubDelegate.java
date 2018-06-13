@@ -446,14 +446,16 @@ public class OAObjectHubDelegate {
         boolean b = _isAlreadyInHub(oaObj, hubFind);
         if (b) return true;
 
+        OALinkInfo li = null;
         Object master = hubFind.getMasterObject();
-        if (master == null) return false;
+        if (master != null) li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hubFind);        
+        if (li == null) {
+            return HubDataDelegate.containsDirect(hubFind, oaObj);
+        }
 
         // could be in the hub, but not in weakHubs, if M2M and private
         // ex: VJ jobCategories M2M Jobs, where jobCategory objects dont have weakhub for
         // all of the Job.jobCategories Hubs that exist
-        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hubFind);
-        if (li == null) return false;
         if (li.getPrivateMethod()) { // if hub method is off
             if (OAObjectInfoDelegate.isMany2Many(li)) { // m2m objects do not have Hub in weakRef[]
                 return HubDataDelegate.containsDirect(hubFind, oaObj);
