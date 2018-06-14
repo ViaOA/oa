@@ -450,7 +450,8 @@ public class OAObjectHubDelegate {
         Object master = hubFind.getMasterObject();
         if (master != null) li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hubFind);        
         if (li == null) {
-            return false;
+            if (hubFind.isOAObject()) return false;
+            return HubDataDelegate.containsDirect(hubFind, oaObj);
         }
 
         // could be in the hub, but not in weakHubs, if M2M and private
