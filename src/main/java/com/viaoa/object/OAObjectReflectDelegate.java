@@ -776,8 +776,8 @@ public class OAObjectReflectDelegate {
                         else {
                             x = 25;
                         }
-                        
-                        siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, x, hmIgnoreSibling);
+                        if (OAThreadLocalDelegate.isDeleting()) siblingKeys = null; 
+                        else siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, x, hmIgnoreSibling);
                     }
                     
                     if (siblingKeys != null) {
@@ -1597,8 +1597,9 @@ public class OAObjectReflectDelegate {
                     ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
                 else {
-                    // 20171222
-                    final OAObjectKey[] siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, 75, hmIgnoreSibling);
+                    OAObjectKey[] siblingKeys;
+                    if (OAThreadLocalDelegate.isDeleting()) siblingKeys = null; 
+                    else siblingKeys = OAObjectSiblingDelegate.getSiblings(oaObj, linkPropertyName, 75, hmIgnoreSibling);
                     String sibIds = null;
                     if (siblingKeys != null) {
                         for (OAObjectKey keyx : siblingKeys) {
