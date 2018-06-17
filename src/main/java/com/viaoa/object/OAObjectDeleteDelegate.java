@@ -11,8 +11,7 @@
 package com.viaoa.object;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.Hub;
@@ -93,17 +92,18 @@ public class OAObjectDeleteDelegate {
 	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
 	        for (OALinkInfo li : oi.getLinkInfos()) {
 	            if (!li.getPrivateMethod()) continue;
+	            if (!li.getUsed()) continue;
                 if (li.getType() != OALinkInfo.TYPE_MANY) continue;
 	            
-	            final OALinkInfo rev = li.getReverseLinkInfo();
-	            if (rev == null) continue;
-	            if (rev.getType() != OALinkInfo.TYPE_MANY) continue;
+	            final OALinkInfo llRev = li.getReverseLinkInfo();
+	            if (llRev == null) continue;
+	            if (llRev.getType() != OALinkInfo.TYPE_MANY) continue;
 	            
 	            OAObjectCacheDelegate.callback(new OACallback() {
                     @Override
                     public boolean updateObject(Object obj) {
-                        if (OAObjectReflectDelegate.isReferenceNullOrNotLoadedOrEmptyHub((OAObject) obj, rev.getName())) return true;
-                        Object objx = rev.getValue(obj);
+                        if (OAObjectReflectDelegate.isReferenceNullOrNotLoadedOrEmptyHub((OAObject) obj, llRev.getName())) return true;
+                        Object objx = llRev.getValue(obj);
                         if (!(objx instanceof Hub)) return true;
                         Hub hx = (Hub) objx;
                         hx.remove(oaObj);
@@ -116,25 +116,25 @@ public class OAObjectDeleteDelegate {
 	        // M2O where M is private
             for (final OALinkInfo li : oi.getLinkInfos()) {
                 if (!li.getPrivateMethod()) continue;
-                
-                final OALinkInfo rev = li.getReverseLinkInfo();
-                if (rev == null) continue;
-                if (rev.getType() != OALinkInfo.TYPE_ONE) continue;
+                if (!li.getUsed()) continue;
+                if (li.getType() != OALinkInfo.TYPE_MANY) continue;
+                final OALinkInfo liRev = li.getReverseLinkInfo();
+                if (liRev == null) continue;
+                if (liRev.getType() != OALinkInfo.TYPE_ONE) continue;
                 
                 OAObjectCacheDelegate.callback(new OACallback() {
                     @Override
                     public boolean updateObject(Object obj) {
-                        Object objx = OAObjectPropertyDelegate.getProperty((OAObject) obj, li.getName(), false, false);
+                        Object objx = OAObjectPropertyDelegate.getProperty((OAObject) obj, liRev.getName(), false, false);
                         if (objx instanceof OAObjectKey) {
                             if (!objx.equals(oaObj.getObjectKey())) return true;
-                            if (OAObjectPropertyDelegate.removePropertyIfNull((OAObject) obj, rev.getName(), false)) {
-                                return true;
-                            }
+                            OAObjectPropertyDelegate.removeProperty((OAObject) obj, liRev.getName(), false);
+                            return true;
                         }
                         else {
                             if (objx != oaObj) return true;
                         }
-                        ((OAObject) obj).setProperty(rev.getName(), null);
+                        ((OAObject) obj).setProperty(liRev.getName(), null);
                         return true;
                     }
                 }, li.getToClass());
@@ -166,6 +166,8 @@ public class OAObjectDeleteDelegate {
             OALinkInfo li = (OALinkInfo) al.get(i);
             if (!li.getMustBeEmptyForDelete()) continue;
             // if (li.getCalculated()) continue;
+            if (li.getPrivateMethod()) continue;
+            if (!li.getUsed()) continue;
             
             String prop = li.name;
             if (prop == null || prop.length() < 1) continue;
@@ -188,6 +190,7 @@ public class OAObjectDeleteDelegate {
         for (int i=0; i < al.size(); i++) {
             OALinkInfo li = (OALinkInfo) al.get(i);
             if (!li.getMustBeEmptyForDelete()) continue;
+            if (!li.getUsed()) continue;
             
             String prop = li.name;
             if (prop == null || prop.length() < 1) continue;
@@ -227,8 +230,9 @@ public class OAObjectDeleteDelegate {
 	    List al = oi.getLinkInfos();
 	    boolean bIsNew = oaObj.isNew();
 	    for (int i=0; i < al.size(); i++) {
-	    	OALinkInfo li = (OALinkInfo) al.get(i);
+	    	final OALinkInfo li = (OALinkInfo) al.get(i);
             if (li.getCalculated()) continue;
+            if (!li.getUsed()) continue;
 			
 	    	String prop = li.name;
 		    if (prop == null || prop.length() < 1) continue;
@@ -237,17 +241,19 @@ public class OAObjectDeleteDelegate {
 		    if (bIsNew && OAObjectPropertyDelegate.getProperty(oaObj, prop, true, false) == OANotExist.instance) {
 		        continue;
 		    }
+
+            final OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
+            if (liRev == null || !liRev.getUsed()) continue;
 		    
 	        if (li.getType() == OALinkInfo.ONE) {
 	            if ((li.getOwner() || li.cascadeDelete) && !li.getPrivateMethod()) {
         	    	Object obj = OAObjectReflectDelegate.getProperty(oaObj, prop);
-                    if (obj instanceof OAObject) delete((OAObject) obj, cascade);
+                    if (obj instanceof OAObject) {
+                        delete((OAObject) obj, cascade);
+                    }
                     continue;
                 }
 	            
-		    	OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
-		    	if (liRev == null) continue;
-		    	
 		        if (liRev.getType() == OALinkInfo.ONE) {  // 1to1
 		            Object obj;
 	                if (li.getPrivateMethod()) {
@@ -304,20 +310,27 @@ public class OAObjectDeleteDelegate {
 	        }
 	        
 	        // Many
-	        // Hub
-	    	Object obj = OAObjectReflectDelegate.getProperty(oaObj, prop);
-	    	if (!(obj instanceof Hub)) {  // no method assigned, need to get Hub directly.  Ex: a one2many where the one is used as a lookup.
-	    		obj = OAObjectReflectDelegate.getReferenceHub(oaObj, prop, null, false, null);
+	    	Object obj;
+	    	if (!li.getPrivateMethod()) {
+	    	    obj = OAObjectReflectDelegate.getProperty(oaObj, prop);
 	    	}
+	    	else { 
+	    	    //  need to get Hub directly.  Ex: a one2many where the one is used as a lookup and does not have a reference to the many.
+    	        obj = OAObjectReflectDelegate.getReferenceHub(oaObj, prop, null, false, null);
+	    	}
+	    
+	    	if (!(obj instanceof Hub)) continue;
 	    	Hub hub = (Hub) obj;
 	        hub.loadAllData();
 	
             // 20120612 need to remove link table records
             boolean bIsM2m = OAObjectInfoDelegate.isMany2Many(li);
-        	
+            
+            //20180615
+            if (hub.getMasterObject() != oaObj) continue; // ex: hier or calc hub
+            
 	        if (!li.cascadeDelete && !li.getOwner()) {  // remove reference in any object to this object
                 if (hub.isOAObject() && hub.getSize() > 0) {
-                    OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
                     boolean b;
                     if (liRev.getPrivateMethod()) {
                         // might have a link table
