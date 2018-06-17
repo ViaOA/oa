@@ -18,6 +18,7 @@ All rights reserved.
 package com.viaoa.ds.jdbc.delegate;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import com.viaoa.ds.jdbc.db.*;
@@ -31,12 +32,18 @@ import com.viaoa.util.OAString;
  */
 public class VerifyDelegate {
     private static Logger LOG = Logger.getLogger(VerifyDelegate.class.getName());
-
+    OADataSourceJDBC ds;
+    
     public static boolean verify(OADataSourceJDBC ds) throws Exception {
+        final ArrayList<String> alError = new ArrayList<>();
         Connection connection = null;
         try {
             connection = ds.getConnection(true);
-            boolean b = _verify(ds, connection);
+            boolean b = _verify(ds, connection, alError);
+
+            for (String s : alError) {
+                System.out.println(s);
+            }
             return b;
         }
         catch (Exception e) {
@@ -52,7 +59,7 @@ public class VerifyDelegate {
 	    Verifies Tables, Columns and Indexes.  Prints to console window.
 	    @returns true if all tables, columns and indexes exist, else returns false if any are missing.
 	*/
-	private static boolean _verify(OADataSourceJDBC ds, Connection connection) throws Exception {
+	private static boolean _verify(OADataSourceJDBC ds, Connection connection, final ArrayList<String> alError) throws Exception {
 	    DatabaseMetaData dbmd = connection.getMetaData();
 	    ResultSet rs;
 	    boolean bResult = true;
@@ -64,7 +71,9 @@ public class VerifyDelegate {
 	        rs.close();
 	        if (!b) {
 	           bResult = false;
-	           LOG.warning("DB ERROR: Table not found: "+t.name);
+	           String s = "DB ERROR: Table not found: "+t.name;
+	           LOG.warning(s);
+	           alError.add(s);
 	           continue;
 	        }
 	        
@@ -94,7 +103,9 @@ public class VerifyDelegate {
                     
 	    	        if (c.getSqlType() == 0) {
 	    	        	if (c.propertyName != null && c.propertyName.trim().length() != 0) {
-	    	        	    LOG.warning("DB WARNING: Column missing TYPE "+t.name+"."+c.columnName+" property: " + c.propertyName);
+	    	        	    String s = "DB WARNING: Column missing TYPE "+t.name+"."+c.columnName+" property: " + c.propertyName;
+	    	        	    alError.add(s);
+	    	        	    LOG.warning(s);
 	    	        	}
 	    	        }
 	    	        else if (iType == c.getSqlType()) {
@@ -105,7 +116,9 @@ public class VerifyDelegate {
 	    	            }
 	    	            else if (iType == java.sql.Types.VARCHAR) {
 	    	        		if (iSize != c.maxLength) {
-	    	        		    LOG.warning("DB NOTE: Column SIZE mismatch: "+t.name+"."+c.columnName+" ds:"+c.maxLength+" != db:"+iSize);
+	    	        		    String s = "DB NOTE: Column SIZE mismatch: "+t.name+"."+c.columnName+" ds:"+c.maxLength+" != db:"+iSize;
+	    	        		    LOG.warning(s);
+	                            alError.add(s);
 	
 	    	        		    /*
 		    	        		if (c.maxLength > iSize) {
@@ -162,7 +175,9 @@ public class VerifyDelegate {
 		    	        	}
 	    	        	}
 	    	        	if (!b) {
-	    	        	    LOG.warning("DB ERROR: Column TYPE mismatch: "+t.name+"."+c.columnName+" ds:"+c.getSqlType()+" != db:"+iType);
+	    	        	    String s = "DB ERROR: Column TYPE mismatch: "+t.name+"."+c.columnName+" ds:"+c.getSqlType()+" != db:"+iType;
+	    	        	    LOG.warning(s);
+                            alError.add(s);
 	    	        		continue;
 	    	        	}
 	    	        }
@@ -170,7 +185,9 @@ public class VerifyDelegate {
 	            rs.close();
 	            if (!b) {
 	                bResult = false;
-	                LOG.warning("DB ERROR: Column not found: "+t.name+"."+c.columnName);
+	                String s = "DB ERROR: Column not found: "+t.name+"."+c.columnName;
+	                LOG.warning(s);
+                    alError.add(s);
 	                continue;
 	            }
 	
@@ -180,7 +197,9 @@ public class VerifyDelegate {
 		            rs.close();
 		            if (!b) {
 		                bResult = false;
-		                LOG.warning("DB ERROR: Column not found: "+t.name+"."+c.columnLowerName);
+		                String s = "DB ERROR: Column not found: "+t.name+"."+c.columnLowerName;
+		                LOG.warning(s);
+	                    alError.add(s);
 		                continue;
 		            }
 	            }
@@ -197,7 +216,9 @@ public class VerifyDelegate {
 		            }	            	
 		            rs.close();
 		            if (!b) {
-		                LOG.warning("DB ERROR: PK missing: "+" PK" + t.name+" "+t.name+"."+c.columnName + " - FOUND: pkName="+pkname+", colname="+colname);
+		                String s = "DB ERROR: PK missing: "+" PK" + t.name+" "+t.name+"."+c.columnName + " - FOUND: pkName="+pkname+", colname="+colname;
+		                LOG.warning(s);
+                        alError.add(s);
 		            }
 	            }
 	        	// public static String convert(DBMetaData dbmd, Column column, Object value) {
@@ -205,7 +226,9 @@ public class VerifyDelegate {
 	            	ConverterDelegate.convert(ds.getDBMetaData(), c, "1");
 	            }
 	            catch (Exception e) {
-	                LOG.warning("DB ERROR: ConverterDelegate wont be able to convert column type: Table:" + t.name + " Column:" + c.columnName);
+	                String s = "DB ERROR: ConverterDelegate wont be able to convert column type: Table:" + t.name + " Column:" + c.columnName;
+	                LOG.warning(s);
+                    alError.add(s);
 	            	bResult = false;
 	            }
 	        }
@@ -219,7 +242,7 @@ public class VerifyDelegate {
 	            boolean bNameMatch = false;
 	            for ( ;b = rs.next(); ) {
 	            	String name = rs.getString(6); // index name
-                    bNameMatch = (name != null && name.equalsIgnoreCase(ind.name));
+                    bNameMatch |= (name != null && name.equalsIgnoreCase(ind.name));
 	            	
 	            	name = rs.getString(9); // column name
 	            	for (int k=0; name != null && k < ind.columns.length; k++) {
@@ -230,8 +253,10 @@ public class VerifyDelegate {
 	            }
 	            rs.close();
 
-	            if (foundCnt < ind.columns.length) {
-                    LOG.warning("DB ERROR: Index not in database: "+t.name+"."+ind.name);
+	            if (!bNameMatch || foundCnt < ind.columns.length) {
+	                String s = "DB ERROR: Index not in database: "+t.name+"."+ind.name;
+                    LOG.warning(s);
+                    alError.add(s);
 	            }
 	        }
             
@@ -261,17 +286,19 @@ public class VerifyDelegate {
                         }
                     }
                     if (!bFound) {
-                        LOG.warning("DB warning: DB Index not in datasource: table="+t.name+", index="+name);
+                        s = "DB warning: DB Index not in datasource: table="+t.name+", index="+name;
+                        LOG.warning(s);
+                        alError.add(s);
                     }
                 }
             }	        
             rs.close();
-	        if (!verifyLinks(t)) bResult = false;
+	        if (!verifyLinks(t, dbmd, ds, alError)) bResult = false;
 	    }
 	    return bResult;
 	}
 
-	public static boolean verifyLinks(Table t) {
+	public static boolean verifyLinks(Table t, DatabaseMetaData dbmd, OADataSourceJDBC ds, final ArrayList<String> alError) throws Exception {
 		boolean bError = false;
         // verify Links
         Link[] links = t.getLinks();
@@ -283,7 +310,9 @@ public class VerifyDelegate {
         	if (revLink == null) continue;
             Column[] revCols = revLink.fkeys;
             if ((cols == null && revCols != null) || (cols != null && revCols == null)) {
-                LOG.warning("DB ERROR: key columns for link do not match: "+t.name+"."+link.propertyName);
+                String s = "DB ERROR: key columns for link do not match: "+t.name+"."+link.propertyName;
+                LOG.warning(s);
+                alError.add(s);
                 bError = true;
             }
             if (cols == null) continue;
@@ -298,9 +327,34 @@ public class VerifyDelegate {
             		cols[j].type = t1 = t2;
             	}
             	if (t1 != t2) {
-            	    LOG.warning("DB ERROR: key columns for link do not match types: "+t.name+"."+link.propertyName);
+            	    String s = "DB ERROR: key columns for link do not match types: "+t.name+"."+link.propertyName;
+            	    LOG.warning(s);
+                    alError.add(s);
                     bError = true;
             	}
+            }
+            
+            // check fkey index
+            ResultSet rs = dbmd.getIndexInfo(null, null, t.name.toUpperCase(), false, false);
+            boolean bFound = false;
+            for ( ; rs.next(); ) {
+                String name = rs.getString(6); // index name
+                if (OAString.isEmpty(name)) continue;
+                String s = rs.getString(9); // column name
+                for (int j=0; j<cols.length; j++) {
+                    Column c = cols[j];
+                    if (c.columnName.equalsIgnoreCase(s)) {
+                        bFound = true;
+                        break;
+                    }
+                }
+            }           
+            rs.close();
+            if (!bFound && !ds.getDBMetaData().getFkeysAutoCreateIndex()) {
+                String s = "DB warning: Index for fkey not in Database, table="+t.name+", fkey column="+cols[0].columnName;
+                LOG.warning(s);
+                alError.add(s);
+                bError = true;
             }
         }
         return bError;
