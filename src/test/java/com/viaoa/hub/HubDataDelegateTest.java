@@ -16,7 +16,7 @@ public class HubDataDelegateTest extends OAUnitTest {
     public void test() {
         HifiveDataGenerator data = new HifiveDataGenerator();
         data.createSampleData();
-
+        
         for (Program program : ModelDelegate.getPrograms()) {
             Hub<Ecard> hub = program.getEcards();
             for (Ecard ec : hub) {

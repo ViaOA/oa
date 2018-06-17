@@ -109,6 +109,7 @@ public class OAObjectDelegate {
             for (OALinkInfo li : oi.getLinkInfos()) {
                 if (li.getCalculated()) continue;
                 if (li.getPrivateMethod()) continue;
+                if (!li.getUsed()) continue;
                 if (li.getMatchProperty() != null) {
                     // dont set to null, so that it will have to call oaObject.getHub(), which will then create hubAutoMatch
                     continue;
@@ -319,7 +320,7 @@ public class OAObjectDelegate {
 	    return b;
 	}
 	
-	public static boolean getChanged(OAObject oaObj, int iCascadeRule, OACascade cascade) {
+	public static boolean getChanged(final OAObject oaObj, int iCascadeRule, OACascade cascade) {
 	    if (oaObj.changedFlag || oaObj.newFlag) {
 	    	return true;
 	    }
@@ -337,6 +338,7 @@ public class OAObjectDelegate {
 	        if (prop == null || prop.length() < 1) continue;
             if (li.getCalculated()) continue;
             if (li.getPrivateMethod()) continue;
+            if (!li.getUsed()) continue;
 	        
 	        // same as OAObjectSaveDelegate.cascadeSave()
             if (OAObjectReflectDelegate.isReferenceNullOrNotLoaded(oaObj, prop)) continue;
@@ -394,6 +396,7 @@ public class OAObjectDelegate {
 	    	OALinkInfo li = (OALinkInfo) al.get(i); 
             if (li.getCalculated()) continue;
             if (li.getPrivateMethod()) continue;
+            if (!li.getUsed()) continue;
 	        String prop = li.name;
 	
 	        Object obj = OAObjectReflectDelegate.getProperty(oaObj, li.name); // select all
@@ -532,12 +535,14 @@ public class OAObjectDelegate {
             // need to see if object should be put into linkOne/masterObject hub(s)             
             OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
             for (OALinkInfo li : oi.getLinkInfos()) {
+                if (!li.getUsed()) continue;
                 if (li.getType() != li.ONE) continue;
                 Object objx = OAObjectReflectDelegate.getRawReference(oaObj, li.getName());
                 if (!(objx instanceof OAObject)) continue;
                 
                 OALinkInfo liRev = OAObjectInfoDelegate.getReverseLinkInfo(li);
                 if (liRev == null) continue;
+                if (!liRev.getUsed()) continue;
                 if (liRev.getType() != li.MANY) continue;
                 if (liRev.getPrivateMethod()) continue;
                 

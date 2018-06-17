@@ -290,6 +290,7 @@ public class JsonServlet extends HttpServlet {
             result += "  \"references\": [\n";
             for (OALinkInfo li : oi.getLinkInfos()) {
                 if (li.getPrivateMethod()) continue;
+                if (!li.getUsed()) continue;
                 if (cnt++ > 0) result += ",\n";
                 result += "    {\"name\": \""+li.getName()+"\", ";
                 result += "\"type\": \""+li.getToClass().getSimpleName()+"\", ";

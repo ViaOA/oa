@@ -60,7 +60,8 @@ public class OALinkInfo { //implements java.io.Serializable {
     private OALinkInfo revLinkInfo;
     protected boolean bCalculated;
     protected boolean bServerSideCalc;
-    protected boolean bPrivateMethod; // 20130212 true if the method is not created, or is private
+    protected boolean bPrivateMethod; // true if the method is not created, or is private
+    protected boolean bNotUsed; // 20180615 flag to know that link is only used one way
     private transient Method uniquePropertyGetMethod;
     private String[] dependentProperties;
     private String mergerPropertyPath;
@@ -162,6 +163,10 @@ public class OALinkInfo { //implements java.io.Serializable {
     }
     public boolean getCalculated() {
         return bCalculated;
+    }
+    
+    public boolean getUsed() {
+        return !bNotUsed;
     }
     
     public void setServerSideCalc(boolean b) {

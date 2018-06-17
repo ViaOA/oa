@@ -116,6 +116,7 @@ public class OAComboBox extends OAHtmlComponent {
             List al = oi.getLinkInfos();
             for (int i=0; al != null && i < al.size(); i++) {
                 OALinkInfo li = (OALinkInfo) al.get(i); 
+                if (!li.getUsed()) continue;
                 if ( hub.getObjectClass().equals(li.getToClass())) {
                     if (li.getType() == OALinkInfo.MANY) {
                         this.recursiveLinkInfo = li;

@@ -120,6 +120,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
                 }
             }
             for (OALinkInfo li : getLinkInfos()) {
+                if (!li.getUsed()) continue;
                 if (li.getType() == li.ONE && li.isImportMatch()) {
                     this.importMatchProperties = (String[]) OAArray.add(this.importMatchProperties, li.getName());
                 }
@@ -185,11 +186,13 @@ public class OAObjectInfo { //implements java.io.Serializable {
         if (ownedLinkInfos == null) {
             int x = 0;
             for (OALinkInfo li : getLinkInfos()) {
+                if (!li.getUsed()) continue;
                 if (li.bOwner) x++;
             }
             OALinkInfo[] temp = new OALinkInfo[x];
             int i = 0;
             for (OALinkInfo li : getLinkInfos()) {
+                if (!li.getUsed()) continue;
                 if (li.bOwner) {
                     if (i == x) {
                         return getOwnedLinkInfos();
@@ -207,7 +210,10 @@ public class OAObjectInfo { //implements java.io.Serializable {
     public boolean isOwnedAndNoReverseMany() {
         if (bOwnedAndNoManyCheck) return bOwnedAndNoMany;
         for (OALinkInfo li : getLinkInfos()) {
+            if (!li.getUsed()) continue;
             OALinkInfo liRev = li.getReverseLinkInfo();
+            if (liRev == null) continue;
+            if (!liRev.getUsed()) continue;
             if (liRev.type == OALinkInfo.MANY) {
                 bOwnedAndNoMany = false;
                 break;
@@ -226,9 +232,11 @@ public class OAObjectInfo { //implements java.io.Serializable {
     public OALinkInfo getOwnedByOne() {
         if (bOwnedByOne) return liOwnedByOne;
         for (OALinkInfo li : getLinkInfos()) {
+            if (!li.getUsed()) continue;
             if (li.type != OALinkInfo.ONE) continue;
             OALinkInfo liRev = li.getReverseLinkInfo();
             if (liRev != null && liRev.bOwner) {
+                if (!liRev.getUsed()) continue;
                 liOwnedByOne = li;
                 break;
             }

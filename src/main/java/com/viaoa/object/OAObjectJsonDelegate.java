@@ -116,6 +116,7 @@ public class OAObjectJsonDelegate {
 	        OALinkInfo li = (OALinkInfo) alLink.get(i);
 	        if (li.getTransient()) continue;
             // if (li.getCalculated()) continue;
+            if (!li.getUsed()) continue;
 	
 	        // Method m = oi.getPropertyMethod(c, "get"+li.getProperty());
 	        // if (m == null) continue;

@@ -95,6 +95,8 @@ public class OAObjectKeyDelegate {
 	    List al = oi.getLinkInfos();
 	    for (int i=0; i < al.size(); i++) {
 	    	OALinkInfo li = (OALinkInfo) al.get(i); 
+            if (li.getPrivateMethod()) continue;
+            if (!li.getUsed()) continue;
 	        if (!OAObjectReflectDelegate.isReferenceObjectLoadedAndNotEmpty(oaObj, li.name)) continue;
 	
 	        String revProp = li.getReverseName();

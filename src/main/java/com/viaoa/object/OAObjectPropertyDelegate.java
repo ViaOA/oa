@@ -573,6 +573,8 @@ public class OAObjectPropertyDelegate {
         
         for (OALinkInfo li : oi.getLinkInfos()) {
             if (li.getType() != OALinkInfo.ONE) continue;
+            if (li.getPrivateMethod()) continue;
+            if (!li.getUsed()) continue;
             OALinkInfo liRev = li.getReverseLinkInfo();
             if (liRev == null) continue;
             if (liRev.getType() != OALinkInfo.MANY) continue;

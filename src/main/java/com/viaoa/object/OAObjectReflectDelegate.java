@@ -478,7 +478,7 @@ public class OAObjectReflectDelegate {
      * @param bSequence
      *            if true, then create a hub sequencer to manage the order of the objects in the hub.
      */
-    public static Hub getReferenceHub(OAObject oaObj, String linkPropertyName, String sortOrder, boolean bSequence, Hub hubMatch) {
+    public static Hub getReferenceHub(final OAObject oaObj, final String linkPropertyName, String sortOrder, boolean bSequence, Hub hubMatch) {
         /*
          lock obj.props[]
            get Hub from oaObj.props[]
@@ -493,8 +493,8 @@ public class OAObjectReflectDelegate {
         if (linkPropertyName == null) return null;
 
         Hub hub = null;
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-        OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
+        final OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+        final OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
         
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, false, true);
         
@@ -532,9 +532,6 @@ public class OAObjectReflectDelegate {
                 // 20150130 the same thread that is loading it could be accessing it again. (ex: matching and hubmerger during getReferenceHub(..))
                 if (OAObjectPropertyDelegate.isPropertyLocked(oaObj, linkPropertyName)) return hub;
     
-                oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-                linkInfo = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
-                
                 // check to see if there needs to be an autoMatch set up
                 if (HubDelegate.getAutoMatch(hub) == null) {
                     if (linkInfo != null) {
@@ -584,7 +581,10 @@ public class OAObjectReflectDelegate {
                         //      this is done here (after checking first), for cases where references are serialized in a CS call.
                         //      - or during below, when it is directly called.
                         HubSortDelegate.sort(hub, s, bAsc, null, true);// dont sort, or send out sort msg
-                        hub.resort(); // this will not send out event
+                        OAPropertyInfo pi = oi.getPropertyInfo(s);
+                        if (pi == null || String.class.equals(pi.getClassType())) {
+                            hub.resort(); // this will not send out event
+                        }
                     }
                 }
             }
@@ -682,7 +682,10 @@ public class OAObjectReflectDelegate {
                         //      this is done here (after checking first), for cases where references are serialized in a CS call.
                         //      - or during below, when it is directly called.
                         HubSortDelegate.sort(hub, s, bAsc, null, true);// dont sort, or send out sort msg
-                        hub.resort(); // this will not send out event
+                        OAPropertyInfo pi = oi.getPropertyInfo(s);
+                        if (pi == null || String.class.equals(pi.getClassType())) {
+                            hub.resort(); // this will not send out event
+                        }
                     }
                 }
                 if (OAObjectInfoDelegate.cacheHub(linkInfo, hub)) {
@@ -946,14 +949,19 @@ public class OAObjectReflectDelegate {
                 else if (OAString.notEmpty(sortOrder) && HubSortDelegate.getSortListener(hub) == null) {
                     // keep the hub sorted on server only
                     HubSortDelegate.sort(hub, sortOrder, bSortAsc, null, true);// dont sort, or send out sort msg (since no other client has this hub yet)
-                    hub.resort(); // 20180613 dont trust db sorting, this will not send out event
+                    final OAPropertyInfo pi = oi.getPropertyInfo(sortOrder);
+                    if (pi == null || String.class.equals(pi.getClassType())) {
+                        hub.resort(); // 20180613 dont trust db sorting, this will not send out event
+                    }
                     
                     if (hmSiblingHub != null) {
                         // need to loop thru and set Hubs for siblings
                         for (Entry<OAObjectKey, Hub> entry : hmSiblingHub.entrySet()) {
                             Hub hx = entry.getValue();
                             HubSortDelegate.sort(hx, sortOrder, bSortAsc, null, true);
-                            hx.resort(); // 20180613 dont trust db sorting, this will not send out event
+                            if (pi == null || String.class.equals(pi.getClassType())) {
+                                hub.resort(); // 20180613 dont trust db sorting, this will not send out event
+                            }
                         }
                     }
                 }
@@ -1054,6 +1062,7 @@ public class OAObjectReflectDelegate {
         OAObjectInfo io = OAObjectInfoDelegate.getObjectInfo(oaObj.getClass());
         List<OALinkInfo> al = io.getLinkInfos();
         for (OALinkInfo li : al) {
+            if (!li.getUsed()) continue;
             String name = li.getName();
             Object obj = getRawReference(oaObj, name);
             if (obj == null) continue;
@@ -1085,6 +1094,7 @@ public class OAObjectReflectDelegate {
         for (OALinkInfo li : alLinkInfo) {
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
+            if (!li.getUsed()) continue;
             if (!bIncludeLarge && li.getCouldBeLarge()) continue;
             String property = li.getName();
             
@@ -1145,7 +1155,9 @@ public class OAObjectReflectDelegate {
         int cnt = 0;
         for (OALinkInfo li : al) {
             if (!bIncludeCalc && li.bCalculated) continue;
-            if (li.bPrivateMethod) continue;
+            if (li.getPrivateMethod()) continue;
+            if (!li.getUsed()) continue;
+            
             String name = li.getName();
             if (max > 0) {
                Object objx = OAObjectPropertyDelegate.getProperty(obj, name, true, true);
@@ -1171,6 +1183,7 @@ public class OAObjectReflectDelegate {
             if (al == null) continue;
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
+            if (!li.getUsed()) continue;
             String name = li.getName();
             
             Object val = OAObjectPropertyDelegate.getProperty(obj, name, true, true);
@@ -1195,6 +1208,7 @@ public class OAObjectReflectDelegate {
         for (OALinkInfo li : al) {
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
+            if (!li.getUsed()) continue;
             if (!bOne && li.getType() == OALinkInfo.ONE) continue;
             if (!bMany && li.getType() == OALinkInfo.MANY) continue;
             getProperty(obj, li.getName());
@@ -1367,6 +1381,7 @@ public class OAObjectReflectDelegate {
             if (maxEndTime > 0 && System.currentTimeMillis() > maxEndTime) break;
             if (!bIncludeCalc && li.bCalculated) continue;
             if (li.bPrivateMethod) continue;
+            if (!li.getUsed()) continue;
             if (bOwnedOnly && !li.bOwner) continue;
             boolean bIsMany = li.getType() == OALinkInfo.TYPE_MANY;
 
@@ -2005,6 +2020,7 @@ public class OAObjectReflectDelegate {
             if (li.getType() != li.MANY) continue;
             if (li.getCalculated()) continue;
             if (li.getPrivateMethod()) continue;
+            if (!li.getUsed()) continue;
 
             boolean bCopy = (li.isOwner());
             if (bCopy && excludeProperties != null) {
@@ -2117,6 +2133,7 @@ public class OAObjectReflectDelegate {
         for (OALinkInfo li : alLinkInfo) {
             if (li.getCalculated()) continue;
             if (li.getPrivateMethod()) continue;
+            if (!li.getUsed()) continue;
             
             if (excludeProperties != null) {
                 boolean b = true;

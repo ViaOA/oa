@@ -136,6 +136,7 @@ public class OAObjectSaveDelegate {
 			if (li.getTransient()) continue;
             if (li.getCalculated()) continue;
             if (li.getPrivateMethod()) continue;
+            if (!li.getUsed()) continue;
 		    String prop = li.getName();
 		    if (prop == null || prop.length() < 1) continue;
 		    

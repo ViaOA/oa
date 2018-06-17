@@ -65,6 +65,7 @@ public class ObjectDefDelegate {
         }
         for (OALinkInfo li : oi.getLinkInfos()) {
             if (li.getPrivateMethod()) continue;
+            if (!li.getUsed()) continue;
             LinkPropertyDef lp = new LinkPropertyDef();
             lp.setName(li.getName());
             lp.setDisplayName(li.getName());

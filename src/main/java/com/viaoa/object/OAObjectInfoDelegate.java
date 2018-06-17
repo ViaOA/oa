@@ -81,6 +81,7 @@ public class OAObjectInfoDelegate {
 
             liRev = new OALinkInfo(revName, clazz, OALinkInfo.ONE, false, false, li.name);
             liRev.bPrivateMethod = true;
+            liRev.bNotUsed = true; // 20180615
             oiRev.getLinkInfos().add(liRev);
         }
         return oi;
@@ -440,6 +441,7 @@ public class OAObjectInfoDelegate {
         if (thisOI.thisClass == null) return null;
 
         for (OALinkInfo li : thisOI.getLinkInfos()) {
+            if (!li.getUsed()) continue;
             if (li.bCalculated) continue;
             if (!li.bRecursive) continue; // 20131009
             if (li.toClass != null && li.toClass.equals(thisOI.thisClass)) {
@@ -463,8 +465,10 @@ public class OAObjectInfoDelegate {
         if (thisOI.bSetLinkToOwner) return thisOI.liLinkToOwner;
         
         for (OALinkInfo li : thisOI.getLinkInfos()) {
+            if (!li.getUsed()) continue;
             OALinkInfo liRev = getReverseLinkInfo(li);
-            if (liRev != null && liRev.getOwner() && liRev.getType() == OALinkInfo.MANY) {
+            if (liRev == null || !liRev.getUsed()) continue;
+            if (liRev.getOwner() && liRev.getType() == OALinkInfo.MANY) {
                 if (!li.toClass.equals(thisOI.thisClass)) {  // make sure that it is not also a recursive link.
                     thisOI.liLinkToOwner = li;
                     break;
@@ -695,6 +699,7 @@ public class OAObjectInfoDelegate {
      */
     public static OALinkInfo getLinkInfo(OAObjectInfo oi, OAObject fromObject, Hub hub) {
         for (OALinkInfo li : oi.getLinkInfos()) {
+            if (!li.getUsed()) continue;
             String s = li.getName();
             
             Object objx = OAObjectReflectDelegate.getRawReference(fromObject, s);
@@ -709,6 +714,7 @@ public class OAObjectInfoDelegate {
     }
     public static OALinkInfo getLinkInfo(OAObjectInfo oi, Class toClass) {
         for (OALinkInfo li : oi.getLinkInfos()) {
+            if (!li.getUsed()) continue;
             if (li.getToClass().equals(toClass)) return li;
         }
         return null;
@@ -896,8 +902,12 @@ public class OAObjectInfoDelegate {
 
         boolean b = false;
         for (OALinkInfo li : oi.getLinkInfos()) {
+            if (li.getPrivateMethod()) continue;
+            if (!li.getUsed()) continue;
             OALinkInfo liRev = li.getReverseLinkInfo();
             if (liRev == null) continue;
+            if (liRev.getPrivateMethod()) continue;
+            if (!liRev.getUsed()) continue;
             if (liRev.getType() != liRev.MANY) continue;
             if (liRev.cacheSize > 0) {
                 b = true;

@@ -133,7 +133,8 @@ public class OAObjectXMLDelegate {
 	        if (li.getTransient()) continue;
 	        if (li.getCalculated()) continue;
 	        if (li.getPrivateMethod()) continue;
-	
+            if (!li.getUsed()) continue;
+
 	        // Method m = oi.getPropertyMethod(c, "get"+li.getProperty());
 	        // if (m == null) continue;
 	        Object obj = OAObjectReflectDelegate.getProperty(oaObj, li.getName());
