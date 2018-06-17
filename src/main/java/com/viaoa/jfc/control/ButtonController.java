@@ -907,13 +907,7 @@ public class ButtonController extends JFCController implements ActionListener {
                                 getHub().remove(ho); // 20110215 remove first, so that cascading deletes are not so "noisy"
                             }
                             // else it can only be removed when delete is called (ex: a detail hub that is from a linkOne)
-                            String msg = null;
-                            try {
-                                ((OAObject) ho).delete();
-                            }
-                            catch (Exception e) {
-                                msg = "Error while deleting\n" + e;
-                            }
+                            ((OAObject) ho).delete();
                         }
                         else {
                             if (hub != null) {
