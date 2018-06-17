@@ -125,7 +125,7 @@ public class OAHTMLConverter {
             rootTreeNode = createTree(htmlTemplate);
         }
         
-        StringBuffer sb = new StringBuffer(1024 * 4);
+        StringBuilder sb = new StringBuilder(1024 * 4);
         generateHTML(rootTreeNode, objRoot, hubRoot, sb, props);
         String s = new String(sb);
         sb = null;
@@ -527,7 +527,7 @@ public class OAHTMLConverter {
 
     private HashMap<String, Integer> hmForEachCounter = new HashMap<String, Integer>();
     
-    protected void generateHTML(TreeNode rootNode, OAObject obj, Hub hub, StringBuffer sb, OAProperties props) {
+    protected void generateHTML(TreeNode rootNode, OAObject obj, Hub hub, StringBuilder sb, OAProperties props) {
         boolean bNot = false;
         boolean bProcessChildren = true;
 
@@ -573,8 +573,8 @@ public class OAHTMLConverter {
             case Format:
                 bProcessChildren = false;
 
-                StringBuffer sbHold = sb;
-                sb = new StringBuffer(1024 * 4);
+                StringBuilder sbHold = sb;
+                sb = new StringBuilder(1024 * 4);
 
                 for (TreeNode dn : rootNode.alChildren) {
                     generateHTML(dn, obj, hub, sb, props);
