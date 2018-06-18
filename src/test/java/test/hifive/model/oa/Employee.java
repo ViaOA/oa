@@ -296,7 +296,11 @@ public class Employee extends OAObject {
     protected transient Program program;
     protected transient Hub<QuizResult> hubQuizResults;
     protected transient Hub<PointsAwardLevel> hubRequiresMyApproval;
-     
+
+    
+    public transient int validateTestType = 0;
+    public transient int validateTestResult = 0;
+    
     public Employee() {
         if (!isLoading()) {
             setCreated(new OADate());
@@ -405,13 +409,24 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
     public String getLastName() {
         return lastName;
     }
-    
     public void setLastName(String newValue) {
         fireBeforePropertyChange(P_LastName, this.lastName, newValue);
         String old = lastName;
         this.lastName = newValue;
         firePropertyChange(P_LastName, old, this.lastName);
     }
+    public boolean isValidLastName(String newValue, OAEditMessage msg) {
+        // check valud of validateTestType   see:HubEventDelegateTest
+        validateTestResult++;
+        if (validateTestType == 2 && !"test".equals(newValue)) return false;
+        if (validateTestType == 3) {
+            msg.setMessage("cant set last name for this employee");
+            return false;
+        }
+        return true;
+    }
+    
+    
     @OAProperty(displayName = "Suffix", maxLength = 75, displayLength = 20, columnLength = 8)
     @OAColumn(maxLength = 75)
     public String getSuffixName() {
@@ -990,6 +1005,7 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
         reverseName = CountryCode.P_Employees
     )
     public CountryCode getCountryCode() {
+        /*was
         CountryCode cc = null;
         Location loc = getLocation();
         Program prog = null;
@@ -999,9 +1015,24 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
         }
         if (cc == null && prog != null) cc = prog.getCountryCode();
         return cc;
+        */
+        return countryCode;
     }
     
     public void setCountryCode(CountryCode newValue) {
+        fireBeforePropertyChange(P_CountryCode, this.countryCode, newValue);
+        CountryCode old = this.countryCode;
+        this.countryCode = newValue;
+        firePropertyChange(P_CountryCode, old, this.countryCode);
+    }
+    public boolean isValidCountryCode(CountryCode newValue, OAEditMessage msg) {
+        // check valud of validateTestType   see:HubEventDelegateTest
+        validateTestResult++;
+        if (validateTestType == 3) {
+            msg.setMessage("cant set CountryCode for this employee");
+            return false;
+        }
+        return true;
     }
     
     @OAMany(
@@ -1019,6 +1050,23 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
         }
         return hubEmployeeAwards;
     }
+    public boolean isValidEmployeeAwards(EmployeeAward employeeAward, OAEditMessage msg) {
+        validateTestResult++;
+        // check valud of validateTestType   see:HubEventDelegateTest
+        if (msg == null) return true;
+        
+        if (validateTestType == 3) return false;
+        
+        switch (msg.getType()) {
+        case Unknown:
+            break;
+        case RemoveAll:
+            if (validateTestType == 2) return false;
+            break;
+        }
+        return true;
+    }
+    
     
     @OAMany(
         displayName = "Employee Custom Datas", 

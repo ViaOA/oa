@@ -501,7 +501,7 @@ public class OAObjectReflectDelegate {
         if (obj instanceof Hub) {
             // 20141215 could be server side, that deserialized the object+references without setting up.
             hub = (Hub) obj;
-            
+
             // sort, seq, asc
             boolean bSortAsc = true;
             String seqProperty;
@@ -526,8 +526,6 @@ public class OAObjectReflectDelegate {
                 bSortAsc = linkInfo.isSortAsc();
             }
             
-            
-            // return if not server
             if (OASync.isServer(oaObj)) {
                 // 20150130 the same thread that is loading it could be accessing it again. (ex: matching and hubmerger during getReferenceHub(..))
                 if (OAObjectPropertyDelegate.isPropertyLocked(oaObj, linkPropertyName)) return hub;
@@ -581,10 +579,12 @@ public class OAObjectReflectDelegate {
                         //      this is done here (after checking first), for cases where references are serialized in a CS call.
                         //      - or during below, when it is directly called.
                         HubSortDelegate.sort(hub, s, bAsc, null, true);// dont sort, or send out sort msg
+                        /* not needed, already resorted on server
                         OAPropertyInfo pi = oi.getPropertyInfo(s);
                         if (pi == null || String.class.equals(pi.getClassType())) {
                             hub.resort(); // this will not send out event
                         }
+                        */
                     }
                 }
             }
@@ -611,6 +611,7 @@ public class OAObjectReflectDelegate {
             String spp = linkInfo.getMergerPropertyPath();
             new HubMerger(oaObj, hub, spp);
         }
+        OAObjectValidateDelegate.setupHubValidator(oaObj, linkPropertyName, hub);
         
         return hub;
     }
@@ -1033,6 +1034,7 @@ public class OAObjectReflectDelegate {
                     OAObjectPropertyDelegate.setPropertyHubIfNotSet(obj, linkPropertyName, hx);
                 }
                 OAObjectPropertyDelegate.releasePropertyLock(obj, linkPropertyName);
+                OAObjectValidateDelegate.setupHubValidator(obj, linkPropertyName, hx);
             }
         }
         if (siblingKeys != null) {

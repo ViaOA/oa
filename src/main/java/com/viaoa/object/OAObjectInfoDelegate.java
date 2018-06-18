@@ -611,7 +611,7 @@ public class OAObjectInfoDelegate {
         if (method != null && argumentCount < 0) {
             return method;
         }
-        Set<String> set = OAObjectHashDelegate.getHashClassMethodNotFound(clazz);
+        final Set<String> set = OAObjectHashDelegate.getHashClassMethodNotFound(clazz);
         if (set.contains(methodName)) return null;
         
         boolean bRecalc = false;

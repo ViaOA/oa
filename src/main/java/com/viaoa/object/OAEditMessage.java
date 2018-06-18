@@ -1,4 +1,4 @@
-/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
+/*  Copyright 1999-2018 Vince Via vvia@viaoa.com
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -10,17 +10,39 @@
 */
 package com.viaoa.object;
 
-
+/**
+ * Used to get feedback from a change.
+ * @author vvia
+ *
+ */
 public class OAEditMessage {
     static final long serialVersionUID = 1L;
     private String msg;
     private Throwable throwable;
+    private Type type;
+
+    /**
+     * Type of change.
+     */
+    public enum Type {
+        Unknown,
+        Change,
+        Add,
+        Insert,
+        Remove,
+        RemoveAll,
+        Delete
+    }
     
     public OAEditMessage() {
     }
     public OAEditMessage(String msg) {
         this.msg = msg;
     }
+    public OAEditMessage(Type type) {
+        this.type = type;
+    }
+    
     public void setMessage(String msg) {
         this.msg = msg;
     }
@@ -32,6 +54,14 @@ public class OAEditMessage {
     }
     public void setThrowable(Throwable t) {
         this.throwable = t;
+    }
+    
+    public void setType(Type t) {
+        this.type = t;
+    }
+    public Type getType() {
+        if (type != null) return this.type;
+        return Type.Unknown;
     }
 }    
 	

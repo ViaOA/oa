@@ -17,8 +17,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
-import com.viaoa.sync.OASync;
-import com.viaoa.sync.OASyncDelegate;
 
 /**
  * Delegate used to register Hub listeners, get Listeners and to send Events to Hub listeners. 
@@ -31,15 +29,20 @@ public class HubEventDelegate {
     }
     
 	public static void fireBeforeRemoveEvent(Hub thisHub, Object obj, int pos) {
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
+	    HubListener[] hls = getAllListeners(thisHub);
+	    int x = hls.length;
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub,obj, pos);
+            HubListener hl;
+            if (!OARemoteThreadDelegate.isRemoteThread()) hl = getObjectValidateListener(thisHub);
+            else hl = null;
 	        try {
 	            OAThreadLocalDelegate.setSendingEvent(true);
-    	        for (int i=0; i<x; i++) { 
-    	        	hl[i].beforeRemove(hubEvent);
-    	        }
+	            if (hl != null) hl.beforeRemove(hubEvent);
+	            for (int i=0; i<x; i++) {
+	                if (hls[i] == hl) continue;
+	                hls[i].beforeRemove(hubEvent);
+	            }
 	        }
 	        finally {
 	            OAThreadLocalDelegate.setSendingEvent(false);
@@ -105,13 +108,24 @@ public class HubEventDelegate {
 	}
 
 	public static void fireBeforeRemoveAllEvent(Hub thisHub) {
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
+	    HubListener[] hls = getAllListeners(thisHub);
+	    int x = hls.length;
 	    if (x > 0) {
-	        HubEvent hubEvent = new HubEvent(thisHub);
-	        for (int i=0; i<x; i++) { 
-	        	hl[i].beforeRemoveAll(hubEvent);
-	        }
+            HubEvent hubEvent = new HubEvent(thisHub);
+            HubListener hl;
+            if (!OARemoteThreadDelegate.isRemoteThread()) hl = getObjectValidateListener(thisHub);
+            else hl = null;
+            try {
+                OAThreadLocalDelegate.setSendingEvent(true);
+                if (hl != null) hl.beforeRemoveAll(hubEvent);
+                for (int i=0; i<x; i++) {
+                    if (hls[i] == hl) continue;
+                    hls[i].beforeRemoveAll(hubEvent);
+                }
+            }
+            finally {
+                OAThreadLocalDelegate.setSendingEvent(false);
+            }
 	    }
 	}
 	public static void fireAfterRemoveAllEvent(Hub thisHub) {
@@ -154,14 +168,19 @@ public class HubEventDelegate {
         }
 	}
 	public static void fireBeforeAddEvent(Hub thisHub, Object obj, int pos) {
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
+	    HubListener[] hls = getAllListeners(thisHub);
+	    int x = hls.length;
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
+	        HubListener hl;
+	        if (!OAThreadLocalDelegate.isLoading() && !OARemoteThreadDelegate.isRemoteThread()) hl = getObjectValidateListener(thisHub);
+	        else hl = null;
 	        try {
 	            OAThreadLocalDelegate.setSendingEvent(true);
-    	        for (int i=0; i<x; i++) { 
-    	        	hl[i].beforeAdd(hubEvent);
+                if (hl != null) hl.beforeAdd(hubEvent);
+    	        for (int i=0; i<x; i++) {
+                    if (hls[i] == hl) continue;
+    	        	hls[i].beforeAdd(hubEvent);
     	        }
 	        }
 	        finally {
@@ -228,15 +247,20 @@ public class HubEventDelegate {
         }
 	}
 	public static void fireBeforeInsertEvent(Hub thisHub, Object obj, int pos) {
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
+	    HubListener[] hls = getAllListeners(thisHub);
+	    int x = hls.length;
 	    if (x > 0) {
+            HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
+            HubListener hl;
+            if (!OAThreadLocalDelegate.isLoading() && !OARemoteThreadDelegate.isRemoteThread()) hl = getObjectValidateListener(thisHub);
+            else hl = null;
 	        try {
-	            OAThreadLocalDelegate.setSendingEvent(true);
-    	        HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
-    	        for (int i=0; i<x; i++) { 
-    	        	hl[i].beforeInsert(hubEvent);
-    	        }
+                OAThreadLocalDelegate.setSendingEvent(true);
+                if (hl != null) hl.beforeInsert(hubEvent);
+                for (int i=0; i<x; i++) {
+                    if (hls[i] == hl) continue;
+                    hls[i].beforeInsert(hubEvent);
+                }
 	        }
 	        finally {
 	            OAThreadLocalDelegate.setSendingEvent(false);
@@ -341,13 +365,24 @@ public class HubEventDelegate {
         //fireMasterObjectChangeEvent(thisHub, false);
 	}
 	public static void fireBeforeDeleteEvent(Hub thisHub, Object obj) {
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
+	    HubListener[] hls = getAllListeners(thisHub);
+	    int x = hls.length;
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub, obj);
-	        for (int i=0; i<x; i++) { 
-	        	hl[i].beforeDelete(hubEvent);
-	        }
+            HubListener hl;
+            if (!OARemoteThreadDelegate.isRemoteThread()) hl = getObjectValidateListener(thisHub);
+            else hl = null;
+            try {
+                OAThreadLocalDelegate.setSendingEvent(true);
+                if (hl != null) hl.beforeDelete(hubEvent);
+                for (int i=0; i<x; i++) {
+                    if (hls[i] == hl) continue;
+                    hls[i].beforeDelete(hubEvent);
+                }
+            }
+            finally {
+                OAThreadLocalDelegate.setSendingEvent(false);
+            }
 	    }
 	}
 	public static void fireAfterDeleteEvent(Hub thisHub, Object obj) {
@@ -465,21 +500,20 @@ public class HubEventDelegate {
 	    @param newValue new value of property
 	*/
 	public static void fireBeforePropertyChange(Hub thisHub, OAObject oaObj, String propertyName, Object oldValue, Object newValue) {
-	    HubListener[] hl = getAllListeners(thisHub);
-	    int x = hl.length;
-	    int i;
-	    if (x > 0) {
-	        HubEvent hubEvent = new HubEvent(thisHub,oaObj,propertyName,oldValue,newValue);
-	        try {
-	            OAThreadLocalDelegate.setSendingEvent(true);
-    	        for (i=0; i<x; i++) {
-    	            hl[i].beforePropertyChange(hubEvent);
-    	        }
-	        }
-	        finally {
-	            OAThreadLocalDelegate.setSendingEvent(false);
-	        }
-	    }
+	    HubListener[] hls = getAllListeners(thisHub);
+	    int x = hls.length;
+        if (x > 0) {
+            HubEvent hubEvent = new HubEvent(thisHub,oaObj,propertyName,oldValue,newValue);
+            try {
+                OAThreadLocalDelegate.setSendingEvent(true);
+                for (int i=0; i<x; i++) {
+                    hls[i].beforePropertyChange(hubEvent);
+                }
+            }
+            finally {
+                OAThreadLocalDelegate.setSendingEvent(false);
+            }
+        }
 	}
 	
 	/**
@@ -669,7 +703,7 @@ public class HubEventDelegate {
 	
 	private final static HubListener[] hlEmpty = new HubListener[0];
 	/**
-	    Returns list of registered listeners.
+	    Returns list of registered listeners for this Hub only.
 	*/
 	protected static HubListener[] getHubListeners(Hub thisHub) {
 	    if (thisHub.datau.getListenerTree() == null) return hlEmpty;
@@ -690,6 +724,21 @@ public class HubEventDelegate {
 	*/
 	public static HubListener[] getAllListeners(Hub thisHub) {
 	    return getAllListeners(thisHub,0);
+	}
+
+	public static HubObjectValidateListener getObjectValidateListener(Hub thisHub) {
+	    if (thisHub == null) return null;
+	    
+	    thisHub = HubShareDelegate.getMainSharedHub(thisHub);
+	    if (thisHub.getMasterObject() == null) return null;
+	    
+	    HubListener[] hls = getHubListeners(thisHub);
+	    for (HubListener hl : hls) {
+	        if (hl instanceof HubObjectValidateListener) {
+	            return ((HubObjectValidateListener) hl);
+	        }
+	    }
+	    return null;
 	}
 	
 	// 20160606 cache for getAllListeners

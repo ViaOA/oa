@@ -336,6 +336,11 @@ public class OAObject implements java.io.Serializable, Comparable {
         OAObjectPropertyDelegate.removeProperty(this, name, true);
     }
 
+    public boolean isValid(String propertyName, Object newValue, OAEditMessage em) {
+        boolean b = OAObjectValidateDelegate.isValid(this, propertyName, newValue, em);
+        return b;
+    }
+    
     /**
         Flag to know if object is new and has not been saved.
     */
