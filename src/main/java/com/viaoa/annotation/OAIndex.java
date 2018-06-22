@@ -25,4 +25,5 @@ import java.lang.annotation.Target;
 public @interface OAIndex {
     String name();
     OAIndexColumn[] columns();
+    boolean fkey() default false;  // is this index for an foreign key
 }
