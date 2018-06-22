@@ -539,7 +539,7 @@ public class OAAnnotationDelegate {
             for (OAIndexColumn dbic : dbics) {
                 ss = (String[]) OAArray.add(String.class, ss, dbic.name());
             }
-            table.addIndex( new Index(ind.name(), ss) );
+            table.addIndex( new Index(ind.name(), ss, ind.fkey()) );
         }
     }
 

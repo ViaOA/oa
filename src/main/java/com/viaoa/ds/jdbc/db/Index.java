@@ -18,14 +18,25 @@ package com.viaoa.ds.jdbc.db;
 public class Index {
 	public String name;
 	public String[] columns;
+	public boolean fkey; // is this index for an foreign key (note: some DBs auto create indexes for fkeys)
 
     public Index(String name, String[] columns) {
     	this.name = name;
     	this.columns = columns;
     }
+    public Index(String name, String[] columns, boolean fkey) {
+        this.name = name;
+        this.columns = columns;
+        this.fkey = fkey;
+    }
     public Index(String name, String column) {
     	this.name = name;
     	this.columns = new String[] { column };
+    }
+    public Index(String name, String column, boolean fkey) {
+        this.name = name;
+        this.columns = new String[] { column };
+        this.fkey = fkey;
     }
 }
 

@@ -78,7 +78,7 @@ public class VerifyDelegate {
 	        }
 	        
 	        Column[] columns = t.getColumns();
-            DBMetaData dbx = ds.getDBMetaData();
+            final DBMetaData dbx = ds.getDBMetaData();
 
 	        for (int j=0; j<columns.length; j++) {
 	            Column c = columns[j];
@@ -236,6 +236,9 @@ public class VerifyDelegate {
 
 	        for (int j=0; j<indexes.length; j++) {
 	    		Index ind = indexes[j];
+	    		if (ind.fkey) {
+	    		    if (dbx.getFkeysAutoCreateIndex()) continue; 
+	    		}
 
 	    		rs = dbmd.getIndexInfo(null, null, t.name.toUpperCase(), false, false);
 	            int foundCnt = 0;
@@ -359,18 +362,4 @@ public class VerifyDelegate {
         }
         return bError;
 	}
-	
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
