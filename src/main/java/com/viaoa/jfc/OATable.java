@@ -275,7 +275,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         OATableColumn[] tcs = getAllTableColumns();
         if (col >= 0 && col < tcs.length) {
             OATableColumn tc = (OATableColumn) tcs[col];
-            defaultValue = tc.getToolTipText(row, col, defaultValue);
+            defaultValue = tc.getToolTipText(this, row, col, defaultValue);
         }
         defaultValue = getToolTipText(row, col, defaultValue);
         if (!OAString.isEmpty(OAString.trim(defaultValue))) {
@@ -289,7 +289,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
         if (col >= 0 && col < tcs.length) {
             OATableColumn tc = (OATableColumn) tcs[col];
-            defaultValue = tc.getToolTipText(row, col, defaultValue);
+            defaultValue = tc.getToolTipText(this, row, col, defaultValue);
         }
         return defaultValue;
     }
@@ -495,6 +495,21 @@ if (!getKeepSorted()) hub.cancelSort();
     public void addNotify() {
         super.addNotify();
         if (hubViewable != null) getViewableHub();
+    }
+    
+    // 20180620
+    public Object getObjectAt(int row, int col) {
+        Hub h = getHub();
+        if (h == null) return null;
+        Object obj = getHub().getAt(row);
+        if (obj == null) return null;
+        
+        OATableColumn[] tcs = getAllTableColumns();
+        if (col >= 0 && col < tcs.length) {
+            OATableColumn tc = (OATableColumn) tcs[col];
+            obj = tc.getObject(obj);
+        }
+        return obj;
     }
     
     // used by columns that need a listener for only the visible rows
@@ -1291,8 +1306,8 @@ if (!getKeepSorted()) hub.cancelSort();
             }
 
             @Override
-            public String getToolTipText(int row, int col, String defaultValue) {
-                defaultValue = super.getToolTipText(row, col, defaultValue);
+            public String getToolTipText(JTable table, int row, int col, String defaultValue) {
+                defaultValue = super.getToolTipText(table, row, col, defaultValue);
                 if (OAString.isEmpty(defaultValue)) {
                     defaultValue = (row + 1) + " of " + getHub().getSize();
                 }
@@ -1318,10 +1333,10 @@ if (!getKeepSorted()) hub.cancelSort();
         setSelectHub(hubSelect);
         chkSelection = new OACheckBox(hub, hubSelect) {
             @Override
-            public String getToolTipText(int row, int col, String defaultValue) {
+            public String getToolTipText(JTable table, int row, int col, String defaultValue) {
                 Object obj = hub.getAt(row);
                 if (obj == null || OATable.this.hubSelect == null) {
-                    return super.getToolTipText(row, col, defaultValue);
+                    return super.getToolTipText(table, row, col, defaultValue);
                 }
                 int pos = OATable.this.hubSelect.getPos(obj);
                 if (pos < 0) return OATable.this.hubSelect.getSize() + " selected";
@@ -1975,6 +1990,50 @@ if (!getKeepSorted()) hub.cancelSort();
             obj = tc.getValue(hub, obj);
             return obj;
         }
+/* not needed, tablecolumn has a similar method to getObject 
+        public Object getObjectAt(int row, int col) {
+            if (hub == null) return null;
+            Object obj;
+            int cnt = hub.getSize();
+
+            if (hub.isMoreData()) {
+                if (row + 5 >= cnt) {
+                    if (!loadMoreFlag && !loadingMoreFlag) {
+                        loadMoreFlag = true;
+                        loadingMoreFlag = true;
+
+                        if (isEditing()) getCellEditor().stopCellEditing(); // instead of
+                                                                            // "removeEditor();"
+                        obj = hub.elementAt(row);
+                        hub.elementAt(row + 5);
+
+                        // make sure cell is visible
+                        int pos = hub.getPos(obj);
+                        if (pos < 0) pos = 0;
+                        Rectangle cellRect;
+                        cellRect = getCellRect(pos, col, true);
+                        scrollRectToVisible(cellRect);
+                        repaint(100);
+
+                        pos = hub.getPos(hub.getActiveObject());
+                        if (pos < 0) getSelectionModel().clearSelection();
+                        else setRowSelectionInterval(pos, pos);
+
+                        loadingMoreFlag = false;
+                    }
+                }
+                else loadMoreFlag = false;
+            }
+
+            obj = hub.elementAt(row);
+            if (obj == null) return null;
+
+            OATableColumn tc = (OATableColumn) columns.elementAt(col);
+            obj = tc.getObject(hub, obj);
+            return obj;
+        }
+*/    
+    
     }
 
     // ******************************** H A C K S ********************************************
@@ -4216,4 +4275,5 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
         if (table.getLeftTable() != null) table.getLeftTable().getTableHeader().repaint(100);
         if (table.getRightTable() != null) table.getRightTable().getTableHeader().repaint(100);
     }
+    
 }

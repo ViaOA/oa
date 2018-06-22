@@ -338,7 +338,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     }
     
     @Override
-    public String getToolTipText(int row, int col, String defaultValue) {
+    public String getToolTipText(JTable table, int row, int col, String defaultValue) {
         return defaultValue;
     }
     

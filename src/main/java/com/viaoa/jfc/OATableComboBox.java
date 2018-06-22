@@ -116,7 +116,7 @@ public class OATableComboBox extends OACustomComboBox {
     }
     
     @Override
-    public String getToolTipText(int row, int col, String defaultValue) {
+    public String getToolTipText(JTable table, int row, int col, String defaultValue) {
         return defaultValue;
     }
 }

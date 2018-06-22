@@ -82,6 +82,7 @@ public class OAForm extends OABase implements Serializable {
     protected OASession session;
     protected String id;
     protected String url;  // jsp name
+    protected String title;
 
     protected String forwardUrl;
     
@@ -109,6 +110,13 @@ public class OAForm extends OABase implements Serializable {
             this.p = p;
             bShowInDialog = true;
         }
+    }
+    
+    public String getTitle() {
+        return title;
+    }
+    public void setTitle(String s) {
+        this.title = s;
     }
     
     /**

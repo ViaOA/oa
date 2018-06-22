@@ -77,9 +77,9 @@ public class OATableColumn {
     public HubListener hubListener; // 20101219 for columns that use a
                                     // propertyPath
 
-    public String getToolTipText(int row, int col, String defaultValue) {
+    public String getToolTipText(JTable table, int row, int col, String defaultValue) {
         if (oaComp != null) {
-            return oaComp.getToolTipText(row, col, defaultValue);
+            return oaComp.getToolTipText(table, row, col, defaultValue);
         }
         return defaultValue;
     }
@@ -309,7 +309,22 @@ public class OATableColumn {
         return obj;
     }
 
-    
+
+    /** 20180620
+     * get the last oaobject int the property path, for case where a column uses a property path instead of just a property.
+     */
+    public Object getObject(Object obj) {
+        if (obj == null) return null;
+        Method[] ms = methods;
+        if (ms == null || ms.length < 2) return obj;
+        
+        int x = ms.length;
+        for (int i=0; i<(x-1); i++) {
+            obj = OAReflect.getPropertyValue(obj, ms[i]);
+            if (obj == null) break;
+        }
+        return obj;
+    }
     
     // 20140404 moved this to OAObjectReflectDelegate
     /** 20140211
