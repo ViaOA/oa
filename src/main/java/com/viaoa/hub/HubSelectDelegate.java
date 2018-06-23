@@ -378,7 +378,7 @@ if (sel.getNextCount() != thisHub.getCurrentSize()) {
 	    boolean bHasMoreData;
 		if (sel != null) {
 		    boolean b = sel.hasBeenStarted();
-		    bHasMoreData = (b && sel.hasMore());
+		    bHasMoreData = (b && (sel.isSelectingNow() || sel.hasMore()));
 	    	if (b) sel.cancel();
 	        if (bRemoveSelect) thisHub.data.setSelect(null);
 	        HubDataDelegate.resizeToFit(thisHub);
