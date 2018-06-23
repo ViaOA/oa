@@ -391,7 +391,7 @@ public class OADataSourceClient extends OADataSource {
         }
 
         public void remove() {
-            getRemoteClient().datasource(IT_REMOVE, new Object[] {id} );
+            getRemoteClient().datasourceNoReturn(IT_REMOVE, new Object[] {id} );
         }
         @Override
         public String getQuery() {
