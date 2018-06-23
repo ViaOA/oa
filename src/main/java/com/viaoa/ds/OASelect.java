@@ -80,7 +80,7 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
     protected int amountRead=-1;
     protected int amountCount=-1;
     protected Object[] params;
-    public transient OADataSourceIterator query;
+    public volatile transient OADataSourceIterator query;
 
     public static final int defalutFetchAmount = 45;
     protected int fetchAmount=defalutFetchAmount;  // used by Hub to know how many to read at a time
@@ -92,6 +92,7 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
     protected OAFinder<?, TYPE> finder; // will be used instead of calling datasource
     protected Hub<TYPE> hubSearch;      // hub used to search from, instead of using DataSource
     private boolean bDirty;  // data should always be loaded from datasource  
+    private volatile boolean bIsSelectingNow;
     
     /** Create a new OASelect that is not initialzed. */
     public OASelect() {
@@ -567,25 +568,36 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
             return;
         }
 
-
-        if (whereObject != null) {
-            if (bCountFirst && amountCount < 0) {
-            	amountCount = ds.count(clazz, whereObject, where, params, propertyFromWhereObject, max);
-            }
-            query = ds.select(clazz, whereObject, where, params, propertyFromWhereObject, order, max, getDataSourceFilter(), getDirty());
-        }
-        else {
-            if (bPassthru) {
-                if (bCountFirst && amountCount < 0) amountCount = ds.countPassthru(where, max);
-                query = ds.selectPassthru(clazz, where, order, max, getDataSourceFilter(), getDirty());
+        try {
+            bIsSelectingNow = true;
+            if (whereObject != null) {
+                if (bCountFirst && amountCount < 0) {
+                	amountCount = ds.count(clazz, whereObject, where, params, propertyFromWhereObject, max);
+                }
+                query = ds.select(clazz, whereObject, where, params, propertyFromWhereObject, order, max, getDataSourceFilter(), getDirty());
             }
             else {
-                if (bCountFirst && amountCount < 0) amountCount = ds.count(clazz, where, params, max);
-                query = ds.select(clazz, where, params, order, max, getDataSourceFilter(), getDirty());
+                if (bPassthru) {
+                    if (bCountFirst && amountCount < 0) amountCount = ds.countPassthru(where, max);
+                    query = ds.selectPassthru(clazz, where, order, max, getDataSourceFilter(), getDirty());
+                }
+                else {
+                    if (bCountFirst && amountCount < 0) amountCount = ds.count(clazz, where, params, max);
+                    query = ds.select(clazz, where, params, order, max, getDataSourceFilter(), getDirty());
+                }
             }
+            OADataSourceIterator q = query;
+            if (q != null) q.hasNext();
+        }
+        finally {
+            bIsSelectingNow = false;
         }
         // 20110407
         OASelectManager.add(this);
+    }
+    
+    public boolean isSelectingNow() {
+        return bIsSelectingNow;
     }
 
     protected void finalize() throws Throwable {
@@ -665,7 +677,7 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
     */
     public synchronized void cancel() {
     	if (!bHasBeenStarted) bCancelled = true;
-    	else bCancelled = hasMore();
+    	else bCancelled = (bIsSelectingNow || hasMore());
         alFinderResults = null;
     	closeQuery();
     }
