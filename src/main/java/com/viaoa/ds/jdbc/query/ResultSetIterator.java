@@ -65,8 +65,8 @@ public class ResultSetIterator implements OADataSourceIterator {
     boolean bDatesIncludeTime;
     Object objectTrue, objectFalse;
     boolean bDirty;  
-    boolean bIsSelecting;
-    boolean bInit;
+    volatile boolean bIsSelecting;
+    volatile boolean bInit;
     DataAccessObject dataAccessObject; 
     DataAccessObject.ResultSetInfo resultSetInfo = new DataAccessObject.ResultSetInfo();
     Object[] arguments; // when using preparedStatement
@@ -218,6 +218,7 @@ public class ResultSetIterator implements OADataSourceIterator {
         
         rs = null;
         try {
+            bIsSelecting = true;
             if (bUsePreparedStatement) {
                 preparedStatement = ds.getConnectionPool().getPreparedStatement(query, false);
                 for (int i=0; arguments!=null && i < arguments.length; i++) {
@@ -232,7 +233,6 @@ public class ResultSetIterator implements OADataSourceIterator {
                 rs = statement.executeQuery(query);
             }
             
-            bIsSelecting = true;
             bMore = rs != null && rs.next(); // goto first
             bIsSelecting = false;
             if (!bMore) _close();
@@ -506,7 +506,26 @@ public class ResultSetIterator implements OADataSourceIterator {
         _close();
     }
     protected void _close() {
+        boolean b = false;
         try {
+            if (bIsSelecting) {
+                try {                    
+                    if (statement != null) {
+                        statement.cancel();
+                    }
+                    if (statement2 != null) {
+                        statement2.cancel();
+                    }
+                    if (preparedStatement != null) {
+                        preparedStatement.cancel();
+                    }
+                }
+                catch (Exception exx) {
+                    int xx = 4;
+                    xx++;
+                }
+            }
+            
             if (rs != null) {
                 rs.close();
                 rs = null;
@@ -519,15 +538,6 @@ public class ResultSetIterator implements OADataSourceIterator {
                 transaction.commit();
             }
 
-            if (statement != null) {
-                if (bIsSelecting) {
-                    try {                    
-                        statement.cancel();
-                    }
-                    catch (Exception exx) {
-                    }
-                }
-            }
         }
         catch (Exception e) {
             // throw new OADataSourceException(OADataSourceJDBC.this, "OADataSource.getStatement() "+e);
