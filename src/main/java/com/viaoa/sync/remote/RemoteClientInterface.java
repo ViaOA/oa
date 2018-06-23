@@ -38,6 +38,9 @@ public interface RemoteClientInterface {
             String property, String[] masterProps, OAObjectKey[] siblingKeys, boolean bForHubMerger);
 
     Object datasource(int command, Object[] objects);
+    
+    @OARemoteMethod(noReturnValue=true)
+    void datasourceNoReturn(int command, Object[] objects);
 
     boolean delete(Class objectClass, OAObjectKey objectKey);
     

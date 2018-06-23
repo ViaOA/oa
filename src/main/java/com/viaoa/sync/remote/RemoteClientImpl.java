@@ -113,6 +113,10 @@ public abstract class RemoteClientImpl implements RemoteClientInterface {
         Object result = getRemoteDataSource().datasource(command, objects);
         return result;
     }
+    @Override
+    public void datasourceNoReturn(int command, Object[] objects) {
+        getRemoteDataSource().datasource(command, objects);
+    }
 
     protected OADataSource getDataSource(Class c) {
         if (c != null) {
