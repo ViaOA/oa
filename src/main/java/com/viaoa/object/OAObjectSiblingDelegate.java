@@ -42,6 +42,7 @@ public class OAObjectSiblingDelegate {
     public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int maxAmount, ConcurrentHashMap<Integer, Boolean> hmIgnore) {
         long msStarted = System.currentTimeMillis();
         OAObjectKey[] keys = _getSiblings(mainObject, property, maxAmount, hmIgnore, msStarted);
+        
         long x = (System.currentTimeMillis()-msStarted);         
         if (throttle.check() || x > (MaxMs*2)) {
             if (OAObject.getDebugMode()) {
@@ -164,12 +165,14 @@ public class OAObjectSiblingDelegate {
 
         OAObject objInHub = mainObject;
         int ppReversePos = -1;
+        boolean bCalledFindBestSiblingHub = false;
 
         OALinkInfo lix = null;
         if (ppReverse != null) {
             OALinkInfo[] lis = ppReverse.getLinkInfos();
             if (lis != null && lis.length > 0) lix = lis[0];
             hub = findBestSiblingHub(mainObject, lix);
+            bCalledFindBestSiblingHub = true;
             ppPrefix = null;  
             if (hub == null || HubDetailDelegate.getLinkInfoFromDetailToMaster(hub) != lix) {
                 ppReverse = null;
@@ -195,6 +198,7 @@ public class OAObjectSiblingDelegate {
         }
         else {
             hub = findBestSiblingHub(mainObject, null);
+            bCalledFindBestSiblingHub = true;
             ppPrefix = null;  
         }
 
@@ -220,7 +224,15 @@ public class OAObjectSiblingDelegate {
         final HashMap<OAObjectKey, OAObject> hmTypeOneObjKey = new HashMap<>();
         
         final OACascade cascade = new OACascade();
-        
+
+        boolean bDone = false;
+        for (int ix=0; ix<2 && !bDone; ix++) {
+            if (ix == 1) {
+                if (bCalledFindBestSiblingHub) break;
+                objInHub = mainObject;
+                hub = findBestSiblingHub(mainObject, lix);
+            }
+
         for (int cnt=0 ; hub!=null; cnt++) {
             if (hsHubVisited.contains(hub)) break;
             hsHubVisited.add(hub);
@@ -234,21 +246,31 @@ public class OAObjectSiblingDelegate {
             startPosHubRoot = Math.max(0, startPosHubRoot - x);
             
             findSiblings(alObjectKey, hub, startPosHubRoot, ppPrefix, property, linkInfo, mainObject, hmTypeOneObjKey, hmIgnore, max, cascade, msStarted, cnt);
-            if (alObjectKey.size() >= max) break;
+            if (alObjectKey.size() >= max) {
+                bDone = true;
+                break;
+            }
 
             if (msStarted > 0) {
                 long lx = (System.currentTimeMillis()-msStarted);
                 if (lx > MaxMs) { //  && !OAObject.getDebugMode()) {
+                    bDone = true;
                     break;
                 }
             }
             if (cnt > 3) break;
-            if (cascade.getVisitCount() > 750) break;
+            if (cascade.getVisitCount() > 750) {
+                bDone = true;
+                break;
+            }
             
             // find next hub to use
             
             lix = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(hub);
-            if (lix == null || lix.getToClass() == null) break;  // could be using GroupBy as hub
+            if (lix == null || lix.getToClass() == null) {
+                bDone = true;
+                break;  // could be using GroupBy as hub
+            }
             
             objInHub = hub.getMasterObject();
             
@@ -301,7 +323,7 @@ public class OAObjectSiblingDelegate {
                 }
             }
         }
-        
+        }
         int x = alObjectKey.size();
         OAObjectKey[] keys = new OAObjectKey[x];
         alObjectKey.toArray(keys);

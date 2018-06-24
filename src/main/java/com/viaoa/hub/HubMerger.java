@@ -1742,6 +1742,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                     }
                     */
                 }
+                
                 afterAdd2(e);
             }
             finally {

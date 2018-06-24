@@ -524,17 +524,17 @@ if (!getKeepSorted()) hub.cancelSort();
         if (aiViewableChanged == null) {
             Component c = this.getParent();
             for ( ;c != null;c = c.getParent()) {
-                if (c instanceof JScrollPane) {
-                    aiViewableChanged = new AtomicInteger();
-                    bCallUpdate = true;
-                    JViewport vp = ((JScrollPane) c).getViewport();
-                    vp.addChangeListener(new ChangeListener() {
-                        @Override
-                        public void stateChanged(ChangeEvent e) {
-                            updateViewableHub();
-                        }
-                    });
-                }
+                if (!(c instanceof JScrollPane)) continue;
+                aiViewableChanged = new AtomicInteger();
+                bCallUpdate = true;
+                JViewport vp = ((JScrollPane) c).getViewport();
+                vp.addChangeListener(new ChangeListener() {
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        updateViewableHub();
+                    }
+                });
+                break;
             }
         }        
         if (bCallUpdate) updateViewableHub();
@@ -560,8 +560,18 @@ if (!getKeepSorted()) hub.cancelSort();
         int rowBottom = rowAtPoint(rec.getLocation());
 
         hubViewable.clear();
-        for (int i=rowTop; i<=rowBottom; i++) {
-            hubViewable.add(hub.getAt(i));
+
+        
+        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
+        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        try {
+            OAThreadLocalDelegate.setGetDetailHub(hub, null);
+            for (int i=rowTop; i<=rowBottom; i++) {
+                hubViewable.add(hub.getAt(i));
+            }
+        }
+        finally {
+            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
         }
     }
     
