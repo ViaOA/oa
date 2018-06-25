@@ -73,6 +73,7 @@ public class OADateComboBox extends OACustomComboBox {
         model = new MyDateComboBoxModel(this);
         setModel(model);
         setRenderer(new MyDateListCellRenderer(this));
+        initialize();
     }
 
     protected boolean bAllowClear=true;
@@ -88,6 +89,7 @@ public class OADateComboBox extends OACustomComboBox {
     */
     public OADateComboBox(Hub hub, String propertyPath, int columns) {
         super(hub,propertyPath, columns, true);
+        initialize();
     }
 
     /**
@@ -97,6 +99,7 @@ public class OADateComboBox extends OACustomComboBox {
     */
     public OADateComboBox(Hub hub, String propertyPath) {
         super(hub, propertyPath, true);
+        initialize();
     }
 
     /**
@@ -107,6 +110,7 @@ public class OADateComboBox extends OACustomComboBox {
     */
     public OADateComboBox(Object obj, String propertyPath, int columns) {
         super(obj,propertyPath, columns, true);
+        initialize();
     }
 
     /**
@@ -116,8 +120,12 @@ public class OADateComboBox extends OACustomComboBox {
     */
     public OADateComboBox(Object obj, String propertyPath) {
         super(obj, propertyPath, true);
+        initialize();
     }
 
+    @Override
+    public void initialize() {
+    }
 
 
     /**

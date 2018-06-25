@@ -49,6 +49,7 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
     */
     public OATextArea() {
         control = new OATextAreaController();
+        initialize();
     }
 
     /**
@@ -57,6 +58,7 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
     */
     public OATextArea(Hub hub, String propertyPath) {
         control = new OATextAreaController(hub, propertyPath);
+        initialize();
     }
 
     /**
@@ -68,6 +70,7 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
     public OATextArea(Hub hub, String propertyPath, int rows, int cols) {
         super(rows, cols);
         control = new OATextAreaController(hub, propertyPath);
+        initialize();
     }
 
     /**
@@ -76,6 +79,7 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
     */
     public OATextArea(OAObject hubObject, String propertyPath) {
         control = new OATextAreaController(hubObject, propertyPath);
+        initialize();
     }
 
     /**
@@ -87,8 +91,14 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
     public OATextArea(OAObject hubObject, String propertyPath, int rows, int cols) {
         super(rows, cols);
         control = new OATextAreaController(hubObject, propertyPath);
+        initialize();
     }
 
+    @Override
+    public void initialize() {
+    }
+    
+    
     @Override
     public TextAreaController getController() {
         return control;

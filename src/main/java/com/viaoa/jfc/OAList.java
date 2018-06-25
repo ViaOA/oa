@@ -48,6 +48,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     */
     public OAList() {
         this(null, null, 10, 5);
+        initialize();
     }
     
     /**
@@ -55,6 +56,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     */
     public OAList(Hub hub) {
         this(hub, null, 10, 5);
+        initialize();
     }
 
     /**
@@ -62,6 +64,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     */
     public OAList(Hub hub, String propertyPath) {
         this(hub,propertyPath, 10,5);
+        initialize();
     }
 
     /**
@@ -80,8 +83,13 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         dropTarget = new DropTarget(this,this);
         
         setBorder(new EmptyBorder(2,2,2,2));
+        initialize();
     }
 
+    @Override
+    public void initialize() {
+    }
+    
     
     @Override
     public JFCController getController() {

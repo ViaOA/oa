@@ -102,6 +102,7 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         };
         
         setup();
+        initialize();
     }
 
     public OAMenuItem() {
@@ -171,6 +172,10 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         this(hub, text, icon, enabledMode, null);
     }
 
+    @Override
+    public void initialize() {
+    }
+    
     @Override
     public ButtonController getController() {
         return control;

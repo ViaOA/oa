@@ -34,6 +34,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         Create an unbound ComboBox.
     */
     public OACustomComboBox() {
+        initialize();
     }
 
     /**
@@ -43,6 +44,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     public OACustomComboBox(Hub hub, String propertyPath, int columns, boolean bTypeEditProperty) {
         this(hub,propertyPath,bTypeEditProperty);
         setColumns(columns);
+        initialize();
     }
 
     /**
@@ -50,6 +52,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     */
     public OACustomComboBox(Hub hub, String propertyPath, boolean bTypeEditProperty) {
         control = new OACustomComboBoxController(hub, propertyPath, bTypeEditProperty);
+        initialize();
     }
 
     /**
@@ -59,6 +62,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     public OACustomComboBox(Object obj, String propertyPath, int columns, boolean bTypeEditProperty) {
         this(obj, propertyPath, bTypeEditProperty);
         setColumns(columns);
+        initialize();
     }
 
     /**
@@ -66,8 +70,14 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     */
     public OACustomComboBox(Object obj, String propertyPath, boolean bTypeEditProperty) {
         control = new OACustomComboBoxController(obj, propertyPath, bTypeEditProperty);
+        initialize();
     }
 
+    
+    @Override
+    public void initialize() {
+    }
+    
     /*
      *  2006/12/13
      *  Can be overwritten to clear selected value.  Called when clicking the clear button

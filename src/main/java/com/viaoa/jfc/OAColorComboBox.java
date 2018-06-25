@@ -36,6 +36,7 @@ public class OAColorComboBox extends OACustomComboBox {
     */
     public OAColorComboBox() {
         setupRenderer();
+        initialize();
     }
 
     /**
@@ -47,6 +48,7 @@ public class OAColorComboBox extends OACustomComboBox {
     public OAColorComboBox(Hub hub, String propertyPath, int columns) {
         super(hub,propertyPath, columns, true);
         setupRenderer();
+        initialize();
     }
 
     /**
@@ -57,6 +59,7 @@ public class OAColorComboBox extends OACustomComboBox {
     public OAColorComboBox(Hub hub, String propertyPath) {
         super(hub, propertyPath, true);
         setupRenderer();
+        initialize();
     }
 
     /**
@@ -68,6 +71,7 @@ public class OAColorComboBox extends OACustomComboBox {
     public OAColorComboBox(Object obj, String propertyPath, int columns) {
         super(obj,propertyPath, columns, true);
         setupRenderer();
+        initialize();
     }
 
     /**
@@ -78,8 +82,14 @@ public class OAColorComboBox extends OACustomComboBox {
     public OAColorComboBox(Object obj, String propertyPath) {
         super(obj, propertyPath, true);
         setupRenderer();
+        initialize();
     }
 
+    @Override
+    public void initialize() {
+    }
+    
+    
     public void setSelectedItem(Object item) {
         super.setSelectedItem(item);
         repaint();  // since there is not a model

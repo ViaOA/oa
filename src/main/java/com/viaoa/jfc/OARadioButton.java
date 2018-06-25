@@ -40,6 +40,7 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     */  
     public OARadioButton() {
         control = new OARadioButtonController();
+        initialize();
     }
     
     /**
@@ -48,6 +49,7 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     */  
     public OARadioButton(Hub hub, String propertyPath, Object value) {
         control = new OARadioButtonController(hub, propertyPath, value);
+        initialize();
     }
     /**
         Create an OARadioButton that is bound to a Hub.
@@ -55,6 +57,7 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     */  
     public OARadioButton(Hub hub, String propertyPath, boolean value) {
         control = new OARadioButtonController(hub, propertyPath, value);
+        initialize();
     }
     /**
         Create an OARadioButton that is bound to a Hub.
@@ -62,6 +65,7 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     */  
     public OARadioButton(Hub hub, String propertyPath, int value) {
         control = new OARadioButtonController(hub, propertyPath, new Integer(value));
+        initialize();
     }
     /**
         Create an OARadioButton that is bound to an Object.
@@ -70,6 +74,7 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     */  
     public OARadioButton(OAObject obj, String propertyPath, Object objOn, Object objOff) {
         control = new OARadioButtonController(obj, propertyPath, objOn, objOff);
+        initialize();
     }
     
     /**
@@ -79,6 +84,7 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     */  
     public OARadioButton(Hub hub, String propertyPath, Object onValue, Object offValue) {
         control = new OARadioButtonController(hub, propertyPath,onValue, offValue);
+        initialize();
     }
 
     /**
@@ -88,6 +94,7 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     */  
     public OARadioButton(Hub hub, String propertyPath, boolean onValue, boolean offValue) {
         control = new OARadioButtonController(hub, propertyPath, new Boolean(onValue), new Boolean(offValue));
+        initialize();
     }
     
     
@@ -96,8 +103,14 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     */  
     public OARadioButton(Hub hub, String propertyPath) {
         control = new OARadioButtonController(hub, propertyPath);
+        initialize();
     }
 
+    @Override
+    public void initialize() {
+    }
+    
+    
     @Override
     public JFCController getController() {
         return control;

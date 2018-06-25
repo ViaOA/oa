@@ -67,16 +67,23 @@ public class OAFileChooser extends JFileChooser {
     public OAFileChooser(File directory) {
         super(directory);
         setup();
+        initialize();
     }
     public OAFileChooser(String path) {
         super(path);
         setup();
+        initialize();
     }
     public OAFileChooser() {
         super();
         setup();
+        initialize();
     }
 
+    // @Override
+    public void initialize() {
+    }
+    
     /**
         Set the file that is to be selected when the chooser is displayed.
     */

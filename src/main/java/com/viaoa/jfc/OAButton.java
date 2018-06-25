@@ -92,6 +92,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     */
     public OAButton(Hub hub, String text, Icon icon, ButtonEnabledMode enabledMode, ButtonCommand command) {
         this(hub, text, icon, enabledMode, command, true);
+        initialize();
     }
     public OAButton(Hub hub, String text, ButtonEnabledMode enabledMode, ButtonCommand command) {
         this(hub, text, null, enabledMode, command, true);
@@ -193,6 +194,10 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         this(hub, text, icon, enabledMode, null);
     }
 
+    @Override
+    public void initialize() {
+    }
+    
     
     @Override
     public ButtonController getController() {

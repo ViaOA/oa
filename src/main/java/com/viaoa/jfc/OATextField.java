@@ -35,10 +35,12 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     public OATextField() {
         control = new OATextFieldController();
         setDisabledTextColor(Color.gray);
+        initialize();
     }
     public OATextField(TextFieldController control) {
         this.control = control;
         setDisabledTextColor(Color.gray);
+        initialize();
     }
 
     /**
@@ -48,6 +50,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     public OATextField(Hub hub, String propertyPath) {
         control = new OATextFieldController(hub, propertyPath);
         setDisabledTextColor(Color.gray);
+        initialize();
     }
 
     /**
@@ -59,6 +62,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         super(cols);
         control = new OATextFieldController(hub, propertyPath);
         setDisabledTextColor(Color.gray);
+        initialize();
     }
 
     /**
@@ -68,6 +72,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     public OATextField(OAObject hubObject, String propertyPath) {
         control = new OATextFieldController(hubObject, propertyPath);
         setDisabledTextColor(Color.gray);
+        initialize();
     }
 
     /**
@@ -79,8 +84,13 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         super(cols);
         control = new OATextFieldController(hubObject, propertyPath);
         setDisabledTextColor(Color.gray);
+        initialize();
     }
 
+    @Override
+    public void initialize() {
+    }
+    
     public TextFieldController getController() {
         return control;
     }
@@ -354,7 +364,8 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
             //if (cols < 1) {
                 cols = control.getPropertyInfoMaxColumns();
                 if (cols < 1) {
-                    cols = getColumns() * 2; 
+                    cols = 999;
+                    // cols = getColumns() * 2; 
                 }
             //}
         }

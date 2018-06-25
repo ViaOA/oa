@@ -36,6 +36,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     */
     public OALabel() {
         control = new OALabelController();
+        initialize();
     }
 
     /**
@@ -43,6 +44,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     */
     public OALabel(Hub hub, String propertyPath) {
         control = new OALabelController(hub, propertyPath);
+        initialize();
     }
     /**
         Create label that is bound to a property for the active object in a Hub.
@@ -51,6 +53,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     public OALabel(Hub hub, String propertyPath, int cols) {
         control = new OALabelController(hub, propertyPath);
         setColumns(cols);
+        initialize();
     }
 
     /**
@@ -58,6 +61,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     */
     public OALabel(OAObject hubObject, String propertyPath) {
         control = new OALabelController(hubObject, propertyPath);
+        initialize();
     }
 
     /**
@@ -68,13 +72,19 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
         control = new OALabelController(hubObject, propertyPath);
         setColumns(cols);
         // setText(" ");  //<-- this screws preferredSize if before setColumns()
+        initialize();
     }
 
     /** Used with imageProperty, imagePath to display icon */
     public OALabel(Hub hub) {
         control = new OALabelController(hub);
+        initialize();
     }
 
+    @Override
+    public void initialize() {
+    }
+    
     public OALabelController getController() {
     	return control;
     }

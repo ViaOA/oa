@@ -31,12 +31,14 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
     */  
     public OAPasswordField() {
         control = new OAPasswordFieldController();
+        initialize();
     }
     /**
         Bind a PasswordField to a property path in the active object of a Hub.
     */  
     public OAPasswordField(Hub hub, String propertyPath) {
         control = new OAPasswordFieldController(hub, propertyPath);
+        initialize();
     }
     /**
         Bind a PasswordField to a property path in the active object of a Hub.
@@ -44,12 +46,14 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
     public OAPasswordField(Hub hub, String propertyPath, int cols) {
         super(cols);
         control = new OAPasswordFieldController(hub, propertyPath);
+        initialize();
     }
     /**
         Bind a component to a property path for an object.
     */  
     public OAPasswordField(OAObject oaObject, String propertyPath) {
         control = new OAPasswordFieldController(oaObject, propertyPath);
+        initialize();
     }
     /**
         Bind a component to a property path for an object.
@@ -57,8 +61,13 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
     public OAPasswordField(OAObject oaObject, String propertyPath, int cols) {
         super(cols);
         control = new OAPasswordFieldController(oaObject, propertyPath);
+        initialize();
     }
 
+    @Override
+    public void initialize() {
+    }
+    
     @Override
     public OAPasswordFieldController getController() {
         return control;

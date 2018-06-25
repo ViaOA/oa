@@ -58,6 +58,7 @@ public class OADateChooser extends JPanel implements OAJFCComponent {
         setBorder(new LineBorder(Color.black, 1));
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
         setDisplayDate(new OADate());
+        initialize();
     }
 
     /**
@@ -66,6 +67,11 @@ public class OADateChooser extends JPanel implements OAJFCComponent {
     public OADateChooser(Hub hub, String propertyPath) {
         this();
         control = new OADateChooserController(hub, propertyPath);
+        initialize();
+    }
+
+    @Override
+    public void initialize() {
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {

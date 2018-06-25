@@ -26,6 +26,17 @@ import javax.swing.border.LineBorder;
  
  * @author vvia
  *
+ *
+ *  Note: it will allow it to grow up to comp.maxSize
+ *  
+ *  example:  
+ 
+        txt = new OATextField(hubCalcPropertyDef, "toolTip", 14);
+        txt.setMaximumColumns(80);
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        gc.gridwidth = GridBagConstraints.REMAINDER;
+        pan.add(new OAResizePanel(txt, 80), gc);
+ 
  */
 public class OAResizePanel extends JPanel {
 

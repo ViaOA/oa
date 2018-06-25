@@ -43,8 +43,14 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
                 return OAFormattedTextField.this.isVisible(bIsCurrentlyVisible);
             }
         };
+        initialize();
     }
 
+    @Override
+    public void initialize() {
+    }
+    
+    
     public void addNotify() {
         super.addNotify();
         control.afterChangeActiveObject(null);

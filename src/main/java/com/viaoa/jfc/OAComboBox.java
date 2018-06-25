@@ -45,6 +45,7 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
     */
     public OAComboBox() {
         this(null, null);
+        initialize();
     }
 
     /**
@@ -52,6 +53,7 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
     */
     public OAComboBox(Hub hub) {
         this(hub, "");
+        initialize();
     }
 
     /**
@@ -61,6 +63,7 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
     public OAComboBox(Hub hub, String propertyPath, int columns) {
         this(hub,propertyPath);
         setColumns(columns);
+        initialize();
     }
     /**
         Create ComboBox that is bound to a property for the active object in a Hub.
@@ -75,8 +78,12 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
         Color c = UIManager.getColor("ComboBox.foreground");
         if (c == null) c = Color.black;
         //20151002 removed: UIManager.put("ComboBox.disabledForeground", c);
+        initialize();
     }
 
+    @Override
+    public void initialize() {
+    }
     
     /**
         Flag to enable undo, default is true.

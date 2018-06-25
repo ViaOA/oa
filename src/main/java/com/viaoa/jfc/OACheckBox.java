@@ -37,10 +37,12 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     */
     public OACheckBox() {
         createHub2ToggleButton(null, null, null, null);
+        initialize();
     }
     public OACheckBox(String txt) {
         createHub2ToggleButton(null, null, null, null);
         setText(txt);
+        initialize();
     }
 
     public void bind(Hub hub, String propertyPath) {
@@ -53,6 +55,10 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
         control = new OACheckBoxController(hub, propertyPath, onValue, offValue);
     }
     
+    @Override
+    public void initialize() {
+    }
+    
     
     /**
         Create CheckBox that is bound to a property for the active object in a Hub.
@@ -61,6 +67,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     public OACheckBox(Hub hub, String propertyPath, int cols) {
         this(hub,propertyPath);
         setColumns(cols);
+        initialize();
     }
 
     /**
@@ -68,6 +75,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     */
     public OACheckBox(Hub hub, String propertyPath) {
         createHub2ToggleButton(hub, propertyPath, null, null);
+        initialize();
     }
     /**
         Create CheckBox that is bound to a property for the active object in a Hub.
@@ -76,6 +84,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     */
     public OACheckBox(Hub hub, String propertyPath, Object onValue, Object offValue) {
         createHub2ToggleButton(hub, propertyPath, onValue, offValue);
+        initialize();
     }
 
     /**
@@ -85,6 +94,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     */
     public OACheckBox(Hub hub, Hub hubSelect) {
         control = new OACheckBoxController(hub, hubSelect);
+        initialize();
     }
 
     private boolean onItemStateChanged(ItemEvent evt) {
@@ -108,6 +118,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     */
     public OACheckBox(OAObject oaObject, String propertyPath) {
         control = new OACheckBoxController(oaObject, propertyPath);
+        initialize();
     }
     /**
         Create CheckBox that is bound to a property for an object.
@@ -116,6 +127,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     */
     public OACheckBox(OAObject oaObject, String propertyPath, Object onValue, Object offValue) {
         control = new OACheckBoxController(oaObject, propertyPath, onValue, offValue);
+        initialize();
     }
 
     @Override
