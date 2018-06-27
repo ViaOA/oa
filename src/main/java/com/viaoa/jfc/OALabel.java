@@ -392,7 +392,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
         return bIsCurrentlyVisible;
     }
 
-    class OALabelController extends LabelController {
+    public class OALabelController extends LabelController {
         public OALabelController() {
             super(OALabel.this);
         }    

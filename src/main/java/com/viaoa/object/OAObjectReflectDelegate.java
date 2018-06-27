@@ -2463,8 +2463,13 @@ public class OAObjectReflectDelegate {
         if (bCheckLink) {
             hx = HubLinkDelegate.getLinkToHub(hubChild, true);
             if (hx != null) {
-                String s = HubLinkDelegate.getLinkHubPath(hubChild, true);
-                if (propPath != null) s = propPath + "." + s;
+                boolean b = HubLinkDelegate.getLinkedOnPos(hubChild, true);
+                String s;
+                if (!b) {
+                    s = HubLinkDelegate.getLinkHubPath(hubChild, true);
+                    if (propPath != null) s = propPath + "." + s;
+                }                
+                else s = null;
                 
                 if (hx == hubParent) {
                     return s;

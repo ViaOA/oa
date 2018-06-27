@@ -68,6 +68,7 @@ public class JFCController extends HubListenerAdapter {
     private String propertyPathFromActualHub;
     private Method[] methodsToActualHub;
     private Method[] methodsFromActualHub;
+    private Method[] methodsFromActualHubAsString;
     private Method methodSet;
     private Method methodValidate;   // in OAObject isValidXxx(newValue)
     
@@ -597,6 +598,7 @@ public class JFCController extends HubListenerAdapter {
         propertyPathFromActualHub = propertyPath;
         methodsToActualHub = null;
         methodsFromActualHub = null;
+        methodsFromActualHubAsString = null;
         methodSet = null;
 
         
@@ -639,6 +641,20 @@ public class JFCController extends HubListenerAdapter {
             break;
         }
         if (methodsFromActualHub == null) methodsFromActualHub = ms;
+        
+        // 20180626 see if methodName"AsString" exists
+        methodsFromActualHubAsString = null;
+        if (methodsFromActualHub != null && methodsFromActualHub.length > 0) {
+            Method m = methodsFromActualHub[methodsFromActualHub.length-1];
+            
+            Method mx = OAReflect.getMethod(m.getDeclaringClass(), m.getName()+"AsString", 0, null);
+            if (mx != null) {
+                methodsFromActualHubAsString = new Method[methodsFromActualHub.length];
+                System.arraycopy(methodsFromActualHub, 0, methodsFromActualHubAsString, 0, methodsFromActualHub.length-1);
+                methodsFromActualHubAsString[methodsFromActualHub.length-1] = mx;
+            }
+        }
+        
         
         if (ss != null && ss.length > 0) {
             Class[] cs = oaPropertyPath.getClasses();
@@ -732,7 +748,12 @@ public class JFCController extends HubListenerAdapter {
             s = OAConverter.toString(objx, fmt);
         }
         else {
-            s = OAReflect.getPropertyValueAsString(obj, methodsFromActualHub, fmt);
+            if (methodsFromActualHubAsString != null) {
+                Object objx = OAReflect.getPropertyValue(obj, methodsFromActualHubAsString);
+                if (objx instanceof String) s = (String) objx;
+                else s = OAConv.toString(objx);
+            }
+            else s = OAReflect.getPropertyValueAsString(obj, methodsFromActualHub, fmt);
         }
         return s;
     }

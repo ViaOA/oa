@@ -34,6 +34,7 @@ public class OATableColumn {
     public String pathIntValue; // if using a LinkHub that is linked on hub position
                          // and need to get integer to use
     Method[] methods, methodsIntValue;
+    Method[] methodsAsString;
     private TableCellEditor comp;
     TableCellRenderer renderer;
     boolean bLinkOnPos;
@@ -277,7 +278,9 @@ public class OATableColumn {
             }
         }
 */        
-        Method[] ms = getMethods(hub);
+        Method[] ms;
+        if (methodsAsString != null) ms = methodsAsString;
+        else ms = getMethods(hub);
 
         if (bLinkOnPos) {
             Method[] m2 = methodsIntValue;
@@ -407,7 +410,7 @@ public class OATableColumn {
             return _getMethods(hubTable);
         }
         catch (Exception e) {
-//qqqqqqqqqqqq testing, to catch exceptions     
+            //qqq testing, to catch exceptions     
             e.printStackTrace();
             System.out.println("error: "+e);
         }
@@ -417,7 +420,6 @@ public class OATableColumn {
         if (methods != null && hubTable == hubMethodHub) return methods;
         hubMethodHub = hubTable;
         pathIntValue = null;
-
         bLinkOnPos = false;
 
         // changed so that it will only change the path when the component hub
@@ -426,15 +428,17 @@ public class OATableColumn {
             bLinkOnPos = HubLinkDelegate.getLinkedOnPos(oaComp.getHub(), true);
             path = origPath;
             if (!bIsAlreadyExpanded) {
-                // 20150303
-                //was: String s = OAObjectReflectDelegate.getPropertyPathFromMaster(hubTable, oaComp.getHub());
-                String s = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, oaComp.getHub());
-                if (s != null) { 
-                    path = s + "." + path;
+                if (!bLinkOnPos) {
+                    String s = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, oaComp.getHub());
+                    if (s != null) { 
+                        path = s + "." + path;
+                    }
                 }
-                if (bLinkOnPos) {
-                    pathIntValue = HubLinkDelegate.getLinkToProperty(oaComp.getHub());;
-                    path = origPath;
+                else {
+                    String s = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, oaComp.getHub());
+                    if (s == null) s = "";
+                    else s += ".";
+                    pathIntValue = s + HubLinkDelegate.getLinkToProperty(oaComp.getHub());
                 }
             }
         }
@@ -514,6 +518,20 @@ public class OATableColumn {
             };
             table.getHub().addHubListener(hubListener);
         }
+        
+        // 20180626 see if methodName"AsString" exists
+        methodsAsString = null;
+        if (methods != null && methods.length > 0) {
+            Method m = methods[methods.length-1];
+            
+            Method mx = OAReflect.getMethod(m.getDeclaringClass(), m.getName()+"AsString", 0, null);
+            if (mx != null) {
+                methodsAsString = new Method[methods.length];
+                System.arraycopy(methods, 0, methodsAsString, 0, methods.length-1);
+                methodsAsString[methods.length-1] = mx;
+            }
+        }
+        
         return methods;
     }
 

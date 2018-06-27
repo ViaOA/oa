@@ -138,9 +138,10 @@ public class LabelController extends JFCController {
             String text = null;
             if (obj != null || bIsHubCalc) {
                 if (getPropertyPath() != null) {
-                    Object value = getPropertyPathValue(obj);
-                    if (value == null || value instanceof OANullObject) text = null;
-                    else text = OAConv.toString(value, getFormat());
+                    text = getPropertyPathValueAsString(obj, getFormat());
+                    // Object value = getPropertyPathValueAsString(obj, getFormat());
+                    // if (value == null || value instanceof OANullObject) text = null;
+                    //else text = OAConv.toString(value, getFormat());
                     
                     if (text != null && obj instanceof OAObject) {
                         if (isPropertyPathValueNull(obj)) text = null;

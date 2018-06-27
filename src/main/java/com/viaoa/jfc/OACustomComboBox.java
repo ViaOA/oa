@@ -132,7 +132,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         Format string used for displaying value.
     */
     public String getFormat() {
-        if (control != null) control.getFormat();
+        if (control != null) return control.getFormat();
         return format;
     }
 

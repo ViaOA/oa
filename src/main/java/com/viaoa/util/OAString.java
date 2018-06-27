@@ -2696,7 +2696,7 @@ public class OAString {
         return concat(toText, value, " ");
     }
     public static String concat(String toText, String value, String sepChar) {
-        if (value == null) {
+        if (value == null || value.length() == 0) {
             if (toText == null) return "";
             return toText;
         }
