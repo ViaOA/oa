@@ -144,6 +144,12 @@ public class OAThreadLocalDelegate {
 		}
         if (x > 50 || x < 0 || x2 > 50 || x2 < 0) {
             msLoadingObject = throttleLOG("TotalIsLoading="+x2+", ti="+x, msLoadingObject);
+/**qqqqqqqqqqqqq
+Exception ex = new Exception("TotalIsLoading="+x2+", ti="+x);
+ex.printStackTrace();
+int xx=4;
+xx++;
+qqqqqqqqqqqqqqqq*/
         }
         return bPreviousValue;
 	}

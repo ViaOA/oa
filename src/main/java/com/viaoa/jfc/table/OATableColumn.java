@@ -51,6 +51,8 @@ public class OATableColumn {
     public int defaultWidth; // 2006/12/28
     public int currentWidth; // 2006/12/28
     boolean allowSorting=true;
+    protected OATableColumnCustomizer columnCustomizer;
+
     
     public boolean getAllowSorting() {
         return allowSorting;
@@ -127,133 +129,14 @@ public class OATableColumn {
         }
     }
 
-    private Hub hubMethodHub; // 2006/12/11
-
-/* **qqqqqqq OLD    
-    // methods gets set to null whenever Hub or PropertyPath get changed
-    public Method[] getMethods_OLD(Hub hub) {
-        if (methods != null && hub == hubMethodHub) return methods;
-
-        hubMethodHub = hub;
-        pathIntValue = null;
-        // changed so that it will only change the path when the component hub
-        // is linked back to the table.hub
-        if (oaComp != null && oaComp.getHub() != null && !bIsAlreadyExpanded) {
-            path = origPath;
-            String holdPath = path;
-            // get path from any link Hub
-            Hub h = oaComp.getHub();
-
-            bLinkOnPos = HubLinkDelegate.getLinkedOnPos(h, true);
-            // 20110116
-            String fromProp = HubLinkDelegate.getLinkFromProperty(h, true);
-            if (fromProp != null) {
-                path = fromProp;
-            }
-            else {
-                // see if this is linked to table hub, and expand the path 
-                for (; h != hub;) {
-                    Hub lh = HubLinkDelegate.getLinkToHub(h, true);
-                    if (lh == null) break;
-                    if (path == null) path = "";
-                    if (bLinkOnPos) {
-                        if (pathIntValue != null) pathIntValue = "." + pathIntValue;
-                        else pathIntValue = "";
-                        pathIntValue = HubLinkDelegate.getLinkHubPath(h, true) + pathIntValue;
-                    }
-                    else {
-                        if (path.length() == 0) path = HubLinkDelegate.getLinkHubPath(h, true);
-                        else path = HubLinkDelegate.getLinkHubPath(h, true) + "." + path;
-                    }
-                    h = lh;
-                    if (h == hub) break; // 20131109
-                    if (hub.getMasterHub() == null) { // 20131109 could be a hub copy
-                        if (h.getObjectClass().equals(hub.getObjectClass())) break;
-                    }
-                }
-                
-                if (h != hub && !bLinkOnPos) {
-                    if (HubShareDelegate.isUsingSameSharedAO(hub, h, true)) h = hub;
-                }
-                
-                if (h != hub && !bLinkOnPos) {  // 20131109 
-                    Hub mh = HubDetailDelegate.getMasterHub(h);
-                    if (mh != null) {
-                        if (HubShareDelegate.isUsingSameSharedAO(mh, hub, true)) mh = hub;
-                    }
-                    
-                    if (mh == hub) {
-                        path = HubDetailDelegate.getPropertyFromMasterToDetail(h) + "." + path;
-                    }
-                    else if (mh != null && mh.getObjectClass().equals(hub.getObjectClass()) && hub.getMasterHub() == null) {
-                        // 20131026 this is when a hubCopy is used
-                        path = HubDetailDelegate.getPropertyFromMasterToDetail(h) + "." + path;
-                    }
-                    else if (hub.getMasterHub() == null) {
-                        // 20131109  check to see if it is from a HubCopy
-                    }
-                    else {
-                        path = holdPath; 
-                        bLinkOnPos = false;
-                    }
-                }
-            }
-        }
-
-        // if path == null then getMethods() will use "toString"
-        if (bLinkOnPos) {
-            OAPropertyPath opp = new OAPropertyPath(pathIntValue);
-            try { // 20120809
-                opp.setup(hub.getObjectClass());
-            }
-            catch (Exception e) {
-                throw new RuntimeException("could not parse propertyPath", e);
-            }
-            methodsIntValue = opp.getMethods();
-            // was: methodsIntValue = OAReflect.getMethods(hub.getObjectClass(), pathIntValue);
-            
-            opp = new OAPropertyPath(path);
-            try { // 20120809
-                opp.setup(oaComp.getHub().getObjectClass());
-            }
-            catch (Exception e) {
-                throw new RuntimeException(String.format("could not parse propertyPath=%s, hub=%s",path,hub), e);
-            }
-            methods = opp.getMethods();
-            // was: methods = OAReflect.getMethods(oaComp.getHub().getObjectClass(), path);
-        }
-        else {
-            OAPropertyPath opp = new OAPropertyPath(path);
-            try { // 20120809
-                opp.setup(hub.getObjectClass());
-            }
-            catch (Exception e) {
-                throw new RuntimeException(String.format("could not parse propertyPath=%s, hub=%s",path,hub), e);
-            }
-            methods = OAReflect.getMethods(hub.getObjectClass(), path);
-            //was:methods = OAReflect.getMethods(hub.getObjectClass(), path);
-        }
-
-        // this will setup a Hub listener to listen for changes to columns that use propertyPaths
-        // ?? might want this to be a setting
-        if (methods != null && methods.length > 1 && path != null && path.indexOf('.') >= 0 && path.indexOf('.') != path.length() - 1) {
-            // 20101219 create a "dummy" prop, with path as a dependent propPath
-            final String propx = "TableColumn_" + path.replace('.', '_');
-            hubListener = new HubListenerAdapter() {
-                public @Override
-                void afterPropertyChange(HubEvent e) {
-                    String s = e.getPropertyName();
-                    if (s != null && s.equalsIgnoreCase(propx)) {
-                        table.repaint();
-                    }
-                }
-            };
-            table.getHub().addHubListener(hubListener, propx, new String[] { path });
-        }
-
-        return methods;
+    public OATableColumnCustomizer getCustomizer() {
+        return columnCustomizer;
     }
-*/
+    public void setCustomizer(OATableColumnCustomizer tcc) {
+        this.columnCustomizer = tcc;
+    }
+    
+    private Hub hubMethodHub; // 2006/12/11
 
     public void setMethods(Method[] m) {
         methods = m;
@@ -262,7 +145,7 @@ public class OATableColumn {
     // 2006/02/09
     public Object getValue(Hub hub, Object obj) {
         if (obj == null) return null;
-/* 20111213 removed, since getMethods(..) handles this        
+        /* 20111213 removed, since getMethods(..) handles this        
         if (oaComp != null && oaComp.getHub() != null && !bIgnoreLink) {
             // 20110116 if link has a linkFromProperty, then dont get
             // refProperty. ex: Breed.name linked to Pet.breed (String)
@@ -277,7 +160,7 @@ public class OATableColumn {
                 }
             }
         }
-*/        
+        */        
         Method[] ms;
         if (methodsAsString != null) ms = methodsAsString;
         else ms = getMethods(hub);
@@ -314,11 +197,14 @@ public class OATableColumn {
 
 
     /** 20180620
-     * get the last oaobject int the property path, for case where a column uses a property path instead of just a property.
+     * get the last OAObject in the property path, for case where a column uses a property path instead of just a property.
      */
     public Object getObject(Object obj) {
         if (obj == null) return null;
-        Method[] ms = methods;
+        Method[] ms;
+        if (methodsIntValue != null) ms = methodsIntValue;
+        else ms = methods;
+        
         if (ms == null || ms.length < 2) return obj;
         
         int x = ms.length;

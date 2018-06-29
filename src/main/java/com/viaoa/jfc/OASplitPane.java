@@ -22,7 +22,6 @@ public class OASplitPane extends JSplitPane {
     }
     public OASplitPane(int newOrientation, boolean continousLayout, Component newLeftComponent, Component newRightComponent) {
         super(newOrientation, continousLayout, newLeftComponent, newRightComponent);
-        setContinuousLayout(true);
     }
     
     @Override
@@ -32,8 +31,20 @@ public class OASplitPane extends JSplitPane {
         if (componentListener == null) {
             addComponentListener(getMyComponentListener());
         }
+        bDontAutoAdjust = false;
     }
  
+    private boolean bDontAutoAdjust;
+    private boolean bIgnore;
+
+    @Override
+    public void setDividerLocation(int location) {
+        super.setDividerLocation(location);
+        if (!bIgnore) bDontAutoAdjust = true;
+    }
+    
+//qqqqqqqq dont auto resize if it was manually changed
+//qqqqqq   dont auto size if it was collapsed or expanded
     
     protected ComponentAdapter getMyComponentListener() {
         if (componentListener != null) return componentListener;
@@ -41,6 +52,16 @@ public class OASplitPane extends JSplitPane {
         componentListener = new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
+                if (bDontAutoAdjust) return;
+                try {
+                    bIgnore = true;
+                    _componentResized(e);
+                }
+                finally {
+                    bIgnore = false;
+                }
+            }
+            void _componentResized(ComponentEvent e) {
                 Dimension d = getSize();
                 if (d.width == 0 || d.height == 0) return;                
 

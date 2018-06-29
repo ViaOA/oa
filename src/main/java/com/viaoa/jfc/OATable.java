@@ -276,6 +276,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (col >= 0 && col < tcs.length) {
             OATableColumn tc = (OATableColumn) tcs[col];
             defaultValue = tc.getToolTipText(this, row, col, defaultValue);
+            
+            if (tc != null) {
+                OATableColumnCustomizer tcc = tc.getCustomizer();
+                if (tcc != null) {
+                    defaultValue = tcc.getToolTipText(this, row, col, defaultValue);
+                }
+            }        
         }
         defaultValue = getToolTipText(row, col, defaultValue);
         if (!OAString.isEmpty(OAString.trim(defaultValue))) {
@@ -501,7 +508,7 @@ if (!getKeepSorted()) hub.cancelSort();
     public Object getObjectAt(int row, int col) {
         Hub h = getHub();
         if (h == null) return null;
-        Object obj = getHub().getAt(row);
+        Object obj = h.getAt(row);
         if (obj == null) return null;
         
         OATableColumn[] tcs = getAllTableColumns();
@@ -1673,8 +1680,18 @@ if (!getKeepSorted()) hub.cancelSort();
         if (comp == null) return 0;
         return getCharWidth(comp, comp.getFont(), columns);
     }
+    public static int getCharWidth(int columns) {
+        if (averageCharWidth != 0) {
+            return averageCharWidth * columns;
+        }
+        JTextField txt = new JTextField();
+        Font font = txt.getFont();
+        return getCharWidth(txt, font, columns);
+    }
+    
     public static int getCharWidth(Component comp, Font font, int columns) {
         if (comp == null) return 0;
+
         if (averageCharWidth == 0 || (font != null && font.getSize() != lastFontSize)) {
             if (font == null) {
                 System.out.println("OATable.getCharWidth=null, will use average=12 as default");
@@ -1685,7 +1702,15 @@ if (!getKeepSorted()) hub.cancelSort();
             lastFontSize = font.getSize();
             FontMetrics fm = comp.getFontMetrics(font);
             //averageCharWidth = (int) (fm.stringWidth("9XYma") / 5);
-            averageCharWidth = fm.charWidth('m');  // same used by JTextField.getColumnWidth
+            // averageCharWidth = fm.charWidth('m');  // =11, same code used by JTextField.getColumnWidth 
+
+            averageCharWidth = (int) (fm.stringWidth("9m0M123456") / 10);  // =7
+
+            /* test
+            Font fontx = new Font( "Monospaced", Font.PLAIN, 12 );
+            fm = comp.getFontMetrics(fontx);
+            int x2 = fm.charWidth('m'); =7
+            */
         }
         
         return (averageCharWidth * columns);
@@ -3396,24 +3421,34 @@ if (!getKeepSorted()) hub.cancelSort();
         // have the component customize
         OATableComponent oacomp = null;
         int x = (tableLeft == null) ? 0 : tableLeft.columns.size();
+        
+        final OATableColumn tc;
         if (tableLeft != null && column < tableLeft.columns.size()) {
-            OATableColumn tc = (OATableColumn) tableLeft.columns.elementAt(column);
+            tc = (OATableColumn) tableLeft.columns.elementAt(column);
             oacomp = tc.getOATableComponent();
-
         }
         else if (column >= 0 && (column-x) < columns.size()) {
-            OATableColumn tc = (OATableColumn) columns.elementAt(column-x);
+            tc = (OATableColumn) columns.elementAt(column-x);
             oacomp = tc.getOATableComponent();
         }
+        else tc = null;
+        
+        // 1of4: is done, defaults are set
 
-        // 1of3: is done, defaults are set
-
-        // 2of3: allow component to customize
+        // 2of4: allow component to customize
         if (oacomp != null) {
             oacomp.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
         }
 
-        // 3of3: allow App to customize
+        // 3of4 allow tc to customize
+        if (tc != null) {
+            OATableColumnCustomizer tcc = tc.getCustomizer();
+            if (tcc != null) {
+                tcc.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
+            }
+        }        
+        
+        // 4of4: allow App to customize
         customizeRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
 
         if (lbl == lblDummy && comp != null) {
@@ -4285,5 +4320,4 @@ class PanelHeaderRenderer extends JPanel implements TableCellRenderer {
         if (table.getLeftTable() != null) table.getLeftTable().getTableHeader().repaint(100);
         if (table.getRightTable() != null) table.getRightTable().getTableHeader().repaint(100);
     }
-    
 }

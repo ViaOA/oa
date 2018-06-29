@@ -965,6 +965,18 @@ public class OAObject implements java.io.Serializable, Comparable {
         
         return val;
     }
+    
+    // 20180629
+    public boolean isUnique(String property, Object value) {
+        OAObject obj = OAObjectUniqueDelegate.getUnique(getClass(), property, value, false);
+        return (obj != null);
+    }
+    // 20180629
+    public static OAObject getUniqueInstance(final Class<? extends OAObject> clazz, final String propertyName, final Object uniqueKey, final boolean bAutoCreate) {
+        OAObject obj = OAObjectUniqueDelegate.getUnique(clazz, propertyName, uniqueKey, bAutoCreate);
+        return obj;
+    }
+    
     /**
      * returns true if this is a oaclient and is not a remoteThread.
      */

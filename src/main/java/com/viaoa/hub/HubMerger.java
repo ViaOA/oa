@@ -71,7 +71,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
     private boolean bIsRecusive;
     private boolean bIncludeRootHub;
     private boolean bUseBackgroundThread;
-    private boolean bLoadingCombined;
+    private volatile boolean bLoadingCombined;
     
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -1067,24 +1067,26 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             // 20131209
             if (node == nodeRoot && bIncludeRootHub) {
                 if (hubCombined != null && !hubCombined.contains(parent)) {
+                    final boolean bx = bLoadingCombined;
                     try {
-                        if (bLoadingCombined) OAThreadLocalDelegate.setLoading(true);
+                        if (bx) OAThreadLocalDelegate.setLoading(true);
                         hubCombined.add(parent);
                     }
                     finally {
-                        if (bLoadingCombined) OAThreadLocalDelegate.setLoading(false);
+                        if (bx) OAThreadLocalDelegate.setLoading(false);
                     }
                 }
             }
 
             if (node.child == null) {
                 if (!bShareEndHub && hubCombined != null && !hubCombined.contains(parent)) {
+                    final boolean bx = bLoadingCombined;
                     try {
-                        if (bLoadingCombined) OAThreadLocalDelegate.setLoading(true);
+                        if (bx) OAThreadLocalDelegate.setLoading(true);
                         hubCombined.add(parent);
                     }
                     finally {
-                        if (bLoadingCombined) OAThreadLocalDelegate.setLoading(false);
+                        if (bx) OAThreadLocalDelegate.setLoading(false);
                     }
                 }
             }
@@ -1516,7 +1518,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             finally {
                 if (hub == hubRoot) {
                     OAThreadLocalDelegate.setHubMergerIsChanging(false);
-                    if (bLoadingCombined) {
+                    if (!bServerSideOnly) {
                         bLoadingCombined = false;
                         HubEventDelegate.fireOnNewListEvent(hubCombined, false);
                     }
@@ -1899,7 +1901,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
                 }
                 finally {
                     OAThreadLocalDelegate.setHubMergerIsChanging(false);
-                    if (bLoadingCombined) {
+                    if (!bServerSideOnly) {
                         bLoadingCombined = false;
                         HubEventDelegate.fireOnNewListEvent(hubCombined, false);
                     }

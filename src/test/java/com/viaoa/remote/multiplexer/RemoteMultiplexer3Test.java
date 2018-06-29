@@ -9,6 +9,7 @@ import org.junit.Test;
 import com.viaoa.OAUnitTest;
 import com.viaoa.comm.multiplexer.MultiplexerClient;
 import com.viaoa.comm.multiplexer.MultiplexerServer;
+import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.*;
@@ -113,6 +114,11 @@ public class RemoteMultiplexer3Test extends OAUnitTest {
                     }
                 };
                 return rsi;
+            }
+            @Override
+            public OAObject getUnique(Class<? extends OAObject> clazz, String propertyName, Object uniqueKey, boolean bAutoCreate) {
+// TODO Auto-generated method stub  qqqqqqqqqqqqqq
+                return null;
             }
         };
         return rsi;

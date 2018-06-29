@@ -30,6 +30,7 @@ import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectKey;
 import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.object.OAObjectReflectDelegate;
+import com.viaoa.object.OAObjectUniqueDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerServer;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.sync.model.*;
@@ -107,6 +108,11 @@ public class OASyncServer {
                 @Override
                 public void refresh(Class clazz) {
                     OAObjectCacheDelegate.refresh(clazz);
+                }
+                @Override
+                public OAObject getUnique(Class<? extends OAObject> clazz, String propertyName, Object uniqueKey, boolean bAutoCreate) {
+                    OAObject oaObj = OAObjectUniqueDelegate.getUnique(clazz, propertyName, uniqueKey, bAutoCreate);
+                    return  oaObj;
                 }
             };
             OASyncDelegate.setRemoteServer(packagex, remoteServer);

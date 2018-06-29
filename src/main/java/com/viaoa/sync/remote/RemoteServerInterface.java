@@ -61,4 +61,10 @@ public interface RemoteServerInterface {
     @OARemoteMethod(dontUseQueue=true)
     public String performThreadDump(String msg);
     
+
+    /**
+     * Used by OAObjectUniqueDelegate.getUnique to find a unique oaobject
+     */
+    @OARemoteMethod
+    OAObject getUnique(Class<? extends OAObject> clazz, final String propertyName, Object uniqueKey, boolean bAutoCreate);
 }

@@ -166,6 +166,14 @@ public class OAObjectEventDelegate {
                 } 
                 
                 if (propInfo.getUnique() && newObj != null && !OAObjectDSDelegate.isAssigningId(oaObj)) {
+                    
+                    // 20180629
+                    OAObject obj = OAObjectUniqueDelegate.getUnique(oaObj.getClass(), propertyName, newObj, false);
+                    if (obj != null &&  obj != oaObj) {
+                        throw new RuntimeException("property is unique, and value already assigned to another object.");
+                    }
+
+                    /*was:
                     OAFilter<OAObject> filter = new OAFilter<OAObject>() {
                         public boolean isUsed(OAObject obj) {
                             Object objx = obj.getProperty(propertyU);
@@ -200,6 +208,7 @@ public class OAObjectEventDelegate {
                             objLast = objx;
                         }
                     }
+                    */
                 }
             }
         }
