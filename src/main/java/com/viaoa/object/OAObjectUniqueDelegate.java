@@ -7,6 +7,11 @@ import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.sync.remote.RemoteServerInterface;
 import com.viaoa.util.OAString;
 
+/**
+ * Used to find a object with a unique value, with the option to create one that 
+ * is concurrently safe (done on server).
+ * @author vvia
+ */
 public class OAObjectUniqueDelegate {
 
     private static final Object Lock = new Object();
