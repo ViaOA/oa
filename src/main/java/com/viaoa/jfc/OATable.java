@@ -1753,6 +1753,9 @@ if (!getKeepSorted()) hub.cancelSort();
     protected OATableColumn addColumnMain(String heading, int width, String path, OATableComponent oaComp, final TableCellEditor editComp, int index, String fmt) {
         Font font;
 
+        String ppTable = oaComp.getTablePropertyPath(this);
+        if (OAString.isNotEmpty(ppTable)) path = ppTable;
+        
         Component comp = null;
         if (oaComp instanceof JComponent) {
             comp = (Component) oaComp;
@@ -2023,6 +2026,9 @@ if (!getKeepSorted()) hub.cancelSort();
 
             OATableColumn tc = (OATableColumn) columns.elementAt(col);
             obj = tc.getValue(hub, obj);
+            
+            obj = tc.getOATableComponent().getValue(tableLeft, row, col, obj);
+            
             return obj;
         }
 /* not needed, tablecolumn has a similar method to getObject 
@@ -2294,6 +2300,9 @@ if (!getKeepSorted()) hub.cancelSort();
 
     public void setFilterMasterHub(Hub hubFilterMaster) {
         setMasterFilterHub(hubFilterMaster);
+    }
+    public Hub getMasterFilterHub() {
+        return hubFilterMaster;
     }
     Hub hubFilterMaster;
     public void setMasterFilterHub(Hub hubFilterMaster) {

@@ -91,6 +91,12 @@ public interface OATableComponent {
     public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver);
 
     public String getToolTipText(JTable table, int row, int col, String defaultValue);
+    
+    default public Object getValue(JTable table, int row, int col, Object defaultValue) {
+        return defaultValue;
+    }
+    
+    default public String getTablePropertyPath(OATable table) {
+        return null;
+    }
 }
-
-

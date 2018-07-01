@@ -135,7 +135,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
 
     public void addNotify() {
         super.addNotify();
-        control.afterChangeActiveObject(null);
+        control.onAddNotify();
     }
 
     // ----- OATableComponent Interface methods -----------------------

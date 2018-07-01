@@ -312,6 +312,11 @@ public class TextFieldController extends JFCController implements FocusListener,
         }
     }
 
+    public void onAddNotify() {
+        focusActiveObject = null;
+        afterChangeActiveObject(null);
+    }
+    
     public @Override void afterChangeActiveObject(HubEvent e) {
 /*qqqqqqqqqq
 if (textField instanceof OATextField && ((OATextField)textField).bTest) {

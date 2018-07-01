@@ -109,7 +109,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
     private static final long serialVersionUID = 1L;
 
     
-    private final static String FORMAT_long = "yyyy/MM/dd hh:mm:ss.S a";
+    public final static String FORMAT_long = "yyyy/MM/dd hh:mm:ss.S a";
     
     
     protected long _time;
