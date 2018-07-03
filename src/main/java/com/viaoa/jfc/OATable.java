@@ -195,7 +195,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         Class c = b.getClass();
         setSurrendersFocusOnKeystroke(true);
 
-        setIntercellSpacing(new Dimension(4, 1));
+        setIntercellSpacing(new Dimension(5,2));
+        //was: setIntercellSpacing(new Dimension(4, 1));
+
 
         dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
         dropTarget = new DropTarget(this, this);
@@ -292,12 +294,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     }
 
     public String getToolTipText(int row, int col, String defaultValue) {
+        /* not needed, redundant from getToolTipText1
         OATableColumn[] tcs = getAllTableColumns();
 
         if (col >= 0 && col < tcs.length) {
             OATableColumn tc = (OATableColumn) tcs[col];
             defaultValue = tc.getToolTipText(this, row, col, defaultValue);
         }
+        */
         return defaultValue;
     }
 

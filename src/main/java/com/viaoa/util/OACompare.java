@@ -257,6 +257,14 @@ public class OACompare {
         return x;
     }
     
+    
+    public static boolean isNotEmpty(Object obj) {
+        return !isEmpty(obj);
+    }
+    public static boolean isNotEmpty(Object obj, boolean bTrim) {
+        return !isEmpty(obj, bTrim);
+    }
+    
     public static boolean isEmpty(Object obj) {
         return isEmpty(obj, false);
     }

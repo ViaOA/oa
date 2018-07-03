@@ -13,6 +13,7 @@ package com.viaoa.ds;
 import java.util.*;
 import java.util.logging.Logger;
 import com.viaoa.object.*;
+import com.viaoa.util.OAComparator;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
@@ -557,6 +558,15 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
             };
             finder.addFilter(filter);
             alFinderResults = finder.find();
+            
+            // sort the array
+            if (alFinderResults.size() > 0) {
+                String ord = getSortBy();
+                if (OAString.isNotEmpty(ord)) {
+                    OAComparator comparator = new OAComparator(getSelectClass(),  ord, true);
+                    Collections.sort(alFinderResults, comparator);
+                }
+            }
             return;
         }
 
