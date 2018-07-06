@@ -23,7 +23,7 @@ public class OAPropertyPathTest extends OAUnitTest {
     }
 
     @Test
-    public void test2() {
+    public void test1() {
         init();
         
         String spp = ProgramPP.locations().employees().pp;
@@ -33,6 +33,18 @@ public class OAPropertyPathTest extends OAUnitTest {
         assertEquals(2, lis.length);
         assertNotNull(lis[0]);
         assertNull(lis[1]);
+        assertTrue(pp.isLastPropertyLinkInfo());
     }
+
+    @Test
+    public void test2() {
+        String spp = ProgramPP.locations().employees().lastName();
+        OAPropertyPath<Program> pp = new OAPropertyPath<>(Program.class, spp);
+
+        assertFalse(pp.isLastPropertyLinkInfo());
+        
+    }
+
+    
     
 }

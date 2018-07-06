@@ -112,6 +112,24 @@ public class HifiveDataGenerator {
     }
     private void createEmployeeAwards(Hub<EmployeeAward> hub) {
         EmployeeAward ea = new EmployeeAward();
+        Hub<AwardType> h = getAwardTypes();
+        AwardType at = h.getAt( (int) (Math.random()*h.getSize()) );
+        ea.setAwardType(at);
         hub.add(ea);
     }
+    
+    private Hub<AwardType> hubAwardType;
+    public Hub<AwardType> getAwardTypes() {
+        if (hubAwardType != null) return hubAwardType;
+        hubAwardType = new Hub(AwardType.class);
+        for (int i=0; i<10; i++) {
+            AwardType at = new AwardType();
+            hubAwardType.add(at);
+            AddOnItem aoi = new AddOnItem();
+            aoi.setItem(new Item());
+            at.getAddOnItems().add(aoi);
+        }
+        return hubAwardType;
+    }
+    
 }
