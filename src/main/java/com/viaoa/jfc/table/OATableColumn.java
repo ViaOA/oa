@@ -182,15 +182,7 @@ public class OATableColumn {
             obj = h.contains(obj); 
         }
         else {
-            final Hub getDetailHub = OAThreadLocalDelegate.getGetDetailHub();
-            final String getDetailPropertyPath = OAThreadLocalDelegate.getGetDetailPropertyPath();
-            try {
-                OAThreadLocalDelegate.setGetDetailHub(hub, path);
-                obj = OAReflect.getPropertyValue(obj, ms);
-            }
-            finally {
-                OAThreadLocalDelegate.resetGetDetailHub(getDetailHub, getDetailPropertyPath);
-            }
+            obj = OAReflect.getPropertyValue(obj, ms);
         }
         return obj;
     }
@@ -289,6 +281,11 @@ public class OATableColumn {
         }
     }
     */
+
+    public String getPathFromTableHub(Hub hubTable) {
+        getMethods(hubTable);
+        return path;
+    }
     
     // 20140211
     public Method[] getMethods(Hub hubTable) {

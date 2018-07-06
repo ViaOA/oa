@@ -114,6 +114,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     protected static Icon[] iconAsc;
     private boolean bEnableEditors = true;
     public boolean bDEBUG;
+    private OASiblingHelper siblingHelper; // 20180704
 
     public static final Color COLOR_Odd = UIManager.getColor("Table.background");
     public static final Color COLOR_Even = new Color(249, 255, 255);
@@ -373,8 +374,18 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         return th;
     }
 
-    // 2006/10/12
     protected void performSort() {
+        boolean bx = OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
+        try {
+            _performSort();
+        }
+        finally {
+            if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
+        }
+    }
+
+    // 2006/10/12
+    private void _performSort() {
         if (!bAllowSorting) return;
         String s = null;
 
@@ -491,6 +502,8 @@ if (!getKeepSorted()) hub.cancelSort();
     public void setHub(Hub h) {
         this.hub = h;
 
+        siblingHelper = new OASiblingHelper(this.hub);
+
         int x = columns.size();
         for (int i = 0; i < x; i++) {
             OATableColumn tc = (OATableColumn) columns.elementAt(i);
@@ -523,9 +536,11 @@ if (!getKeepSorted()) hub.cancelSort();
         return obj;
     }
     
-    // used by columns that need a listener for only the visible rows
+   
+    // hub used for viewable rows, so that column props (and dependent props) are only set up to work with portion of hub, instead of the full real hub 
     protected Hub hubViewable;
     private AtomicInteger aiViewableChanged;
+    
     public Hub getViewableHub() {
         boolean bCallUpdate = false;
         if (hubViewable == null) {
@@ -562,7 +577,7 @@ if (!getKeepSorted()) hub.cancelSort();
             }
         });
     }
-    
+
     private void _updateViewableHub() {
         if (hubViewable == null) return;
         Rectangle rec = getVisibleRect();
@@ -570,38 +585,35 @@ if (!getKeepSorted()) hub.cancelSort();
         rec.translate(0, rec.height);
         int rowBottom = rowAtPoint(rec.getLocation());
 
+        boolean bx = OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
         hubViewable.clear();
-
-        
-        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
-        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        OAThreadLocalDelegate.setLoading(true);
         try {
-            OAThreadLocalDelegate.setGetDetailHub(hub, null);
-            for (int i=rowTop; i<=rowBottom; i++) {
-                hubViewable.add(hub.getAt(i));
+            int x = rowBottom;
+            for (int i=rowTop; i<=x; i++) {
+                Object objx = hub.getAt(i);
+                if (objx == null) break;
+                hubViewable.add(objx);
             }
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+            if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
+            OAThreadLocalDelegate.setLoading(false);
+            HubEventDelegate.fireOnNewListEvent(hubViewable, true);
         }
     }
-    
     
     
     // START Drag&Drop
     static class MyDragSourceListener implements DragSourceListener {
         public void dragEnter(DragSourceDragEvent e) {
         }
-
         public void dragOver(DragSourceDragEvent e) {
         }
-
         public void dropActionChanged(DragSourceDragEvent e) {
         }
-
         public void dragExit(DragSourceEvent e) {
         }
-
         public void dragDropEnd(DragSourceDropEvent e) {
         }
     }
@@ -1845,6 +1857,11 @@ if (!getKeepSorted()) hub.cancelSort();
         tc.setHeaderRenderer(headerRenderer); 
 
         calcPreferredSize();
+        
+        if (siblingHelper != null) {
+            siblingHelper.add(column.getPathFromTableHub(hub));
+        }
+
         return column;
     }
 
@@ -1988,6 +2005,17 @@ if (!getKeepSorted()) hub.cancelSort();
         boolean loadingMoreFlag;
 
         public Object getValueAt(int row, int col) {
+            boolean bx = OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
+            try {
+                return _getValueAt(row, col);
+            }
+            finally {
+                if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
+            }
+        }
+        
+        
+        private Object _getValueAt(int row, int col) {
             if (hub == null) return "";
             Object obj;
             int cnt = hub.getSize();
