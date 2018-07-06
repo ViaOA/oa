@@ -84,6 +84,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
     // used to run onNewList in another thread that can be cancelled
     private final AtomicInteger aiNewList = new AtomicInteger();
     
+    private OASiblingHelper siblingHelper;
     
     private final int id;
     private static final AtomicInteger aiId = new AtomicInteger();
@@ -198,18 +199,17 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         
         long ts = System.currentTimeMillis();
 
-        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
-        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        final OASiblingHelper sh = getSiblingHelper();
+        boolean bx = OAThreadLocalDelegate.addSiblingHelper(sh);
         try {
             // 20120624 hubCombined could be a detail hub.
             OAThreadLocalDelegate.setSuppressCSMessages(true);
-            setGetDetailHub();
-            //was: OAThreadLocalDelegate.setGetDetailHub(this.hubRoot, this.propertyPath);
+            
             _init();
         }
         finally {
             OAThreadLocalDelegate.setSuppressCSMessages(false);
-            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+            if (bx) OAThreadLocalDelegate.removeSiblingHelper(sh);
         }
         ts = System.currentTimeMillis() - ts;
 
@@ -249,9 +249,12 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         nodeRoot.data = dataRoot;
     }
 
-
-    protected void setGetDetailHub() {
-        OAThreadLocalDelegate.setGetDetailHub(this.hubRoot, this.propertyPath);
+    public OASiblingHelper getSiblingHelper() {
+        if (siblingHelper == null) {
+            siblingHelper = new OASiblingHelper<>(this.hubRoot);
+            siblingHelper.add(this.propertyPath);
+        }
+        return siblingHelper;
     }
     
     public Hub getRootHub() {
@@ -1576,10 +1579,9 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
         }
 
         private void _onNewList() {
-            Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
-            String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+            final OASiblingHelper sh = getSiblingHelper();
+            boolean bx = OAThreadLocalDelegate.addSiblingHelper(sh);
             try {
-                setGetDetailHub();
                 //was: OAThreadLocalDelegate.setGetDetailHub(HubMerger.this.hubRoot, HubMerger.this.propertyPath);
                 if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(true);
                 else OAThreadLocalDelegate.setSuppressCSMessages(true);
@@ -1588,7 +1590,7 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             finally {
                 if (bServerSideOnly) OARemoteThreadDelegate.sendMessages(false);
                 else OAThreadLocalDelegate.setSuppressCSMessages(false);
-                OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+                if (bx) OAThreadLocalDelegate.removeSiblingHelper(sh);
             }
         }
         
