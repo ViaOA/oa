@@ -95,11 +95,10 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         if (threadCount > 0) executorService = new OAExecutorService(threadCount, "OALoader");
 
         this.hubFrom = hubRoot;
-        
-        Hub hubHold = OAThreadLocalDelegate.getGetDetailHub();
-        String ppHold = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        final OASiblingHelper<F> siblingHelper = new OASiblingHelper<F>(hubRoot);
+        siblingHelper.add(OALoader.this.strPropertyPath);
+        OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
         try {
-            OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
             for (F obj : hubRoot) {
                 _load(obj);
                 if (bStop) break;
@@ -107,7 +106,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
             this.hubFrom = null;
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
+            OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
             onThreadDone(true);
         }
     }
@@ -120,10 +119,10 @@ public class OALoader<F extends OAObject, T extends OAObject> {
         if (threadCount > 0) executorService = new OAExecutorService(threadCount, "OALoader");
         this.hubFrom = new Hub(sel.getSelectClass());
 
-        Hub hubHold = OAThreadLocalDelegate.getGetDetailHub();
-        String ppHold = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        final OASiblingHelper<F> siblingHelper = new OASiblingHelper<F>(this.hubFrom);
+        siblingHelper.add(OALoader.this.strPropertyPath);
+        OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
         try {
-            OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
             for ( ;!bStop && (sel.hasMore() || hubFrom.size()>0); ) {
                 for ( ;sel.hasMore() && hubFrom.size() < 200; ) {
                     if (bStop) break;
@@ -135,7 +134,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
             }        
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
+            OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
             onThreadDone(true);
         }
     }
@@ -149,15 +148,15 @@ public class OALoader<F extends OAObject, T extends OAObject> {
 
         hubFrom = new Hub(objectRoot.getClass());
         hubFrom.add(objectRoot);
-        
-        Hub hubHold = OAThreadLocalDelegate.getGetDetailHub();
-        String ppHold = OAThreadLocalDelegate.getGetDetailPropertyPath();
+
+        final OASiblingHelper<F> siblingHelper = new OASiblingHelper<F>(this.hubFrom);
+        siblingHelper.add(OALoader.this.strPropertyPath);
+        OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
         try {
-            OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
             _load(objectRoot);
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(hubHold, ppHold);
+            OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
             onThreadDone(true);
         }
     }
@@ -234,8 +233,10 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                         @Override
                         public void run() {
                             if (bStop) return;
+                            final OASiblingHelper<F> siblingHelper = new OASiblingHelper<F>(OALoader.this.hubFrom);
+                            siblingHelper.add(OALoader.this.strPropertyPath);
+                            OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
                             try {
-                                OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
                                 Object objx = recursiveLinkInfos[pos - 1].getValue(obj);
                                 _load(objx, pos);
                             }
@@ -243,7 +244,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                                 LOG.log(Level.WARNING, "OALoader error while in run", e);
                             }
                             finally {
-                                OAThreadLocalDelegate.resetGetDetailHub(null, null);
+                                OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
                                 aiThreadsUsed.decrementAndGet();
                                 onThreadDone(false);
                             }
@@ -273,8 +274,11 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                         @Override
                         public void run() {
                             if (bStop) return;
+
+                            final OASiblingHelper<F> siblingHelper = new OASiblingHelper<F>(OALoader.this.hubFrom);
+                            siblingHelper.add(OALoader.this.strPropertyPath);
+                            OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
                             try {
-                                OAThreadLocalDelegate.setGetDetailHub(OALoader.this.hubFrom, OALoader.this.strPropertyPath);
                                 Object objx = linkInfos[pos].getValue(obj);
                                 _load(objx, pos+1);
                             }
@@ -282,7 +286,7 @@ public class OALoader<F extends OAObject, T extends OAObject> {
                                 LOG.log(Level.WARNING, "OALoader error while in run", e);
                             }
                             finally {
-                                OAThreadLocalDelegate.resetGetDetailHub(null, null);
+                                OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
                                 aiThreadsUsed.decrementAndGet();
                                 onThreadDone(false);
                             }
