@@ -15,6 +15,7 @@ import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
+import com.viaoa.object.OASiblingHelper;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
@@ -1222,22 +1223,18 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
 
     private void addAll() {
         // this will tell the OASyncClient.getDetail which hub objects are being used
-        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
-        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        final OASiblingHelper<F> siblingHelper = new OASiblingHelper<F>(this.hubFrom);
+        siblingHelper.add(this.propertyPath);
+        OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
         try {
-            OAThreadLocalDelegate.setGetDetailHub(this.hubFrom, this.propertyPath);
+            OAThreadLocalDelegate.setSuppressCSMessages(true);
             for (F bx : hubFrom) {
-                try {
-                    OAThreadLocalDelegate.setSuppressCSMessages(true);
-                    add(bx);
-                }
-                finally {
-                    OAThreadLocalDelegate.setSuppressCSMessages(false);
-                }
+                add(bx);
             }
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+            OAThreadLocalDelegate.setSuppressCSMessages(false);
+            OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
         }
     }
     
