@@ -141,16 +141,14 @@ public class OASyncClient {
         OALinkInfo li = null;
         try {
             // both Hub && pp are set by HubMerger, HubGroupBy
-            final Hub detailHub = OAThreadLocalDelegate.getGetDetailHub();
-            final String detailPropertyPath = OAThreadLocalDelegate.getGetDetailPropertyPath();
-            final boolean bUsesDetail = (detailHub != null && OAString.isNotEmpty(detailPropertyPath)); 
+            final boolean bHasSiblingHelper = OAThreadLocalDelegate.hasSiblingHelpers();
             
             if (OARemoteThreadDelegate.isRemoteThread()) {
                     // use annotated version that does not use the msg queue
                 cntDup = OAObjectSerializeDelegate.cntDup;
                 cntNew = OAObjectSerializeDelegate.cntNew;
                 result = getRemoteClient().getDetailNow(cntx, masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
-                        additionalMasterProperties, siblingKeys, bUsesDetail);
+                        additionalMasterProperties, siblingKeys, bHasSiblingHelper);
             }
             else {
                 // this will "ask" for additional data "around" the requested property
@@ -166,7 +164,7 @@ public class OASyncClient {
                 }
                 else max = 100;
                 
-                if (bUsesDetail) max *= 3;
+                if (bHasSiblingHelper) max *= 3;
                 
                 siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max, hmIgnoreSibling);
                 
@@ -183,7 +181,7 @@ if (siblingKeys == null || siblingKeys.length == 0) {
                     cntDup = OAObjectSerializeDelegate.cntDup;
                     cntNew = OAObjectSerializeDelegate.cntNew;
                     result = getRemoteClient().getDetailNow(cntx, masterObject.getClass(), masterObject.getObjectKey(), propertyName, 
-                        additionalMasterProperties, siblingKeys, bUsesDetail);
+                        additionalMasterProperties, siblingKeys, bHasSiblingHelper);
                 }
                 finally {
                     for (OAObjectKey ok : siblingKeys) {
