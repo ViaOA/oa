@@ -244,18 +244,15 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
             }
         }
         ArrayList<T> al = null;
-        Hub dh = null;
-        String dpp = null;
+        
+        OASiblingHelper<F> siblingHelper = new OASiblingHelper<F>(hubRoot);
+        siblingHelper.add(strPropertyPath);
+        OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
         try {
-            dh = OAThreadLocalDelegate.getGetDetailHub();
-            if (dh != null) {
-                dpp = OAThreadLocalDelegate.getGetDetailPropertyPath();
-            }
-            OAThreadLocalDelegate.setGetDetailHub(hubRoot, strPropertyPath);
             al = _find(hubRoot, objectLastUsed);
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(dh, dpp);
+            OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
         }
         return al;
     }
