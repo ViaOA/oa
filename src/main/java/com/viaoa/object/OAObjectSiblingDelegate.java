@@ -21,7 +21,7 @@ public class OAObjectSiblingDelegate {
 
     private final static long MaxMs = 25; // max ms for finding
     
-    private static final OAThrottle throttle = new OAThrottle(250);
+    private static final OAThrottle throttle = new OAThrottle(2500);
     
     
     /**
@@ -43,7 +43,7 @@ public class OAObjectSiblingDelegate {
         long msStarted = System.currentTimeMillis();
         if (OAObject.getDebugMode()) msStarted = 0L; 
         OAObjectKey[] keys = _getSiblings(mainObject, property, maxAmount, hmIgnore, msStarted);
-        long x = (System.currentTimeMillis()-msStarted);         
+        long x = msStarted==0 ? 0: (System.currentTimeMillis()-msStarted);         
         if (throttle.check() || x > (MaxMs*2)) {
             if (OAObject.getDebugMode()) {
                 System.out.println((throttle.getCheckCount())+") OAObjectSiblingDelegate "+x+"ms, obj="+mainObject.getClass().getSimpleName()+", prop="+property+", hmIgnore="+(hmIgnore==null?0:hmIgnore.size())+", alRemove="+keys.length);
