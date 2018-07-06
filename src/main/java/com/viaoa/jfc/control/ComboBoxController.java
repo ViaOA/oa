@@ -444,7 +444,8 @@ public class ComboBoxController extends JFCController implements FocusListener {
             }
 
             lbl.setText(s);
-            update(lbl, value);
+            
+            if (index >= 0) update(lbl, value);
 
             if (isSelected) {
                 lbl.setBackground(list.getSelectionBackground());
