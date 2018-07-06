@@ -10,6 +10,8 @@
 */
 package com.viaoa.object;
 
+import java.util.ArrayList;
+
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubMerger;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
@@ -86,10 +88,6 @@ public class OAThreadLocal {
     protected Tuple3<Hub, OAObject, String>[] calcPropertyEvents;
     
     
-    protected Hub getDetailHub; // hub that a get detail is being called for. This is a helper for getting detail from server
-    protected String getDetailPropertyPath; // propertyPath from getDetailHub, set by HubMerger and HubGroupBy
-
-    
     public OAThreadLocal() {
         this.threadName = Thread.currentThread().getName();
     }
@@ -107,7 +105,8 @@ public class OAThreadLocal {
     // 20180223 
     public int oaSyncEventCount;
     
-    
+    // 20180704
+    public ArrayList<OASiblingHelper> alSiblingHelper;
     
 }
 

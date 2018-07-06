@@ -23,7 +23,6 @@ import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.transaction.OATransaction;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OADateTime;
-import com.viaoa.util.Tuple;
 import com.viaoa.util.Tuple3;
 
 /**
@@ -40,19 +39,20 @@ public class OAThreadLocalDelegate {
 	
 	private static final ThreadLocal<OAThreadLocal> threadLocal = new ThreadLocal<OAThreadLocal>();
 	
-	private static AtomicInteger TotalIsLoading = new AtomicInteger();
-	private static AtomicInteger TotalObjectCacheAddMode = new AtomicInteger();
-	private static AtomicInteger TotalObjectSerializer = new AtomicInteger();
-	private static AtomicInteger TotalSuppressCSMessages = new AtomicInteger();
-	private static AtomicInteger TotalDelete = new AtomicInteger();
-    private static AtomicInteger TotalTransaction = new AtomicInteger();
-    private static AtomicInteger TotalCaptureUndoablePropertyChanges = new AtomicInteger();
-    private static AtomicInteger TotalHubMergerChanging = new AtomicInteger();
-    private static AtomicInteger TotalIsSendingEvent = new AtomicInteger(); // used to manage calcPropertyChanges while another event(s) is being processed
-    private static AtomicInteger TotalGetDetailHub = new AtomicInteger();
-    private static AtomicInteger TotalRemoteMultiplexerClient = new AtomicInteger();
-    private static AtomicInteger TotalNotifyWaitingObject = new AtomicInteger();
-    private static AtomicInteger TotalRecursiveTriggerCount = new AtomicInteger();
+	private static final AtomicInteger TotalIsLoading = new AtomicInteger();
+	private static final AtomicInteger TotalObjectCacheAddMode = new AtomicInteger();
+	private static final AtomicInteger TotalObjectSerializer = new AtomicInteger();
+	private static final AtomicInteger TotalSuppressCSMessages = new AtomicInteger();
+	private static final AtomicInteger TotalDelete = new AtomicInteger();
+    private static final AtomicInteger TotalTransaction = new AtomicInteger();
+    private static final AtomicInteger TotalCaptureUndoablePropertyChanges = new AtomicInteger();
+    private static final AtomicInteger TotalHubMergerChanging = new AtomicInteger();
+    private static final AtomicInteger TotalIsSendingEvent = new AtomicInteger(); // used to manage calcPropertyChanges while another event(s) is being processed
+//    private static final AtomicInteger TotalGetDetailHub = new AtomicInteger();
+    private static final AtomicInteger TotalSiblingHelper = new AtomicInteger();
+    private static final AtomicInteger TotalRemoteMultiplexerClient = new AtomicInteger();
+    private static final AtomicInteger TotalNotifyWaitingObject = new AtomicInteger();
+    private static final AtomicInteger TotalRecursiveTriggerCount = new AtomicInteger();
     
     private static AtomicInteger TotalHubListenerTreeCount = new AtomicInteger();
     
@@ -906,7 +906,61 @@ static volatile int unlockCnt;
         return false;
     }
 
+    
+    // 20180704
+    public static boolean addSiblingHelper(OASiblingHelper sh) {
+        if (sh == null) return false;
+        return addSiblingHelper(OAThreadLocalDelegate.getThreadLocal(true), sh);
+    }
+    public static void removeSiblingHelper(OASiblingHelper sh) {
+        if (sh == null) return ;
+        if (TotalSiblingHelper.get() == 0) return;
+        removeSiblingHelper(OAThreadLocalDelegate.getThreadLocal(true), sh);
+    }
+    public static ArrayList<OASiblingHelper> getSiblingHelpers() {
+        if (TotalSiblingHelper.get() == 0) return null;
+        return getSiblingHelpers(OAThreadLocalDelegate.getThreadLocal(true));
+    }
+    public static ArrayList<OASiblingHelper> getSiblingHelpers(OAThreadLocal ti) {
+        if (ti == null) return null;
+        return ti.alSiblingHelper;
+    }
+    public static boolean hasSiblingHelpers() {
+        if (TotalSiblingHelper.get() == 0) return false;
+        ArrayList<OASiblingHelper> al = getSiblingHelpers(OAThreadLocalDelegate.getThreadLocal(true));
+        return (al != null && al.size() > 0);
+    }
 
+    private static long msSiblingHelper;
+    protected static boolean addSiblingHelper(OAThreadLocal ti, OASiblingHelper sh) {
+        if (ti == null || sh == null) return false;
+        if (ti.alSiblingHelper == null) ti.alSiblingHelper = new ArrayList<>();
+        else if (ti.alSiblingHelper.contains(sh)) return false;
+
+        TotalSiblingHelper.incrementAndGet();
+        ti.alSiblingHelper.add(sh);
+        int x = TotalSiblingHelper.get();
+        if (x > 20 || x < 0 || ti.alSiblingHelper.size() > 10) {
+            msSiblingHelper = throttleLOG("TotalSiblingHelper.add, tot="+x+", this.size="+ti.alSiblingHelper.size()+", thread="+Thread.currentThread(), msSiblingHelper);
+        }
+        return true;
+    }
+    protected static void removeSiblingHelper(OAThreadLocal ti, OASiblingHelper sh) {
+        if (ti == null || sh == null) return;
+        TotalSiblingHelper.decrementAndGet();
+
+        if (ti.alSiblingHelper == null) return;
+        ti.alSiblingHelper.remove(sh);
+        
+        int x = TotalSiblingHelper.get();
+        if (x > 20 || x < 0 || ti.alSiblingHelper.size() > 10) {
+            msSiblingHelper = throttleLOG("TotalSiblingHelper.remove, tot="+x+", this.size="+ti.alSiblingHelper.size()+", thread="+Thread.currentThread(), msSiblingHelper);
+        }
+    }
+    
+
+    
+/** 20180704 was, replaced by siblingHelp    
     public static Hub getGetDetailHub() {
         Hub h; 
         if (OAThreadLocalDelegate.TotalGetDetailHub.get() == 0) {
@@ -971,7 +1025,7 @@ static volatile int unlockCnt;
             msGetDetailHub = throttleLOG("TotalGetDetailHub="+x, msGetDetailHub);
         }
     }
-
+*/
     
     // 20151111
     private static long msThrottleStackTrace;
