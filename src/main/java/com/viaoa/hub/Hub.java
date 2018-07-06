@@ -879,8 +879,18 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
 
     public void add(Hub<TYPE> hub) {
         if (hub == null) return;
-        for (TYPE obj : hub) {
-            HubAddRemoveDelegate.add(this, obj);
+        boolean b = (getSize() == 0);
+        if (b) OAThreadLocalDelegate.setLoading(true);
+        try {
+            for (TYPE obj : hub) {
+                HubAddRemoveDelegate.add(this, obj);
+            }
+        }
+        finally {
+            if (b) {
+                OAThreadLocalDelegate.setLoading(false);
+                HubEventDelegate.fireOnNewListEvent(hub, true);
+            }
         }
     }
     
