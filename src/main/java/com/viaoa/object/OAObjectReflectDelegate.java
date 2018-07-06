@@ -491,6 +491,7 @@ public class OAObjectReflectDelegate {
          unlock obj.props[]
         */
         if (linkPropertyName == null) return null;
+        OASiblingHelperDelegate.onGetObjectReference(oaObj, linkPropertyName);        
 
         Hub hub = null;
         final OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
@@ -1135,16 +1136,15 @@ public class OAObjectReflectDelegate {
     }
 
     public static void loadAllReferences(Hub hub, boolean bIncludeCalc) {
-        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
-        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
-        OAThreadLocalDelegate.setGetDetailHub(hub, null);
+        OASiblingHelper siblingHelper = new OASiblingHelper(hub);
+        OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
         try {
             for (Object obj : hub) {
                 if (obj instanceof OAObject) loadAllReferences((OAObject) obj, bIncludeCalc);
             }
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+            OAThreadLocalDelegate.removeSiblingHelper(siblingHelper); 
         }
     }
 
@@ -1274,27 +1274,27 @@ public class OAObjectReflectDelegate {
 
     public static int loadAllReferences(final Hub hub, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACallback callback, OACascade cascade) {
         int cnt = 0;
-        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
-        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
-        OAThreadLocalDelegate.setGetDetailHub(hub, null);
+        
+        final OASiblingHelper siblingHelper = new OASiblingHelper(hub);
+        OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
         try {
             cnt = _loadAllReferences(0, hub, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, 0);
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+            OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
         }
         return cnt;
     }
     public static int loadAllReferences(final Hub hub, int levelsLoaded, int maxLevelsToLoad, int additionalOwnedLevelsToLoad, boolean bIncludeCalc, OACallback callback, OACascade cascade, int maxRefsToLoad) {
         int cnt = 0;
-        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
-        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
-        OAThreadLocalDelegate.setGetDetailHub(hub, null);
+
+        final OASiblingHelper siblingHelper = new OASiblingHelper(hub);
+        OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
         try {
             cnt = _loadAllReferences(0, hub, levelsLoaded, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc, callback, cascade, maxRefsToLoad);
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+            OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
         }
         return cnt;
     }
@@ -1409,9 +1409,8 @@ public class OAObjectReflectDelegate {
             }
 
             if (objx instanceof Hub) {
-                Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
-                String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
-                OAThreadLocalDelegate.setGetDetailHub((Hub) objx, null);
+                final OASiblingHelper siblingHelper = new OASiblingHelper((Hub) objx);
+                OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
                 try {
                     for (Object objz : (Hub) objx) {
                         currentRefsLoaded = _loadAllReferences(currentRefsLoaded, (OAObject) objz, levelsLoaded + 1, maxLevelsToLoad, additionalOwnedLevelsToLoad, bIncludeCalc,callback, cascade, maxRefsToLoad, maxEndTime);
@@ -1419,7 +1418,7 @@ public class OAObjectReflectDelegate {
                     }
                 }
                 finally {
-                    OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+                    OAThreadLocalDelegate.removeSiblingHelper(siblingHelper); 
                 }
             }
             else if (objx instanceof OAObject) {
@@ -1468,11 +1467,14 @@ public class OAObjectReflectDelegate {
     
     
     public static Object getReferenceObject(OAObject oaObj, String linkPropertyName) {
+        OASiblingHelperDelegate.onGetObjectReference(oaObj, linkPropertyName);        
+        
         Object objOriginal = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
         OALinkInfo li = OAObjectInfoDelegate.getLinkInfo(oi, linkPropertyName);
 
+        
         if (objOriginal == null) {  // else !null or notExist
             // it is stored as null value
             if (!li.getAutoCreateNew() && !li.getCalculated()) return null;
