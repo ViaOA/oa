@@ -542,10 +542,14 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                             OAPerformance.LOG.finer("creating hubMerger for hub="+hub+", propPath="+spp);
                             
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, bUseAll) {
+                                private OASiblingHelper siblingHelper;
                                 @Override
-                                protected void setGetDetailHub() {
-                                    // 20171230
-                                    OAThreadLocalDelegate.setGetDetailHub(HubListenerTree.this.root.hub, ppFromRoot);
+                                public OASiblingHelper getSiblingHelper() {
+                                    if (siblingHelper == null) {
+                                        siblingHelper = new OASiblingHelper<>(HubListenerTree.this.root.hub);
+                                        siblingHelper.add(ppFromRoot);
+                                    }
+                                    return siblingHelper;
                                 }
                                 
                                 @Override
@@ -648,10 +652,15 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
  
                             OAPerformance.LOG.finer("creating hubMerger for hub="+hub+", propPath="+spp);
                             newTreeNode.hubMerger = new HubMerger(hub, newTreeNode.hub, spp, true, bUseAll) {
+                                OASiblingHelper siblingHelper;
                                 @Override
-                                protected void setGetDetailHub() {
-                                    OAThreadLocalDelegate.setGetDetailHub(HubListenerTree.this.root.hub, ppFromRoot);
-                               }
+                                public OASiblingHelper getSiblingHelper() {
+                                    if (siblingHelper == null) {
+                                        siblingHelper = new OASiblingHelper<>(HubListenerTree.this.root.hub);
+                                        siblingHelper.add(ppFromRoot);
+                                    }
+                                    return siblingHelper;
+                                }
                             };
                             newTreeNode.hubMerger.setUseBackgroundThread(bAllowBackgroundThread);
                         }
