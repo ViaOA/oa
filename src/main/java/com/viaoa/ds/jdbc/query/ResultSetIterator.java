@@ -255,6 +255,7 @@ public class ResultSetIterator implements OADataSourceIterator {
     // 20171222 add prefetch into hub, so that OAThreadLocalDelegate.setGetDetailHub could be used  
     private Hub hubReadAhead;
     private HashSet<Integer> hsObjectWasLoaded;
+    private OASiblingHelper siblingHelper;
     
     public synchronized Object next() {
         if (!bInit) init();
@@ -271,15 +272,14 @@ public class ResultSetIterator implements OADataSourceIterator {
         }
         
         OAObject obj = (OAObject) hubReadAhead.getAt(0);
-        if (hsObjectWasLoaded.remove(obj.getGuid())) { 
-            Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
-            String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        if (hsObjectWasLoaded.remove(obj.getGuid())) {
+            if (siblingHelper == null) siblingHelper = new OASiblingHelper(this.hubReadAhead);
+            boolean bx = OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
             try {
-                OAThreadLocalDelegate.setGetDetailHub(this.hubReadAhead, null);
                 obj.afterLoad();
             }
             finally {
-                OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+                if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
             }
         }
         if (!bMore && hubReadAhead.size() == 1) {
