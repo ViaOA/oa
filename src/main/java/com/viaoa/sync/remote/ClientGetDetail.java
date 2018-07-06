@@ -26,6 +26,7 @@ import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectSerializer;
 import com.viaoa.object.OAObjectSerializerCallback;
 import com.viaoa.object.OAPerformance;
+import com.viaoa.object.OASiblingHelper;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.util.OANotExist;
 
@@ -116,15 +117,14 @@ public class ClientGetDetail {
             }
         }
 
-        Hub holdDetailHub = OAThreadLocalDelegate.getGetDetailHub();
-        String holdDetailPP = OAThreadLocalDelegate.getGetDetailPropertyPath();
+        final OASiblingHelper siblingHelper = new OASiblingHelper(hubHold);
+        OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
         Object detailValue = null;
         try {
-            OAThreadLocalDelegate.setGetDetailHub(hubHold, null);
             detailValue = OAObjectReflectDelegate.getProperty((OAObject) masterObject, property);
         }
         finally {
-            OAThreadLocalDelegate.resetGetDetailHub(holdDetailHub, holdDetailPP);
+            OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
         }
         hubHold.clear();
         hubHold = null;
