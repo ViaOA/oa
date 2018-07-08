@@ -1242,9 +1242,15 @@ public class JFCController extends HubListenerAdapter {
         obj = getRealObject(obj);
         if (obj == null || obj instanceof OANullObject) return null;
         if (hub == null) return null;
+        
         String tt = null;
         if (toolTipTextProperty != null && obj != null && getMethodsToToolTipText() != null) {
             tt = OAReflect.getPropertyValueAsString(obj, methodsToToolTipText);
+        }
+        
+        if (component instanceof OAJFCComponent) {
+            int row = getHub().getPos(obj);
+            ((OAJFCComponent) component).getToolTipText(obj, row, tt);
         }
         return tt;
     }

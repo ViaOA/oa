@@ -678,9 +678,12 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
      * This is called by getRenderer(..) after the default settings have been set.
      */
     public void customizeRenderer(JLabel label, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        // to be overwritten
+        if (index < 0) return;
+        Hub h = getHub();
+        if (h == null) return;
+        Object obj = h.getAt(index);
+        customizeRenderer(label, obj, value, isSelected, cellHasFocus, index, false, false);
     }
-    
     
     /** 
         Used to supply the renderer when this component is used in the column of an OATable.
@@ -693,11 +696,15 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     }
 
     @Override
-    public String getToolTipText(JTable table, int row, int col, String defaultValue) {
+    public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
+        Object obj = ((OATable) table).getObjectAt(row, col);
+        getToolTipText(obj, row, defaultValue);
         return defaultValue;
     }
     @Override
     public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
+        Object obj = ((OATable) table).getObjectAt(row, column);
+        customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
     }
 
     public void setIconColorProperty(String s) {

@@ -208,11 +208,16 @@ public class OAColorComboBox extends OACustomComboBox {
             lblRendererTable.setText("  ");
         }
         lblRendererTable.color = color;
+        Object obj = ((OATable) table).getObjectAt(row, column);
+        customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
     }
     @Override
-    public String getToolTipText(JTable table, int row, int col, String defaultValue) {
+    public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
+        Object obj = ((OATable) table).getObjectAt(row, col);
+        getToolTipText(obj, row, defaultValue);
         return defaultValue;
     }
+
     
 
     /**

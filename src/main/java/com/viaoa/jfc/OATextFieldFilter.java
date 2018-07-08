@@ -115,7 +115,7 @@ public class OATextFieldFilter<T extends OAObject> extends JTextField implements
     }
 
     @Override
-    public String getToolTipText(JTable table, int row, int col, String defaultValue) {
+    public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
         return null;
     }
 

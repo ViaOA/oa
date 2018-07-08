@@ -80,9 +80,9 @@ public class OATableColumn {
     public HubListener hubListener; // 20101219 for columns that use a
                                     // propertyPath
 
-    public String getToolTipText(JTable table, int row, int col, String defaultValue) {
+    public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
         if (oaComp != null) {
-            return oaComp.getToolTipText(table, row, col, defaultValue);
+            return oaComp.getTableToolTipText(table, row, col, defaultValue);
         }
         return defaultValue;
     }

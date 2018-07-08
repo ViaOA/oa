@@ -695,10 +695,13 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
     }
     @Override
     public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
+        Object obj = ((OATable) table).getObjectAt(row, column);
+        customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
     }
-
     @Override
-    public String getToolTipText(JTable table, int row, int col, String defaultValue) {
+    public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
+        Object obj = ((OATable) table).getObjectAt(row, col);
+        getToolTipText(obj, row, defaultValue);
         return defaultValue;
     }
     

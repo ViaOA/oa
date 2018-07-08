@@ -175,6 +175,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         setHub(hub);
     }
 
+    protected OATable(JComponent compDummy) {
+    }
+    
     /**
      * @param bAddHack
      *            if true (default) then register [Enter] key and consume
@@ -278,12 +281,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         OATableColumn[] tcs = getAllTableColumns();
         if (col >= 0 && col < tcs.length) {
             OATableColumn tc = (OATableColumn) tcs[col];
-            defaultValue = tc.getToolTipText(this, row, col, defaultValue);
             
+            defaultValue = tc.getTableToolTipText(this, row, col, defaultValue);
+
             if (tc != null) {
                 OATableColumnCustomizer tcc = tc.getCustomizer();
                 if (tcc != null) {
-                    defaultValue = tcc.getToolTipText(this, row, col, defaultValue);
+                    Object obj = getObjectAt(row, col);
+                    defaultValue = tcc.getToolTipText(obj, row, defaultValue);
                 }
             }        
         }
@@ -1339,8 +1344,8 @@ if (!getKeepSorted()) hub.cancelSort();
             }
 
             @Override
-            public String getToolTipText(JTable table, int row, int col, String defaultValue) {
-                defaultValue = super.getToolTipText(table, row, col, defaultValue);
+            public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
+                defaultValue = super.getTableToolTipText(table, row, col, defaultValue);
                 if (OAString.isEmpty(defaultValue)) {
                     defaultValue = (row + 1) + " of " + getHub().getSize();
                 }
@@ -1366,10 +1371,10 @@ if (!getKeepSorted()) hub.cancelSort();
         setSelectHub(hubSelect);
         chkSelection = new OACheckBox(hub, hubSelect) {
             @Override
-            public String getToolTipText(JTable table, int row, int col, String defaultValue) {
+            public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
                 Object obj = hub.getAt(row);
                 if (obj == null || OATable.this.hubSelect == null) {
-                    return super.getToolTipText(table, row, col, defaultValue);
+                    return super.getTableToolTipText(table, row, col, defaultValue);
                 }
                 int pos = OATable.this.hubSelect.getPos(obj);
                 if (pos < 0) return OATable.this.hubSelect.getSize() + " selected";
@@ -3485,7 +3490,8 @@ if (!getKeepSorted()) hub.cancelSort();
         if (tc != null) {
             OATableColumnCustomizer tcc = tc.getCustomizer();
             if (tcc != null) {
-                tcc.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
+                Object obj = getObjectAt(row, column);
+                tcc.customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
             }
         }        
         

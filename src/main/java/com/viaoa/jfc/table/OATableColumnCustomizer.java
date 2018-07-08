@@ -26,12 +26,13 @@ public class OATableColumnCustomizer {
      * This will be called after the default OATable settings are set for the cell, and before the
      * OATable.customizeRenderer is called.
      */
-    public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
+    public void customizeRenderer(JLabel lbl, Object object, Object value, boolean isSelected, boolean hasFocus, int row, boolean wasChanged, boolean wasMouseOver) {
     }
 
-    public String getToolTipText(JTable table, int row, int col, String defaultValue) {
+    public String getToolTipText(Object object, int row, String defaultValue) {
         return defaultValue;
     }
+
 }
 
 

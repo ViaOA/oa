@@ -141,7 +141,7 @@ public class OATreeTableController extends OATree implements OATableComponent {
     }
 
     @Override
-    public String getToolTipText(JTable table, int row, int col, String defaultValue) {
+    public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
         return defaultValue;
     }
 
