@@ -433,12 +433,18 @@ public class OAObjectPropertyDelegate {
     }
 
     // property locking
-    private static ConcurrentHashMap<String, PropertyLock> hmLock = new ConcurrentHashMap<String, PropertyLock>();
+    private static final ConcurrentHashMap<String, PropertyLock> hmLock = new ConcurrentHashMap<String, PropertyLock>();
+    private static final ConcurrentHashMap<Thread, Thread> hmLockedThread = new ConcurrentHashMap<Thread, Thread>();
 
     private static class PropertyLock {
+        final Thread thread;
         boolean done;
         boolean hasWait;
-        Thread thread;
+        
+        public PropertyLock(Thread thread) {
+            this.thread = thread;
+        }
+        
     }
     public static boolean setPropertyLock(OAObject oaObj, String name) {
         return _setPropertyLock(oaObj, name, true, false);
@@ -450,45 +456,68 @@ public class OAObjectPropertyDelegate {
         if (oaObj == null || name == null) return false;
         String key = OAObjectDelegate.getGuid(oaObj) + "." + name.toUpperCase();
         PropertyLock lock;
+        final Thread threadThis = Thread.currentThread();
         synchronized (oaObj) {
             lock = hmLock.get(key);
             if (lock == null) {
-                lock = new PropertyLock();
-                lock.thread = Thread.currentThread();
+                lock = new PropertyLock(threadThis);
                 hmLock.put(key, lock);
                 return true;
             }
+            if (lock.thread == threadThis) return true;
         }
-        synchronized (lock) {
-            if (lock.thread == Thread.currentThread()) return bCheckIfThisThread;
-            if (!bWaitIfNeeded) return false;
-            long ms = 0;
-            for (int i=0; ;i++) {
-                if (i == 0) {
-                    OARemoteThreadDelegate.startNextThread();
-                }
-                else if (i > 5) {
-                    if (ms == 0) ms = System.currentTimeMillis();
-                    else if (System.currentTimeMillis() - ms > 1000) {
-                        if (OAObject.getDebugMode())  { 
-                            String s = "wait time exceeded for lock, obj="+oaObj+", prop="+name+", this.Thread="+Thread.currentThread().getName()+", waiting on Thread="+lock.thread.getName()+" (see next stacktrace), will continue";
-                            LOG.log(Level.WARNING, s, new Exception("fyi: wait time exceeded, will continue"));
-                            StackTraceElement[] stes = lock.thread.getStackTrace();
-                            Exception ex = new Exception();
-                            ex.setStackTrace(stes);
-                            LOG.log(Level.WARNING, "... waiting on this Thread="+lock.thread.getName(), ex);
-                        }        
-                        return false;  // bail out, ouch
+        
+        hmLockedThread.put(threadThis, lock.thread);
+        try {
+            OARemoteThreadDelegate.startNextThread();
+            synchronized (lock) {
+                if (lock.thread == Thread.currentThread()) return bCheckIfThisThread;
+                if (!bWaitIfNeeded) return false;
+                long ms = 0;
+                for (int i=0; ;i++) {
+                    if (i > 3) {
+                        
+                        // see if the thread that thisThread is waiting on is waiting on another thread
+                        Thread tx = hmLockedThread.get(lock.thread);
+                        if (tx != null) {
+                            if (OAObject.getDebugMode())  { 
+                                String s = oaObj.getObjectKey().toString();
+                                s = "thread with lock is waiting on a lock, obj="+oaObj+", key="+s+", prop="+name+", this.Thread="+Thread.currentThread().getName()+", waiting on Thread="+lock.thread.getName()+" (see next stacktrace), will continue";
+                                LOG.log(Level.WARNING, s, new Exception("fyi: avoiding deadlock, will continue"));
+                                StackTraceElement[] stes = lock.thread.getStackTrace();
+                                Exception ex = new Exception();
+                                ex.setStackTrace(stes);
+                                LOG.log(Level.WARNING, "... waiting on this Thread="+lock.thread.getName(), ex);
+                            }        
+                            break;
+                        }
+                        
+                        if (ms == 0) ms = System.currentTimeMillis();
+                        else if (System.currentTimeMillis() - ms > 60000) {
+                            if (OAObject.getDebugMode())  { 
+                                String s = oaObj.getObjectKey().toString();
+                                s = "wait time exceeded for lock, obj="+oaObj+", key="+s+", prop="+name+", this.Thread="+Thread.currentThread().getName()+", waiting on Thread="+lock.thread.getName()+" (see next stacktrace), will continue";
+                                LOG.log(Level.WARNING, s, new Exception("fyi: wait time exceeded, will continue"));
+                                StackTraceElement[] stes = lock.thread.getStackTrace();
+                                Exception ex = new Exception();
+                                ex.setStackTrace(stes);
+                                LOG.log(Level.WARNING, "... waiting on this Thread="+lock.thread.getName(), ex);
+                            }        
+                            return false;  // bail out, ouch
+                        }
+                    }
+                    if (lock.done) break;
+                    lock.hasWait = true;
+                    try {
+                        lock.wait(100); 
+                    }
+                    catch (Exception e) {
                     }
                 }
-                if (lock.done) break;
-                lock.hasWait = true;
-                try {
-                    lock.wait(50); 
-                }
-                catch (Exception e) {
-                }
             }
+        }
+        finally {
+            hmLockedThread.remove(threadThis);
         }
         return _setPropertyLock(oaObj, name, bWaitIfNeeded, bCheckIfThisThread);  // create a new one
     }
