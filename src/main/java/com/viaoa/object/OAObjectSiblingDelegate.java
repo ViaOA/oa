@@ -41,14 +41,17 @@ public class OAObjectSiblingDelegate {
      */
     public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int maxAmount, ConcurrentHashMap<Integer, Boolean> hmIgnore) {
         long msStarted = System.currentTimeMillis();
-        if (OAObject.getDebugMode()) msStarted = 0L; 
+        if (OAObject.getDebugMode()) msStarted = 0L;
         OAObjectKey[] keys = _getSiblings(mainObject, property, maxAmount, hmIgnore, msStarted);
-        long x = msStarted==0 ? 0: (System.currentTimeMillis()-msStarted);         
-        if (throttle.check() || x > (MaxMs*2)) {
-            if (OAObject.getDebugMode()) {
-                System.out.println((throttle.getCheckCount())+") OAObjectSiblingDelegate "+x+"ms, obj="+mainObject.getClass().getSimpleName()+", prop="+property+", hmIgnore="+(hmIgnore==null?0:hmIgnore.size())+", alRemove="+keys.length);
+        
+        if (OAObject.getDebugMode()) {
+            long x = msStarted==0 ? 0: (System.currentTimeMillis()-msStarted);         
+            if (throttle.check() || x > (MaxMs*2)) {
+                System.out.println((throttle.getCheckCount())+") OAObjectSiblingDelegate "+x+"ms, obj="+mainObject.getClass().getSimpleName()+", prop="+property+", sibs="+keys.length);
+                // System.out.println((throttle.getCheckCount())+") OAObjectSiblingDelegate "+x+"ms, obj="+mainObject.getClass().getSimpleName()+", prop="+property+", hmIgnore="+(hmIgnore==null?0:hmIgnore.size())+", alRemove="+keys.length);
             }
         }
+        
         return keys;
     }
     public static OAObjectKey[] _getSiblings(final OAObject mainObject, final String property, final int maxAmount, ConcurrentHashMap<Integer, Boolean> hmIgnore, final long msStarted) {
