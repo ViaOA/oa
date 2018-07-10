@@ -10,10 +10,9 @@
 */
 package com.viaoa.jfc.table;
 
-import java.awt.Component;
-
 import javax.swing.JLabel;
-import javax.swing.JTable;
+
+import com.viaoa.jfc.OATable;
 
 /** 
     Used by OATableColumn for customizing table column
@@ -26,9 +25,16 @@ public class OATableColumnCustomizer {
      * This will be called after the default OATable settings are set for the cell, and before the
      * OATable.customizeRenderer is called.
      */
-    public void customizeRenderer(JLabel lbl, Object object, Object value, boolean isSelected, boolean hasFocus, int row, boolean wasChanged, boolean wasMouseOver) {
+    public void customizeRenderer(JLabel label, OATable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
     }
 
+    /**
+     * Mouse over popup tooltip
+     * @param object
+     * @param row if < 0, then it is for the heading's tooltip.
+     * @param defaultValue
+     * @return
+     */
     public String getToolTipText(Object object, int row, String defaultValue) {
         return defaultValue;
     }

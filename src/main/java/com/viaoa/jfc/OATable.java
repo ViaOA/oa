@@ -1331,7 +1331,7 @@ if (!getKeepSorted()) hub.cancelSort();
      * Add a column that will that will use checkboxes to show selected rows.
      */
     public OATableColumn addCounterColumn() {
-        return addCounterColumn("#", 3);
+        return addCounterColumn("#", 4);
     }
 
     public OATableColumn addCounterColumn(String heading, int width) {
@@ -2928,6 +2928,9 @@ if (!getKeepSorted()) hub.cancelSort();
         
         if (tc != null && tc.getOATableComponent() instanceof JComponent) {
             s = ((JComponent) tc.getOATableComponent()).getToolTipText();
+            if (tc.getCustomizer() != null) {
+                s = tc.getCustomizer().getToolTipText(null, -1, s);
+            }
             s = getColumnHeaderToolTipText(tc.getOATableComponent(), s);
             if (s == null || s.length() == 0) {
                 if (tc.tc.getHeaderValue() != null) s = tc.tc.getHeaderValue().toString();
@@ -3490,8 +3493,8 @@ if (!getKeepSorted()) hub.cancelSort();
         if (tc != null) {
             OATableColumnCustomizer tcc = tc.getCustomizer();
             if (tcc != null) {
-                Object obj = getObjectAt(row, column);
-                tcc.customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
+                // Object obj = getObjectAt(row, column);
+                tcc.customizeRenderer(lbl, this, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
             }
         }        
         
