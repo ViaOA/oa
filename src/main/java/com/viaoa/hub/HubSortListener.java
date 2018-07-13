@@ -148,7 +148,7 @@ public class HubSortListener extends HubListenerAdapter implements java.io.Seria
                 //   dont use '.' in name
                 sortPropertyName = "HUBSORT_" + sortPropertyName;  
                 sortPropertyName = sortPropertyName.replace('.', '_');  // cant have '.' in property name
-                hub.addHubListener(this, sortPropertyName, sortPropertyPaths);
+                hub.addHubListener(this, sortPropertyName, sortPropertyPaths, false, true);
             }
         }
     }
