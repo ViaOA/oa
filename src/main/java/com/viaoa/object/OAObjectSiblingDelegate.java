@@ -40,9 +40,20 @@ public class OAObjectSiblingDelegate {
      * @return list of keys that are siblings
      */
     public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int maxAmount, ConcurrentHashMap<Integer, Boolean> hmIgnore) {
+        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
+        if (tl.bGetSiblingCalled) return null;
+        
         long msStarted = System.currentTimeMillis();
         if (OAObject.getDebugMode()) msStarted = 0L;
-        OAObjectKey[] keys = _getSiblings(mainObject, property, maxAmount, hmIgnore, msStarted);
+        OAObjectKey[] keys;
+
+        try {
+            tl.bGetSiblingCalled = true;
+            keys = _getSiblings(mainObject, property, maxAmount, hmIgnore, msStarted);
+        }
+        finally {
+            tl.bGetSiblingCalled = false;
+        }
         
         if (OAObject.getDebugMode()) {
             long x = msStarted==0 ? 0: (System.currentTimeMillis()-msStarted);         
@@ -54,7 +65,7 @@ public class OAObjectSiblingDelegate {
         
         return keys;
     }
-    public static OAObjectKey[] _getSiblings(final OAObject mainObject, final String property, final int maxAmount, ConcurrentHashMap<Integer, Boolean> hmIgnore, final long msStarted) {
+    private static OAObjectKey[] _getSiblings(final OAObject mainObject, final String property, final int maxAmount, ConcurrentHashMap<Integer, Boolean> hmIgnore, final long msStarted) {
         if (mainObject == null || OAString.isEmpty(property) || maxAmount < 1) return null;
         if (hmIgnore == null) hmIgnore = new ConcurrentHashMap<>();
         final OALinkInfo linkInfo = OAObjectInfoDelegate.getLinkInfo(mainObject.getClass(), property);
