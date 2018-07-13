@@ -32,7 +32,7 @@ import com.viaoa.jfc.*;
  * @author vvia
  *
  */
-public class TextAreaController extends JFCController implements FocusListener, KeyListener, MouseListener {
+public class TextAreaController extends JFCController implements FocusListener, MouseListener {
     private JTextArea textField;
     private String prevText;
     private boolean bSettingText;
@@ -73,7 +73,7 @@ public class TextAreaController extends JFCController implements FocusListener, 
     protected void create(JTextArea tf) {
         if (textField != null) {
             textField.removeFocusListener(this);
-            textField.removeKeyListener(this);
+            //textField.removeKeyListener(this);
             textField.removeMouseListener(this);
         }
         textField = tf;
@@ -83,7 +83,7 @@ public class TextAreaController extends JFCController implements FocusListener, 
 
         if (textField != null) {
             textField.addFocusListener(this);
-            textField.addKeyListener(this);
+            //textField.addKeyListener(this);
             textField.addMouseListener(this);
         }
         // set initial value of textField
@@ -138,7 +138,7 @@ public class TextAreaController extends JFCController implements FocusListener, 
     public void close() {
         if (textField != null) {
             textField.removeFocusListener(this);
-            textField.removeKeyListener(this);
+            //textField.removeKeyListener(this);
             textField.removeMouseListener(this);
         }
         super.close();  // this will call hub.removeHubListener()
@@ -286,6 +286,7 @@ public class TextAreaController extends JFCController implements FocusListener, 
     }
     
 
+/**20180713 removed escape, only needed for textfield    
     // Key Events
     private boolean bConsumeEsc;
     @Override
@@ -314,6 +315,7 @@ public class TextAreaController extends JFCController implements FocusListener, 
             return;
     	}
     }
+*/
 
     @Override
     public void mouseClicked(MouseEvent e) {
