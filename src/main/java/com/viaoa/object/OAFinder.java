@@ -532,7 +532,21 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
 
         if (linkInfos != null && pos < linkInfos.length) {
             if (getUseOnlyLoadedData()) {
-                if (!linkInfos[pos].isLoaded(obj)) {
+                // 20180713 check if it needs to be sorted, and if a sortListener already created 
+                boolean b = linkInfos[pos].isLoaded(obj);
+                if (b && linkInfos[pos].getType() == OALinkInfo.TYPE_MANY) {
+                    if (linkInfos[pos].getSortProperty() != null) {
+                        Object objx = OAObjectPropertyDelegate.getProperty((OAObject) obj, linkInfos[pos].getName());
+                        if (objx instanceof Hub) {
+                            Hub h = (Hub) objx;
+                            if (HubSortDelegate.getSortListener(h) == null) {
+                                b = false;
+                            }
+                        }
+                    }
+                }
+                
+                if (!b) {
                     onDataNotFound();
                     return;
                 }
