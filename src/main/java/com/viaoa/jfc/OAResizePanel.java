@@ -75,14 +75,8 @@ public class OAResizePanel extends JPanel {
         gcx.gridwidth = 1;
         add(panComp, gcx);
         
-/*was
-        gcx.weightx = gcx.weighty = ((double)percentage)/100.0d;
-        gcx.gridwidth = 1;
-        add(comp, gcx);
-*/        
-        
         gcx.gridwidth = GridBagConstraints.REMAINDER;
-        gcx.weightx = gcx.weighty =  (100.0d-percentage)/100.0d;
+        gcx.weightx = gcx.weighty = (100.0d-percentage)/100.0d;
         
         JLabel lbl = new JLabel("");
         if (DEBUG) {        
@@ -92,6 +86,11 @@ public class OAResizePanel extends JPanel {
             setBorder(new LineBorder(Color.yellow, 3));
         }
         add(lbl, gcx);
+        
+        if (bBoth) {
+            lbl = new JLabel("");
+            add(lbl, gcx);
+        }
     }
     
     public OAResizePanel(JComponent comp, JComponent comp2, int percentage, boolean bBoth) {

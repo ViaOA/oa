@@ -260,6 +260,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             int col = columnAtPoint(pt);
             int row = rowAtPoint(pt);
 
+            // 20180716
+            col = convertColumnIndexToModel(col);
+            
+            
             OATable t = getRightTable();
             if (t != null) {
                 s = t.getToolTipText1(row, col, s);
@@ -279,6 +283,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
     private String getToolTipText1(int row, int col, String defaultValue) {
         OATableColumn[] tcs = getAllTableColumns();
+        
         if (col >= 0 && col < tcs.length) {
             OATableColumn tc = (OATableColumn) tcs[col];
             
@@ -466,12 +471,12 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         else {
             hub.cancelSort();
         }
-// 20150810 dont keep sorted
-if (!getKeepSorted()) hub.cancelSort();
+        // 20150810 dont keep sorted
+        if (!getKeepSorted()) hub.cancelSort();
 
         if (hubSelect != null) {
             hubAdapter.rebuildListSelectionModel();
-            /*qqqqqq
+            /*
             hubSelect.clear();
             for (Object obj : objs) {
                 hubSelect.add(obj);
@@ -519,7 +524,7 @@ if (!getKeepSorted()) hub.cancelSort();
         hubAdapter = new MyHubAdapter(hub, this);
     }
 
-// 20160722 qqqqqqqqqqqq
+    // 20160722 
     @Override
     public void addNotify() {
         super.addNotify();
@@ -969,21 +974,35 @@ if (!getKeepSorted()) hub.cancelSort();
         
             if (rend == null) return null;
 
-            column = convertColumnIndexToModel(column);
+            
             boolean bMouseOver = (row == mouseOverRow && column == mouseOverColumn);
+            
+            
+            column = convertColumnIndexToModel(column);  // mouseover does not adjust column value
 
+            // moved thishere 20180716            
+            OATable t = getRightTable();
+            if (t != null) {
+            }
+            else {
+                t = getLeftTable();
+                if (t != null) {
+                    column += t.getColumnCount();
+                }
+            }
+            
             // see: OATableCellRenderer
             Component comp = rend.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             Component compOrig = comp;
 
-            OATable t = getRightTable();
+            t = getRightTable();
             if (t != null) {
                 comp = t.getRenderer(comp, table, value, isSelected, hasFocus, row, column, wasChanged(row, column), bMouseOver);
             }
             else {
                 t = getLeftTable();
                 if (t != null) {
-                    column += t.getColumnCount();
+                    //was:  column += t.getColumnCount();
                 }
                 comp = getRenderer(comp, table, value, isSelected, hasFocus, row, column, wasChanged(row, column), bMouseOver);
             }
@@ -1483,7 +1502,7 @@ if (!getKeepSorted()) hub.cancelSort();
     
     
     // 20150423
-    // was: qqqqqqq
+    // was:
     public void changeSelection_OLD(int rowIndex, int columnIndex, boolean toggleUsingControlKey, boolean extendUsingShiftKey) {
         // extendUsingShiftKey=true if its a mouse drag
 
@@ -3398,7 +3417,7 @@ if (!getKeepSorted()) hub.cancelSort();
 
     
     
-    //qqqqqqq add more doc here qqqqqqqqq 
+    //todo: add more doc here 
     /**
      * Called by getCellRender to customize the renderer.
      * 
@@ -3671,7 +3690,7 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
             return;
         }
         if (hubSelect.getMasterObject() != null) { // 20180225
-//qqqqqqqqqqqqq  20180521 need this, ex: Program.ecards = table.hubSelect           
+            // 20180521 need this, ex: Program.ecards = table.hubSelect           
             // return;
         }
 
