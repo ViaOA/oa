@@ -245,14 +245,17 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         }
         ArrayList<T> al = null;
         
-        OASiblingHelper<F> siblingHelper = new OASiblingHelper<F>(hubRoot);
-        siblingHelper.add(strPropertyPath);
-        OAThreadLocalDelegate.addSiblingHelper(siblingHelper); 
+        OASiblingHelper<F> siblingHelper = null;
+        if (!bUseOnlyLoadedData) {
+            siblingHelper = new OASiblingHelper<F>(hubRoot);
+            siblingHelper.add(strPropertyPath);
+            OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
+        }
         try {
             al = _find(hubRoot, objectLastUsed);
         }
         finally {
-            OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
+            if (siblingHelper != null) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
         }
         return al;
     }
@@ -535,11 +538,11 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
                 // 20180713 check if it needs to be sorted, and if a sortListener already created 
                 boolean b = linkInfos[pos].isLoaded(obj);
                 if (b && linkInfos[pos].getType() == OALinkInfo.TYPE_MANY) {
-                    if (linkInfos[pos].getSortProperty() != null) {
+                    if (OAString.isNotEmpty(linkInfos[pos].getSortProperty())) {
                         Object objx = OAObjectPropertyDelegate.getProperty((OAObject) obj, linkInfos[pos].getName());
                         if (objx instanceof Hub) {
                             Hub h = (Hub) objx;
-                            if (HubSortDelegate.getSortListener(h) == null) {
+                            if (HubSortDelegate.getSortListener(h) == null && HubDelegate.getAutoSequence(h) == null) {
                                 b = false;
                             }
                         }
@@ -569,7 +572,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
         if (OAString.isEmpty(li.getSortProperty())) return false;
         
         Hub hx = (Hub) OAObjectPropertyDelegate.getProperty((OAObject)obj, li.name, false, true); 
-        if (hx == null || HubSortDelegate.getSortListener(hx) == null) {
+        if (hx == null || (HubSortDelegate.getSortListener(hx) == null && HubDelegate.getAutoSequence(hx) == null)) {
             return true;
         }
         return false;
