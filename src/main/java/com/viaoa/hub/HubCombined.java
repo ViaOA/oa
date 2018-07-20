@@ -21,28 +21,80 @@ public class HubCombined<T> {
     private static final long serialVersionUID = 1L;
 
     protected Hub<T> hubMaster;
-    protected ArrayList<Hub<T>> alHub;
+    protected final ArrayList<Hub<T>> alHub = new ArrayList<>();
     protected ArrayList<HubListener<T>> alHubListener;
+    protected final HubListener<T> hlMaster;
+    protected Hub<T> hubFirst;
     
-    public HubCombined(Hub<T> hubMaster, Hub<T> ... hubs) {
+    public HubCombined(final Hub<T> hubMaster, final Hub<T> ... hubs) {
         this.hubMaster = hubMaster;
-        if (hubs == null) return;
-        for (Hub h : hubs) {
-            add(h);
+        
+        if (hubs != null) {
+            for (Hub h : hubs) {
+                add(h);
+            }
         }
+        
+        hlMaster = new HubListenerAdapter<T>() {
+            @Override
+            public void afterAdd(HubEvent<T> e) {
+                T objx = e.getObject();
+                boolean bUsed = true;
+                for (Hub h : hubs) {
+                    if (h.contains(objx)) {
+                        bUsed = false;
+                        break;
+                    }
+                }
+                if (bUsed && hubFirst != null) {
+                    if (hubFirst.isValid()) {
+                        hubFirst.add(e.getObject());
+                    }
+                    else {
+                        //int xx = 4;
+                        //xx++;
+                    }
+                }
+            }
+            @Override
+            public void afterInsert(HubEvent<T> e) {
+                afterAdd(e);
+            }
+            @Override
+            public void afterRemove(HubEvent<T> e) {
+                T obj = e.getObject();
+                for (Hub<T> h :alHub) {
+                    h.remove(obj);
+                }
+            }
+            @Override
+            public void beforeRemoveAll(HubEvent<T> e) {
+                for (T obj : hubMaster) {
+                    for (Hub<T> h :alHub) {
+                        h.remove(obj);
+                    }
+                }
+            }
+        };
+        hubMaster.addHubListener(hlMaster);
     }
     
     public void close() {
         int i = 0;
-        for (Hub h : alHub) {
-            h.removeHubListener( alHubListener.get(i++));
+        if (alHubListener != null) {
+            for (Hub h : alHub) {
+                h.removeHubListener(alHubListener.get(i++));
+            }
+            alHubListener.clear();
         }
         alHub.clear();
-        alHubListener.clear();
+        if (hlMaster != null) {
+            hubMaster.removeHubListener(hlMaster);
+        }
     }
     
     public void add(Hub<T> hub) {
-        if (alHub == null) alHub = new ArrayList<Hub<T>>();
+        if (alHub.size() == 0) hubFirst = hub;
         alHub.add(hub);
 
         HubListener hl = new HubListenerAdapter<T>() {
@@ -57,30 +109,33 @@ public class HubCombined<T> {
             @Override
             public void afterRemove(HubEvent<T> e) {
                 T obj = e.getObject();
-                for (Hub<T> h :alHub) {
-                    if (h.contains(obj)) return;
+                boolean bUsed = false;
+                for (Hub<T> hx : alHub) {
+                    if (hx.contains(obj)) {
+                        bUsed = true;
+                        break;
+                    }
                 }
-                hubMaster.remove(obj);
+                if (!bUsed) hubMaster.remove(obj);
             }
             @Override
-            public void beforeRemoveAll(HubEvent<T> e) {
-                Hub h = e.getHub();
-                for (Object obj : h) {
-                    boolean b = false;
-                    for (Hub<T> hx :alHub) {
-                        if (hx != h && hx.contains(obj)) {
-                            b = true;
-                            break;
-                        }
-                    }
-                    if (!b) hubMaster.remove(obj);
-                }
+            public void afterRemoveAll(HubEvent<T> e) {
+                onNewList(e);
             }
             @Override
             public void onNewList(HubEvent<T> e) {
-                beforeRemoveAll(e);
-                for (Object obj : e.getHub()) {
-                    hubMaster.add((T) obj);
+                for (Object obj : hubMaster) {
+                    boolean bUsed = false;
+                    for (Hub<T> hx : alHub) {
+                        if (hx.contains(obj)) {
+                            bUsed = true;
+                            break;
+                        }
+                    }
+                    if (!bUsed) hubMaster.remove(obj);
+                }
+                for (T obj : e.getHub()) {
+                    hubMaster.add(obj);
                 }
             }
         };
@@ -92,11 +147,19 @@ public class HubCombined<T> {
             hubMaster.add(obj);
         }
     }
-    
     public void refresh() {
-        hubMaster.clear();
-        for (Hub<T> h :alHub) {
-            for (T obj : h) {
+        for (Object obj : hubMaster) {
+            boolean bUsed = false;
+            for (Hub<T> hx : alHub) {
+                if (hx.contains(obj)) {
+                    bUsed = true;
+                    break;
+                }
+            }
+            if (!bUsed) hubMaster.remove(obj);
+        }
+        for (Hub<T> hx : alHub) {
+            for (T obj : hx) {
                 hubMaster.add(obj);
             }
         }
