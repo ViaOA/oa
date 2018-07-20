@@ -86,7 +86,15 @@ public class OATableColumn {
         }
         return defaultValue;
     }
-
+    private String toolTipText;
+    public void setToolTipText(String tt) {
+        toolTipText = tt;
+    }
+    public String getToolTipText() {
+        return toolTipText;
+    }
+    
+    
     public OATableColumn(OATable table, String path, TableCellEditor comp, TableCellRenderer rend, OATableComponent oaComp, String fmt) {
         this.table = table;
         this.path = this.origPath = path;

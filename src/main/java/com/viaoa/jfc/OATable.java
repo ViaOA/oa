@@ -287,9 +287,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (col >= 0 && col < tcs.length) {
             OATableColumn tc = (OATableColumn) tcs[col];
             
-            defaultValue = tc.getTableToolTipText(this, row, col, defaultValue);
-
             if (tc != null) {
+                defaultValue = tc.getToolTipText();
+                defaultValue = tc.getTableToolTipText(this, row, col, defaultValue);
                 OATableColumnCustomizer tcc = tc.getCustomizer();
                 if (tcc != null) {
                     Object obj = getObjectAt(row, col);
@@ -2927,19 +2927,24 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         String s = null;
         
         if (pt != null) {
+            String ttt = tc.getToolTipText();
             if (tc.getOATableComponent() == chkSelection) {
+                if (OAString.isNotEmpty(ttt)) return ttt;
                 return "selected rows";
             }
             if (tableRight!=null && tc.getOATableComponent() == tableRight.chkSelection) {
+                if (OAString.isNotEmpty(ttt)) return ttt;
                 return "selected rows";
             }
             if (tc == tcCount) {
                 if (pt.y > headerRenderer.buttonHeight) {
+                    if (OAString.isNotEmpty(ttt)) return ttt;
                     return "reset filters";
                 }
             }
             if (tableRight!=null && tc == tableRight.tcCount) {
                 if (pt.y > tableRight.headerRenderer.buttonHeight) {
+                    if (OAString.isNotEmpty(ttt)) return ttt;
                     return "reset filters";
                 }
             }
@@ -2947,6 +2952,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         
         if (tc != null && tc.getOATableComponent() instanceof JComponent) {
             s = ((JComponent) tc.getOATableComponent()).getToolTipText();
+            String s2 = tc.getToolTipText();
+            if (OAString.isNotEmpty(s2)) s = s2;
             if (tc.getCustomizer() != null) {
                 s = tc.getCustomizer().getToolTipText(null, -1, s);
             }
@@ -2956,12 +2963,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             }
         }
         
+        if (s == null) s = "column";
         if (tc != null && tc.compFilter != null) {
             if (headerRenderer.buttonHeight > 0 && pt.y > headerRenderer.buttonHeight) {
-                s = "enter value to filter by "+s;
+                s = "enter value to filter";
             }
             else if (tableRight != null && pt.y > tableRight.headerRenderer.buttonHeight) {
-                s = "enter value to filter by "+s;
+                s = "enter value to filter";
             }
         }
         else {
