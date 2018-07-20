@@ -378,7 +378,7 @@ public class HubAddRemoveDelegate {
         
         if (!bIsLoading && !OARemoteThreadDelegate.isRemoteThread()) {
             if (!canAdd(thisHub, obj)) {
-                throw new RuntimeException("Cant add object, can add retured false");
+                throw new RuntimeException("Cant add object, can add retured false, hub="+thisHub+", add object="+obj);
             }
         }
         
