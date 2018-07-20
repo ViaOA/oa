@@ -866,6 +866,7 @@ public class HubDetailDelegate {
         Returns the OALinkInfo from detail (MANY) to master (ONE).
     */
     public static OALinkInfo getLinkInfoFromDetailToMaster(Hub hub) {
+        if (hub == null) return null;
         Hub h = getHubWithMasterHub(hub);
         if (h == null) {
             h = getHubWithMasterObject(hub);
@@ -994,6 +995,10 @@ public class HubDetailDelegate {
     //        Employee.hubHierAwardTypes.datam.masterObject could be Program (not thisEmployee)
     //        Employee.hubHierAwardTypes.datam.liDetailToMaster could be Program.awardTypes
     public static OALinkInfo getLinkInfoFromMasterHubToDetail(Hub thisDetailHub) {
+        return getLinkInfoFromMasterToDetail(thisDetailHub);
+    }
+    public static OALinkInfo getLinkInfoFromMasterToDetail(Hub thisDetailHub) {
+        if (thisDetailHub == null) return null;
         Hub h = HubShareDelegate.getMainSharedHub(thisDetailHub);
         
         if (h == null) {

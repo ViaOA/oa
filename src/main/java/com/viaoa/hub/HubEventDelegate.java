@@ -695,6 +695,7 @@ public class HubEventDelegate {
 	    Remove HubListener from list.
 	*/
 	protected static void removeHubListener(Hub thisHub, HubListener l) {
+	    if (thisHub == null || l == null) return;
 	    if (thisHub.datau.getListenerTree() == null) return;
 	    thisHub.datau.getListenerTree().removeListener(l);
         //was: thisHub.datau.getListenerTree().removeListener(thisHub, l);
