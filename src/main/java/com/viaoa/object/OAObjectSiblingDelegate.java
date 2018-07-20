@@ -45,12 +45,16 @@ public class OAObjectSiblingDelegate {
         
         long msStarted = System.currentTimeMillis();
         if (OAObject.getDebugMode()) msStarted = 0L;
-        OAObjectKey[] keys;
+        OAObjectKey[] keys = null;
 
         try {
             tl.bGetSiblingCalled = true;
             keys = _getSiblings(mainObject, property, maxAmount, hmIgnore, msStarted);
         }
+catch (Exception e) {
+    e.printStackTrace();//qqqqqqqqqqqqqqqqqqqqqqqqqq
+    throw new RuntimeException("OAObjectSiblingDelegate error", e);
+}
         finally {
             tl.bGetSiblingCalled = false;
         }
@@ -184,12 +188,12 @@ public class OAObjectSiblingDelegate {
         }
 
         OAObject objInHub = mainObject;
-        int ppReversePos = -1;
+        int ppReversePos = 0;
         boolean bCalledFindBestSiblingHub = false;
 
-        OALinkInfo lix = null;
         if (ppReverse != null) {
             OALinkInfo[] lis = ppReverse.getLinkInfos();
+            OALinkInfo lix = null;
             if (lis != null && lis.length > 0) lix = lis[0];
             hub = findBestSiblingHub(mainObject, lix);
             bCalledFindBestSiblingHub = true;
@@ -223,7 +227,7 @@ public class OAObjectSiblingDelegate {
             ppPrefix = null;  
         }
 
-/*qqqqq  remote this ?      
+/*qqqqq  remove this ?      
         int max = maxAmount;
         if (hub == null || getDetailHub == hub) {
         }
@@ -245,7 +249,7 @@ public class OAObjectSiblingDelegate {
         final HashSet<Hub> hsHubVisited = new HashSet<>();
         final HashMap<OAObjectKey, OAObject> hmTypeOneObjKey = new HashMap<>();
         final OACascade cascade = new OACascade();
-
+        
         boolean bDone = false;
         for (int ix=0; ix<2 && !bDone; ix++) {
             if (ix == 1) {
@@ -289,49 +293,33 @@ public class OAObjectSiblingDelegate {
                 
                 // find next hub to use
                 
-                lix = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(hub);
+                final OALinkInfo lix = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(hub);
                 if (lix == null || lix.getToClass() == null) {
                     bDone = true;
                     break;  // could be using GroupBy as hub
                 }
-                
+
+                if (ppPrefix == null) ppPrefix = lix.getName();
+                else ppPrefix = lix.getName() + "." + ppPrefix;
+
                 objInHub = hub.getMasterObject();
                 
                 Hub hubx = null;
                 if (ppReverse != null && objInHub != null) {
                     OALinkInfo[] lis = ppReverse.getLinkInfos();
-    
-                    if (ppReversePos < 0) {
-                        ppReversePos = 0;
-                        if (ppPrefix == null) ppPrefix = lix.getName();
-                        else ppPrefix = lix.getName() + "." + ppPrefix;
-                    }                
-                    
                     OALinkInfo liz = (lis == null || lis.length <= ppReversePos) ? null : lis[ppReversePos];
+                    ppReversePos++;
                     if (liz != null && liz.getToClass().equals(objInHub.getClass())) {
-                        // could be recursive
-                        OALinkInfo lizRecursive = OAObjectInfoDelegate.getObjectInfo(liz.getToClass()).getRecursiveLinkInfo(OALinkInfo.TYPE_ONE);
-                        if (lizRecursive != null) {
-                            hubx = findBestSiblingHub(objInHub, lizRecursive);
-                            if (hubx != null && HubDetailDelegate.getLinkInfoFromDetailToMaster(hubx) != lizRecursive) {
-                                hubx = null;
-                            }
-                        }
-                        if (hubx == null) {
-                            ppReversePos++;
-                            liz = (lis == null || lis.length <= ppReversePos) ? null : lis[ppReversePos];
-                            hubx = findBestSiblingHub(objInHub, liz);
-                            if (hubx != null && liz != null) {
-                                if (HubDetailDelegate.getLinkInfoFromDetailToMaster(hubx) != liz) {
-                                    ppReverse = null;
-                                }
-                                else if (ppPrefix == null) ppPrefix = liz.getName();
-                                else ppPrefix = liz.getName() + "." + ppPrefix;
-                            }
+                        hubx = findBestSiblingHub(objInHub, liz);
+                        if (hubx == null) ppReverse = null;
+                        else if (HubDetailDelegate.getLinkInfoFromMasterToDetail(hubx) != liz.getReverseLinkInfo()) {
+                            ppReverse = null;
                         }
                         hub = hubx;
                     }
+                    else ppReverse = null;
                 }
+                else ppReverse = null;
                 
                 if (hubx == null && hub != null) {
                     hubx = hub.getMasterHub();
@@ -342,8 +330,6 @@ public class OAObjectSiblingDelegate {
                         if (objInHub == null) break;
                         hub = findBestSiblingHub(objInHub, null);
                     }
-                    if (ppPrefix == null) ppPrefix = lix.getName();
-                    else ppPrefix = lix.getName() + "." + ppPrefix;
                 }
             }
         }
