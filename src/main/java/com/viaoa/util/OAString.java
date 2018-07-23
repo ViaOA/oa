@@ -2692,14 +2692,30 @@ public class OAString {
     }
     */
     
+    public static String csv(String toText, Object value) {
+        if (value == null) value = "";
+        else {
+            value = value.toString();
+            value = ((String)value).replace('\"', '\'');
+            value = ((String)value).replace(',', ' ');
+            value = ((String)value).trim();
+        }
+        String s = concat(toText, (String) value, ",", true);
+        return s;
+    }
+    
     public static String concat(String toText, String value) {
-        return concat(toText, value, " ");
+        return concat(toText, value, " ", true);
     }
     public static String concat(String toText, String value, String sepChar) {
-        if (value == null || value.length() == 0) {
+        return concat(toText, value, " ", false);
+    }
+    public static String concat(String toText, String value, String sepChar, boolean bForce) {
+        if (!bForce && (value == null || value.length() == 0)) {
             if (toText == null) return "";
             return toText;
         }
+        if (value == null) value = "";
         if (toText == null || toText.length() == 0) {
             toText = value;
         }
