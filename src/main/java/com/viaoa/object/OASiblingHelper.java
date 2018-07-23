@@ -52,33 +52,33 @@ public class OASiblingHelper<F extends OAObject> {
         OAPropertyPath<F> pp = new OAPropertyPath<F>(hub.getObjectClass(), ppFromHub);
         OALinkInfo[] lis = pp.getLinkInfos();
         
-        if (lis == null || lis.length == 0) return;
-        
-        Node node = nodeRoot;
-        for (OALinkInfo li : lis) {
-            Node nodex = _add(node, li.getName());
-            if (nodex == null) return;
-            node = nodex;
+        if (lis != null) {
+            Node node = nodeRoot;
+            for (OALinkInfo li : lis) {
+                Node nodex = _add(node, li.getName());
+                if (nodex == null) break;
+                node = nodex;
+            }
         }
-
+        
         // see if last is a calc prop, and check dependent prop paths
         if (pp.isLastPropertyLinkInfo()) return;
         if (cnt > 3) return;
         
         OACalculatedProperty calc = pp.getOACalculatedPropertyAnnotation();
         if (calc == null) return;
+
         String[] dependProps = calc.properties();
         if (dependProps == null) return;
         
-        String[] props = pp.getProperties();
-        if (props == null) return;
-        
         String ppPrefix = "";
-        for (OALinkInfo li : lis) {
-            if (ppPrefix.length() == 0) ppPrefix = li.getName();
-            else ppPrefix += "." + li.getName();
-        }        
-        if (ppPrefix.length() > 0) ppPrefix += ".";
+        if (lis != null) {
+            for (OALinkInfo li : lis) {
+                if (ppPrefix.length() == 0) ppPrefix = li.getName();
+                else ppPrefix += "." + li.getName();
+            }
+            if (ppPrefix.length() > 0) ppPrefix += ".";
+        }
         
         for (String s : dependProps) {
             add(ppPrefix + s, cnt+1);
