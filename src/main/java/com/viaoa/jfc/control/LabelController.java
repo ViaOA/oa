@@ -15,6 +15,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
+import com.viaoa.annotation.OACalculatedProperty;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
@@ -82,9 +83,26 @@ public class LabelController extends JFCController {
         if (label != null) {
         	label.setBorder(new CompoundBorder(new LineBorder(Color.lightGray, 1), new EmptyBorder(0,2,0,2)));
         }
-        if (getActualHub() != null) {
-            getEnabledController().add(getActualHub());
+        Hub h = getActualHub();
+        if (h != null && h != hub) {
+            getEnabledController().add(h);
         }
+        
+        String spp = getPropertyPath();
+        if (OAString.isNotEmpty(spp)) {
+            OAPropertyPath pp = new OAPropertyPath(this.hub.getObjectClass(), spp);
+            OALinkInfo[] lis = pp.getLinkInfos();
+            
+            boolean bUsed = false;
+            if (lis != null && lis.length > 1) bUsed = true;
+            else if (pp.getOACalculatedPropertyAnnotation() != null) bUsed = true;
+            
+            if (bUsed) {
+                siblingHelper = new OASiblingHelper(this.hub);
+                siblingHelper.add(spp);
+            }
+        }        
+        
         update();
     }
 
@@ -128,9 +146,20 @@ public class LabelController extends JFCController {
         return comp;
     }
 
-
+    
+    private OASiblingHelper siblingHelper;
     @Override
     protected void update() {
+        boolean bx = (siblingHelper != null) && OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
+        try {
+            _update();
+        }
+        finally {
+            if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
+        }
+    }
+    
+    protected void _update() {
         if (label == null) return;
 
         if (getActualHub() != null) {
