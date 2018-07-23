@@ -107,7 +107,7 @@ public class OAThreadLocal {
     
     // 20180704
     public ArrayList<OASiblingHelper> alSiblingHelper;
-    public boolean bGetSiblingCalled;
+    public int cntGetSiblingCalled;
     
 }
 
