@@ -543,7 +543,10 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
                         if (objx instanceof Hub) {
                             Hub h = (Hub) objx;
                             if (HubSortDelegate.getSortListener(h) == null && HubDelegate.getAutoSequence(h) == null) {
-                                b = false;
+                                OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
+                                if (tl.cntGetSiblingCalled > 1) {
+                                    b = false;
+                                }
                             }
                         }
                     }
