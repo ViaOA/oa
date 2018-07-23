@@ -41,22 +41,20 @@ public class OAObjectSiblingDelegate {
      */
     public static OAObjectKey[] getSiblings(final OAObject mainObject, final String property, final int maxAmount, ConcurrentHashMap<Integer, Boolean> hmIgnore) {
         OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
-        if (tl.bGetSiblingCalled) return null;
+        if (tl.cntGetSiblingCalled++ > 0) return null;
         
         long msStarted = System.currentTimeMillis();
         if (OAObject.getDebugMode()) msStarted = 0L;
         OAObjectKey[] keys = null;
-
         try {
-            tl.bGetSiblingCalled = true;
             keys = _getSiblings(mainObject, property, maxAmount, hmIgnore, msStarted);
         }
-catch (Exception e) {
-    e.printStackTrace();//qqqqqqqqqqqqqqqqqqqqqqqqqq
-    throw new RuntimeException("OAObjectSiblingDelegate error", e);
-}
+        catch (Exception e) {
+            e.printStackTrace();//qqqqqqqqqqqqqqqqqqqqqqqqqq testing, can be removed
+            throw new RuntimeException("OAObjectSiblingDelegate error", e);
+        }
         finally {
-            tl.bGetSiblingCalled = false;
+            tl.cntGetSiblingCalled = 0;
         }
         
         if (OAObject.getDebugMode()) {
@@ -248,7 +246,6 @@ catch (Exception e) {
 */        
         final HashSet<Hub> hsHubVisited = new HashSet<>();
         final HashMap<OAObjectKey, OAObject> hmTypeOneObjKey = new HashMap<>();
-        final OACascade cascade = new OACascade();
         
         boolean bDone = false;
         for (int ix=0; ix<2 && !bDone; ix++) {
@@ -272,7 +269,7 @@ catch (Exception e) {
                 x = Math.min(x, 25);
                 startPosHubRoot = Math.max(0, startPosHubRoot - x);
                 
-                findSiblings(alObjectKey, hub, startPosHubRoot, ppPrefix, property, linkInfo, mainObject, hmTypeOneObjKey, hmIgnore, maxAmount, cascade, msStarted, cnt);
+                findSiblings(alObjectKey, hub, startPosHubRoot, ppPrefix, property, linkInfo, mainObject, hmTypeOneObjKey, hmIgnore, maxAmount, msStarted, cnt);
                 if (alObjectKey.size() >= maxAmount) {
                     bDone = true;
                     break;
@@ -286,16 +283,12 @@ catch (Exception e) {
                     }
                 }
                 if (cnt > 3) break;
-                if (cascade.getVisitCount() > 750) {
-                    bDone = true;
-                    break;
-                }
                 
                 // find next hub to use
                 
                 final OALinkInfo lix = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(hub);
                 if (lix == null || lix.getToClass() == null) {
-                    bDone = true;
+                    //bDone = true;
                     break;  // could be using GroupBy as hub
                 }
 
@@ -349,7 +342,6 @@ catch (Exception e) {
             final HashMap<OAObjectKey, OAObject> hmTypeOneObjKey, // for calling thread, refobjs already looked at
             final ConcurrentHashMap<Integer, Boolean> hmIgnore,  // for all threads
             final int maxAmount,
-            final OACascade cascade,
             final long msStarted,
             final int runCount
             ) 
@@ -403,9 +395,6 @@ catch (Exception e) {
                 if (alFoundObjectKey.size() >= maxAmount) {
                     stop();
                 }
-                if (runCount > 0 && cascade.getVisitCount() > 750) {
-                    stop();
-                }
 
                 return false; // always returns
             }
@@ -418,13 +407,9 @@ catch (Exception e) {
                         stop();
                     }
                 }
-                if (runCount > 0 && cascade.getVisitCount() > 750) {
-                    stop();
-                }
             }
         };
         f.setUseOnlyLoadedData(true);
-        f.setCascade(cascade);
         OAObject objx = null;
         if (startPosHubRoot > 0) objx = (OAObject) hubRoot.getAt(startPosHubRoot-1);
         f.find(hubRoot, objx);
