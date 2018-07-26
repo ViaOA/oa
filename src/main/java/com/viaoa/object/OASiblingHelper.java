@@ -18,7 +18,7 @@ public class OASiblingHelper<F extends OAObject> {
 
     private Hub<F> hub;
     private final Node nodeRoot;  // known paths from the root (hub)
-    
+    private boolean bUseSameThread;
     
     public OASiblingHelper(Hub<F> hub) {
         this.hub = hub;
@@ -39,6 +39,13 @@ public class OASiblingHelper<F extends OAObject> {
 
     public Hub<F> getHub() {
         return hub;
+    }
+    
+    public void setUseSameThread(boolean b) {
+        this.bUseSameThread = b;
+    }
+    public boolean getUseSameThread() {
+        return this.bUseSameThread;
     }
     
     /*
