@@ -32,10 +32,10 @@ public class OAObjectSiblingDelegateTest extends OAUnitTest {
         
         final Employee emp = ModelDelegate.getPrograms().getAt(0).getLocations().getAt(0).getEmployees().getAt(0);
 
-        OAObjectKey[] oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeType, 100);
+        OAObjectKey[] oks = OASiblingHelperDelegate.getSiblings(emp, Employee.P_EmployeeType, 100);
         assertEquals(0, oks.length);
         
-        oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeAwards, 25);
+        oks = OASiblingHelperDelegate.getSiblings(emp, Employee.P_EmployeeAwards, 25);
         assertEquals(0, oks.length);  // all have empawards
         
         
@@ -48,7 +48,7 @@ public class OAObjectSiblingDelegateTest extends OAUnitTest {
         };
         f.find(ModelDelegate.getPrograms());
 
-        oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeType, 100);
+        oks = OASiblingHelperDelegate.getSiblings(emp, Employee.P_EmployeeType, 100);
         assertEquals(0, oks.length);  // will find the objKey object in oacache
 
         final OAObjectKey objKey = new OAObjectKey(9999);
@@ -60,10 +60,10 @@ public class OAObjectSiblingDelegateTest extends OAUnitTest {
         };
         f.find(ModelDelegate.getPrograms());
         
-        oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeType, 100);
+        oks = OASiblingHelperDelegate.getSiblings(emp, Employee.P_EmployeeType, 100);
         assertEquals(1, oks.length); 
         
-        oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeAwards, 25);
+        oks = OASiblingHelperDelegate.getSiblings(emp, Employee.P_EmployeeAwards, 25);
         assertEquals(0, oks.length);  // all have empawards
 
         final EmployeeType et2 = new EmployeeType();
@@ -79,7 +79,7 @@ public class OAObjectSiblingDelegateTest extends OAUnitTest {
         };
         f.find(ModelDelegate.getPrograms());
         
-        oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeType, 100);
+        oks = OASiblingHelperDelegate.getSiblings(emp, Employee.P_EmployeeType, 100);
         assertEquals(0, oks.length); // all the same 
         
         f = new OAFinder<Program, Employee>("locations.employees"){
@@ -90,10 +90,10 @@ public class OAObjectSiblingDelegateTest extends OAUnitTest {
         };
         f.find(ModelDelegate.getPrograms());
         
-        oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeAwards, 25);
+        oks = OASiblingHelperDelegate.getSiblings(emp, Employee.P_EmployeeAwards, 25);
         assertEquals(25, oks.length);
 
-        oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeAwards, 10);
+        oks = OASiblingHelperDelegate.getSiblings(emp, Employee.P_EmployeeAwards, 10);
         assertEquals(10, oks.length);
 
         OAObject.setDebugMode(false);
@@ -127,7 +127,7 @@ public class OAObjectSiblingDelegateTest extends OAUnitTest {
             }
         };
         f.find(serverRoot.getActivePrograms());
-        OAObjectKey[] oks = OAObjectSiblingDelegate.getSiblings(emp, Employee.P_EmployeeType, 1000);
+        OAObjectKey[] oks = OASiblingHelperDelegate.getSiblings(emp, Employee.P_EmployeeType, 1000);
         assertEquals(ai.get()-1, oks.length);
 
         OAObject.setDebugMode(false);        
@@ -172,7 +172,7 @@ public class OAObjectSiblingDelegateTest extends OAUnitTest {
         AwardType at = emp.getEmployeeAwards().getAt(0).getAwardType();
         AddOnItem aoi = at.getAddOnItems().getAt(0);
  
-        OAObjectKey[] oks = OAObjectSiblingDelegate.getSiblings(aoi, AddOnItem.P_Item, 1000);
+        OAObjectKey[] oks = OASiblingHelperDelegate.getSiblings(aoi, AddOnItem.P_Item, 1000);
         
         assertEquals(9, oks.length);
         OAThreadLocalDelegate.removeSiblingHelper(sh);
