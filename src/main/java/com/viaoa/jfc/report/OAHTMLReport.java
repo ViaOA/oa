@@ -15,6 +15,8 @@ import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
@@ -47,7 +49,7 @@ import com.viaoa.util.*;
  * Note: the OAHTMLTextPanes must be assigned for them to be used.
  * @author vincevia
  */
-public class OAHTMLReport extends OAReport {
+public class OAHTMLReport<F extends OAObject> extends OAReport {
 
     private static Logger LOG = Logger.getLogger(OAHTMLReport.class.getName());
     
@@ -59,13 +61,16 @@ public class OAHTMLReport extends OAReport {
     
     protected OAProperties properties;
     private String htmlTitleHeader, htmlHeader, htmlDetail, htmlFooter;
+    
     protected OAHTMLConverter htmlConverterTitleHeader;
     protected OAHTMLConverter htmlConverterHeader;
     protected OAHTMLConverter htmlConverterDetail;
     protected OAHTMLConverter htmlConverterFooter;
     
-    private OAObject obj;
-    private Hub hub;
+    protected PageFormat pageFormat;
+    
+    private F obj;
+    private Hub<F> hub;
     
     /**
      * Used to create HTML report, using a OAHTMLTextPane for detail, and HTMLConverter for header/footer
@@ -161,7 +166,19 @@ public class OAHTMLReport extends OAReport {
                 Object obj = super.getProperty(oaObj, propertyName);
                 return OAHTMLReport.this.getProperty(obj, oaObj, propertyName);
             }
+            @Override
+            protected String getIncludeText(String name) {
+                String txt;
+                try {
+                    txt = OAFile.readTextFile(this.getClass(), "/com/template/report/html/oa/"+name+".html", 1024);
+                }
+                catch (Exception e) {
+                    txt = " ERROR: while reading include "+name+", exception="+e+" ";
+                }
+                return txt;
+            }
         };
+        // detail = conv.preprocess(detail);
         return htmlConverter;
     }
     
@@ -200,26 +217,30 @@ public class OAHTMLReport extends OAReport {
         setFooter(txtFooter);
     }
     
-    public void setHub(Hub hub) {
+    public void setHub(Hub<F> hub) {
         this.hub = hub;
     }
-    public void setObject(OAObject obj) {
+    public void setObject(F obj) {
         this.obj = obj;
     }
-    public Object getObject() {
+    public F getObject() {
         return this.obj;
     }
     
     static final String refreshMessage = "<html><br><center>Building report ...";
+
     
+    private final AtomicInteger aiRefreshDetail = new AtomicInteger();
     /**
      * Updates the Detail component.  Must be manually called
      */
     public void refreshDetail() {
+        final int cntRefreshDetail = aiRefreshDetail.incrementAndGet();
+        htmlConverterDetail.stopHtml();
+        
         if (getDetailTextPane() == null) {
             return;
         }
-        
         
         if (txtDetail == null || htmlDetail == null) {
             if (!SwingUtilities.isEventDispatchThread()) {
@@ -236,18 +257,25 @@ public class OAHTMLReport extends OAReport {
             return;
         }
         
-        
-//qqqqqqqqqqqq        
         getDetailTextPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        
         SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
             String txt;
             @Override
-            protected Void doInBackground() throws Exception {
-                txt = htmlConverterDetail.getHtml(obj, hub, properties);
+            protected Void doInBackground() {
+                try {
+                    txt = htmlConverterDetail.getHtml(obj, hub, properties);
+                }
+                catch (Exception e) {
+                    txt = "Error while creating html text for report";
+                    LOG.log(Level.WARNING, txt, e);
+                    txt += "<br>"+e.toString();
+                }
                 return null;
             }
             @Override
             protected void done() {
+                if (cntRefreshDetail != aiRefreshDetail.get()) return;
                 getDetailTextPane().setText(txt);
                 getDetailTextPane().getCaret().setDot(0);
                 getDetailTextPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -257,7 +285,6 @@ public class OAHTMLReport extends OAReport {
         
         
 /*was:        
-        
         final String txt = htmlConverterDetail.getHtml(obj, hub, properties);
         
         if (!SwingUtilities.isEventDispatchThread()) {
@@ -351,6 +378,21 @@ public class OAHTMLReport extends OAReport {
         return defaultValue;
     }    
 
+    /**
+     * Get inserted html textfile.
+     * @param name of include file
+     * @see OAHTMLConverter tag <%=include name%>
+     */
+    protected String getIncludeText(String name) {
+        String txt;
+        try {
+            txt = OAFile.readTextFile(this.getClass(), "/com/template/report/html/oa/"+name+".html", 1024);
+        }
+        catch (Exception e) {
+            txt = " ERROR: while reading include "+name+", exception="+e+" ";
+        }
+        return txt;
+    }
 }
 
 

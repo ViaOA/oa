@@ -13,6 +13,7 @@ package com.viaoa.jfc.report;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.*;
@@ -94,6 +95,7 @@ public class OAHTMLConverter {
     private Properties propInternal;
     private TreeNode rootTreeNode;
     private String htmlTemplate;
+    private final AtomicInteger aiStopCalled = new AtomicInteger();
 
     public OAHTMLConverter() {
     }
@@ -109,14 +111,24 @@ public class OAHTMLConverter {
         return this.htmlTemplate;
     }
     
+    
     public String getHtml(OAObject objRoot, OAProperties props) {
         return getHtml(objRoot, null, props);
     }
     public String getHtml(Hub hubRoot, OAProperties props) {
         return getHtml(null, hubRoot, props);
     }
+
+    /**
+     * Used to have a a call to getHtml stopped.
+     */
+    public void stopHtml() {
+        aiStopCalled.incrementAndGet();
+    }
     
     protected String getHtml(OAObject objRoot, Hub hubRoot, OAProperties props) {
+        final int cntStopCalled = aiStopCalled.get();
+
         setProperty("DATETIME", new OADateTime());
         setProperty("DATE", new OADate());
         setProperty("TIME", new OATime());
@@ -126,7 +138,8 @@ public class OAHTMLConverter {
         }
         
         StringBuilder sb = new StringBuilder(1024 * 4);
-        generateHTML(rootTreeNode, objRoot, hubRoot, sb, props);
+        boolean b = generateHTML(rootTreeNode, objRoot, hubRoot, sb, props, cntStopCalled);
+        if (!b) return "cancelled";
         String s = new String(sb);
         sb = null;
         return s;
@@ -526,8 +539,12 @@ public class OAHTMLConverter {
     }
 
     private HashMap<String, Integer> hmForEachCounter = new HashMap<String, Integer>();
-    
-    protected void generateHTML(TreeNode rootNode, OAObject obj, Hub hub, StringBuilder sb, OAProperties props) {
+
+    /**
+     * Returns false if it did not complete (stopHtml was called)
+     */
+    protected boolean generateHTML(TreeNode rootNode, OAObject obj, Hub hub, StringBuilder sb, OAProperties props, final int cntStop) {
+        if (aiStopCalled.get() != cntStop) return false;
         boolean bNot = false;
         boolean bProcessChildren = true;
 
@@ -559,7 +576,7 @@ public class OAHTMLConverter {
                         OAObject oa = (OAObject) h.elementAt(i);
                         if (oa == null) break;
                         for (TreeNode dn : rootNode.alChildren) {
-                            generateHTML(dn, oa, hub, sb, props);
+                            if (!generateHTML(dn, oa, hub, sb, props, cntStop)) return false;
                         }
                     }
                 }
@@ -577,7 +594,7 @@ public class OAHTMLConverter {
                 sb = new StringBuilder(1024 * 4);
 
                 for (TreeNode dn : rootNode.alChildren) {
-                    generateHTML(dn, obj, hub, sb, props);
+                    if (!generateHTML(dn, obj, hub, sb, props, cntStop)) return false;
                 }
 
                 String s = new String(sb);
@@ -699,7 +716,7 @@ public class OAHTMLConverter {
                 fmt = rootNode.arg2;
                 if (obj == null) break;
                 Object objx = obj.getProperty(prop);
-                if (!(objx instanceof Hub)) return;
+                if (!(objx instanceof Hub)) return true;
                 s = OAConv.toString( ((Hub) objx).getSize(), fmt);
                 sb.append(s);
                 break;
@@ -709,7 +726,7 @@ public class OAHTMLConverter {
                 fmt = rootNode.arg3;
                 if (obj == null) break;
                 objx = obj.getProperty(prop);
-                if (!(objx instanceof Hub)) return;
+                if (!(objx instanceof Hub)) return true;
                 double d = 0.0d;
                 for (Object objz : ((Hub) objx)) {
                     if (!(objz instanceof OAObject)) continue;
@@ -724,9 +741,10 @@ public class OAHTMLConverter {
         }
         if (bProcessChildren && rootNode.alChildren != null) {
             for (TreeNode dn : rootNode.alChildren) {
-                generateHTML(dn, obj, hub, sb, props);
+                if (!generateHTML(dn, obj, hub, sb, props, cntStop)) return false;
             }
         }
+        return true;
     }
 
     /**

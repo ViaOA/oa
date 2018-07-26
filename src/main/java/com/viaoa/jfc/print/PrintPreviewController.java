@@ -33,8 +33,8 @@ public abstract class PrintPreviewController {
 	private PageFormat pageFormat;
     private BufferedImage image;  // one and only image, that is used by PagePanels.
 	
-	private String[] scales = new String[] { " 10%  ", " 25%  ", " 50%  ", " 75%  ", " 100% " };
-	private int selectedScale = 4;
+	private final int[] scales = new int[] { 10, 25, 35, 50, 75, 90, 100, 125, 150, 200 };
+	private int scale = 100;
 	
 	public PrintPreviewController() {
 	}
@@ -80,7 +80,16 @@ public abstract class PrintPreviewController {
 	
 	protected PrintPreviewDialog getPrintPreviewDialog() {
 		if (dlgPrintPreview == null) {
-			dlgPrintPreview = new PrintPreviewDialog(parentWindow, scales) {
+		    
+		    String[] ss = new String[scales.length];
+		    int pos = 0;
+		    int posNow = 0;
+		    for (int x : scales) {
+		        ss[pos++] = " " + x + "% ";
+                if (x == scale) posNow = pos-1;
+		    }
+		    
+			dlgPrintPreview = new PrintPreviewDialog(parentWindow, ss) {
 				public void onClose() {
 					PrintPreviewController.this.onClose();
 				}
@@ -94,41 +103,17 @@ public abstract class PrintPreviewController {
 
 			dlgPrintPreview.getScaleComboBox().addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-/** was: not needed, refresh is ran in a new thread				    
-					new Thread() {
-						public void run() {
-							String str = dlgPrintPreview.getScaleComboBox().getSelectedItem().toString();
-	                        str = str.trim();
-							if (str.endsWith("%")) str = str.substring(0, str.length()-1);
-							str = str.trim();
-							try {
-							    selectedScale = Integer.parseInt(str);
-							}
-							catch (NumberFormatException ex) {
-							    return;
-							}
-							refresh(false);  // resize and repaint
-						}
-					}.start();
-*/					
-                    String str = dlgPrintPreview.getScaleComboBox().getSelectedItem().toString();
-                    str = str.trim();
-                    if (str.endsWith("%")) str = str.substring(0, str.length()-1);
-                    str = str.trim();
-                    try {
-                        selectedScale = Integer.parseInt(str);
-                    }
-                    catch (NumberFormatException ex) {
-                        return;
-                    }
+				    int x = dlgPrintPreview.getScaleComboBox().getSelectedIndex();
+				    x = scales[x];
+				    if (x == scale) return;
+				    scale = x;
                     refresh(false);  // resize and repaint
-
 				}
 			});
-			dlgPrintPreview.getScaleComboBox().setSelectedIndex(selectedScale);
+			dlgPrintPreview.getScaleComboBox().setSelectedIndex(posNow);
 
 	        Rectangle r;
-	        if (parentWindow == null) r = new Rectangle(20,20, 200, 200);
+	        if (parentWindow == null) r = new Rectangle(20, 20, 200, 200);
 	        else r = parentWindow.getBounds();
 	        int x = r.getLocation().x + 20;
 	        int y = r.getLocation().y + 20;
@@ -166,8 +151,8 @@ public abstract class PrintPreviewController {
         wPage = (int) convertPointsToPixels(pageFormat.getWidth());
         hPage = (int) convertPointsToPixels(pageFormat.getHeight());
 
-	    int w = (int)(wPage * selectedScale/100);
-	    int h = (int)(hPage * selectedScale/100);
+	    int w = (int)(wPage * (scale/100.0d));
+	    int h = (int)(hPage * (scale/100.0d));
 
         if (!bRebuild) {
             Component[] comps = getPrintPreviewDialog().getPreviewPanel().getComponents();

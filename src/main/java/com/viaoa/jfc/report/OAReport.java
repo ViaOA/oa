@@ -69,7 +69,6 @@ public class OAReport implements OAPrintable {
     public void setPageFormat(PageFormat pf) {
         this.pageFormat = pf;
     }
-
     
     void outlinePage(Graphics graphics, PageFormat pageFormat) {
         if (pageFormat == null || graphics == null) return;

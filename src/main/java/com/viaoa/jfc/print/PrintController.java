@@ -217,7 +217,8 @@ public class PrintController {
             public void run() {
                 try {
                     printerJob.setJobName(title==null?"":title);
-                    PageFormat pf = printerJob.pageDialog(getPageFormat());
+                    PageFormat pf = getPageFormat();
+                    pf = printerJob.pageDialog(pf);
                     if (pf != null && pf != PrintController.this.getPageFormat()) {
                         PrintController.this.setPageFormat(pf);
                     }
