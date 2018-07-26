@@ -166,7 +166,7 @@ public class OASyncClient {
                 
                 if (bHasSiblingHelper) max *= 3;
                 
-                siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max, hmIgnoreSibling);
+                siblingKeys = OASiblingHelperDelegate.getSiblings(masterObject, propertyName, max, hmIgnoreSibling);
                 
 /*qqqqqqqqqqqqqqqqqqqqq                
 if (siblingKeys == null || siblingKeys.length == 0) {
