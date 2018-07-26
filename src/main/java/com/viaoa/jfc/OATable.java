@@ -518,6 +518,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         for (int i = 0; i < x; i++) {
             OATableColumn tc = (OATableColumn) columns.elementAt(i);
             tc.setMethods(null);
+            siblingHelper.add(tc.getPathFromTableHub(hub));
         }
         oaTableModel = new OATableModel(hub);
         setModel(oaTableModel);
@@ -2442,23 +2443,37 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         
         // 20180305 set AO, but not detailHubs
-        HubAODelegate.setActiveObject(hub, hub.getAt(row), row, true, false, false, false);
+        boolean bx = OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
+        try {
+            HubAODelegate.setActiveObject(hub, hub.getAt(row), row, true, false, false, false);
+        }
+        finally {
+            if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
+        }
         
         SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
-                HubDetailDelegate.preloadDetailData(hub, row);        
+                boolean bx = OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
+                try {
+                    HubDetailDelegate.preloadDetailData(hub, row);
+                }
+                finally {
+                    if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
+                }
                 return null;
             }
             @Override
             protected void done() {
                 if (aiRow.get() == row) {
+                    boolean bx = OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
                     try {
                         hubAdapter._bIsRunningValueChanged = true;
                         HubAODelegate.updateDetailHubs(hub); 
                     }
                     finally {
                         hubAdapter._bIsRunningValueChanged = false;
+                        if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
                     }
                     setCursor(Cursor.getDefaultCursor());
                 }
@@ -3444,7 +3459,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      */
     public Component getRenderer(Component comp, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
         try {
-            comp = _getRenderer(comp, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
+            boolean bx = OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
+            try {
+                comp = _getRenderer(comp, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
+            }
+            finally {
+                if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
+            }
         }
         catch (Exception e) {
             LOG.log(Level.WARNING, "Error in table rendering", e);
