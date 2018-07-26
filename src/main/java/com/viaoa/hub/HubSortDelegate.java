@@ -13,6 +13,7 @@ package com.viaoa.hub;
 import java.io.Serializable;
 import java.util.*;
 
+import com.viaoa.jfc.table.OATableColumn;
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.util.OAComparator;
@@ -36,7 +37,6 @@ public class HubSortDelegate {
     
     public static void sort(Hub thisHub, String propertyPaths, boolean bAscending, Comparator comp, boolean bAlreadySortedAndLocalOnly) {
         if (thisHub == null) return;
-        // 20110204 added locking
         boolean b = false;
         try {
             OAThreadLocalDelegate.lock(thisHub);
@@ -57,7 +57,7 @@ public class HubSortDelegate {
         OARemoteThreadDelegate.startNextThread(); // if this is OAClientThread, so that OAClientMessageHandler can continue with next message
 
         if (comp != null && !(comp instanceof Serializable)) {
-            if (thisHub.getMasterObject() != null) {
+            if (thisHub.datam.getMasterObject() != null) { 
                 throw new RuntimeException("comparator is not Serializable");
             }
         }
@@ -98,7 +98,7 @@ public class HubSortDelegate {
         
         if (propertyPaths != null || comp != null) {
             thisHub.data.setSortListener(new HubSortListener(thisHub, comp, propertyPaths, bAscending));
-            if (!bAlreadySortedAndLocalOnly) performSort(thisHub);
+            if (!bAlreadySortedAndLocalOnly) _performSort(thisHub);
         }
         else { // cancel sort
             thisHub.data.setSortAsc(true);
@@ -125,10 +125,10 @@ public class HubSortDelegate {
 	*/
 	public static void sort(Hub thisHub) {
         if (thisHub == null) return;
-        // 20131014 added locking
+
         try {
             OAThreadLocalDelegate.lock(thisHub);
-            performSort(thisHub);
+            _performSort(thisHub);
         }
         finally {
             OAThreadLocalDelegate.unlock(thisHub);
@@ -136,11 +136,33 @@ public class HubSortDelegate {
         afterPerformSort(thisHub); // outside of lock
 	}
 
-	private static void performSort(Hub thisHub) {
+    private static void _performSort(Hub thisHub) {
+        OASiblingHelper siblingHelper = new OASiblingHelper(thisHub);
+        siblingHelper.setUseSameThread(true);
+        HubSortListener hsl = thisHub.data.getSortListener();
+        if (hsl != null) {
+            String[] props = hsl.getPropeties();
+            if (props != null) {
+                for (String p : props) {
+                    siblingHelper.add(p);
+                }
+            }
+        }        
+        try {
+            OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
+            _performSortX(thisHub);
+        }
+        finally {
+            OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
+        }
+    }
+	
+	private static void _performSortX(Hub thisHub) {
 		if (thisHub.data.getSortListener() == null) return;
 		HubSelectDelegate.loadAllData(thisHub);
 	    thisHub.data.changeCount++;
-	    for (int i=0; i<3; i++) {
+	    
+	    for (int i=0; i<5; i++) {
 	        try {
     	        Collections.sort(thisHub.data.vector, thisHub.data.getSortListener().comparator);
     	        break;
