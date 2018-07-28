@@ -13,6 +13,7 @@ package com.viaoa.ds;
 import java.util.*;
 import java.util.logging.Logger;
 import com.viaoa.object.*;
+import com.viaoa.util.OAArray;
 import com.viaoa.util.OAComparator;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAString;
@@ -151,6 +152,12 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
     }
     public Object[] getParams() {
     	return this.params;
+    }
+    
+    // 20180726
+    public void add(String whereClause, Object[] params) {
+        this.where = OAString.concat(this.where, whereClause, " AND "); 
+        this.params = OAArray.add(Object.class, this.params, params);
     }
     
 
