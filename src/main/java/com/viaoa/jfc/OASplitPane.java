@@ -30,6 +30,7 @@ public class OASplitPane extends JSplitPane {
 
         if (componentListener == null) {
             addComponentListener(getMyComponentListener());
+            componentResized(true);
         }
         bDontAutoAdjust = false;
     }
@@ -53,55 +54,67 @@ public class OASplitPane extends JSplitPane {
             @Override
             public void componentResized(ComponentEvent e) {
                 if (bDontAutoAdjust) return;
-                try {
-                    bIgnore = true;
-                    _componentResized(e);
-                }
-                finally {
-                    bIgnore = false;
-                }
-            }
-            void _componentResized(ComponentEvent e) {
-                Dimension d = getSize();
-                if (d.width == 0 || d.height == 0) return;                
-
-                int div;
-                if (getOrientation() == JSplitPane.VERTICAL_SPLIT) {
-                    Dimension dTop = getLeftComponent().getPreferredSize();
-                    Dimension dBottom = getRightComponent().getPreferredSize();
-                    if (((dTop.height+18) + dBottom.height) < d.height) {
-                        div = dTop.height + 18;
-                    }
-                    else if (dTop.height < d.height/2) {
-                        div = dTop.height + 18;
-                    }
-                    else if (dBottom.height < d.height/2) {
-                        div = (d.height - dBottom.height);
-                    }
-                    else {
-                        div = d.height/2;
-                    }
-                }
-                else {
-                    Dimension dLeft = getLeftComponent().getPreferredSize();
-                    Dimension dRight = getRightComponent().getPreferredSize();
-                    if (((dLeft.width+18) + dRight.width) < d.width) {
-                        div = dLeft.width + 18;
-                    }
-                    else if (dLeft.width < d.width/2) {
-                        div = dLeft.width + 18;
-                    }
-                    else if (dRight.width < d.width/2) {
-                        div = (d.width - dRight.width);
-                    }
-                    else {
-                        div = d.width/2;
-                    }
-                }
-                setDividerLocation(div);
+                OASplitPane.this.componentResized(false);
             }
         };            
         return componentListener;
+    }
+
+    protected void componentResized(boolean bInit) {
+        try {
+            bIgnore = true;
+            _componentResized(bInit);
+        }
+        finally {
+            bIgnore = false;
+        }
+    }
+
+    private void _componentResized(boolean bInit) {
+        Dimension d = getSize();
+        if (!bInit && (d.width == 0 || d.height == 0)) return;                
+
+        int div;
+        if (getOrientation() == JSplitPane.VERTICAL_SPLIT) {
+            Dimension dTop = getLeftComponent().getPreferredSize();
+            Dimension dBottom = getRightComponent().getPreferredSize();
+            if (bInit && d.height == 0) {
+                div = dTop.height + 18;
+            }
+            else if (((dTop.height+18) + dBottom.height) < d.height) {
+                div = dTop.height + 18;
+            }
+            else if (dTop.height < d.height/2) {
+                div = dTop.height + 18;
+            }
+            else if (dBottom.height < d.height/2) {
+                div = (d.height - dBottom.height);
+            }
+            else {
+                div = d.height/2;
+            }
+        }
+        else {
+            Dimension dLeft = getLeftComponent().getPreferredSize();
+            Dimension dRight = getRightComponent().getPreferredSize();
+
+            if (bInit && d.width == 0) {
+                div = dLeft.width + 18;
+            }
+            else if (((dLeft.width+18) + dRight.width) < d.width) {
+                div = dLeft.width + 18;
+            }
+            else if (dLeft.width < d.width/2) {
+                div = dLeft.width + 18;
+            }
+            else if (dRight.width < d.width/2) {
+                div = (d.width - dRight.width);
+            }
+            else {
+                div = d.width/2;
+            }
+        }
+        setDividerLocation(div);
     }
     
 }

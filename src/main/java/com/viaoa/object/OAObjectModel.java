@@ -35,6 +35,7 @@ public class OAObjectModel {
     protected boolean bAllowClear;  // set to null / set AO to null
     protected boolean bAllowRecursive;
     protected boolean bAllowFilter;  // to include hub filters
+    protected boolean bAllowDownload;
     
     protected boolean bAllowCut;
     protected boolean bAllowCopy;
@@ -44,6 +45,7 @@ public class OAObjectModel {
     
     protected String displayName;
     protected String displayNamePlural;
+   
 
     // flag to know if this model is used by JFC UI apps, in which case it can use Hubs that are loaded in swingWorker thread
     protected boolean bForJfc;
@@ -66,6 +68,7 @@ public class OAObjectModel {
         setAllowMultiSelect(false);
         setAllowTableFilter(true);
         setAllowFilter(true);
+        setAllowDownload(false);
         setCreateUI(true);
     }
 
@@ -223,6 +226,12 @@ public class OAObjectModel {
     }
     public void setForJfc(boolean b) {
         this.bForJfc = b;
+    }
+    public boolean getAllowDownload() {
+        return bAllowDownload;
+    }
+    public void setAllowDownload(boolean b) {
+        bAllowDownload = b;
     }
     
 }

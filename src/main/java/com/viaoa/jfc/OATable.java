@@ -127,7 +127,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
     public static final Color COLOR_Focus_Forground = UIManager.getColor("Table.background");
     public static final Border BORDER_Focus = new LineBorder(Color.white, 1);
-    
+
+    public static final Border BORDER_Red = new CompoundBorder(new LineBorder(Color.white, 1), new LineBorder(Color.red));
+    public static final Border BORDER_Purple = new CompoundBorder(new LineBorder(Color.white, 1), new LineBorder(new Color(136,0,136))); // #880088
+    public static final Border BORDER_Yellow = new CompoundBorder(new LineBorder(Color.white, 1), new LineBorder(Color.yellow));
+    public static final Border BORDER_Select = new CompoundBorder(new LineBorder(Color.white, 1), UIManager.getBorder("Table.focusCellHighlightBorder"));
     
     static {
         iconAsc = new Icon[4];
