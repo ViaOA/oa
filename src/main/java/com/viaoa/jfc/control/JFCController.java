@@ -1324,6 +1324,19 @@ public class JFCController extends HubListenerAdapter {
             if (s == null) s = "";
             comp.setToolTipText(s);
         }
+        if (comp instanceof OAJFCComponent) {
+            String tt = comp.getToolTipText();
+            Hub h = getHub();
+            int pos = h == null ? -1 : h.getPos(value);
+            String tt2 = ((OAJFCComponent) comp).getToolTipText(value, pos, tt);
+            if (!OAString.isEqual(tt, tt2)) comp.setToolTipText(tt2);
+        }
+        if (comp instanceof OALabel) {
+            OALabel lbl = (OALabel) comp;
+            int pos = getHub().getPos(value);
+//qqqqqqqqq            
+            lbl.customizeRenderer(lbl, value, value, false, false, pos, false, false);
+        }
         
         getEnabledController().update();
         getVisibleController().update();
