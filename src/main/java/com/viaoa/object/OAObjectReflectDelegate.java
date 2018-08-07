@@ -1643,8 +1643,10 @@ public class OAObjectReflectDelegate {
                     else {
                         ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
                     }
-                    for (OAObjectKey ok : siblingKeys) {
-                        hmIgnoreSibling.remove(ok.getGuid());
+                    if (siblingKeys != null) {
+                        for (OAObjectKey ok : siblingKeys) {
+                            hmIgnoreSibling.remove(ok.getGuid());
+                        }
                     }
                     //was: ref = (OAObject) OAObjectDSDelegate.getObject(oi, li.toClass, (OAObjectKey) obj);
                 }

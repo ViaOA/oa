@@ -60,6 +60,11 @@ public class OASiblingHelperDelegate {
         OAObjectKey[] keys = null;
         try {
             keys = _getSiblings(mainObject, property, maxAmount, hmIgnore, msStarted);
+/**qqqqqq testing            
+if (keys == null || keys.length == 0) {
+    keys = _getSiblings(mainObject, property, maxAmount, hmIgnore, msStarted);
+}
+*/
         }
         catch (Exception e) {
             e.printStackTrace();//qqqqqqqqqqqqqqqqqqqqqqqqqq testing, can be removed
@@ -79,6 +84,16 @@ public class OASiblingHelperDelegate {
         
         return keys;
     }
+    
+    protected static class DetailInfo {
+        OASiblingHelper siblingHelper;
+        String getDetailPropertyPath;
+        DetailInfo(OASiblingHelper siblingHelper, String getDetailPropertyPath) {
+            this.siblingHelper = siblingHelper;
+            this.getDetailPropertyPath = getDetailPropertyPath;
+        }
+    }
+    
     private static OAObjectKey[] _getSiblings(final OAObject mainObject, final String property, final int maxAmount, ConcurrentHashMap<Integer, Boolean> hmIgnore, final long msStarted) {
         if (mainObject == null || OAString.isEmpty(property) || maxAmount < 1) return null;
         if (hmIgnore == null) hmIgnore = new ConcurrentHashMap<>();
@@ -92,18 +107,38 @@ public class OASiblingHelperDelegate {
 
         // 20180704
         ArrayList<OASiblingHelper> al = OAThreadLocalDelegate.getSiblingHelpers();
+        
+        // 20180807 find all pp to use, instead of just the first one.
+        ArrayList<DetailInfo> alDetailInfo = new ArrayList<>();
         if (al != null) {
-            String s = null;
             for (OASiblingHelper sh : al) {
-                s = sh.getPropertyPath(mainObject, property);
-                if (s == null) continue;
-                getDetailHub = sh.getHub();
-                getDetailPropertyPath = s;
-                ppGetDetailPropertyPath = new OAPropertyPath(sh.getHub().getObjectClass(), s);
-                break;
+                for (int i=0;;i++) {
+                    String s = sh.getPropertyPath(mainObject, property, i>0);
+                    if (s == null) break;
+                    DetailInfo di = new DetailInfo(sh, s);
+                    alDetailInfo.add(di);
+                    if (alDetailInfo.size() >= 5) break; 
+                }
+                if (alDetailInfo.size() >= 5) break; 
             }
         }
+
+        final ArrayList<OAObjectKey> alObjectKey = new ArrayList<>();
+        final HashMap<OAObjectKey, OAObjectKey> hsKeys = new HashMap<>();
+        boolean bDone = false;
         
+    // 20180807
+    for (int cntDetailInfo=0; !bDone; cntDetailInfo++) {
+        if (cntDetailInfo >= alDetailInfo.size()) {
+            if (cntDetailInfo > 0) break;
+        }
+        else {
+            DetailInfo di = alDetailInfo.get(cntDetailInfo);
+            getDetailHub = di.siblingHelper.getHub();
+            getDetailPropertyPath = di.getDetailPropertyPath;
+            ppGetDetailPropertyPath = new OAPropertyPath(di.siblingHelper.getHub().getObjectClass(), getDetailPropertyPath);
+        }
+    
         String ppPrefix = null;
         boolean bValid = false;
         if (ppGetDetailPropertyPath != null) {
@@ -174,9 +209,6 @@ public class OASiblingHelperDelegate {
             }
         }
 
-        final ArrayList<OAObjectKey> alObjectKey = new ArrayList<>();
-        final HashMap<OAObjectKey, OAObjectKey> hsKeys = new HashMap<>();
-        
         Hub hub = null;
         OAPropertyPath ppReverse = null;
         
@@ -240,10 +272,12 @@ public class OASiblingHelperDelegate {
         final HashSet<Hub> hsHubVisited = new HashSet<>();
         final HashMap<OAObjectKey, OAObject> hmTypeOneObjKey = new HashMap<>();
         
-        boolean bDone = false;
         for (int ix=0; ix<2 && !bDone; ix++) {
             if (ix == 1) {
                 if (bCalledFindBestSiblingHub) break;
+                
+                if (alDetailInfo != null && alDetailInfo.size() > 1) break;        
+                
                 objInHub = mainObject;
                 hub = findBestSiblingHub(mainObject, null);
                 ppPrefix = null;
@@ -319,6 +353,7 @@ public class OASiblingHelperDelegate {
                 }
             }
         }
+    }
         int x = alObjectKey.size();
         OAObjectKey[] keys = new OAObjectKey[x];
         alObjectKey.toArray(keys);

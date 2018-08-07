@@ -35,7 +35,7 @@ public class OASiblingHelperTest extends OAUnitTest {
         company.getPrograms();
         assertEquals(1, ai.get());
         
-        String pp = siblingHelper.getPropertyPath(company, Company.P_Programs);
+        String pp = siblingHelper.getPropertyPath(company, Company.P_Programs, false);
         
         assertEquals(Company.P_Programs, pp);
         

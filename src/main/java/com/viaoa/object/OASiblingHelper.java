@@ -160,10 +160,14 @@ public class OASiblingHelper<F extends OAObject> {
      * @return a hub and propertyPath that can be used to find siblings.
      */
     public String getPropertyPath(OAObject obj, String prop) {
-        Node node = _findNode(nodeRoot, obj, prop, false);
-        if (node == null) {
-            node = _findNode(nodeRoot, obj, prop, true);
+        return getPropertyPath(obj, prop, false);
+    }
+    public String getPropertyPath(OAObject obj, String prop, boolean bFromLastNode) {
+        Node node = _findNode(nodeRoot, obj, prop, false, bFromLastNode);
+        if (node == null && !bFromLastNode) {
+            node = _findNode(nodeRoot, obj, prop, true, false);
         }
+        nodeLastFound = node;
 
         String pp = null;
         for ( ;node != null && node != nodeRoot; node=node.nodeParent) {
@@ -172,21 +176,38 @@ public class OASiblingHelper<F extends OAObject> {
         }
         return pp;
     }
-
-    private Node _findNode(final Node node, final OAObject obj, final String prop, final boolean bRetry) {
+    private Node nodeLastFound;
+    
+    
+    private Node _findNode(final Node node, final OAObject obj, final String prop, final boolean bRetry, final boolean bFromLastNode) {
         final Class cz = obj.getClass();
         
         if (node.oi.getForClass().equals(cz)) {
+            
+            boolean bCheckLinks = true;
             if (node.alChildren != null) {
                 for (Node nodeChild : node.alChildren) {
-                    if (prop.equalsIgnoreCase(nodeChild.li.getName())) return nodeChild;
+                    if (prop.equalsIgnoreCase(nodeChild.li.getName())) {
+                        if (bFromLastNode && nodeLastFound != null) {
+                            if (nodeChild == nodeLastFound) {
+                                nodeLastFound = null;
+                                bCheckLinks = false;
+                            }
+                        }
+                        else return nodeChild;
+                    }
                 }
             }
             
-            for (OALinkInfo li : node.oi.getLinkInfos()) {
-                if (li.getName().equalsIgnoreCase(prop) && !li.getPrivateMethod()) {
-                    Node nodex = _add(node, li.getName());
-                    return nodex;
+            if (bCheckLinks) {
+                for (OALinkInfo li : node.oi.getLinkInfos()) {
+                    if (li.getName().equalsIgnoreCase(prop) && !li.getPrivateMethod()) {
+                        Node nodex = _add(node, li.getName());
+                        if (bFromLastNode && nodeLastFound != null) {
+                            if (nodex == nodeLastFound) nodeLastFound = null;
+                        }
+                        else return nodex;
+                    }
                 }
             }
         }
@@ -204,7 +225,7 @@ public class OASiblingHelper<F extends OAObject> {
         
         if (node.alChildren != null) {
             for (Node nodeChild : node.alChildren) {
-                Node nodex = _findNode(nodeChild, obj, prop, bRetry);
+                Node nodex = _findNode(nodeChild, obj, prop, bRetry, bFromLastNode);
                 if (nodex != null) return nodex;
             }
         }
