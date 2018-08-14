@@ -2708,7 +2708,7 @@ public class OAString {
         return concat(toText, value, " ", true);
     }
     public static String concat(String toText, String value, String sepChar) {
-        return concat(toText, value, " ", false);
+        return concat(toText, value, sepChar, false);
     }
     public static String concat(String toText, String value, String sepChar, boolean bForce) {
         if (!bForce && (value == null || value.length() == 0)) {

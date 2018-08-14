@@ -383,6 +383,7 @@ public class HubShareDelegate {
 	}
     protected static void setSharedHub(Hub thisHub, Hub sharedMasterHub, boolean shareActiveObject, Object newLinkValue) {
         if (thisHub == null) return;
+        if (thisHub == sharedMasterHub) sharedMasterHub = null;
 	    // added: 2004/05/13, removed 2004/05/14
 	    // if (getMasterHub() != null) throw new OAHubException(this,61);
 	

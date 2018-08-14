@@ -66,7 +66,26 @@ public class OAJFCUtil {
         }
         return window;
     }
-	
+
+    
+    public static void setBorderError(JLabel label) {
+        if (label == null) return;
+        label.setBorder(OATable.BORDER_Red);
+    }
+    public static void setJustifyLeft(JLabel label) {
+        if (label == null) return;
+        label.setHorizontalAlignment(JLabel.LEFT);
+    }
+    public static void setJustifyRight(JLabel label) {
+        if (label == null) return;
+        label.setHorizontalAlignment(JLabel.RIGHT);
+    }
+    public static void setJustifyCenter(JLabel label) {
+        if (label == null) return;
+        label.setHorizontalAlignment(JLabel.RIGHT);
+    }
+
+    
     
 	public static void main(String[] args) {
 		showLookAndFeels();

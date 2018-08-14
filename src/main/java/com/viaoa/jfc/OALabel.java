@@ -427,7 +427,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     @Override
     public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
         Object obj = ((OATable) table).getObjectAt(row, col);
-        getToolTipText(obj, row, defaultValue);
+        defaultValue = getToolTipText(obj, row, defaultValue);
         return defaultValue;
     }
     @Override
@@ -493,6 +493,5 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
         timer.setInitialDelay(250);
         timer.start();
     }
-    
 }
 

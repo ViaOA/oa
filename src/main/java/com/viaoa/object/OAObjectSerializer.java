@@ -514,10 +514,13 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
             stream.writeBoolean(false);
             return;
         }
+        LinkedList<Overflow> listOverflowHold = listOverflow;
+        this.listOverflow = null;
+        
         stream.writeBoolean(true);
-        stream.writeObject(listOverflow);
+        stream.writeObject(listOverflowHold);
         int cnt = 0;
-        for (Overflow overFlow : listOverflow) {
+        for (Overflow overFlow : listOverflowHold) {
             LOG.finer((++cnt)+") writing overflow object="+overFlow.object.getClass().getName());
             OAObjectSerializer wrapper = new OAObjectSerializer(overFlow.object, false); // compress must = false, since it is still using same stream
             wrapper.parentWrapper = this;
