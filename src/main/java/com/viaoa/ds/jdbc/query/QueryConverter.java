@@ -815,6 +815,12 @@ public class QueryConverter {
                                 	t.value = t.value.toLowerCase();
                                 	break;
                                 }
+                                if (t.type == OAQueryTokenType.QUESTION) {
+                                    if (params != null && paramPos < params.length && params[paramPos] instanceof String) {
+                                        params[paramPos] = ((String)params[paramPos]).toLowerCase();
+                                    }
+                                    break;
+                                }
                             }
                     	}
                     }
