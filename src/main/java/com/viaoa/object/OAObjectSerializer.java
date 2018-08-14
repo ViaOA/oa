@@ -49,6 +49,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     private transient Stack<Tuple<String[], String[]>> stack = new Stack();  // used for callback, to store properties to include and exclude
     private transient Stack stackObject = new Stack();  // used for callback, to know which objects are currently being serialized
     private transient Class[] excludedReferences;
+    
     private transient int overflowLimit=100;  // this might need to be adjusted for handling stackOverflow
     
     // how many objects are currently being serialized.  Level is changed after callback.eetup(..) is called
@@ -72,7 +73,7 @@ public final class OAObjectSerializer<TYPE> implements Serializable {
     //   add additional OAObjectSerializers that will then be included.
     private transient OAObjectSerializer parentWrapper;
     private transient LinkedList<Overflow> listOverflow;
-    class Overflow implements Serializable {
+    static class Overflow implements Serializable {
         OAObject parentObject;
         String property;
         transient int levelsDeep;
