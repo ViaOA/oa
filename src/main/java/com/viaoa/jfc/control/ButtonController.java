@@ -12,8 +12,6 @@ package com.viaoa.jfc.control;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -26,7 +24,6 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.SwingWorker.StateValue;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.table.*;
 
 import java.io.File;

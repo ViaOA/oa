@@ -59,8 +59,6 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
     public static ButtonEnabledMode SelectHubIsNotEmpty = ButtonEnabledMode.SelectHubIsNotEmpty;
     public static ButtonEnabledMode SelectHubIsEmpty = ButtonEnabledMode.SelectHubIsEmpty;
     
-    
-    
     /**
      * Create a new OAMenuItem that is bound to a Hub and command.
      */

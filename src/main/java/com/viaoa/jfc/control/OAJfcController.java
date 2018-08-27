@@ -124,13 +124,13 @@ public class OAJfcController extends HubListenerAdapter {
     
     
     public OAJfcController(JComponent comp) {
-        this(null, null, "", comp, null);
+        this(null, null, null, comp, null);
     }
     public OAJfcController(Hub hub, JComponent comp) {
-        this(hub, null, "", comp, null);
+        this(hub, null, null, comp, null);
     }
     public OAJfcController(JComponent comp, Hub hub) {
-        this(hub, null, "", comp, null);
+        this(hub, null, null, comp, null);
     }
     public OAJfcController(JComponent comp, Hub hub, String prop) {
         this(hub, null, prop, comp, null);
@@ -140,10 +140,10 @@ public class OAJfcController extends HubListenerAdapter {
         Bind a component to a Hub.
     */  
     public OAJfcController(Hub hub, JComponent comp, HubChangeListener.Type type) {
-        this(hub, null, "", comp, type);
+        this(hub, null, null, comp, type);
     }
     public OAJfcController(JComponent comp, Hub hub, HubChangeListener.Type type) {
-        this(hub, null, "", comp, type);
+        this(hub, null, null, comp, type);
     }
     
     /**
@@ -160,10 +160,10 @@ public class OAJfcController extends HubListenerAdapter {
         Bind a component to an Object.
     */  
     public OAJfcController(Object object, JComponent comp, HubChangeListener.Type type) {
-        this(null, object, "", comp, type);
+        this(null, object, null, comp, type);
     }
     public OAJfcController(JComponent comp, Object object, HubChangeListener.Type type) {
-        this(null, object, "", comp, type);
+        this(null, object, null, comp, type);
     }
     public OAJfcController(JComponent comp, Object object, String prop) {
         this(null, object, prop, comp, null);
@@ -189,34 +189,53 @@ public class OAJfcController extends HubListenerAdapter {
         reset();
     }
 
-    private HubChangeListener.HubProp hubChangeListenerHubProp; 
+    private Hub hubLast;
+    private Object hubObjectLast;
+    private HubChangeListener.HubProp changeListenerEnabledHubPropLast; 
+
     
+static int cntx;//qqqqqqqqqq
+
+
     // called when hub, property, etc is changed.
     // does not include resetting HubChangeListeners (changeListener, visibleChangeListener, enabledChangeListener)
     protected void reset() {
         // note: dont call close, want to keep visibleChangeListener, enabledChangeListener
-        if (hub != null) hub.removeHubListener(this);
+        if (hubLast != null) {
+cntx++;
+System.out.println("==> "+cntx);//qqqqqqqqqqqqqqqq
+
+            hubLast.removeHubListener(this);
+        }
+        if (hubObjectLast != null) {
+            HubTemp.deleteHub(hubObjectLast);
+        }
+        if (changeListenerEnabled != null) {
+            changeListenerEnabled.remove(changeListenerEnabledHubPropLast);
+            changeListenerEnabledHubPropLast = null;
+        }
         if (changeListener != null) {
             changeListener.close();
             changeListener = null;
         }
-        if (hubObject != null) {
-            HubTemp.deleteHub(hubObject);
-            hub = null;
-        }
-
-        if (hubChangeListenerHubProp != null) {
-            getEnabledChangeListener().remove(hubChangeListenerHubProp);
-        }
-        
         
         if (hub != null) {
             this.hubTemp = null;
             this.hubObject = null;
         }
         else {
-            this.hub = this.hubTemp = HubTemp.createHub(hubObject);
+            if (hubObject == null) {
+                this.hub = null;
+                this.hubTemp = null;
+            }
+            else {
+                this.hub = this.hubTemp = HubTemp.createHub(hubObject);
+            }
         }
+
+        hubObjectLast = hubObject;
+        hubLast = this.hub;
+        
         if (this.hub == null) return;
         
         if (propertyPath != null && propertyPath.indexOf('.') >= 0) {
@@ -229,7 +248,7 @@ public class OAJfcController extends HubListenerAdapter {
         }
         
         if (changeListenerType == null) changeListenerType = HubChangeListener.Type.HubValid;
-        hubChangeListenerHubProp = getEnabledChangeListener().add(hub, changeListenerType);
+        changeListenerEnabledHubPropLast = getEnabledChangeListener().add(hub, changeListenerType);
         
         oaPropertyPath = new OAPropertyPath(hub.getObjectClass(), propertyPath);
         String[] ss = oaPropertyPath.getProperties();
@@ -1164,17 +1183,24 @@ public class OAJfcController extends HubListenerAdapter {
     public void afterRemove(HubEvent e) {
         if (bIsHubCalc) update();
     }
+    @Override
     public void afterRemoveAll(HubEvent e) {
         if (bIsHubCalc) update();
+    }
+    @Override
+    public void onNewList(HubEvent e) {
+        update();
     }
     @Override
     public void afterInsert(HubEvent e) {
         if (bIsHubCalc) update();
     }
-    public @Override void afterChangeActiveObject(HubEvent e) {
+    @Override
+    public void afterChangeActiveObject(HubEvent e) {
         afterChangeActiveObject();
     }
-    public @Override void afterPropertyChange(HubEvent e) {
+    @Override
+    public void afterPropertyChange(HubEvent e) {
         Object ao = getHub().getAO();
         if (ao != null && e.getObject() == ao) {
             if (e.getPropertyName().equalsIgnoreCase(OAJfcController.this.getHubListenerPropertyName()) ) {

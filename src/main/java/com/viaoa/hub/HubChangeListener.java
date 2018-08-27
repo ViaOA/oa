@@ -15,7 +15,7 @@ import com.viaoa.util.*;
 
 /**
  * Allows listening for changes to 1 or more Hubs and property paths.
- * Can include compare values, that can then be checked using getValue().  
+ * Can include compare values, that can then be checked using getValue() to see if all conditions are true.  
  * 
  * @author vincevia
  */
@@ -260,8 +260,9 @@ public abstract class HubChangeListener {
             }
         };
         
+        if (props == null) hub.addHubListener(newHubProp.hubListener);
+        else hub.addHubListener(newHubProp.hubListener, newPropertyPath, props, true);
         
-        hub.addHubListener(newHubProp.hubListener, newPropertyPath, props, true);
         hubProps = (HubProp[]) OAArray.add(HubProp.class, hubProps, newHubProp);
         onChange();
 
@@ -300,7 +301,10 @@ public abstract class HubChangeListener {
         }
     }
     public void remove(HubProp hp) {
-        if (hp != null && hp.hubListener != null) hp.hub.removeHubListener(hp.hubListener);
+        if (hp != null && hp.hubListener != null) {
+            hp.hub.removeHubListener(hp.hubListener);
+            hubProps = (HubProp[]) OAArray.removeValue(HubProp.class, hubProps, hp);
+        }
     }
     
     

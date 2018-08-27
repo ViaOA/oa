@@ -91,6 +91,12 @@ import com.viaoa.util.*;
  */
 public class OATable extends JTable implements DragGestureListener, DropTargetListener {
     private static Logger LOG = Logger.getLogger(OATable.class.getName());
+
+@Override
+public void setEnabled(boolean enabled) {
+    // TODO Auto-generated method stub
+    super.setEnabled(enabled);
+}    
     
     protected int prefCols = 1, prefRows = 5;
     protected Hub hub;
@@ -3587,10 +3593,9 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
 
     public MyHubAdapter(Hub hub, OATable table) {
         super(hub, table, HubChangeListener.Type.HubValid);
-        setHub(hub);
         this.table = table;
         table.getSelectionModel().addListSelectionListener(this);
-        getHub().addHubListener(this);
+        // getHub().addHubListener(this);
         afterChangeActiveObject(null);
     }
 
@@ -3614,6 +3619,7 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
         return _bIsRunningValueChanged;
     }
 
+    @Override
     public void setSelectHub(Hub hubSelect) {
         if (this.hubSelect == hubSelect) return;
         super.setSelectHub(hubSelect);
@@ -3875,6 +3881,7 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
 
     private boolean bHasHadMaster;  // 20171217
     public @Override void onNewList(HubEvent e) {
+        // super.onNewList(e);
         if (!bHasHadMaster) {
             if (table.hub.getMasterHub() != null) bHasHadMaster = true; 
             else if (table.hubFilterMaster != null && table.hubFilterMaster.getMasterHub() != null) bHasHadMaster = true; 
@@ -3920,6 +3927,7 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     }
 
     public @Override void afterSort(HubEvent e) {
+        // super.afterSort(e);
         table.oaTableModel.fireTableStructureChanged();
 
         int x = getHub().getPos();
@@ -3934,7 +3942,7 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     }
 
     public @Override void afterMove(HubEvent e) {
-
+        // super.afterMove(e);
         // 20110616
         if (table.tableLeft != null || table.tableRight != null) {
             table.repaint(100);
@@ -3964,6 +3972,7 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     public @Override void afterChangeActiveObject(HubEvent e) {
         if (getRunningValueChanged()) return; // 20131113
         if (getIgnoreValueChanged()) return; // 20160127
+        // super.afterChangeActiveObject(e);
         
         int row = getHub().getPos();
         if (table.getCellEditor() != null) table.getCellEditor().stopCellEditing();
@@ -4065,6 +4074,7 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     }
 
     public @Override void afterPropertyChange(HubEvent e) {
+        // super.afterPropertyChange(e);
         if (!(e.getObject() instanceof OAObject)) return;
 
         // was: if ( ((OAObject)e.getObject()).isProperty(e.getPropertyName())) {
@@ -4115,11 +4125,13 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
      * called public @Override void afterRemove(HubEvent e) { removeInvoker(e.getPos()); }
      */
     public @Override void beforeRemove(HubEvent e) {
+        // super.beforeRemove(e);
         removeInvoker(e.getPos());
     }
 
     @Override
     public void afterRemove(HubEvent e) {
+        // super.afterRemove(e);
         aiRebuildListSelectionModel.incrementAndGet();
         rebuildListSelectionModel();
         // 20101229 need to reset the activeRow
@@ -4131,7 +4143,6 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     }
 
     protected void insertInvoker(final int pos, final boolean bIsAdd) {
-
         // 20110616
         if (table.tableRight != null) {
             // need to make sure that selectionModel is not changed
@@ -4168,10 +4179,12 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     }
 
     public @Override void afterInsert(HubEvent e) {
+        // super.afterInsert(e);
         insertInvoker(e.getPos(), false);
     }
 
     public @Override void afterAdd(HubEvent e) {
+        // super.afterAdd(e);
         if (getHub() != null) {
             insertInvoker(e.getPos(), true);
             table.setChanged(e.getPos(), -1);

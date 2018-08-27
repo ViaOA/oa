@@ -61,7 +61,7 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     
     public static ButtonEnabledMode ALWAYS = ButtonEnabledMode.Always;
     public enum ButtonEnabledMode {
-        UsesIsEnabled(HubChangeListener.Type.Unknown),
+        UsesIsEnabled(HubChangeListener.Type.AlwaysTrue),
         Always(HubChangeListener.Type.AlwaysTrue),
         ActiveObjectNotNull(HubChangeListener.Type.AoNotNull),
         ActiveObjectNull(HubChangeListener.Type.AoNull),
@@ -70,8 +70,8 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         HubIsEmpty(HubChangeListener.Type.HubEmpty),
         AOPropertyIsNotEmpty(HubChangeListener.Type.PropertyNotNull),
         AOPropertyIsEmpty(HubChangeListener.Type.PropertyNull),
-        SelectHubIsNotEmpty(HubChangeListener.Type.Unknown),
-        SelectHubIsEmpty(HubChangeListener.Type.Unknown);
+        SelectHubIsNotEmpty(HubChangeListener.Type.AlwaysTrue),
+        SelectHubIsEmpty(HubChangeListener.Type.AlwaysTrue);
         
         private HubChangeListener.Type type;
         ButtonEnabledMode(HubChangeListener.Type type) {
@@ -81,6 +81,7 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
             return this.type;
         }
     }
+/*    
     public static ButtonEnabledMode UsesIsEnabled = ButtonEnabledMode.UsesIsEnabled;
     public static ButtonEnabledMode Always = ButtonEnabledMode.Always;
     public static ButtonEnabledMode ActiveObjectNotNull = ButtonEnabledMode.ActiveObjectNotNull;
@@ -92,7 +93,7 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     public static ButtonEnabledMode AOPropertyIsEmpty = ButtonEnabledMode.AOPropertyIsEmpty;
     public static ButtonEnabledMode SelectHubIsNotEmpty = ButtonEnabledMode.SelectHubIsNotEmpty;
     public static ButtonEnabledMode SelectHubIsEmpty = ButtonEnabledMode.SelectHubIsEmpty;
-    
+*/    
     /**
         Create a new OAButton that is bound to a Hub and command.
     */
