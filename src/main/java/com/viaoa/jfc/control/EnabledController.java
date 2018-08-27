@@ -12,21 +12,24 @@ package com.viaoa.jfc.control;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.util.HashSet;
 
 import javax.swing.*;
 import javax.swing.text.*;
 
 import com.viaoa.hub.*;
-import com.viaoa.jfc.OAJFCComponent;
+import com.viaoa.jfc.OAJfcComponent;
 import com.viaoa.jfc.OASplitButton;
+import com.viaoa.jfc.OATextField;
 
 /**
  * Used to bind a components enabled/disabled value to a one or more Hub/Property value
  * @author vincevia
+ * @deprecated  use OAObjectChangeListener instead
  */
 public class EnabledController extends HubPropController {
     protected JComponent component;
-    
+
     public EnabledController(JComponent comp) {
         super();
         this.component = comp;
@@ -48,21 +51,6 @@ public class EnabledController extends HubPropController {
         this.component = comp;
         update();
     }
-
-    @Override
-    protected void onUpdate(boolean bValid) {
-        if (this.component != null) {
-            onUpdate(this.component, bValid);
-        }
-    }
-
-    private boolean bIsCallingUpdate;
-    @Override
-    public void directlySet(boolean b, boolean bEnableValue) {
-        if (!bIsCallingUpdate) {
-            super.directlySet(b, bEnableValue);
-        }
-    }
     
     @Override
     public void update() {
@@ -78,6 +66,15 @@ public class EnabledController extends HubPropController {
             }
         });
     }
+    
+
+    @Override
+    protected void onUpdate(boolean bValid) {
+        if (this.component != null) {
+            onUpdate(this.component, bValid);
+        }
+    }
+
     
     private void onUpdate(final Component comp, final boolean bEnabled) {
         _onUpdate(comp, bEnabled);
@@ -112,8 +109,8 @@ public class EnabledController extends HubPropController {
             comp.setEnabled(bEnabled);
         }
         
-        if (comp instanceof OAJFCComponent) {
-            JFCController jc = ((OAJFCComponent) comp).getController();
+        if (comp instanceof OAJfcComponent) {
+            OAJfcController jc = ((OAJfcComponent) comp).getController();
             if (jc != null) {
                 JLabel lbl = jc.getLabel();
                 if (lbl != null) lbl.setEnabled(bEnabled);

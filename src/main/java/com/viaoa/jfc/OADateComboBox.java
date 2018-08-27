@@ -66,15 +66,16 @@ public class OADateComboBox extends OACustomComboBox {
 
     private MyDateComboBoxModel model;
     
-    /**
+    /**was
         Create an unbound DateComboBox.
-    */
+
     public OADateComboBox() {
         model = new MyDateComboBoxModel(this);
         setModel(model);
         setRenderer(new MyDateListCellRenderer(this));
         initialize();
     }
+    */
 
     protected boolean bAllowClear=true;
     public void setAllowClear(boolean b) {
@@ -135,7 +136,7 @@ public class OADateComboBox extends OACustomComboBox {
     	Hub h = getHub();
         if (h != null) {
             OAObject obj = (OAObject) h.getAO();
-            Object value = control.getPropertyPathValue(obj);
+            Object value = control.getValue(obj);
             //was: Object value = OAReflect.getPropertyValue(obj, control.getGetMethods());
             if (value instanceof OADate) return (OADate) value;
             return null;

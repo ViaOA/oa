@@ -168,7 +168,7 @@ public class OAHTMLTextPaneController extends OATextController {
                 return OAHTMLTextPaneController.this.isEnabled(bIsCurrentlyEnabled);
             }
             @Override
-            protected String isValid(Object object, Object value) {
+            public String isValid(Object object, Object value) {
                 return OAHTMLTextPaneController.this.isValid(object, value);
             }
             @Override
@@ -188,7 +188,7 @@ public class OAHTMLTextPaneController extends OATextController {
         if (hub2HtmlText == null) {
             throw new RuntimeException("must call bind before calling setEnabled");
         }
-        hub2HtmlText.getEnabledController().add(hub, prop);
+        hub2HtmlText.getEnabledChangeListener().add(hub, prop);
     }
     protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
         return bIsCurrentlyEnabled;
@@ -202,7 +202,7 @@ public class OAHTMLTextPaneController extends OATextController {
         if (hub2HtmlText == null) {
             throw new RuntimeException("must call bind before calling setVisible");
         }
-        hub2HtmlText.getVisibleController().add(hub, prop);
+        hub2HtmlText.getVisibleChangeListener().add(hub, prop);
     }    
     protected boolean isVisible(boolean bIsCurrentlyVisible) {
         return bIsCurrentlyVisible;

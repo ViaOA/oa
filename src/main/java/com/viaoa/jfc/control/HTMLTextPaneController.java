@@ -30,22 +30,20 @@ import com.viaoa.object.OAObject;
  *  NOTE: Use OAHTMLTextPaneController.bind(hub,prop) for more features.
  *  
  * */
-public abstract class HTMLTextPaneController extends JFCController implements FocusListener {
+public abstract class HTMLTextPaneController extends OAJfcController implements FocusListener {
     private OAHTMLTextPane editor;
     private Object activeObject;
     private Object focusActiveObject;
-    private String undoDescription;
     private String prevText;
     private boolean bSettingText;
     private boolean bValueChangedWhileEditing;
     private int imageChangeCount;
 
     public HTMLTextPaneController(Hub hub, OAHTMLTextPane tf, String propertyPath) {
-        super(hub, propertyPath, tf); // this will add hub listener
+        super(hub, propertyPath, tf, HubChangeListener.Type.AoNotNull); // this will add hub listener
         create(tf);
     }
 
-    
     private void create(OAHTMLTextPane ed) {
         if (editor != null) editor.removeFocusListener(this);
         editor = ed;
@@ -53,10 +51,7 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
         if (editor == null) return; 
             
         editor.addFocusListener(this);
-        afterChangeActiveObject(null);
-        if (getActualHub() != null) {
-            getEnabledController().add(getActualHub());
-        }
+        afterChangeActiveObject();
     }
 
     private Class fieldClass;
@@ -86,13 +81,9 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
         if (obj == null) return null;
         Class c = h.getObjectClass();
         
-        
-        // 20170803
-        // 20170721
-        Method method = OAReflect.getMethod(c, "get"+propertyPath+"TemplateRoot");
+        Method method = OAReflect.getMethod(c, "get"+endPropertyName+"TemplateRoot");
         if (method == null) {
-            // was
-            method = OAReflect.getMethod(c, "get"+propertyPath+"FieldClass");
+            method = OAReflect.getMethod(c, "get"+endPropertyName+"FieldClass");
         }
         if (method != null) {
             Class[] cs = method.getParameterTypes();
@@ -115,7 +106,7 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
         Object obj = h.getAO();
         if (obj == null) return null;
         Class c = h.getObjectClass();
-        Method method = OAReflect.getMethod(c, "get"+propertyPath+"TemplateFields");
+        Method method = OAReflect.getMethod(c, "get"+endPropertyName+"TemplateFields");
         
         if (method == null) return null;
         
@@ -135,12 +126,6 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
         return new String[0];
     }
     
-    
-    protected void resetHubOrProperty() { // called when Hub or PropertyName is changed
-        super.resetHubOrProperty();
-        if (editor != null) create(editor);
-    }
-    
     public void close() {
         if (editor != null) editor.removeFocusListener(this);
         super.close();  // this will call hub.removeHubListener()
@@ -148,25 +133,23 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
 
     
     @Override
-    public void afterPropertyChange(HubEvent e) {
-        if (bSettingText || getActualHub() == null) return;
+    public void afterPropertyChange() {
+        if (bSettingText) return;
         
-        if (e.getObject() == getActualHub().getActiveObject() && e.getPropertyName().equalsIgnoreCase(this.getHubListenerPropertyName()) ) {
-            if (focusActiveObject != null) {
-                bValueChangedWhileEditing = true;
-            }
-            else {
-                update();
-            }
+        if (focusActiveObject != null) {
+            bValueChangedWhileEditing = true;
+        }
+        else {
+            update();
         }
     }
     
-    public @Override void afterChangeActiveObject(HubEvent e) {
+    public @Override void afterChangeActiveObject() {
         boolean b = (focusActiveObject != null && focusActiveObject == activeObject);
         if (b) onFocusLost();
         
-        Hub h = getActualHub();
-        if (h != null) activeObject = getActualHub().getActiveObject();
+        Hub h = hub;
+        if (h != null) activeObject = hub.getActiveObject();
         else activeObject = null;
         imageChangeCount = editor.getImageChangeCount();
         
@@ -182,12 +165,12 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
         focusActiveObject = activeObject;
         bValueChangedWhileEditing = false;
         
-        if (getActualHub() != null) {
+        if (hub != null) {
             // 20110224 getText from property, since the text in the editor could have been
             //   changed by previous focus owner (ex: replace, or color chooser)
             prevText = null;
             if (activeObject != null) {
-                prevText = OAConv.toString(getPropertyPathValue(activeObject));
+                prevText = OAConv.toString(getValue(activeObject));
                 //was: prevText = ClassModifier.getPropertyValueAsString(activeObject, getGetMethod());
                 if (prevText == null) prevText = getNullDescription();
             }
@@ -212,24 +195,6 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
     }
     
 
-
-    
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public void setUndoDescription(String s) {
-        undoDescription = s;
-    }
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public String getUndoDescription() {
-        return undoDescription;
-    }
-    
-    
     boolean bSaving; // only used by saveChanges(), calling setText generates actionPerformed()
     public boolean saveText() {
         if (bSettingText) return true;
@@ -258,19 +223,20 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
             if (bValueChangedWhileEditing || bChange ) {
 
                 if (bChange) {
-                    String msg = validateNewValue(activeObject, newText);
+                    String msg = isValid(activeObject, newText);
                     if (msg != null) {
                         JOptionPane.showMessageDialog(SwingUtilities.getRoot(editor), 
                                 "Invalid Entry\n"+msg,
                                 "Invalid Entry", JOptionPane.ERROR_MESSAGE);
                         return false;
                     }
+                    if (!confirm(activeObject, newText)) return false;
                 }
-                
+
                 bChange = true;
                 boolean bSettext = false;
                 if (bValueChangedWhileEditing) {
-                    String currentValue = getPropertyPathValueAsString(activeObject, getFormat());
+                    String currentValue = getValueAsString(activeObject, getFormat());
                     //was: String currentValue = ((OAObject)activeObject).getPropertyAsString(getPropertyName());
                     if (OAString.compare(prevText, currentValue) != 0) {
                         String hold = newText;
@@ -289,8 +255,8 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
                     String hold = prevText;
                     prevText = newText;
                     bSettingText = true;
-                    if (getEnableUndo()) OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, getPropertyPathFromActualHub(), hold, newText) );
-                    setPropertyPathValue(activeObject, newText);
+                    if (getEnableUndo()) OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, endPropertyName, hold, newText) );
+                    setValue(activeObject, newText);
                     // ((OAObject)activeObject).setProperty(getPropertyName(), newText);
                 }
                 if (bSettext) editor.setText(newText);
@@ -327,36 +293,34 @@ public abstract class HTMLTextPaneController extends JFCController implements Fo
         return newValueFromThisUser;
     }
 
-
     @Override
-    protected void update() {
+    public void update() {
         if (editor == null) return;
         if (focusActiveObject != null) return;
 
-        if (getActualHub() != null) {
-            String text = null;
-            if (activeObject != null) {
-                text = OAConv.toString(getPropertyPathValue(activeObject));
-                // was: text = ClassModifier.getPropertyValueAsString(activeObject, getGetMethod());
-                if (text == null)  text = getNullDescription();
-            }
-            if (text == null) {
-                text = " ";
-            }
+        String text = null;
+        if (activeObject != null) {
+            text = getValueAsString(activeObject, getFormat());
+            // was: text = ClassModifier.getPropertyValueAsString(activeObject, getGetMethod());
+            if (text == null)  text = getNullDescription();
+        }
+        if (text == null) {
+            text = " ";
+        }
 
-            if (!SwingUtilities.isEventDispatchThread()) {
-                final String _text = text;
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        _update(_text);
-                    }
-                });
-            }
-            else {
-                _update(text);
-            }
-        }   
+        if (!SwingUtilities.isEventDispatchThread()) {
+            final String _text = text;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    _update(_text);
+                }
+            });
+        }
+        else {
+            _update(text);
+        }
+   
         super.update();
         super.update(editor, activeObject);
     }

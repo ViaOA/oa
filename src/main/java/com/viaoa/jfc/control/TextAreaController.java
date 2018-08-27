@@ -11,20 +11,20 @@
 package com.viaoa.jfc.control;
 
 import java.awt.Component;
-import java.awt.Rectangle;
 import java.awt.event.*;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
-import java.lang.reflect.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
+import com.viaoa.jfc.OAPlainDocument;
+import com.viaoa.jfc.OATextArea;
 import com.viaoa.jfc.undo.*;
 import com.viaoa.util.*;
-import com.viaoa.ds.*;
-import com.viaoa.jfc.*;
 
 
 /**
@@ -32,8 +32,10 @@ import com.viaoa.jfc.*;
  * @author vvia
  *
  */
-public class TextAreaController extends JFCController implements FocusListener, MouseListener {
-    private JTextArea textField;
+public class TextAreaController extends OAJfcController implements FocusListener, MouseListener {
+    private static Logger LOG = Logger.getLogger(TextAreaController.class.getName());    
+    
+    private JTextArea textArea;
     private String prevText;
     private boolean bSettingText;
     private Object activeObject;
@@ -43,127 +45,103 @@ public class TextAreaController extends JFCController implements FocusListener, 
     private OAPlainDocument document;
     
     /**
-        Create an unbound TextField.
+        Create TextArea that is bound to a property path in a Hub.
+        @param propertyPath path from Hub, used to find bound property.
     */
-    public TextAreaController(JTextArea tf) {
-        create(tf);
+    public TextAreaController(Hub hub, JTextArea ta, String propertyPath) {
+        super(hub, propertyPath, ta, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        create(ta);
     }
 
     /**
-        Create TextField that is bound to a property path in a Hub.
+        Create TextArea that is bound to a property path in a Hub.
         @param propertyPath path from Hub, used to find bound property.
     */
-    public TextAreaController(Hub hub, JTextArea tf, String propertyPath) {
-        super(hub, propertyPath, tf); // this will add hub listener
-        create(tf);
+    public TextAreaController(Object object, JTextArea ta, String propertyPath) {
+        super(object, propertyPath, ta, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        create(ta);
     }
 
-    /**
-        Create TextField that is bound to a property path in a Hub.
-        @param propertyPath path from Hub, used to find bound property.
-    */
-    public TextAreaController(Object object, JTextArea tf, String propertyPath) {
-        super(object, propertyPath, tf); // this will add hub listener
-        create(tf);
-    }
 
-    
-    
     
     protected void create(JTextArea tf) {
-        if (textField != null) {
-            textField.removeFocusListener(this);
-            //textField.removeKeyListener(this);
-            textField.removeMouseListener(this);
+        if (textArea != null) {
+            textArea.removeFocusListener(this);
+            //textArea.removeKeyListener(this);
+            textArea.removeMouseListener(this);
         }
-        textField = tf;
-        textField.setBorder(new EmptyBorder(2,2,2,2));
+        textArea = tf;
+        textArea.setBorder(new EmptyBorder(2,2,2,2));
 
-        if (actualHub == null) return; 
-
-        if (textField != null) {
-            textField.addFocusListener(this);
-            //textField.addKeyListener(this);
-            textField.addMouseListener(this);
+        if (textArea != null) {
+            textArea.addFocusListener(this);
+            //textArea.addKeyListener(this);
+            textArea.addMouseListener(this);
         }
-        // set initial value of textField
-        // this needs to run before listeners are added
-        if (getActualHub() != null) {
-            HubEvent e = new HubEvent(getActualHub(),getActualHub().getActiveObject());
-            this.afterChangeActiveObject(e);
-            getEnabledController().add(getActualHub());
-        }
-    }
-
-
-
-    public int getDataSourceMax() {
-        if (dataSourceMax == -2) {
-            if (hub != null) {
-            	dataSourceMax = -1;
-                OADataSource ds = OADataSource.getDataSource(actualHub.getObjectClass());
-                if (ds != null) {
-                    dataSourceMax = ds.getMaxLength(actualHub.getObjectClass(), getHubListenerPropertyName());
-                    Method method = getLastMethod();
-                    if (method != null) {
-                        if (method.getReturnType().equals(String.class)) {
-                            if (dataSourceMax > 254) dataSourceMax = -1;
-                        }
-                        else dataSourceMax = -1;
+        
+        document = new OAPlainDocument() {
+            public void handleError(int errorType) {
+                super.handleError(errorType);
+                if (!TextAreaController.this.textArea.hasFocus()) return;
+                String msg = "";
+                switch (errorType) {
+                case OAPlainDocument.ERROR_MAX_LENGTH:
+                    int max = getMaximumColumns();
+                    if (max <= 0) max = getPropertyInfoMaxColumns();
+                    msg = "Maximum input exceeded, currently set to " + max;
+                    if (textArea instanceof OATextArea) {
+                        msg += " for " + ((OATextArea)textArea).getEndPropertyName();
+                        Hub h = ((OATextArea)textArea).getHub();
+                        if (h != null) msg += ", in "+OAString.getDisplayName(h.getObjectClass().getSimpleName());
                     }
+                    
+                    break;
+                case OAPlainDocument.ERROR_INVALID_CHAR:
+                    return;
+                }
+                if (!OAString.isEmpty(msg)) LOG.warning(msg);
+                if (textArea != null && textArea.hasFocus()) {
+                    JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(TextAreaController.this.textArea), msg, "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
-        }
-        return dataSourceMax;
-    }
-    public int getMax() {
-        if (max > getDataSourceMax() || max < 0) {
-            if (dataSourceMax >= 0) return dataSourceMax;
-        }
-        return max;
-    }
-    /** max length of text.  If -1 (default) then unlimited.  
-    */
-    public void setMax(int x) {
-        max = x;
-    	if (document != null) document.setMaxLength(getMax());
-    }
-    
-    
-    protected void resetHubOrProperty() { // called when Hub or PropertyName is changed
-        super.resetHubOrProperty();
-        if (textField != null) create(textField);
+            @Override
+            public void insertString(int offset, String str, AttributeSet attr)
+                    throws BadLocationException {
+                super.insertString(offset, str, attr);
+            }
+            @Override
+            protected void insertUpdate(DefaultDocumentEvent chng,
+                    AttributeSet attr) {
+                super.insertUpdate(chng, attr);
+            }
+        };
+        
+        if (max > 0) document.setMaxLength(max);
+        textArea.setDocument(document);
     }
 
     public void close() {
-        if (textField != null) {
-            textField.removeFocusListener(this);
-            //textField.removeKeyListener(this);
-            textField.removeMouseListener(this);
+        if (textArea != null) {
+            textArea.removeFocusListener(this);
+            //textArea.removeKeyListener(this);
+            textArea.removeMouseListener(this);
         }
         super.close();  // this will call hub.removeHubListener()
     }
 
-
-    public @Override void afterPropertyChange(HubEvent e) {
-        if (activeObject != null && e.getObject() == activeObject) {
-            if (e.getPropertyName().equalsIgnoreCase(this.getHubListenerPropertyName()) ) {
-                update();
-            }
-        }
+    public @Override void afterPropertyChange() {
+        update();
     }
 
-    public @Override void afterChangeActiveObject(HubEvent e) {
+    public @Override void afterChangeActiveObject() {
         boolean b = (focusActiveObject != null && focusActiveObject == activeObject);
         if (b) onFocusLost();
         
-        Hub h = getActualHub();
-        if (h != null) activeObject = getActualHub().getActiveObject();
+        if (hub != null) activeObject = hub.getActiveObject();
         else activeObject = null;
         
-        update(); 
-        
         if (b) onFocusGained();
+        super.afterChangeActiveObject();
     }
 
     @Override
@@ -172,7 +150,7 @@ public class TextAreaController extends JFCController implements FocusListener, 
     }    
     protected void onFocusGained() {
         focusActiveObject = activeObject;
-    	prevText = textField.getText();
+    	prevText = textArea.getText();
     }
     
     @Override
@@ -191,7 +169,13 @@ public class TextAreaController extends JFCController implements FocusListener, 
         //was: update(); 
     }
 
-    
+    @Override
+    public void setMaximumColumns(int x) {
+        super.setMaximumColumns(x);
+        if (document != null) {
+            document.setMaxLength(x);
+        }
+    }
 
     private boolean bSaving; // only used by saveChanges(), calling setText generates actionPerformed()
     public void saveText() {
@@ -208,7 +192,7 @@ public class TextAreaController extends JFCController implements FocusListener, 
 
     private void _saveText() {
         if (activeObject == null) return;
-        String text = textField.getText();
+        String text = textArea.getText();
         if (text.equals(prevText)) return;
         
         try {
@@ -216,31 +200,29 @@ public class TextAreaController extends JFCController implements FocusListener, 
             // Object convertedValue = OAReflect.convertParameterFromString(getSetMethod(), text, null); // dont include format - it is for display only
             
             if (convertedValue == null && text.length() > 0) {
-                JOptionPane.showMessageDialog(SwingUtilities.getRoot(textField), 
+                JOptionPane.showMessageDialog(SwingUtilities.getRoot(textArea), 
                         "Invalid Entry \""+text+"\"", 
                         "Invalid Entry", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
-            String msg = validateNewValue(activeObject, convertedValue);
-            if (msg == null) {
-                msg = isValid(activeObject, convertedValue);
-            }
+            String msg = isValid(activeObject, convertedValue);
             
             if (msg != null) {
-                JOptionPane.showMessageDialog(SwingUtilities.getRoot(textField), 
+                JOptionPane.showMessageDialog(SwingUtilities.getRoot(textArea), 
                         "Invalid Entry \""+text+"\"\n"+msg,
                         "Invalid Entry", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            if (!confirm(activeObject, convertedValue)) return;
             
             prevText = text;
-            Object prevValue = getPropertyPathValue(activeObject);
+            Object prevValue = getValue(activeObject);
             
-            String prop = getHubListenerPropertyName();
+            String prop = endPropertyName;
             if (prop == null || prop.length() == 0) {  // use object.  (ex: String.class)
                 Object oldObj = activeObject;
-                Hub h = getActualHub();
+                Hub h = hub;
                 Object newObj = OAReflect.convertParameterFromString(h.getObjectClass(), text);
                 if (newObj != null) {
                     int posx = h.getPos(oldObj);
@@ -249,73 +231,25 @@ public class TextAreaController extends JFCController implements FocusListener, 
                 }
             }
             else {
-                setPropertyPathValue(activeObject, convertedValue);
+                setValue(activeObject, convertedValue);
                 // OAReflect.setPropertyValue(activeObject, getSetMethod(), convertedValue);
                 if (text == null || text.length() == 0) {
-                    Class c = getLastMethod().getReturnType();
-                    if (OAReflect.isNumber(c) && activeObject instanceof OAObject) {
-                    	OAObjectReflectDelegate.setProperty((OAObject)activeObject, getPropertyPathFromActualHub(), null, null);  // was: setNull(prop)
+                    if (OAReflect.isNumber(endPropertyClass) && activeObject instanceof OAObject) {
+                    	OAObjectReflectDelegate.setProperty((OAObject)activeObject, endPropertyName, null, null);  // was: setNull(prop)
                     }
                 }
             }
             if (getEnableUndo()) {
-                OAUndoManager.add( OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, getPropertyPathFromActualHub(), prevValue, getPropertyPathValue(activeObject)) );
+                OAUndoManager.add( OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, endPropertyName, prevValue, getValue(activeObject)) );
             }
         }
         catch (Exception e) {
-        	JOptionPane.showMessageDialog(SwingUtilities.getRoot(textField), 
+        	JOptionPane.showMessageDialog(SwingUtilities.getRoot(textArea), 
         	        "Invalid Entry \""+e.getMessage()+"\"", 
         	        "Invalid Entry", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private String undoDescription;
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public void setUndoDescription(String s) {
-        undoDescription = s;
-    }
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public String getUndoDescription() {
-        return undoDescription;
-    }
-    
-
-/**20180713 removed escape, only needed for textfield    
-    // Key Events
-    private boolean bConsumeEsc;
-    @Override
-    public void keyPressed(KeyEvent e) {
-    	if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-        	bConsumeEsc = false;
-            if (!textField.getText().equals(prevText)) {
-        		bConsumeEsc = true;
-            	e.consume();
-	    		textField.setText(prevText);
-	    		textField.setCaretPosition(0);
-            }
-    	}
-    }
-    
-    @Override
-    public void keyReleased(KeyEvent e) {
-    	if (e.getKeyCode() == KeyEvent.VK_ESCAPE && bConsumeEsc) {
-            e.consume();
-    	}
-    }
-    @Override
-    public void keyTyped(KeyEvent e) {
-    	if (e.getKeyCode() == KeyEvent.VK_ESCAPE && bConsumeEsc) {
-            e.consume();
-            return;
-    	}
-    }
-*/
 
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -334,27 +268,10 @@ public class TextAreaController extends JFCController implements FocusListener, 
     public void mouseReleased(MouseEvent e) {
     }
     
-    
-    protected Object getPropertyValue(Object obj) {
-        if (obj == null) return null;
-        if (getPropertyPath() == null) return null;
-        Object value = getPropertyPathValue(obj);
-        if (value instanceof OANullObject) value = null;
-        
-        if (value != null && obj instanceof OAObject) {
-            String ss = getPropertyPathFromActualHub();
-            //was: String ss = getPropertyName();
-            if (OAObjectReflectDelegate.getPrimitiveNull((OAObject)obj, ss) ) value = null;
-        }
-        
-        return value;
-    }
-    
     public Component getTableRenderer(JLabel label, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         super.getTableRenderer(label, table, value, isSelected, hasFocus, row, column);
         return label;
     }
-
 
     @Override
     public void update() {
@@ -363,14 +280,15 @@ public class TextAreaController extends JFCController implements FocusListener, 
         }
         catch (Exception e) {
         }
+        super.update();
     }    
     public void _update() {
-        if (textField == null) return;
+        if (textArea == null) return;
         if (focusActiveObject == null) {
-            if (getActualHub() != null) {
+            if (hub != null) {
                 String text = null;
                 if (activeObject != null) {
-                    Object value = getPropertyValue(activeObject);
+                    Object value = getValue(activeObject);
                     if (value == null) text = "";
                     else text = OAConv.toString(value, null);  // dont format
                 }
@@ -380,18 +298,12 @@ public class TextAreaController extends JFCController implements FocusListener, 
                 }
                 boolean bHold = bSettingText;
                 bSettingText = true;
-                textField.setText(text);
+                textArea.setText(text);
                 prevText = text; // 20110112 to fix bug found while testing undo
-                textField.setCaretPosition(0);
+                textArea.setCaretPosition(0);
                 bSettingText = bHold;
             }   
         }        
         super.update();
-        super.update(textField, activeObject);
     }
-    
-    
 }
-
-
-

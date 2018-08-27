@@ -48,7 +48,7 @@ public class Hub2TextFieldLookup extends TextFieldController {
     boolean showActiveObject = true;
     
     public Hub2TextFieldLookup(JTextField tf) {
-        super(tf);
+        super(null, tf, null); 
     }
     public Hub2TextFieldLookup(Hub hub, JTextField tf, String propertyPath) {
         super(hub, tf, propertyPath); 
@@ -57,25 +57,13 @@ public class Hub2TextFieldLookup extends TextFieldController {
         super(oaObject, tf, propertyPath);
     }
 
-    protected void create(JTextField tf) {
-        super.create(tf);
-        String s = getPropertyPath();
-        if (s != null && getHub() != null) {
-            Method[] m = OAReflect.getMethods(getHub().getObjectClass(), s);
-            Class c = m[m.length-1].getReturnType();
-            useQuotes = ( !c.isPrimitive() && !(Number.class.isAssignableFrom(c)) );
+    public @Override void afterPropertyChange() {
+        boolean tf = true;
+        if (tf) {
+            Object obj = hub.getAO();
+            if (obj != null && obj instanceof OAObject && ((OAObject)obj).getChanged()) tf = false;
         }
-    }
-
-    public @Override void afterPropertyChange(HubEvent e) {
-        if (e.getPropertyName().equalsIgnoreCase("changed")) {
-            boolean tf = true;// && isParentEnabled(textField);
-            if (tf) {
-                Object obj = e.getObject();
-                if (obj != null && obj instanceof OAObject && ((OAObject)obj).getChanged()) tf = false;
-            }
-            textField.setEnabled(tf);
-        }
+        textField.setEnabled(tf);
     }
 
     
@@ -98,9 +86,9 @@ public class Hub2TextFieldLookup extends TextFieldController {
     }
 
     
-    public @Override void afterChangeActiveObject(HubEvent e) {
-        if (showActiveObject) super.afterChangeActiveObject(e);
-        textField.setEnabled(true && isParentEnabled(textField));
+    public @Override void afterChangeActiveObject() {
+        if (showActiveObject) super.afterChangeActiveObject();
+        textField.setEnabled(isParentEnabled(textField));
     }
 
     /** 
@@ -123,7 +111,7 @@ public class Hub2TextFieldLookup extends TextFieldController {
     }
 
     public void saveChanges() {  // over-ride
-        if (getActualHub() == null) return;
+        if (hub == null) return;
         String s = textField.getText();
         if (s.equals(prevText)) return;
         prevText = s;

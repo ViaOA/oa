@@ -12,10 +12,10 @@ package com.viaoa.jfc;
 
 import javax.swing.JLabel;
 
-import com.viaoa.jfc.control.JFCController;
+import com.viaoa.jfc.control.OAJfcController;
 
-public interface OAJFCComponent {
-    public JFCController getController();
+public interface OAJfcComponent {
+    public OAJfcController getController();
     public void initialize();
     
     default public void customizeRenderer(JLabel lbl, Object object, Object value, boolean isSelected, boolean hasFocus, int row, boolean wasChanged, boolean wasMouseOver) {

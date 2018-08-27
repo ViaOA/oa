@@ -26,6 +26,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubChangeListener;
 import com.viaoa.jfc.OATable;
 
 /**
@@ -47,7 +48,10 @@ public class TabbedPaneController {
         this.hub = hub;
         this.tabbedPane = tp;
 
-        if (tp != null && hub != null) new EnabledController(tp, hub);
+        if (tp != null && hub != null) {
+            new OAJfcController(hub, tp, HubChangeListener.Type.AoNotNull);
+            //was: new EnabledController(tp, hub);
+        }
 
         if (tp != null) setup();
     }

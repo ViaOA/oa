@@ -66,7 +66,7 @@ import com.viaoa.jfc.table.*;
  * 
  * @author vvia
  */
-public class ButtonController extends JFCController implements ActionListener {
+public class ButtonController extends OAJfcController implements ActionListener {
     private static Logger LOG = Logger.getLogger(ButtonController.class.getName());
     private AbstractButton button;
     
@@ -88,7 +88,6 @@ public class ButtonController extends JFCController implements ActionListener {
     private OAObject updateObject;
     private Object updateValue;
     
-    private String undoDescription;
     private boolean bUseSwingWorker;
     public String processingTitle, processingMessage;
 
@@ -97,7 +96,7 @@ public class ButtonController extends JFCController implements ActionListener {
         <p>
     */
     public ButtonController(Hub hub, AbstractButton button, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command) {
-        super(hub, button);
+        super(hub, button, enabledMode.getHubChangeListenerType() );
         create(button, enabledMode, command);
     }
 
@@ -107,25 +106,23 @@ public class ButtonController extends JFCController implements ActionListener {
         Note: setAnyTime(false) is used.
     */
     public ButtonController(Hub hub, AbstractButton button) {
-        this(hub, button, hub==null?null:OAButton.ButtonEnabledMode.ActiveObjectNotNull, null);
+        this(hub, button, OAButton.ButtonEnabledMode.ActiveObjectNotNull, null);
+        create(button, enabledMode, command);
     }
 
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public void setUndoDescription(String s) {
-        undoDescription = s;
+    private void create(AbstractButton but, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command) {
+        this.button = but;
+        button.addActionListener(this);
+        if (command == null) command = OAButton.ButtonCommand.Other;        
+        this.command = command;
+        this.enabledMode = enabledMode;
     }
-
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public String getUndoDescription() {
-        return undoDescription;
+    
+    public void setCommand(OAButton.ButtonCommand command) {
+        this.command = command;
     }
-
+    
+    
     /**
         If the hub for this command has a masterHub, then it can control this button if
         this is set to true.  Default = true
@@ -161,15 +158,6 @@ public class ButtonController extends JFCController implements ActionListener {
     */
     public void setConfirmMessage(String msg) {
         confirmMessage = msg;
-    }
-    /**
-        Popup message used to confirm button click before running code.
-    */
-    public String getConfirmMessage() {
-        return confirmMessage;
-    }
-    public String default_getConfirmMessage() {
-        return confirmMessage;
     }
 
     public void setCompletedMessage(String msg) {
@@ -211,15 +199,6 @@ public class ButtonController extends JFCController implements ActionListener {
     }
     
     
-    private void create(AbstractButton but, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command) {
-        this.button = but;
-        button.addActionListener(this);
-        setEnabledMode(enabledMode);
-        setCommand(command); // this will call change()
-        if (hub != null) {
-            getEnabledController().add(hub, null, OAAnyValueObject.instance); // so that Hub.isValid will be the only check
-        }
-    }
 
     @Override
     protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
@@ -236,36 +215,10 @@ public class ButtonController extends JFCController implements ActionListener {
     public OAButton.ButtonCommand getCommand() {
         return command;
     }
-    /**
-        @see OAButton#setCommand
-    */
-    public void setCommand(OAButton.ButtonCommand command) {
-        if (command == null) command = OAButton.ButtonCommand.Other;
-        this.command = command;
-        getEnabledController().update();
-        getVisibleController().update();
-        update();
-    }
 
     public OAButton.ButtonEnabledMode getEnabledMode() {
         return enabledMode;
     }
-    public void setEnabledMode(OAButton.ButtonEnabledMode enabledMode) {
-        if (enabledMode == null) enabledMode = OAButton.ButtonEnabledMode.UsesIsEnabled; 
-        this.enabledMode = enabledMode;
-        getEnabledController().update();
-        getVisibleController().update();
-        update();
-    }
-
-    protected void resetHubOrProperty() { // called when Hub or PropertyName is changed
-        super.resetHubOrProperty();
-        if (button != null) {
-            button.removeActionListener(this);
-            create(button, enabledMode, command);
-        }
-    }
-    
     
     /**
         Return actionListener and close.
@@ -286,71 +239,19 @@ public class ButtonController extends JFCController implements ActionListener {
     /**
         Hub event used to change status of button.
     */
-    public @Override
-    void afterChangeActiveObject(HubEvent e) {
+    public @Override void afterChangeActiveObject(HubEvent e) {
         update();
     }
 
-    /**
-        Hub event used to change status of button.
-    */
-    public @Override
-    void afterPropertyChange(HubEvent e) {
-        /* was: 20100920
-        String s = e.getPropertyName();
-        if (s.equalsIgnoreCase("changed")) {
-            change(e);
-        }
-        */
-        update();
-    }
-
-    /**
-        Hub event used to change status of button.
-    */
-    public @Override
-    void afterInsert(HubEvent e) {
-        update();
-    }
-
-    /**
-        Hub event used to change status of button.
-    */
-    public @Override
-    void afterAdd(HubEvent e) {
-        update();
-    }
-
-    /**
-        Hub event used to change status of button.
-    */
-    public @Override
-    void afterRemove(HubEvent e) {
-        update();
-    }
-
-    /**
-        Hub event used to change status of button.
-    */
-    public @Override
-    void onNewList(HubEvent e) {
-        update();
-    }
-
-    /**
-        Hub event used to change status of button.
-    */
-    public void hubOptionChange(HubEvent e) {
-        update();
-    }
-
-    private String getUndoText(String cmd) {
-        if (undoDescription != null && undoDescription.length() > 0) return undoDescription;
+    @Override
+    public String getUndoDescription() {
+        String s = super.getUndoDescription();
+        if (s != null && s.length() > 0) return s;
         if (hub != null) {
-            Class c = hub.getObjectClass();
-            cmd += " " + OAString.convertHungarian(c.getSimpleName());
+            OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(hub.getObjectClass());
+            s = command.name() + " " + oi.getDisplayName();
         }
-        return cmd;
+        return s;
     }
 
     public void setUseSwingWorker(boolean b) {
@@ -577,7 +478,7 @@ public class ButtonController extends JFCController implements ActionListener {
     private OAWaitDialog dlgWait;
     
     protected boolean runActionPerformed2() throws Exception {
-        Hub mhub = getMultiSelectHub();
+        Hub mhub = getSelectHub();
         if (command == OAButton.ButtonCommand.Delete) {
             OAObject currentAO = (OAObject) hub.getAO();
             if (currentAO != null) {
@@ -775,11 +676,11 @@ public class ButtonController extends JFCController implements ActionListener {
     }
     private boolean _default_onActionPerformed() {
         Object ho = null;
-        Hub hub = getActualHub();
+        Hub hub = getHub();
         if (hub == null) return true;
-        if (hub != null) ho = hub.getActiveObject();
+        ho = hub.getActiveObject();
         if (bManual) return true;
-        
+
         /*was:
         if (confirmMessage != null) {
             if (!confirm()) return;
@@ -787,7 +688,7 @@ public class ButtonController extends JFCController implements ActionListener {
         }
         */
         Object currentAO = hub.getAO();
-        Hub mhub = getMultiSelectHub();
+        Hub mhub = getSelectHub();
 
         if (hub != null) {
             OAObject oaObj;
@@ -798,26 +699,26 @@ public class ButtonController extends JFCController implements ActionListener {
             case Next:
                 hub.setPos(pos + 1);
                 if (currentAO != hub.getAO() && bEnableUndo) {
-                    OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoText("next"), hub, currentAO, hub.getAO()));
+                    OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoDescription(), hub, currentAO, hub.getAO()));
                 }
                 break;
             case Previous:
                 hub.setPos(pos - 1);
                 if (currentAO != hub.getAO() && bEnableUndo) {
-                    OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoText("previous"), hub, currentAO, hub.getAO()));
+                    OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoDescription(), hub, currentAO, hub.getAO()));
                 }
                 break;
             case First:
                 hub.setPos(0);
                 if (currentAO != hub.getAO() && bEnableUndo) {
-                    OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoText("goto first"), hub, currentAO, hub.getAO()));
+                    OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoDescription(), hub, currentAO, hub.getAO()));
                 }
                 break;
             case Last:
                 if (hub.isMoreData()) hub.loadAllData();
                 hub.setPos(hub.getSize() - 1);
                 if (currentAO != hub.getAO() && bEnableUndo) {
-                    OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoText("goto last"), hub, currentAO, hub.getAO()));
+                    OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(getUndoDescription(), hub, currentAO, hub.getAO()));
                 }
                 break;
 
@@ -866,7 +767,7 @@ public class ButtonController extends JFCController implements ActionListener {
                 if (ho == null && mhub == null) break;
 
                 if (bEnableUndo) {
-                    OAUndoManager.startCompoundEdit(getUndoText("delete"));
+                    OAUndoManager.startCompoundEdit(getUndoDescription());
                 }
                 try {
                     if (mhub != null && mhub.getSize() > 0) {
@@ -878,7 +779,7 @@ public class ButtonController extends JFCController implements ActionListener {
                                     getHub().remove(obj); // keep "noise" down
                                 }
                                 if (bEnableUndo) {
-                                    OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("delete"), hub, ho, posx));
+                                    OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoDescription(), hub, ho, posx));
                                 }
                                 String msg = null;
                                 try {
@@ -901,7 +802,7 @@ public class ButtonController extends JFCController implements ActionListener {
                         if (oaObj != null) {
                         //was: if (oaObj != null && (hub == null || (!hub.isOwned() || OAObjectHubDelegate.getHubReferenceCount(oaObj) > 1))) {
                             if (bEnableUndo) {
-                                OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("delete"), hub, ho, hub.getPos()));
+                                OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoDescription(), hub, ho, hub.getPos()));
                             }
                             if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) { // 20120720
                                 getHub().remove(ho); // 20110215 remove first, so that cascading deletes are not so "noisy"
@@ -912,7 +813,7 @@ public class ButtonController extends JFCController implements ActionListener {
                         else {
                             if (hub != null) {
                                 if (bEnableUndo) {
-                                    OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("remove"), hub, ho, hub.getPos()));
+                                    OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoDescription(), hub, ho, hub.getPos()));
                                 }
                                 hub.remove(ho);
                             }
@@ -927,7 +828,7 @@ public class ButtonController extends JFCController implements ActionListener {
                 break;
             case Remove:
                 if (bEnableUndo) {
-                    OAUndoManager.startCompoundEdit(getUndoText("remove"));
+                    OAUndoManager.startCompoundEdit(getUndoDescription());
                 }
                 try {
                     if (mhub != null && mhub.getSize() > 0) {
@@ -936,7 +837,7 @@ public class ButtonController extends JFCController implements ActionListener {
                             if (obj instanceof OAObject) {
                                 if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
                                     int posx = hub.getPos(obj);
-                                    OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("remove"), hub, obj, posx));
+                                    OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoDescription(), hub, obj, posx));
                                     getHub().remove(obj);
                                 }
                             }
@@ -944,7 +845,7 @@ public class ButtonController extends JFCController implements ActionListener {
                     }
                     else if (ho != null) {
                         if (bEnableUndo) {
-                            OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoText("remove"), hub, ho, hub.getPos()));
+                            OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoDescription(), hub, ho, hub.getPos()));
                         }
                         hub.remove(ho);
                     }
@@ -977,7 +878,7 @@ public class ButtonController extends JFCController implements ActionListener {
                 if (ho != null && pos > 0) {
                     hub.move(pos, pos - 1);
                     if (bEnableUndo) {
-                        OAUndoManager.add(OAUndoableEdit.createUndoableMove(getUndoText("move up"), hub, pos, pos - 1));
+                        OAUndoManager.add(OAUndoableEdit.createUndoableMove(getUndoDescription(), hub, pos, pos - 1));
                     }
                     HubAODelegate.setActiveObjectForce(hub, ho);
                 }
@@ -988,7 +889,7 @@ public class ButtonController extends JFCController implements ActionListener {
                 if (ho != null && hub.elementAt(pos + 1) != null) {
                     hub.move(pos, pos + 1);
                     if (bEnableUndo) {
-                        OAUndoManager.add(OAUndoableEdit.createUndoableMove(getUndoText("move down"), hub, pos, pos + 1));
+                        OAUndoManager.add(OAUndoableEdit.createUndoableMove(getUndoDescription(), hub, pos, pos + 1));
                     }
                     HubAODelegate.setActiveObjectForce(hub, ho);
                 }
@@ -1152,8 +1053,8 @@ public class ButtonController extends JFCController implements ActionListener {
                     updateObject.setProperty(updateProperty, updateValue);
                 }
                 else {
-                    if (hubMultiSelect != null) {
-                        for (Object obj : hubMultiSelect) {
+                    if (hubSelect != null) {
+                        for (Object obj : hubSelect) {
                             if (obj instanceof OAObject) {
                                 ((OAObject)obj).setProperty(updateProperty, updateValue);
                             }
@@ -1176,7 +1077,6 @@ public class ButtonController extends JFCController implements ActionListener {
 
     protected void createNew(boolean insertFlag) {
         Object obj;
-        Hub hub = getActualHub();
         Class c = hub.getObjectClass();
         if (c == null) return;
 
@@ -1188,13 +1088,13 @@ public class ButtonController extends JFCController implements ActionListener {
             if (pos < 0) pos = 0;
             hub.insert(obj, pos);
             if (bEnableUndo) {
-                OAUndoManager.add(OAUndoableEdit.createUndoableInsert(getUndoText("create new"), hub, obj, pos));
+                OAUndoManager.add(OAUndoableEdit.createUndoableInsert(getUndoDescription(), hub, obj, pos));
             }
         }
         else {
             hub.addElement(obj);
             if (bEnableUndo) {
-                OAUndoManager.add(OAUndoableEdit.createUndoableAdd(getUndoText("create new"), hub, obj));
+                OAUndoManager.add(OAUndoableEdit.createUndoableAdd(getUndoDescription(), hub, obj));
             }
         }
         hub.setActiveObject(obj);
@@ -1229,20 +1129,10 @@ public class ButtonController extends JFCController implements ActionListener {
         return methodName;
     }
 
-    public void setAnytime(boolean b) {
-        if (b) setEnabledMode(ButtonEnabledMode.Always);
-        else setEnabledMode(ButtonEnabledMode.UsesIsEnabled);
-    }
-    public void setAnyTime(boolean b) {
-        if (b) setEnabledMode(ButtonEnabledMode.Always);
-        else setEnabledMode(ButtonEnabledMode.UsesIsEnabled);
-    }
-    
     protected boolean getDefaultEnabled() {
         if (button == null) return false;
 
         Object obj = null;
-        Hub hub = getActualHub();
 
         if (hub != null) obj = hub.getActiveObject();
         OAObject oaObj;
@@ -1307,11 +1197,11 @@ public class ButtonController extends JFCController implements ActionListener {
                 break;
             case SelectHubIsNotEmpty:
                 if (!flag) break;
-                flag = (hubMultiSelect != null && hubMultiSelect.getSize() > 0);
+                flag = (hubSelect != null && hubSelect.getSize() > 0);
                 break;
             case SelectHubIsEmpty:
                 if (!flag) break;
-                flag = (hubMultiSelect != null && hubMultiSelect.getSize() == 0);
+                flag = (hubSelect != null && hubSelect.getSize() == 0);
                 break;
             }
         }        
@@ -1375,7 +1265,7 @@ public class ButtonController extends JFCController implements ActionListener {
                 }
                 break;
             case Remove:
-                flag = (obj != null) || (hubMultiSelect != null && hubMultiSelect.size() > 0);
+                flag = (obj != null) || (hubSelect != null && hubSelect.size() > 0);
                 if (flag && !HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
                     flag = false;
                 }
@@ -1497,16 +1387,6 @@ public class ButtonController extends JFCController implements ActionListener {
         });
     }
 
-    @Override
-    protected void update() {
-        Object obj;
-        Hub hub = getActualHub();
-        if (hub != null) obj = hub.getActiveObject();
-        else obj = null;
-
-        super.update(button, obj);
-    }
-    
     private JComponent compDisplay;
     public void setDisplayComponent(JComponent comp) {
         this.compDisplay = comp;

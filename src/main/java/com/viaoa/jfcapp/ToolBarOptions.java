@@ -50,7 +50,7 @@ public class ToolBarOptions {
     }
     public static ToolBarOptions createTableToolBar() {
         // bGoBack bIcon bLabel bGoto bCommands bSearch bFind bCustom bHubCalc bReport bTable bHubSearch bDownload
-        ToolBarOptions tbo = new ToolBarOptions(false, false, false, true, true, false, true, true, false, true, true, true, true);
+        ToolBarOptions tbo = new ToolBarOptions(false, false, false, true, true, true, true, true, false, true, true, true, true);
         return tbo;
     }
 

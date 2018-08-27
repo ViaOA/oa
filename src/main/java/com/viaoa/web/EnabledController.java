@@ -17,7 +17,7 @@ import javax.swing.*;
 import javax.swing.text.*;
 
 import com.viaoa.hub.*;
-import com.viaoa.jfc.OAJFCComponent;
+import com.viaoa.jfc.OAJfcComponent;
 import com.viaoa.jfc.OASplitButton;
 
 /**
@@ -56,14 +56,6 @@ public class EnabledController extends HubPropController {
         }
     }
 
-    private boolean bIsCallingUpdate;
-    @Override
-    public void directlySet(boolean b, boolean bEnableValue) {
-        if (!bIsCallingUpdate) {
-            super.directlySet(b, bEnableValue);
-        }
-    }
-    
     @Override
     public void update() {
         if (SwingUtilities.isEventDispatchThread()) {

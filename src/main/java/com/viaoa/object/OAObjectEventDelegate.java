@@ -24,7 +24,6 @@ import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
-import com.viaoa.object.OAEditMessage.Type;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OANotExist;
 import com.viaoa.util.OANullObject;
@@ -60,15 +59,32 @@ public class OAObjectEventDelegate {
 	    }
 	    else if (!OARemoteThreadDelegate.isRemoteThread()) {
 	        // 20180617 validate
-	        OAEditMessage em = new OAEditMessage(Type.Change);
-	        boolean b = OAObjectValidateDelegate.isValid(oaObj, propertyName, newObj, em);
-	        if (!b) {
-	            String msg = em.getMessage();
+            OAObjectEditQuery em = new OAObjectEditQuery(OAObjectEditQuery.Type.AllowChange);
+	        em.setName(propertyName);
+            try {
+                OAObjectEditQueryDelegate.performEditQuery(oaObj, em);
+            }
+            catch (Throwable e) {
+                em.setThrowable(e);
+            }
+
+            if (em.getAllowChange()) {
+                em = new OAObjectEditQuery(OAObjectEditQuery.Type.OnChange);
+                em.setValue(newObj);
+    	        try {
+    	            OAObjectEditQueryDelegate.performEditQuery(oaObj, em);
+    	        }
+    	        catch (Throwable e) {
+    	            em.setThrowable(e);
+    	        }
+            }
+	        if (!em.getAllowChange() || em.getThrowable() != null) {
+	            String msg = em.getResponse();
 	            if (em.getThrowable() != null) {
 	                msg = OAString.concat(msg, "Exception: "+em.getThrowable().getMessage(), ", ");
 	            }
-	            else if (OAString.isEmpty(msg)) msg = "Invalid property value";
-	            throw new RuntimeException(msg);
+	            else if (OAString.isEmpty(msg)) msg = "Invalid property value, property="+propertyName+", value="+newObj;
+	            throw new RuntimeException(msg, em.getThrowable());
 	        }
 	    }
 	    

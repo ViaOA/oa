@@ -39,18 +39,10 @@ import com.viaoa.jfc.table.*;
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
     @see OATextArea
 */
-public class OATextArea extends JTextArea implements OATableComponent, OAJFCComponent {
+public class OATextArea extends JTextArea implements OATableComponent, OAJfcComponent {
     private OATextAreaController control;
     private OATable table;
     private String heading = "";
-
-    /**
-        Create an unbound TextArea.
-    */
-    public OATextArea() {
-        control = new OATextAreaController();
-        initialize();
-    }
 
     /**
         Create TextArea that is bound to a property path in a Hub.
@@ -118,14 +110,10 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
         super.addNotify();
         setWrapStyleWord(true);
         setLineWrap(bLineWrap);
-        control.afterChangeActiveObject(null); 
+        control.afterChangeActiveObject(); 
     }
 
     // ----- OATableComponent Interface methods -----------------------
-    public void setHub(Hub hub) {
-        control.setHub(hub);        
-        if (table != null) table.resetColumn(this);
-    }
     public Hub getHub() {
         return control.getHub();
     }
@@ -141,11 +129,12 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
     }
 
     public String getPropertyPath() {
+        if (control == null) return null;
         return control.getPropertyPath();
     }
-    public void setPropertyPath(String path) {
-        control.setPropertyPath(path);
-        if (table != null) table.resetColumn(this);
+    public String getEndPropertyName() {
+        if (control == null) return null;
+        return control.getEndPropertyName();
     }
     public String getTableHeading() { //zzzzz
         return heading;   
@@ -175,46 +164,29 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
 	}	
 
 
-    /**
-     * Other Hub/Property used to determine if component is enabled.
-     */
-    public void setEnabled(Hub hub) {
-        control.getEnabledController().add(hub);
+    public void addEnabledCheck(Hub hub) {
+        control.getEnabledChangeListener().add(hub);
     }
-    public void setEnabled(Hub hub, String prop) {
-        control.getEnabledController().add(hub, prop);
+    public void addEnabledCheck(Hub hub, String propPath) {
+        control.getEnabledChangeListener().add(hub, propPath);
     }
-    public void setEnabled(Hub hub, String prop, Object compareValue) {
-        control.getEnabledController().add(hub, prop, compareValue);
+    public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
+        control.getEnabledChangeListener().add(hub, propPath, compareValue);
     }
-    protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-        return bIsCurrentlyEnabled;
+    protected boolean isEnabled(boolean defaultValue) {
+        return defaultValue;
     }
-    
-    /** removed, to "not use" the enabledController, need to call it directly - since it has 2 params now, and will need 
-     * to be turned on and off   
-    @Override
-    public void setEnabled(boolean b) {
-        if (control != null) {
-            b = control.getEnabledController().directSetEnabledCalled(b);
-        }
-        super.setEnabled(b);
+    public void addVisibleCheck(Hub hub) {
+        control.getVisibleChangeListener().add(hub);
     }
-    */
-    /**
-     * Other Hub/Property used to determine if component is visible.
-     */
-    public void setVisible(Hub hub) {
-        control.getVisibleController().add(hub);
-    }    
-    public void setVisible(Hub hub, String prop) {
-        control.getVisibleController().add(hub, prop);
-    }    
-    public void setVisible(Hub hub, String prop, Object compareValue) {
-        control.getVisibleController().add(hub, prop, compareValue);
-    }    
-    protected boolean isVisible(boolean bIsCurrentlyVisible) {
-        return bIsCurrentlyVisible;
+    public void addVisibleCheck(Hub hub, String propPath) {
+        control.getVisibleChangeListener().add(hub, propPath);
+    }
+    public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
+        control.getVisibleChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isVisible(boolean defaultValue) {
+        return defaultValue;
     }
 
     
@@ -222,21 +194,18 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
      * This is a callback method that can be overwritten to determine if the component should be visible or not.
      * @return null if no errors, else error message
      */
-    public String isValid(Object object, Object value) {
+    public String isValidCallback(Object object, Object value) {
         return null;
     }
 
     class OATextAreaController extends TextAreaController {
-        public OATextAreaController() {
-            super(OATextArea.this);
-        }    
         public OATextAreaController(Hub hub, String propertyPath) {
             super(hub, OATextArea.this, propertyPath);
         }
         public OATextAreaController(OAObject hubObject, String propertyPath) {
             super(hubObject, OATextArea.this, propertyPath);
         }        
-        
+
         @Override
         protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
             bIsCurrentlyEnabled = super.isEnabled(bIsCurrentlyEnabled);
@@ -248,8 +217,8 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
             return OATextArea.this.isVisible(bIsCurrentlyVisible);
         }
         @Override
-        protected String isValid(Object object, Object value) {
-            String msg = OATextArea.this.isValid(object, value);
+        public String isValid(Object object, Object value) {
+            String msg = OATextArea.this.isValidCallback(object, value);
             if (msg == null) msg = super.isValid(object, value);
             return msg;
         }
@@ -259,7 +228,7 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
     @Override
     public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
         Object obj = ((OATable) table).getObjectAt(row, col);
-        getToolTipText(obj, row, defaultValue);
+        defaultValue = getToolTipText(obj, row, defaultValue);
         return defaultValue;
     }
     @Override
@@ -272,8 +241,23 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJFCComp
         getController().setLabel(lbl);
     }
     public JLabel getLabel() {
+        if (getController() == null) return null;
         return getController().getLabel();
     }
+    
+    @Override
+    public void setEnabled(boolean b) {
+        super.setEnabled(b);
+        JLabel lbl = getLabel();
+        if (lbl != null) lbl.setEnabled(b);
+    }
+    @Override
+    public void setVisible(boolean b) {
+        super.setVisible(b);
+        JLabel lbl = getLabel();
+        if (lbl != null) lbl.setVisible(b);
+    }
+
 }
 
 class OATextAreaTableCellEditor extends OATableCellEditor {

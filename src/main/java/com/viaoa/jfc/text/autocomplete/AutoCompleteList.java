@@ -71,6 +71,7 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
             // note: this is never called, since the keyEvent <enter> is used
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (!textComp.isEnabled()) return;
                 // only send if one is in list, otherwise not sure which value was selected.
                 String s = textComp.getText();
                 String[] ss = getSearchData(s, s.length());

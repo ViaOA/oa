@@ -29,7 +29,7 @@ import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 
 
-public class OAList extends JList implements OATableComponent, DragGestureListener, DropTargetListener, OAJFCComponent {
+public class OAList extends JList implements OATableComponent, DragGestureListener, DropTargetListener, OAJfcComponent {
     protected OATable table;
     protected OAListController control;
     protected int columns = 16;
@@ -73,8 +73,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         @param cols is width of list using character width size.
     */
     public OAList(Hub hub, String propertyPath, int visibleRowCount, int cols) {
-        if (hub == null) control = new OAListController();
-        else control = new OAListController(hub, propertyPath, visibleRowCount);
+        control = new OAListController(hub, propertyPath, visibleRowCount);
         
         if (cols > 0) setColumns(cols);
         else setPrototypeCellValue("0123456789ABCD");
@@ -92,7 +91,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     
     
     @Override
-    public JFCController getController() {
+    public OAJfcController getController() {
         return control;
     }
     
@@ -110,7 +109,8 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     
     boolean bRemoved;
     
-// 20180526 replaced with OASplitPane    
+// 20180526 replaced with OASplitPane
+    /*
     public void XX_addNotify() {
         super.addNotify();
         if (bRemoved) control.setHub(control.getHub());
@@ -139,6 +139,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
             }
         }
     }
+    */
     
     /* 2005/02/07 need to manually call close instead
     public void removeNotify() {
@@ -228,13 +229,13 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         Get the property name used for displaying an image with component.
     */
     public void setImageProperty(String prop) {
-        control.setImageProperty(prop);
+        control.setImagePropertyPath(prop);
     }
     /**
         Get the property name used for displaying an image with component.
     */
     public String getImageProperty() {
-        return control.getImageProperty();
+        return control.getImagePropertyPath();
     }
 
     public int getMaxImageHeight() {
@@ -255,13 +256,13 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         Root directory path where images are stored.
     */
     public void setImagePath(String path) {
-        control.setImagePath(path);
+        control.setImagePropertyPath(path);
     }
     /**
         Root directory path where images are stored.
     */
     public String getImagePath() {
-        return control.getImagePath();
+        return control.getImagePropertyPath();
     }
 
     /**
@@ -283,12 +284,6 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     // some of these are only included so that the ProperyPathCustomerEditor can be used
     
     
-    /**
-        Hub this this component is bound to.
-    */
-    public void setHub(Hub h) {
-        control.setHub(h);
-    }
     /**
         Hub that this component is bound to.
     */
@@ -361,14 +356,14 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     /**
         Property path used to retrieve/set value for this component.
     */
+    @Override
     public String getPropertyPath() {
+        if (control == null) return null;
         return control.getPropertyPath();
     }
-    /**
-        Property path used to retrieve/set value for this component.
-    */
-    public void setPropertyPath(String path) {
-        control.setPropertyPath(path);
+    public String getEndPropertyName() {
+        if (control == null) return null;
+        return control.getEndPropertyName();
     }
 
 
@@ -708,16 +703,16 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     }
 
     public void setIconColorProperty(String s) {
-    	control.setIconColorProperty(s);
+    	control.setIconColorPropertyPath(s);
     }
     public String getIconColorProperty() {
-    	return control.getIconColorProperty();
+    	return control.getIconColorPropertyPath();
     }
     public void setBackgroundColorProperty(String s) {
-    	control.setBackgroundColorProperty(s);
+    	control.setBackgroundColorPropertyPath(s);
     }
     public String getBackgroundColorProperty() {
-    	return control.getBackgroundColorProperty();
+    	return control.getBackgroundColorPropertyPath();
     }
 
 
@@ -817,50 +812,29 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
 		return control.getFormat();
 	}	
 
-    /**
-     * Other Hub/Property used to determine if component is enabled.
- 
-
-     */
-    public void setEnabled(Hub hub) {
-        control.getEnabledController().add(hub);
+    public void addEnabledCheck(Hub hub) {
+        control.getEnabledChangeListener().add(hub);
     }
-    public void setEnabled(Hub hub, String prop) {
-        control.getEnabledController().add(hub, prop);
+    public void addEnabledCheck(Hub hub, String propPath) {
+        control.getEnabledChangeListener().add(hub, propPath);
     }
-    public void setEnabled(Hub hub, String prop, Object compareValue) {
-        control.getEnabledController().add(hub, prop, compareValue);
+    public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
+        control.getEnabledChangeListener().add(hub, propPath, compareValue);
     }
-    protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-        return bIsCurrentlyEnabled;
+    protected boolean isEnabled(boolean defaultValue) {
+        return defaultValue;
     }
-    
-    /** removed, to "not use" the enabledController, need to call it directly - since it has 2 params now, and will need 
-     * to be turned on and off   
-    @Override
-    public void setEnabled(boolean b) {
-        if (control != null) {
-            b = control.getEnabledController().directSetEnabledCalled(b);
-        }
-        super.setEnabled(b);
+    public void addVisibleCheck(Hub hub) {
+        control.getVisibleChangeListener().add(hub);
     }
-    */
-    /**
-     * Other Hub/Property used to determine if component is visible.
- 
-
-     */
-    public void setVisible(Hub hub) {
-        control.getVisibleController().add(hub);
-    }    
-    public void setVisible(Hub hub, String prop) {
-        control.getVisibleController().add(hub, prop);
-    }    
-    public void setVisible(Hub hub, String prop, Object compareValue) {
-        control.getVisibleController().add(hub, prop, compareValue);
-    }    
-    protected boolean isVisible(boolean bIsCurrentlyVisible) {
-        return bIsCurrentlyVisible;
+    public void addVisibleCheck(Hub hub, String propPath) {
+        control.getVisibleChangeListener().add(hub, propPath);
+    }
+    public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
+        control.getVisibleChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isVisible(boolean defaultValue) {
+        return defaultValue;
     }
 
     
@@ -879,9 +853,6 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     
     
     class OAListController extends ListController {
-        public OAListController() {
-            super(OAList.this);
-        }    
         public OAListController(Hub hub, String propertyPath, int visibleRow) {
             super(hub, OAList.this, propertyPath, visibleRow);
         }
@@ -897,7 +868,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
             return OAList.this.isVisible(bIsCurrentlyVisible);
         }
         @Override
-        protected String isValid(Object object, Object value) {
+        public String isValid(Object object, Object value) {
             String msg = OAList.this.isValid(object, value);
             if (msg == null) msg = super.isValid(object, value);
             return msg;
@@ -912,7 +883,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         @Override
         public Component getRenderer(Component renderer, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             renderer = super.getRenderer(renderer, list, value, index, isSelected, cellHasFocus);
-            String tt = getToolTipText(value);
+            String tt = component.getToolTipText();
             tt = OAList.this.getToolTipText(value, tt);
             if (tt != null) ((JComponent)renderer).setToolTipText(tt);
             Component comp = OAList.this.getRenderer(renderer, list, value, index, isSelected, cellHasFocus);
@@ -927,8 +898,21 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         getController().setLabel(lbl);
     }
     public JLabel getLabel() {
+        if (getController() == null) return null;
         return getController().getLabel();
     }
-    
+    @Override
+    public void setEnabled(boolean b) {
+        super.setEnabled(b);
+        JLabel lbl = getLabel();
+        if (lbl != null) lbl.setEnabled(b);
+    }
+    @Override
+    public void setVisible(boolean b) {
+        super.setVisible(b);
+        JLabel lbl = getLabel();
+        if (lbl != null) lbl.setVisible(b);
+    }
+
 }
 

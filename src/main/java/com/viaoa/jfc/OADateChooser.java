@@ -41,7 +41,7 @@ import com.viaoa.object.OAObject;
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
     @see OADateComboBox
 */
-public class OADateChooser extends JPanel implements OAJFCComponent {
+public class OADateChooser extends JPanel implements OAJfcComponent {
     OADate date, displayDate;
 
     int month;
@@ -98,7 +98,7 @@ public class OADateChooser extends JPanel implements OAJFCComponent {
     }
 
     @Override
-    public JFCController getController() {
+    public OAJfcController getController() {
         return control;
     }
 
@@ -390,48 +390,29 @@ public class OADateChooser extends JPanel implements OAJFCComponent {
     }
 
 
-    /**
-     * Other Hub/Property used to determine if component is enabled.
-     */
-    public void setEnabled(Hub hub) {
-        control.getEnabledController().add(hub);
+    public void addEnabledCheck(Hub hub) {
+        control.getEnabledChangeListener().add(hub);
     }
-    public void setEnabled(Hub hub, String prop) {
-        control.getEnabledController().add(hub, prop);
+    public void addEnabledCheck(Hub hub, String propPath) {
+        control.getEnabledChangeListener().add(hub, propPath);
     }
-    public void setEnabled(Hub hub, String prop, Object compareValue) {
-        control.getEnabledController().add(hub, prop, compareValue);
+    public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
+        control.getEnabledChangeListener().add(hub, propPath, compareValue);
     }
-    protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-        return bIsCurrentlyEnabled;
+    protected boolean isEnabled(boolean defaultValue) {
+        return defaultValue;
     }
-    
-    /* removed, to "not use" the enabledController, need to call it directly - since it has 2 params now, and will need 
-     * to be turned on and off   
-    
-    @Override
-    public void setEnabled(boolean b) {
-        if (control != null) {
-            b = control.getEnabledController().directSetEnabledCalled(b);
-        }
-        super.setEnabled(b);
+    public void addVisibleCheck(Hub hub) {
+        control.getVisibleChangeListener().add(hub);
     }
-    */
-    
-    /**
-     * Other Hub/Property used to determine if component is visible.
-     */
-    public void setVisible(Hub hub) {
-        control.getVisibleController().add(hub);
-    }    
-    public void setVisible(Hub hub, String prop) {
-        control.getVisibleController().add(hub, prop);
-    }    
-    public void setVisible(Hub hub, String prop, Object compareValue) {
-        control.getVisibleController().add(hub, prop, compareValue);
-    }    
-    protected boolean isVisible(boolean bIsCurrentlyVisible) {
-        return bIsCurrentlyVisible;
+    public void addVisibleCheck(Hub hub, String propPath) {
+        control.getVisibleChangeListener().add(hub, propPath);
+    }
+    public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
+        control.getVisibleChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isVisible(boolean defaultValue) {
+        return defaultValue;
     }
     
     /**
@@ -457,7 +438,7 @@ public class OADateChooser extends JPanel implements OAJFCComponent {
             return OADateChooser.this.isVisible(bIsCurrentlyVisible);
         }
         @Override
-        protected String isValid(Object object, Object value) {
+        public String isValid(Object object, Object value) {
             String msg = OADateChooser.this.isValid(object, value);
             if (msg == null) msg = super.isValid(object, value);
             return msg;
@@ -468,9 +449,22 @@ public class OADateChooser extends JPanel implements OAJFCComponent {
         getController().setLabel(lbl);
     }
     public JLabel getLabel() {
+        if (getController() == null) return null;
         return getController().getLabel();
     }
-    
+    @Override
+    public void setEnabled(boolean b) {
+        super.setEnabled(b);
+        JLabel lbl = getLabel();
+        if (lbl != null) lbl.setEnabled(b);
+    }
+    @Override
+    public void setVisible(boolean b) {
+        super.setVisible(b);
+        JLabel lbl = getLabel();
+        if (lbl != null) lbl.setVisible(b);
+    }
+
     
     
     public static void main(String[] argv) {

@@ -10,22 +10,18 @@
 */
 package com.viaoa.jfc;
 
-import java.lang.reflect.*;
 import java.awt.*;
-import java.util.*;
 import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.table.*;
-import javax.swing.event.*;
 
 import com.viaoa.object.*;
-import com.viaoa.util.OANotNullObject;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
 
-public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComponent {
+public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComponent {
     OACheckBoxController control;
     int columns;
     int width;
@@ -97,19 +93,19 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
         initialize();
     }
 
-    private boolean onItemStateChanged(ItemEvent evt) {
+    protected boolean beforeChecked(boolean bSelected) {
         if (control == null) return false;
         if (control.isChanging()) return false;
-        if (!OACheckBox.this.confirmChange(evt.getStateChange()==ItemEvent.SELECTED)) {
+        boolean b = confirmChange(bSelected);
+        if (!b) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     control.afterChangeActiveObject(null);
                 }
             });
-            return true;
         }
-        return false;
+        return b;
     }
     
     
@@ -161,9 +157,6 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
 
 
     // ----- OATableComponent Interface methods -----------------------
-    public void setHub(Hub hub) {
-        control.setHub(hub);
-    }
     public Hub getHub() {
         if (control == null) return null;
         return control.getHub();
@@ -182,7 +175,6 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     }
     public void setOnValue(Object value) {
         control.valueOn = value;
-        control.resetHubOrProperty();
     }
     /** value property will be set to when deselected. Default: FALSE */
     public Object getOffValue() {
@@ -190,7 +182,6 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     }
     public void setOffValue(Object value) {
         control.valueOff = value;
-        control.resetHubOrProperty();
     }
     
     /**
@@ -211,18 +202,12 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
         setPreferredSize(d);
     }
 
-    /**
-        Property path used to retrieve/set value for this component.
-    */
-    public void setPropertyPath(String path) {
-        control.setPropertyPath(path);
-        if (table != null) table.resetColumn(this);
-    }
-    /**
-        Property path used to retrieve/set value for this component.
-    */
+    @Override
     public String getPropertyPath() {
         return control.getPropertyPath();
+    }
+    public String getEndPropertyName() {
+        return control.getEndPropertyName();
     }
 
     
@@ -266,7 +251,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     public void addNotify() {
         super.addNotify();
         if (bRemoved) {
-            control.resetHubOrProperty();
+            //control.resetHubOrProperty();
             bRemoved = false;
         }
     }
@@ -307,9 +292,9 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
         chkRenderer.setEnabled(true);
         boolean tf = false;
         Object obj = control.getHub().elementAt(row);
-        if (control.hubSelect != null) {
+        if (control.getSelectHub() != null) {
             // Object obj = control.getActualHub().elementAt(row);
-            if (obj != null && control.hubSelect.getObject(obj) != null) tf = true;
+            if (obj != null && control.getSelectHub().getObject(obj) != null) tf = true;
         }
         else {
         	if (value != null && value instanceof Boolean) tf = ((Boolean)value).booleanValue();
@@ -345,6 +330,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     @Override
     public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
         Object obj = ((OATable) table).getObjectAt(row, col);
+        
         getToolTipText(obj, row, defaultValue);
         return defaultValue;
     }
@@ -401,51 +387,30 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
         return true;
     }
 
-
-    /**
-     * Other Hub/Property used to determine if component is enabled.
-     * @param hub 
-     * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
-     */
-    public void setEnabled(Hub hub, String prop) {
-        control.getEnabledController().add(hub, prop);
+    public void addEnabledCheck(Hub hub) {
+        control.getEnabledChangeListener().add(hub);
     }
-    public void setEnabled(Hub hub) {
-        control.getEnabledController().add(hub);
+    public void addEnabledCheck(Hub hub, String propPath) {
+        control.getEnabledChangeListener().add(hub, propPath);
     }
-    protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-        return bIsCurrentlyEnabled;
+    public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
+        control.getEnabledChangeListener().add(hub, propPath, compareValue);
     }
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        if (control != null) {
-           control.getEnabledController().directlySet(true, enabled);
-        }
-        super.setEnabled(enabled);
+    protected boolean isEnabled(boolean defaultValue) {
+        return defaultValue;
     }
-
-    
-    /**
-     * 
-     */
-    public void setEnabled(Hub hub, String prop, Object compareValue) {
-        control.getEnabledController().add(hub, prop, compareValue);
+    public void addVisibleCheck(Hub hub) {
+        control.getVisibleChangeListener().add(hub);
     }
-    
-    protected boolean isVisible(boolean bIsCurrentlyVisible) {
-        return bIsCurrentlyVisible;
+    public void addVisibleCheck(Hub hub, String propPath) {
+        control.getVisibleChangeListener().add(hub, propPath);
     }
-    
-    public void setVisible(Hub hub) {
-        control.getVisibleController().add(hub);
-    }    
-    public void setVisible(Hub hub, String prop) {
-        control.getVisibleController().add(hub, prop);
-    }    
-    public void setVisible(Hub hub, String prop, Object trueValue) {
-        control.getVisibleController().add(hub, prop, trueValue);
-    }    
+    public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
+        control.getVisibleChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isVisible(boolean defaultValue) {
+        return defaultValue;
+    }
 
     /**
      * This is a callback method that can be overwritten to determine if the component should be visible or not.
@@ -457,9 +422,6 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
     
     
     class OACheckBoxController extends ToggleButtonController {
-        public OACheckBoxController() {
-            super(OACheckBox.this);
-        }    
         public OACheckBoxController(Hub hub, String propertyPath) {
             super(hub, OACheckBox.this, propertyPath);
         }
@@ -488,17 +450,19 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
             return OACheckBox.this.isVisible(bIsCurrentlyVisible);
         }
         @Override
-        protected String isValid(Object object, Object value) {
+        public String isValid(Object object, Object value) {
             String msg = OACheckBox.this.isValid(object, value);
             if (msg == null) msg = super.isValid(object, value);
             return msg;
         }
         @Override
         public void itemStateChanged(ItemEvent evt) {
-            if (!onItemStateChanged(evt)) super.itemStateChanged(evt);
+            boolean b = evt.getStateChange()==ItemEvent.SELECTED;
+            if (beforeChecked(b)) {
+                super.itemStateChanged(evt);
+            }
         }
     }
-    
     
     public void setLabel(JLabel lbl) {
         getController().setLabel(lbl);
@@ -508,10 +472,5 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJFCComp
         return getController().getLabel();
     }
     */
-    
-    
 }
-
-
-
 

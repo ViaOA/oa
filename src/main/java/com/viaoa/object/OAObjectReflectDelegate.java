@@ -88,24 +88,24 @@ public class OAObjectReflectDelegate {
     }
 
     
-    public static Object getProperty(Hub hub, String propName) {
-        return getProperty(hub, null, propName);
+    public static Object getProperty(Hub hub, String propPath) {
+        return getProperty(hub, null, propPath);
     }
     
     /**
      * @see OAObject#getProperty(String)
      */
-    public static Object getProperty(OAObject oaObj, String propName) {
-        return getProperty(null, oaObj, propName);
+    public static Object getProperty(OAObject oaObj, String propPath) {
+        return getProperty(null, oaObj, propPath);
     }
-    public static Object getProperty(Hub hubLast, OAObject oaObj, String propName) {
-        if (propName == null || propName.trim().length() == 0) return null;
+    public static Object getProperty(Hub hubLast, OAObject oaObj, String propPath) {
+        if (propPath == null || propPath.trim().length() == 0) return null;
         if (hubLast == null && oaObj == null) return null;
 
-        if (propName.indexOf('.') < 0) {
-            return _getProperty(hubLast, oaObj, propName);
+        if (propPath.indexOf('.') < 0) {
+            return _getProperty(hubLast, oaObj, propPath);
         }
-        StringTokenizer st = new StringTokenizer(propName, ".", false);
+        StringTokenizer st = new StringTokenizer(propPath, ".", false);
 
         boolean b = false;
         for (;;) {
@@ -612,7 +612,9 @@ public class OAObjectReflectDelegate {
             String spp = linkInfo.getMergerPropertyPath();
             new HubMerger(oaObj, hub, spp);
         }
-        OAObjectValidateDelegate.setupHubValidator(oaObj, linkPropertyName, hub);
+        
+        // check to see if there is an onEditXxx(OAObjectEditMessage) to validate hub changes
+        OAObjectEditQueryDelegate.setupEditQueryHubListener(oaObj, linkPropertyName, hub);
         
         return hub;
     }
@@ -1035,7 +1037,9 @@ public class OAObjectReflectDelegate {
                     OAObjectPropertyDelegate.setPropertyHubIfNotSet(obj, linkPropertyName, hx);
                 }
                 OAObjectPropertyDelegate.releasePropertyLock(obj, linkPropertyName);
-                OAObjectValidateDelegate.setupHubValidator(obj, linkPropertyName, hx);
+                
+                // check to see if there is an onEditXxx(OAObjectEditMessage) to validate hub changes
+                OAObjectEditQueryDelegate.setupEditQueryHubListener(obj, linkPropertyName, hx);
             }
         }
         if (siblingKeys != null) {

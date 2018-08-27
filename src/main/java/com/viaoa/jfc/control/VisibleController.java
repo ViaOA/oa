@@ -15,12 +15,12 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import com.viaoa.hub.*;
-import com.viaoa.jfc.OAJFCComponent;
+import com.viaoa.jfc.OAJfcComponent;
 
 /**
  * Used to bind a components visible value to a one or more Hub/Property value
  * @author vincevia
- *
+ * @deprecated  use OAObjectChangeListener instead
  */
 public class VisibleController extends HubPropController {
     protected JComponent component;
@@ -47,13 +47,6 @@ public class VisibleController extends HubPropController {
         update();
     }
 
-    private boolean bIsCallingUpdate;
-    @Override
-    public void directlySet(boolean b, boolean bEnableValue) {
-        if (!bIsCallingUpdate) {
-            super.directlySet(b, bEnableValue);
-        }
-    }
     
     @Override
     public void update() {
@@ -75,8 +68,8 @@ public class VisibleController extends HubPropController {
         if (component == null) return;
         component.setVisible(bValid);
         
-        if (component instanceof OAJFCComponent) {
-            JFCController jc = ((OAJFCComponent) component).getController();
+        if (component instanceof OAJfcComponent) {
+            OAJfcController jc = ((OAJfcComponent) component).getController();
             if (jc != null) {
                 JLabel lbl = jc.getLabel();
                 if (lbl != null) lbl.setEnabled(bValid);

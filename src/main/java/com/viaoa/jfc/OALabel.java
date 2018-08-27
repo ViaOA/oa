@@ -13,8 +13,6 @@ package com.viaoa.jfc;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.*;
@@ -22,22 +20,13 @@ import javax.swing.table.*;
 
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
-import com.viaoa.util.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
 
-public class OALabel extends JLabel implements OATableComponent, OAJFCComponent {
+public class OALabel extends JLabel implements OATableComponent, OAJfcComponent {
     private OALabelController control;
     private OATable table;
     private String heading = "";
-
-    /**
-        Create an unbound label.
-    */
-    public OALabel() {
-        control = new OALabelController();
-        initialize();
-    }
 
     /**
         Create label that is bound to a property for the active object in a Hub.
@@ -109,28 +98,9 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
         return control.getFormat();
     }
 
-    private boolean bRemoved;
     public void addNotify() {
-        if (bRemoved) {
-            control.setHub(control.getHub());
-            bRemoved = false;
-        }
-        else {
-            if (getColumns() > 0) setColumns(getColumns());
-        }
+        if (getColumns() > 0) setColumns(getColumns());
         super.addNotify();
-    }
-
-    /* 2005/02/07 need to manually call close instead
-    public void removeNotify() {
-        super.removeNotify();
-        bRemoved = true;
-        label.close();
-    }
-    */
-    public void close() {
-        bRemoved = true;
-        control.close();
     }
     
     
@@ -138,26 +108,26 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
         Get the property name used for displaying an image with component.
     */
     public void setImageProperty(String prop) {
-        control.setImageProperty(prop);
+        control.setImagePropertyPath(prop);
     }
     /**
         Get the property name used for displaying an image with component.
     */
     public String getImageProperty() {
-        return control.getImageProperty();
+        return control.getImagePropertyPath();
     }
 
     /**
         Root directory path where images are stored.
     */
     public void setImagePath(String path) {
-        control.setImagePath(path);
+        control.setImagePropertyPath(path);
     }
     /**
         Root directory path where images are stored.
     */
     public String getImagePath() {
-        return control.getImagePath();
+        return control.getImagePropertyPath();
     }
 
     
@@ -179,26 +149,9 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
     /**
         Hub this this component is bound to.
     */
-    public void setHub(Hub hub) {
-        control.setHub(hub);        
-    }
-    /**
-        Hub this this component is bound to.
-    */
     public Hub getHub() {
         if (control == null) return null;
         return control.getHub();
-    }
-    /**
-        Used to get the <i>actual</i> Hub being used.  This is used when a property path
-        includes a another Hub within the path.
-        <p>
-        Example:<br>
-        The property path from an Employee Class "department.manger.employess", where the Hub for "employees"
-        would be the actutal Hub.
-    */
-    public Hub getActualHub() {
-        return control.getActualHub();
     }
 
     /**
@@ -315,23 +268,19 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
         return d;
     }
         
-
-
     /**
         Property path used to retrieve/set value for this component.
     */
-    public void setPropertyPath(String path) {
-        control.setPropertyPath(path);
-        if (table != null) table.resetColumn(this);
-    }
-    /**
-        Property path used to retrieve/set value for this component.
-    */
+    @Override
     public String getPropertyPath() {
-         if (control == null) return null;
-         return control.getPropertyPath();
+        if (control == null) return null;
+        return control.getPropertyPath();
     }
-
+    public String getEndPropertyName() {
+        if (control == null) return null;
+        return control.getEndPropertyName();
+    }
+    
     /**
         Column heading when this component is used as a column in an OATable.
     */
@@ -363,39 +312,48 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
 
     
     public void setIconColorProperty(String s) {
-    	control.setIconColorProperty(s);
+    	control.setIconColorPropertyPath(s);
     }
     public String getIconColorProperty() {
-    	return control.getIconColorProperty();
+    	return control.getIconColorPropertyPath();
     }
     
     public void setBackgroundColorProperty(String s) {
-        control.setBackgroundColorProperty(s);
+        control.setBackgroundColorPropertyPath(s);
     }
     public String getBackgroundColorProperty() {
-    	return control.getBackgroundColorProperty();
+    	return control.getBackgroundColorPropertyPath();
     }
-    public void setVisible(Hub hub) {
-        control.getVisibleController().add(hub);
-    }    
-    public void setVisible(Hub hub, String prop) {
-        control.getVisibleController().add(hub, prop);
-    }    
-    public void setVisible(Hub hub, String prop, Object compareValue) {
-        control.getVisibleController().add(hub, prop, compareValue);
-    }    
 
-    /**
-     * This is a callback method that can be overwritten to determine if the button should be visible or not.
-     */
-    protected boolean isVisible(boolean bIsCurrentlyVisible) {
-        return bIsCurrentlyVisible;
+    
+    public void addEnabledCheck(Hub hub) {
+        control.getEnabledChangeListener().add(hub);
     }
+    public void addEnabledCheck(Hub hub, String propPath) {
+        control.getEnabledChangeListener().add(hub, propPath);
+    }
+    public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
+        control.getEnabledChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isEnabled(boolean defaultValue) {
+        return defaultValue;
+    }
+    public void addVisibleCheck(Hub hub) {
+        control.getVisibleChangeListener().add(hub);
+    }
+    public void addVisibleCheck(Hub hub, String propPath) {
+        control.getVisibleChangeListener().add(hub, propPath);
+    }
+    public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
+        control.getVisibleChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isVisible(boolean defaultValue) {
+        return defaultValue;
+    }
+
+    
 
     public class OALabelController extends LabelController {
-        public OALabelController() {
-            super(OALabel.this);
-        }    
         public OALabelController(Hub hub) {
             super(hub, OALabel.this);
         }
@@ -417,7 +375,6 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
         protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
             if (bIsCurrentlyEnabled) return bIsCurrentlyEnabled;
             if (bIsHubCalc) {
-                if (hub == null) return false;
                 return hub.isValid();
             }
             return false;
@@ -430,28 +387,19 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
         defaultValue = getToolTipText(obj, row, defaultValue);
         return defaultValue;
     }
+    
     @Override
     public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
         Object obj = ((OATable) table).getObjectAt(row, column);
         customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
     }
 
-    public void setEnabled(Hub hub) {
-        control.getEnabledController().add(hub);
-    }
-    public void setEnabled(Hub hub, String prop) {
-    }
-    public void setEnabled(Hub hub, String prop, Object compareValue) {
-    }
-    @Override
-    public void setEnabled(boolean enabled) {
-        super.setEnabled(enabled);
-    }
 
     public void setLabel(JLabel lbl) {
         getController().setLabel(lbl);
     }
     public JLabel getLabel() {
+        if (getController() == null) return null;
         return getController().getLabel();
     }
 
@@ -494,4 +442,3 @@ public class OALabel extends JLabel implements OATableComponent, OAJFCComponent 
         timer.start();
     }
 }
-

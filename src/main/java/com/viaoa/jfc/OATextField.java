@@ -11,7 +11,6 @@
 package com.viaoa.jfc;
 
 import java.awt.*;
-
 import javax.swing.*;
 import javax.swing.table.*;
 
@@ -19,24 +18,22 @@ import com.viaoa.object.*;
 import com.viaoa.util.OADate;
 import com.viaoa.util.converter.OAConverterNumber;
 import com.viaoa.hub.*;
-import com.viaoa.util.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
 
-public class OATextField extends JTextField implements OATableComponent, OAJFCComponent {
+public class OATextField extends JTextField implements OATableComponent, OAJfcComponent {
     protected TextFieldController control; // 20110408 was OATextFieldController (internally defined)
     private OATable table;
     private String heading = "";
+    public boolean DEBUG;
 
-    public boolean bTest;
-    /**
-        Create an unbound TextField.
-    */
     public OATextField() {
         control = new OATextFieldController();
         setDisabledTextColor(Color.gray);
         initialize();
     }
+    
+    
     public OATextField(TextFieldController control) {
         this.control = control;
         setDisabledTextColor(Color.gray);
@@ -99,9 +96,22 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         getController().setLabel(lbl);
     }
     public JLabel getLabel() {
-        return getController().getLabel();
+        TextFieldController tc = getController();
+        return tc == null ? null : getController().getLabel();
     }
     
+    @Override
+    public void setEnabled(boolean b) {
+        super.setEnabled(b);
+        JLabel lbl = getLabel();
+        if (lbl != null) lbl.setEnabled(b);
+    }
+    @Override
+    public void setVisible(boolean b) {
+        super.setVisible(b);
+        JLabel lbl = getLabel();
+        if (lbl != null) lbl.setVisible(b);
+    }
     
     /**
         Format used to display this property.  Used to format Date, Times and Numbers.
@@ -139,10 +149,6 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     }
 
     // ----- OATableComponent Interface methods -----------------------
-    public void setHub(Hub hub) {
-        control.setHub(hub);
-        if (table != null) table.resetColumn(this);
-    }
     public Hub getHub() {
         return control.getHub();
     }
@@ -163,11 +169,8 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     public String getPropertyPath() {
         return control.getPropertyPath();
     }
-    public void setPropertyPath(String path) {
-        control.setPropertyPath(path);
-        if (table != null) {
-            table.resetColumn(this);
-        }
+    public String getEndPropertyName() {
+        return control.getEndPropertyName();
     }
     public String getTableHeading() { //zzzzz
         return heading;
@@ -198,18 +201,15 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
 
     /** called by getTableCellRendererComponent */
     public Component getTableRenderer(JLabel renderer, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        if (control != null) {
-            control.getTableRenderer(renderer, table, value, isSelected, hasFocus, row, column);
-            if (row == -1 && renderer != null) { // header
-                renderer.setText(getText());
-            }
+        if (control == null) return renderer;
+        control.getTableRenderer(renderer, table, value, isSelected, hasFocus, row, column);
+        if (row == -1 && renderer != null) { // header
+            renderer.setText(getText());
         }
         return renderer;
     }
     
-
-
-    OATextFieldTableCellEditor tableCellEditor;
+    protected OATextFieldTableCellEditor tableCellEditor;
     public TableCellEditor getTableCellEditor() {
         if (tableCellEditor == null) {
             tableCellEditor = new OATextFieldTableCellEditor(this);
@@ -217,100 +217,39 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         return tableCellEditor;
     }
 
-    @Override
-    public void setEnabled(boolean enabled) {
-        if (control != null) {
-            control.getEnabledController().directlySet(true, enabled);
-        }
-        super.setEnabled(enabled);
+    
+    public void addEnabledCheck(Hub hub) {
+        control.getEnabledChangeListener().add(hub);
+    }
+    public void addEnabledCheck(Hub hub, String propPath) {
+        control.getEnabledChangeListener().add(hub, propPath);
+    }
+    public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
+        control.getEnabledChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isEnabled(boolean defaultValue) {
+        return defaultValue;
+    }
+    public void addVisibleCheck(Hub hub) {
+        control.getVisibleChangeListener().add(hub);
+    }
+    public void addVisibleCheck(Hub hub, String propPath) {
+        control.getVisibleChangeListener().add(hub, propPath);
+    }
+    public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
+        control.getVisibleChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isVisible(boolean defaultValue) {
+        return defaultValue;
     }
     
-    // 20170515    
-    @Override
-    public void setVisible(boolean aFlag) {
-        if (control != null) {
-            control.getVisibleController().directlySet(true, aFlag);
-        }
-        super.setVisible(aFlag);
-    }
-    
-    
-    /**
-     * Other Hub/Property used to determine if component is enabled.
-     */
-    public void setEnabled(Hub hub) {
-        control.getEnabledController().add(hub);
-    }
-    public void setEnabled(Hub hub, String prop) {
-        control.getEnabledController().add(hub, prop);
-    }
-    public void setEnabled(Hub hub, String prop, Object compareValue) {
-        control.getEnabledController().add(hub, prop, compareValue);
-    }
-    protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-        return bIsCurrentlyEnabled;
-    }
-    /** removed, to "not use" the enabledController, need to call it directly - since it has 2 params now, and will need 
-     * to be turned on and off   
-    @Override
-    public void setEnabled(boolean b) {
-        if (control != null) {
-            b = control.getEnabledController().directSetEnabledCalled(b);
-        }
-        super.setEnabled(b);
-    }
-    */
-    /**
-     * Other Hub/Property used to determine if component is visible.
-     */
-    public void setVisible(Hub hub) {
-        control.getVisibleController().add(hub);
-    }    
-    public void setVisible(Hub hub, String prop) {
-        control.getVisibleController().add(hub, prop);
-    }    
-    public void setVisible(Hub hub, String prop, Object compareValue) {
-        control.getVisibleController().add(hub, prop, compareValue);
-    }    
-    protected boolean isVisible(boolean bIsCurrentlyVisible) {
-        return bIsCurrentlyVisible;
-    }
 
     /**
      * This is a callback method that can be overwritten to determine if the component should be visible or not.
      * @return null if no errors, else error message
      */
-    protected String isValid(Object object, Object value) {
+    protected String isValidCallback(Object object, Object value) {
         return null;
-    }
-
-    class OATextFieldController extends TextFieldController {
-        public OATextFieldController() {
-            super(OATextField.this);
-        }    
-        public OATextFieldController(Hub hub, String propertyPath) {
-            super(hub, OATextField.this, propertyPath);
-        }
-        public OATextFieldController(OAObject hubObject, String propertyPath) {
-            super(hubObject, OATextField.this, propertyPath);
-        }        
-        
-        @Override
-        protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-            bIsCurrentlyEnabled = super.isEnabled(bIsCurrentlyEnabled);
-            return OATextField.this.isEnabled(bIsCurrentlyEnabled);
-        }
-        @Override
-        protected boolean isVisible(boolean bIsCurrentlyVisible) {
-            bIsCurrentlyVisible = super.isVisible(bIsCurrentlyVisible);
-            return OATextField.this.isVisible(bIsCurrentlyVisible);
-        }
-        @Override
-        protected String isValid(Object object, Object value) {
-            String msg = OATextField.this.isValid(object, value);
-            if (msg == null) msg = super.isValid(object, value);
-            return msg;
-        }
     }
 
     
@@ -332,7 +271,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
     @Override
     public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
         Object obj = ((OATable) table).getObjectAt(row, col);
-        getToolTipText(obj, row, defaultValue);
+        defaultValue = getToolTipText(obj, row, defaultValue);
         return defaultValue;
     }
     @Override
@@ -403,9 +342,37 @@ public class OATextField extends JTextField implements OATableComponent, OAJFCCo
         d.width = OATable.getCharWidth(this, getFont(), cols+1);
         return d;
     }
+
+    class OATextFieldController extends TextFieldController {
+        public OATextFieldController() {
+            super(OATextField.this);
+        }
+        public OATextFieldController(Hub hub, String propertyPath) {
+            super(hub, OATextField.this, propertyPath);
+        }
+        public OATextFieldController(OAObject hubObject, String propertyPath) {
+            super(hubObject, OATextField.this, propertyPath);
+        }        
+        
+        @Override
+        protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+            bIsCurrentlyEnabled = super.isEnabled(bIsCurrentlyEnabled);
+            return OATextField.this.isEnabled(bIsCurrentlyEnabled);
+        }
+        @Override
+        protected boolean isVisible(boolean bIsCurrentlyVisible) {
+            bIsCurrentlyVisible = super.isVisible(bIsCurrentlyVisible);
+            return OATextField.this.isVisible(bIsCurrentlyVisible);
+        }
+        @Override
+        public String isValid(Object object, Object value) {
+            String msg = OATextField.this.isValidCallback(object, value);
+            if (msg == null) msg = super.isValid(object, value);
+            return msg;
+        }
+        
+    }
     
     
 }
-
-
 

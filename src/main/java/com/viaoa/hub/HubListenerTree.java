@@ -346,6 +346,9 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
     public void addListener(HubListener hl, final String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
         addListener(hl, property, dependentPropertyPaths, bActiveObjectOnly, false);
     }
+    public void addListener(HubListener hl, boolean bActiveObjectOnly) {
+        addListener(hl, null, null, bActiveObjectOnly, false);
+    }
 
     public void addListener(HubListener hl, final String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly, boolean bAllowBackgroundThread) {
         if (hl == null) return;

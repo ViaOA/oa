@@ -31,12 +31,11 @@ import javax.swing.table.*;
 
 import com.viaoa.hub.*;
 import com.viaoa.jfc.border.CustomLineBorder;
-import com.viaoa.jfc.control.JFCController;
+import com.viaoa.jfc.control.OAJfcController;
 import com.viaoa.jfc.control.OATreeTableController;
 import com.viaoa.jfc.dnd.OATransferable;
 import com.viaoa.jfc.table.*;
 import com.viaoa.jfc.undo.*;
-import com.viaoa.object.*;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
 
@@ -3579,15 +3578,15 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 /**
  * Class used to bind Table to a Hub.
  */
-class MyHubAdapter extends JFCController implements ListSelectionListener {
+class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     OATable table;
-    Hub hubSelect;
     private HubListenerAdapter hlSelect;
 
     AtomicInteger aiIgnoreValueChanged = new AtomicInteger();  // used to ignore calls to valueChanged(...)
     volatile boolean _bIsRunningValueChanged; // flag set when valueChanged is running
 
     public MyHubAdapter(Hub hub, OATable table) {
+        super(hub, table, HubChangeListener.Type.HubValid);
         setHub(hub);
         this.table = table;
         table.getSelectionModel().addListSelectionListener(this);
@@ -3615,14 +3614,14 @@ class MyHubAdapter extends JFCController implements ListSelectionListener {
         return _bIsRunningValueChanged;
     }
 
-    protected void setSelectHub(Hub hubSelect) {
+    public void setSelectHub(Hub hubSelect) {
         if (this.hubSelect == hubSelect) return;
+        super.setSelectHub(hubSelect);
 
         if (this.hubSelect != null && hlSelect != null) {
             this.hubSelect.removeHubListener(hlSelect);
             hlSelect = null;
         }
-        this.hubSelect = hubSelect;
         if (hubSelect == null) return;
 
         hlSelect = new HubListenerAdapter() {

@@ -336,9 +336,10 @@ public class OAObject implements java.io.Serializable, Comparable {
         OAObjectPropertyDelegate.removeProperty(this, name, true);
     }
 
-    public boolean isValid(String propertyName, Object newValue, OAEditMessage em) {
-        boolean b = OAObjectValidateDelegate.isValid(this, propertyName, newValue, em);
-        return b;
+
+    // allows other components to interact with OAObject property
+    public void editQuery(OAObjectEditQuery em) {
+        OAObjectEditQueryDelegate.performEditQuery(this, em);
     }
     
     /**
@@ -717,7 +718,7 @@ public class OAObject implements java.io.Serializable, Comparable {
         
         OAObjectSaveDelegate.save(this, iCascadeRule);  // this will save on server if using OAClient
     }
-    public boolean canSave(OAEditMessage em) {
+    public boolean canSave(OAObjectEditQuery em) {
         return true;
     }
     
@@ -743,7 +744,7 @@ public class OAObject implements java.io.Serializable, Comparable {
         }
     	OAObjectDeleteDelegate.delete(this);
     }
-    public boolean canDelete(OAEditMessage em) {
+    public boolean canDelete(OAObjectEditQuery em) {
         return true;
     }
     /**

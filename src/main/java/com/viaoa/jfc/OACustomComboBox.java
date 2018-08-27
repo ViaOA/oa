@@ -22,29 +22,28 @@ import com.viaoa.util.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
 
-public abstract class OACustomComboBox extends JComboBox implements OATableComponent, OAJFCComponent {
+public abstract class OACustomComboBox extends JComboBox implements OATableComponent, OAJfcComponent {
     OACustomComboBoxController control;
     OATextField vtf;
     OATable table;
     String heading = "";
     String format;
     boolean bTypeEditProperty;
-    
-    /**
-        Create an unbound ComboBox.
-    */
-    public OACustomComboBox() {
-        initialize();
-    }
+    private boolean bAllowClear;
+    public boolean bSetting;
 
+
+    public OACustomComboBox() {
+        this((Hub)null, (String) null, 7, false);
+    }
+    
     /**
         Create a ComboBox that is bound to a property for the active object in a Hub.
         @param columns is width of list using character width size.
     */
     public OACustomComboBox(Hub hub, String propertyPath, int columns, boolean bTypeEditProperty) {
-        this(hub,propertyPath,bTypeEditProperty);
+        this(hub, propertyPath, bTypeEditProperty);
         setColumns(columns);
-        initialize();
     }
 
     /**
@@ -62,7 +61,6 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     public OACustomComboBox(Object obj, String propertyPath, int columns, boolean bTypeEditProperty) {
         this(obj, propertyPath, bTypeEditProperty);
         setColumns(columns);
-        initialize();
     }
 
     /**
@@ -73,7 +71,6 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         initialize();
     }
 
-    
     @Override
     public void initialize() {
     }
@@ -86,7 +83,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     public void onClear() {
     	// this needs to be overwritten.
     }
-    private boolean bAllowClear;
+
     public void allowClearButton(boolean b) {
     	this.bAllowClear = b;
     }
@@ -95,7 +92,6 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     }
     
     
-    public boolean bSetting;
 
     /** 
         Directly called by popup to set property value.
@@ -140,28 +136,28 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         Property used for image name, that is used to get image to
         display with rows.
     */
-    public void setImageProperty(String prop) {
-        control.setImageProperty(prop);
+    public void setImageProperty(String propPath) {
+        control.setImagePropertyPath(propPath);
     }
     /**
         Property used for image name, that is used to get image to
         display with rows.
     */
     public String getImageProperty() {
-        return control.getImageProperty();
+        return control.getImagePropertyPath();
     }
 
     /**
         Root directory path where images are stored.
     */
-    public void setImagePath(String path) {
-        control.setImagePath(path);
+    public void setImagePropertyPath(String path) {
+        control.setImagePropertyPath(path);
     }
     /**
         Root directory path where images are stored.
     */
-    public String getImagePath() {
-        return control.getImagePath();
+    public String getImagePropertyPath() {
+        return control.getImagePropertyPath();
     }
 
     /**
@@ -179,10 +175,10 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
 
     
     public void setIconColorProperty(String s) {
-    	control.setIconColorProperty(s);
+    	control.setIconColorPropertyPath(s);
     }
     public String getIconColorProperty() {
-    	return control.getIconColorProperty();
+    	return control.getIconColorPropertyPath();
     }
     
 
@@ -194,13 +190,6 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     public Hub getHub() {
     	if (control == null) return null;
         return control.getHub();
-    }
-    /**
-        Hub that this component is bound to.
-    */
-    public void setHub(Hub hub) {
-        control.setHub(hub);
-        if (table != null) table.resetColumn(this);
     }
 
     /**
@@ -226,11 +215,11 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         Used to manually disable/enable this component.
     */
     public boolean getDisable() {
-        return this.isEnabled();
+        return !this.isEnabled();
     }
     
-    
-/* 09/13/99 works with jdk1.1  but this does not work in jdk2
+
+    /* 09/13/99 works with jdk1.1  but this does not work in jdk2
     JList list = null;
     public void addNotify() {
         super.addNotify();   
@@ -241,8 +230,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
             list.indexToLocation(0);  // force update
         }
     }
-*/  
-
+    */  
     
     /**
         Used to determine the default width, based on average character width 
@@ -323,18 +311,13 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     
     /**
         Property path used for displaying rows.
-
     */
+    @Override
     public String getPropertyPath() {
         return control.getPropertyPath();
     }
-    /**
-        Property path used for displaying rows.
-
-    */
-    public void setPropertyPath(String path) {
-        control.setPropertyPath(path);
-        if (table != null) table.resetColumn(this);
+    public String getEndPropertyName() {
+        return control.getEndPropertyName();
     }
 
     /**
@@ -381,11 +364,6 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         return vtf;
     }
 
-    /*???QQQQQQqqqqqq
-    public JComponent getComponent() {
-        return this;   
-    }
-    */
 
     protected OAComboBoxTableCellEditor tableCellEditor;
     /** 
@@ -397,8 +375,6 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         }
         return tableCellEditor;
     }
-
-    // 20160402 
 
     // hack: JComboBox could be container, so set focus to first good component
     JComponent focusComp;
@@ -499,7 +475,7 @@ focusComp = this;
         if (h != null) {
             Object obj = h.elementAt(row);
             if (h == this.getHub()) {
-                String s = control.getPropertyPathValueAsString(obj, control.getFormat());
+                String s = control.getValueAsString(obj, control.getFormat());
                 //was: String s = OAReflect.getPropertyValueAsString(obj, control.getGetMethods(), control.getFormat());
                 renderer.setText(s);
                 renderer.setIcon(this.getIcon(obj));
@@ -537,61 +513,30 @@ focusComp = this;
         customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
     }
     
-    @Override
-    public void setEnabled(boolean enabled) {
-        if (control != null) {
-            control.getEnabledController().directlySet(true, enabled);
-        }
-        super.setEnabled(enabled);
-    }
     
-    
-    /**
-     * Other Hub/Property used to determine if component is enabled.
- 
-
-     */
-    public void setEnabled(Hub hub) {
-        control.getEnabledController().add(hub);
+    public void addEnabledCheck(Hub hub) {
+        control.getEnabledChangeListener().add(hub);
     }
-    public void setEnabled(Hub hub, String prop) {
-        control.getEnabledController().add(hub, prop);
+    public void addEnabledCheck(Hub hub, String propPath) {
+        control.getEnabledChangeListener().add(hub, propPath);
     }
-    public void setEnabled(Hub hub, String prop, Object compareValue) {
-        control.getEnabledController().add(hub, prop, compareValue);
+    public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
+        control.getEnabledChangeListener().add(hub, propPath, compareValue);
     }
-    protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-        return bIsCurrentlyEnabled;
+    protected boolean isEnabled(boolean defaultValue) {
+        return defaultValue;
     }
-    
-    /** removed, to "not use" the enabledController, need to call it directly - since it has 2 params now, and will need 
-     * to be turned on and off   
-    
-    @Override
-    public void setEnabled(boolean b) {
-        if (control != null) {
-            b = control.getEnabledController().directSetEnabledCalled(b);
-        }
-        super.setEnabled(b);
+    public void addVisibleCheck(Hub hub) {
+        control.getVisibleChangeListener().add(hub);
     }
-    */
-    
-    /**
-     * Other Hub/Property used to determine if component is visible.
- 
-
-     */
-    public void setVisible(Hub hub) {
-        control.getVisibleController().add(hub);
-    }    
-    public void setVisible(Hub hub, String prop) {
-        control.getVisibleController().add(hub, prop);
-    }    
-    public void setVisible(Hub hub, String prop, Object compareValue) {
-        control.getVisibleController().add(hub, prop, compareValue);
-    }    
-    protected boolean isVisible(boolean bIsCurrentlyVisible) {
-        return bIsCurrentlyVisible;
+    public void addVisibleCheck(Hub hub, String propPath) {
+        control.getVisibleChangeListener().add(hub, propPath);
+    }
+    public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
+        control.getVisibleChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isVisible(boolean defaultValue) {
+        return defaultValue;
     }
 
     
@@ -615,7 +560,6 @@ focusComp = this;
         }
     }
 
-    
     public Dimension getMaximumSize() {
         Dimension d = super.getMaximumSize();
         if (isMaximumSizeSet()) return d;
@@ -651,9 +595,23 @@ focusComp = this;
         getController().setLabel(lbl);
     }
     public JLabel getLabel() {
+        if (getController() == null) return null;
         return getController().getLabel();
     }
     
+    @Override
+    public void setEnabled(boolean b) {
+        super.setEnabled(b);
+        JLabel lbl = getLabel();
+        if (lbl != null) lbl.setEnabled(b);
+    }
+    @Override
+    public void setVisible(boolean b) {
+        super.setVisible(b);
+        JLabel lbl = getLabel();
+        if (lbl != null) lbl.setVisible(b);
+    }
+
 }
 
 

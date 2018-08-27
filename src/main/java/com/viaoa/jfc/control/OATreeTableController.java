@@ -128,13 +128,6 @@ public class OATreeTableController extends OATree implements OATableComponent {
         super.setRowHeight(h);
     }
 
-    @Override
-    public void setPropertyPath(String path) {
-    }
-
-    @Override
-    public void setHub(Hub hub) {
-    }
 
     @Override
     public void setColumns(int x) {

@@ -10,7 +10,6 @@
 */
 package com.viaoa.hub;
 
-
 import com.viaoa.object.OAObject;
 import com.viaoa.util.*;
 
@@ -19,13 +18,11 @@ import com.viaoa.util.*;
  * another component.
  * 
  * @author vincevia
+ * @deprecated  use OAObjectChangeListener instead
  */
 public abstract class HubPropController {
     protected HubProp[] hubProps = new HubProp[0];
-    protected boolean bDirectlySet;  // used to override the isValid with another value
-    protected boolean bDirectlySetValue;
-    private boolean bIsCallingUpdate;  // used when updating value, so that direct setting valid can be ignored
-    public boolean debug;
+    public boolean DEBUG;
     
     public static class HubProp {
         public Hub<?> hub;
@@ -66,15 +63,19 @@ public abstract class HubPropController {
         }
     }
     public HubPropController() {
+throw new RuntimeException("HubPropertyController no longer used, replaced with OAObjectChangeListener"); //qqqqqqqqqqqqqqqqqqqq        
     }    
     public HubPropController(Hub hub) {
-        add(hub);
+throw new RuntimeException("HubPropertyController no longer used, replaced with OAObjectChangeListener"); //qqqqqqqqqqqqqqqqqqqq        
+//        add(hub);
     }
     public HubPropController(Hub hub, String propertyName) {
-        add(hub, propertyName);
+throw new RuntimeException("HubPropertyController no longer used, replaced with OAObjectChangeListener"); //qqqqqqqqqqqqqqqqqqqq        
+//        add(hub, propertyName);
     }
     public HubPropController(Hub hub, String propertyName, Object compareValue) {
-        add(hub, propertyName, compareValue);
+throw new RuntimeException("HubPropertyController no longer used, replaced with OAObjectChangeListener"); //qqqqqqqqqqqqqqqqqqqq        
+//        add(hub, propertyName, compareValue);
     }
 
     /**
@@ -190,14 +191,10 @@ public abstract class HubPropController {
      */
     public boolean isValid() {
         boolean b = _isValid();
-        if (!bDirectlySet) b = isValid(b);
+        b = isValid(b);
         return b;
     }
     protected boolean _isValid() {
-        if (bDirectlySet) {
-            return bDirectlySetValue;
-        }
-        
         boolean b = true;
         for (HubProp hp : hubProps) {
 
@@ -237,24 +234,8 @@ public abstract class HubPropController {
      */
     public void update() {
        boolean b = isValid();
-       try {
-           bIsCallingUpdate = true;
-           onUpdate(b);
-       }
-       finally {
-           bIsCallingUpdate = false;
-       }
+       onUpdate(b);
     }
 
-    /**
-     * This allows to set the enabled directly, and not use the Hub/propertie (isValid() method).
-     */
-    public void directlySet(boolean b, boolean bEnableValue) {
-        if (!bIsCallingUpdate) {
-            bDirectlySet = b;
-            bDirectlySetValue = bEnableValue;
-        }
-    }
-    
     protected abstract void onUpdate(boolean bValid);
 }

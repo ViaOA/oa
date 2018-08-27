@@ -153,12 +153,9 @@ public abstract class OATextFieldAutoCompleteList extends JTextField implements 
     public Hub getHub() {
         return this.hub;
     }
-    @Override
+
     public void setHub(Hub hub) {
         this.hub = hub;
-        
-        
-        
     }
     public void setTable(OATable table) {
         this.table = table;

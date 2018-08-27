@@ -12,7 +12,6 @@ package com.viaoa.jfc;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
 import java.net.*;
 
 import javax.swing.*;
@@ -20,17 +19,16 @@ import javax.swing.table.*;
 import javax.swing.event.*;
 
 import com.viaoa.jfc.OAButton.ButtonCommand;
+import com.viaoa.jfc.OAButton.ButtonEnabledMode;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.dialog.OAPasswordDialog;
 import com.viaoa.jfc.table.OAButtonTableCellEditor;
 import com.viaoa.jfc.table.OATableComponent;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OANotNullObject;
 import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
 
-
-public class OAButton extends JButton implements OATableComponent, OAJFCComponent {
+public class OAButton extends JButton implements OATableComponent, OAJfcComponent {
     public boolean DEBUG;
     private OAButtonController control;
     
@@ -63,17 +61,25 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     
     public static ButtonEnabledMode ALWAYS = ButtonEnabledMode.Always;
     public enum ButtonEnabledMode {
-        UsesIsEnabled,
-        Always,
-        ActiveObjectNotNull,
-        ActiveObjectNull,
-        HubIsValid,
-        HubIsNotEmpty,
-        HubIsEmpty,
-        AOPropertyIsNotEmpty,
-        AOPropertyIsEmpty,
-        SelectHubIsNotEmpty,
-        SelectHubIsEmpty,
+        UsesIsEnabled(HubChangeListener.Type.Unknown),
+        Always(HubChangeListener.Type.AlwaysTrue),
+        ActiveObjectNotNull(HubChangeListener.Type.AoNotNull),
+        ActiveObjectNull(HubChangeListener.Type.AoNull),
+        HubIsValid(HubChangeListener.Type.HubValid),
+        HubIsNotEmpty(HubChangeListener.Type.HubNotEmpty),
+        HubIsEmpty(HubChangeListener.Type.HubEmpty),
+        AOPropertyIsNotEmpty(HubChangeListener.Type.PropertyNotNull),
+        AOPropertyIsEmpty(HubChangeListener.Type.PropertyNull),
+        SelectHubIsNotEmpty(HubChangeListener.Type.Unknown),
+        SelectHubIsEmpty(HubChangeListener.Type.Unknown);
+        
+        private HubChangeListener.Type type;
+        ButtonEnabledMode(HubChangeListener.Type type) {
+            this.type = type;
+        }
+        public HubChangeListener.Type getHubChangeListenerType() {
+            return this.type;
+        }
     }
     public static ButtonEnabledMode UsesIsEnabled = ButtonEnabledMode.UsesIsEnabled;
     public static ButtonEnabledMode Always = ButtonEnabledMode.Always;
@@ -103,37 +109,44 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         
         if (command == null) command = ButtonCommand.Other;
         
-        if (enabledMode == null) {
-            
-            // first, last, new,insert,add,nwe_manual, add_manual            
-            // get default enabledMode
-            switch (command) {
-            case Other:
-                if (hub != null) {
-                    enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
-                }
-                else enabledMode = ButtonEnabledMode.UsesIsEnabled;
-                break;
-            case First:
-            case Last:
-            case New:
-            case Insert:
-            case Add:
-            case NewManual:
-            case AddManual:
-            case Paste:
-                enabledMode = ButtonEnabledMode.HubIsValid;
-                break;
-            default:
-                enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
-                break;
-            }
-        }
+        if (enabledMode == null) enabledMode = getDefaultEnabledMode(hub, command);
         
         control = new OAButtonController(hub, enabledMode, command) {
         };
         
         if (bCallSetup) setup();
+    }
+    
+    public static ButtonEnabledMode getDefaultEnabledMode(Hub hub, ButtonCommand command) {
+        ButtonEnabledMode enabledMode = ButtonEnabledMode.HubIsValid;
+        switch (command) {
+        case Other:
+            if (hub != null) {
+                enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
+            }
+            else enabledMode = ButtonEnabledMode.UsesIsEnabled;
+            break;
+        case First:
+        case Last:
+        case New:
+        case Insert:
+        case Add:
+        case NewManual:
+        case AddManual:
+        case Paste:
+            enabledMode = ButtonEnabledMode.HubIsValid;
+            break;
+        default:
+            enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
+            break;
+        }
+        return enabledMode;
+    }
+    
+    
+    public void bind(Hub hub, ButtonCommand buttonCommad) {
+        setHub(hub);
+        getController().setCommand(buttonCommad);
     }
     
     public OAButton() {
@@ -204,22 +217,6 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         return control;
     }
     
-    
-    /**
-        Built in command.
-        Set command value and set button text, tooltip, and icon.
-    */
-    public void setCommand(ButtonCommand command) {
-        if (command == ButtonCommand.NewManual) {
-            control.setCommand(ButtonCommand.New);
-            setManual(true);
-        }
-        else if (command == ButtonCommand.AddManual) {
-            control.setCommand(ButtonCommand.Add);
-            setManual(true);
-        }
-        control.setCommand(command);
-    }
     /**
         Built in command.
     */
@@ -234,18 +231,9 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         return control.getManual();
     }
     
-    
-    public void setEnabledMode(ButtonEnabledMode mode) {
-        control.setEnabledMode(mode);
-    }
     public ButtonEnabledMode getEnabledMode() {
         return control.getEnabledMode();
     }
-
-    
-    
-//qqqqqqqqqqq    
-
 
     /**
         Retrieve an Icon from the viaoa.gui.icons directory.
@@ -343,24 +331,6 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         }
     }
 
-
-    /**
-        Bind menuItem to automatically work with a Hub and command.
-    */
-    public void bind(Hub hub, ButtonCommand command) {
-        setHub(hub);
-        setCommand(command);
-    }
-
-    /**
-        Bind menuItem to automatically work with a Hub.
-        This will setAnyTime(false);
-    */
-    public void bind(Hub hub) {
-        setHub(hub);
-        setCommand(null);
-    }
-
     /**
         Description to use for Undo and Redo presentation names.
     */
@@ -391,25 +361,24 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         super.setText( (s==null)?"":s );
     }
 
-    public void setHub(Hub hub) {
-        control.setHub(hub);        
-    }
     public Hub getHub() {
         if (control == null) return null;
         return control.getHub();
     }
+    public void setHub(Hub h) {
+        control.setHub(h);
+    }
 
     public void setMultiSelectHub(Hub hubMultiSelect) {
+        setSelectHub(hubMultiSelect);
+    }
+    public void setSelectHub(Hub hubMultiSelect) {
         if (control == null) return;
-        control.setMultiSelectHub(hubMultiSelect);        
+        control.setSelectHub(hubMultiSelect);        
     }
-    public Hub getHubMultiSelect() {
+    public Hub getSelectHub() {
         if (control == null) return null;
-        return control.getMultiSelectHub();
-    }
-    public Hub getMultiSelectHub() {
-        if (control == null) return null;
-        return control.getMultiSelectHub();
+        return control.getSelectHub();
     }
     
 
@@ -619,7 +588,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         Popup message used to confirm button click before running code.
     */
     public String getConfirmMessage() {
-        return control.default_getConfirmMessage();
+        return control.getConfirmMessage();
     }
     
     public void setConfirmComponent(JComponent comp) {
@@ -759,18 +728,17 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
      * Other Hub/Property used to determine if component is enabled.
      */
     public void setEnabled(Hub hub) {
-        control.getEnabledController().add(hub);
+        control.getEnabledChangeListener().addAoNotNull(hub);
     }
     public void setEnabled(Hub hub, String prop) {
-        control.getEnabledController().add(hub, prop);
+        control.getEnabledChangeListener().add(hub, prop);
     }
     public void setEnabled(Hub hub, String prop, Object compareValue) {
-        control.getEnabledController().add(hub, prop, compareValue);
+        control.getEnabledChangeListener().add(hub, prop, compareValue);
     }
     protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-        // 20180605
         if (!bIsCurrentlyEnabled) {
-            if (getHubMultiSelect() != null && getHubMultiSelect().size() > 0) {
+            if (getSelectHub() != null && getSelectHub().size() > 0) {
                 if (getHub() == null || getHub().getAO() == null) bIsCurrentlyEnabled = true; 
             }
         }
@@ -783,13 +751,13 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
 
      */
     public void setVisible(Hub hub) {
-        control.getVisibleController().add(hub);
+        control.getVisibleChangeListener().addAoNotNull(hub);
     }    
     public void setVisible(Hub hub, String prop) {
-        control.getVisibleController().add(hub, prop);
+        control.getVisibleChangeListener().add(hub, prop);
     }    
     public void setVisible(Hub hub, String prop, Object compareValue) {
-        control.getVisibleController().add(hub, prop, compareValue);
+        control.getVisibleChangeListener().add(hub, prop, compareValue);
     }    
     protected boolean isVisible(boolean bIsCurrentlyVisible) {
         return bIsCurrentlyVisible;
@@ -849,7 +817,7 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
             super(hub, OAButton.this, enabledMode, command);
         }
         @Override
-        protected String isValid(Object object, Object value) {
+        public String isValid(Object object, Object value) {
             String msg = OAButton.this.isValid(object, value);
             if (msg == null) msg = super.isValid(object, value);
             return msg;
@@ -904,15 +872,8 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
         protected OAObject _createCopy(OAObject obj) {
             return super.createCopy(obj);
         }
-   }
+    }
 
-    public void setAnytime(boolean b) {
-        control.setAnytime(b);
-    }
-    public void setAnyTime(boolean b) {
-        control.setAnytime(b);
-    }
-    
     /**
      * Component to display in the processing window 
      */
@@ -951,6 +912,9 @@ public class OAButton extends JButton implements OATableComponent, OAJFCComponen
     }
     public boolean getPasswordProtected() {
         return control.getPasswordProtected();
+    }
+    public String getEndPropertyName() {
+        return control.getEndPropertyName();
     }
     
 }

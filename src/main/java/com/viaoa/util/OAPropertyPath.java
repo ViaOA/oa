@@ -259,6 +259,9 @@ public class OAPropertyPath<F> {
         return false;
     }
     
+    public boolean getDoesLastMethodHasHubParam() {
+        return bLastMethodHasHubParam;
+    }
     
     public boolean getNeedsDataToVerify() {
         return bNeedsDataToVerify;

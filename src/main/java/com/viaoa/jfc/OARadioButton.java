@@ -20,7 +20,7 @@ import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
 import com.viaoa.object.OAObject;
 
-public class OARadioButton extends JRadioButton implements OATableComponent, OAJFCComponent {
+public class OARadioButton extends JRadioButton implements OATableComponent, OAJfcComponent {
     OARadioButtonController control;
     int columns;
     int width;
@@ -112,7 +112,7 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     
     
     @Override
-    public JFCController getController() {
+    public OAJfcController getController() {
         return control;
     }
     
@@ -139,10 +139,12 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     boolean bRemoved;
     public void addNotify() {
         super.addNotify();
+        /*
         if (bRemoved) {
             control.resetHubOrProperty();
             bRemoved = false;
         }
+        */
     }
     /* 2005/02/07 need to manually call close instead
     public void removeNotify() {
@@ -157,9 +159,11 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     }
     
     // ----- OATableComponent Interface methods -----------------------
+    /*
     public void setHub(Hub hub) {
         control.setHub(hub);
     }
+    */
     public Hub getHub() {
         return control.getHub();
     }
@@ -182,10 +186,13 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
         d.width = this.width;
         setPreferredSize(d);
     }
+    /*
     public void setPropertyPath(String path) {
         control.setPropertyPath(path);
         if (table != null) table.resetColumn(this);
     }
+    */
+    @Override
     public String getPropertyPath() {
         return control.getPropertyPath();
     }
@@ -203,7 +210,7 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     }
     public void setValue(Object value) {
         control.valueOn = value;
-        control.resetHubOrProperty();
+        // control.resetHubOrProperty();
     }
     
     public JComponent getComponent() {
@@ -245,56 +252,30 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
 	public String getFormat() {
 		return control.getFormat();
 	}	
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        if (control != null) {
-            control.getEnabledController().directlySet(true, enabled);
-        }
-        super.setEnabled(enabled);
-    }
     
-    /**
-     * Other Hub/Property used to determine if component is enabled.
-     */
-    public void setEnabled(Hub hub) {
-        control.getEnabledController().add(hub);
+    public void addEnabledCheck(Hub hub) {
+        control.getEnabledChangeListener().add(hub);
     }
-    public void setEnabled(Hub hub, String prop) {
-        control.getEnabledController().add(hub, prop);
+    public void addEnabledCheck(Hub hub, String propPath) {
+        control.getEnabledChangeListener().add(hub, propPath);
     }
-    public void setEnabled(Hub hub, String prop, Object compareValue) {
-        control.getEnabledController().add(hub, prop, compareValue);
+    public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
+        control.getEnabledChangeListener().add(hub, propPath, compareValue);
     }
-    protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-        return bIsCurrentlyEnabled;
+    protected boolean isEnabled(boolean defaultValue) {
+        return defaultValue;
     }
-    
-    /** removed, to "not use" the enabledController, need to call it directly - since it has 2 params now, and will need 
-     * to be turned on and off   
-    @Override
-    public void setEnabled(boolean b) {
-        if (control != null) {
-            b = control.getEnabledController().directSetEnabledCalled(b);
-        }
-        super.setEnabled(b);
+    public void addVisibleCheck(Hub hub) {
+        control.getVisibleChangeListener().add(hub);
     }
-    */
-    
-    /**
-     * Other Hub/Property used to determine if component is visible.
-     */
-    public void setVisible(Hub hub) {
-        control.getVisibleController().add(hub);
-    }    
-    public void setVisible(Hub hub, String prop) {
-        control.getVisibleController().add(hub, prop);
-    }    
-    public void setVisible(Hub hub, String prop, Object compareValue) {
-        control.getVisibleController().add(hub, prop, compareValue);
-    }    
-    protected boolean isVisible(boolean bIsCurrentlyVisible) {
-        return bIsCurrentlyVisible;
+    public void addVisibleCheck(Hub hub, String propPath) {
+        control.getVisibleChangeListener().add(hub, propPath);
+    }
+    public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
+        control.getVisibleChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isVisible(boolean defaultValue) {
+        return defaultValue;
     }
 
     /**
@@ -344,7 +325,7 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
             return OARadioButton.this.isVisible(bIsCurrentlyVisible);
         }
         @Override
-        protected String isValid(Object object, Object value) {
+        public String isValid(Object object, Object value) {
             String msg = OARadioButton.this.isValid(object, value);
             if (msg == null) msg = super.isValid(object, value);
             return msg;

@@ -1338,6 +1338,9 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public void addHubListener(HubListener<TYPE> hl, String property, boolean bActiveObjectOnly) {
         HubEventDelegate.addHubListener(this, hl, property, bActiveObjectOnly);
     }
+    public void addHubListener(HubListener<TYPE> hl, boolean bActiveObjectOnly) {
+        HubEventDelegate.addHubListener(this, hl, bActiveObjectOnly);
+    }
 
     public void addHubListener(HubListener<TYPE> hl, String property, String[] dependentPropertyPaths) {
         HubEventDelegate.addHubListener(this, hl, property, dependentPropertyPaths);

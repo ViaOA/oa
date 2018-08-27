@@ -25,50 +25,48 @@ import com.viaoa.util.*;
  * @author vvia
  *
  */
-public class ToggleButtonController extends JFCController implements ItemListener {
+public class ToggleButtonController extends OAJfcController implements ItemListener {
     AbstractButton button;
     public Object valueOn = Boolean.TRUE;
     public Object valueOff = Boolean.FALSE;  // set to OANullObject to ignore unselect (ex: RadioButton)
     protected Hub hub2;  // another hub that this button relies on
-    public Hub hubSelect;
     protected int xorValue;
-    String confirmMessage;
     
-    Object valueNull;
+    protected Object valueNull;
 
     /**
-        Bind a button, need to set Hub and property path.
+        Bind a button to a property path to the active object for a Hub.
     */
     public ToggleButtonController(AbstractButton button) {
-        create(button);   
+        super(null, null, button, HubChangeListener.Type.Unknown);
+        create(button);
     }
     
     /**
         Bind a button to a property path to the active object for a Hub.
     */
     public ToggleButtonController(Hub hub, AbstractButton button, String propertyPath) {
-        super(hub, propertyPath, button); // this will add hub listener
+        super(hub, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
         create(button);
     }
 
-
     /**
         Bind a button to have it add/remove objects from a Hub.  
-        @param hub that has active object that is added/removed from hubSelect
-        @param hubSelect the active object from hub will be added/removed from this Hub.
+        @param hub that has active object that is added/removed from hubMultiSelect
+        @param hubMultiSelect the active object from hub will be added/removed from this Hub.
     */
-    public ToggleButtonController(Hub hub, Hub hubSelect, AbstractButton button) {
-        super(hub, "", button);
-        setSelectHub(hubSelect);
+    public ToggleButtonController(Hub hub, Hub hubMultiSelect, AbstractButton button) {
+        super(hub, "", button, HubChangeListener.Type.AoNotNull);
+        setSelectHub(hubMultiSelect);
         create(button);
     }
     
     /**
         Bind a button to a property path to the active object for a Hub.
-        Button wil be enabled based on active object in Hub not being null.
+        Button wil be enabled based on both active object and propertyPath in Hub not being null.
     */
     public ToggleButtonController(Object object, AbstractButton button, String propertyPath) {
-        super(object, propertyPath, button); // this will add hub listener
+        super(object, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
         create(button);
     }
 
@@ -78,7 +76,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
         @param valueOff value to use for property when button is not selected
     */
     public ToggleButtonController(Object object, AbstractButton button, String propertyPath, Object valueOn, Object valueOff) {
-        super(object, propertyPath, button); // this will add hub listener
+        super(object, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
         this.valueOn = valueOn;
         this.valueOff = valueOff;
         create(button);
@@ -89,7 +87,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
         @param valueOn value to use for property when button is selected
     */
     public ToggleButtonController(Object object, AbstractButton button, String propertyPath, Object valueOn) {
-        super(object, propertyPath, button); // this will add hub listener
+        super(object, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
         this.valueOn = valueOn;
         create(button);
     }
@@ -109,7 +107,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
         param valueOn value to use for property when button is selected
     */
     public ToggleButtonController(Hub hub, AbstractButton button, String propertyPath, boolean value) {
-        super(hub, propertyPath, button); // this will add hub listener
+        super(hub, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
         this.valueOn = new Boolean(value);
         this.valueOff = OANullObject.instance;
         create(button);
@@ -121,7 +119,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
         param valueOn value to use for property when button is selected
     */
     public ToggleButtonController(Hub hub, AbstractButton button, String propertyPath, Object value) {
-        super(hub, propertyPath, button); // this will add hub listener
+        super(hub, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
         this.valueOn = value;
         this.valueOff = OANullObject.instance;
         create(button);
@@ -134,7 +132,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
         @param valueOff value to use for property when button is not selected
     */
     public ToggleButtonController(Hub hub, AbstractButton button, String propertyPath, Object valueOn, Object valueOff) {
-        super(hub, propertyPath, button); // this will add hub listener
+        super(hub, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
         this.valueOn = valueOn;
         this.valueOff = valueOff;
         create(button);
@@ -193,36 +191,15 @@ public class ToggleButtonController extends JFCController implements ItemListene
         return valueNull;
     }
 
-    /** 
-        Hub used to add/remove objects from
-    */
-    public void setSelectHub(Hub hub) {
-        hubSelect = hub;
-        setPropertyPath("");
-    }
-    /** 
-        Hub used to add/remove objects from
-    */
-    public Hub getSelectHub() {
-        return hubSelect;
-    }
-
     private void create(AbstractButton but) {
         if (button != null) button.removeItemListener(this);
         button = but;
         if (button != null) button.addItemListener(this);
 
+        if (getHub() == null) return;
         // this needs to run before listeners are added
-        if (getActualHub() != null) {
-            HubEvent e = new HubEvent(getActualHub(),getActualHub().getActiveObject());
-            this.afterChangeActiveObject(e);
-            getEnabledController().add(getActualHub());
-        }
-    }
-
-    public void resetHubOrProperty() { // called when Hub or PropertyName is changed
-        super.resetHubOrProperty();
-        if (button != null) create(button);
+        HubEvent e = new HubEvent(hub, hub.getActiveObject());
+        this.afterChangeActiveObject();
     }
 
     public void close() {
@@ -230,16 +207,18 @@ public class ToggleButtonController extends JFCController implements ItemListene
         super.close();  // this will call hub.removeHubListener()
     }
 
+    @Override
+    protected void afterPropertyChange() {
+        afterChangeActiveObject();
+    }
     
     // HUB Events
-    public @Override void afterChangeActiveObject(HubEvent e) {
+    public @Override void afterChangeActiveObject() {
         if (bFlag) return;
-        if (getActualHub() == null) return;
         bFlag = true;
         boolean b = false;
 
-        
-        Object oaObject = getActualHub().getActiveObject();
+        Object oaObject = hub.getActiveObject();
 
         if (hubSelect != null) {
             b = (oaObject != null && hubSelect.getObject(oaObject) != null);
@@ -247,7 +226,7 @@ public class ToggleButtonController extends JFCController implements ItemListene
         else {
             Object obj = null;
             if (oaObject != null) {
-                obj = getPropertyPathValue(oaObject);
+                obj = getValue(oaObject);
             }
             if (obj == null) obj = valueNull;
             if (obj == null && valueOn == null) b = true;
@@ -281,122 +260,113 @@ public class ToggleButtonController extends JFCController implements ItemListene
     	return b;
     }
     
-    public @Override void afterPropertyChange(HubEvent e) {
-        if (e.getObject() instanceof Hub) return;
-        if ( e.getPropertyName().equalsIgnoreCase(getHubListenerPropertyName()) ) {
-            this.afterChangeActiveObject(e);
-        }
-    }
-
-    private String undoDescription;
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public void setUndoDescription(String s) {
-        undoDescription = s;
-    }
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public String getUndoDescription() {
-        return undoDescription;
-    }
-    
-    
     public boolean isChanging() {
         return bFlag;
     }
+    
     private volatile boolean bFlag;
     public void itemStateChanged(ItemEvent evt) {
         if (bFlag) return;
         bFlag = true;
-        try {
-            if (confirmMessage != null && !confirm()) {
-                bFlag = false;
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        afterChangeActiveObject(null);
+        Object value;
+
+        if ( (hubSelect != null) || hub != null) {
+            Object obj = hub.getActiveObject();
+            if (obj != null) {
+                
+                int type = evt.getStateChange();   
+                if (type == ItemEvent.SELECTED) value = valueOn;
+                else value = valueOff;
+                if (value instanceof OANullObject) {
+                    bFlag = false;
+                    return;
+                }
+                
+                if (hubSelect != null) {
+                    if (type == ItemEvent.SELECTED) {
+                        if (hubSelect.getObject(obj) == null) hubSelect.add(obj);
                     }
-                });
-                return;
-            }
-            int type = evt.getStateChange();   
-
-            Object value;
-            if (type == ItemEvent.SELECTED) value = valueOn;
-            else value = valueOff;
-            if (value instanceof OANullObject) return;
-
-            if ( (hubSelect != null) || getActualHub() != null) {
-                Object obj = getActualHub().getActiveObject();
-                if (obj != null) {
-
-                    if (hubSelect != null) {
-                        if (type == ItemEvent.SELECTED) {
-                            if (hubSelect.getObject(obj) == null) hubSelect.add(obj);
+                    else hubSelect.remove(obj);
+                }
+                else {
+                    
+                    Method method = null;
+                    try {
+                        Object prev = getValue(obj);
+                        if (xorValue > 0) {
+                            int x = 0;
+                            if (prev instanceof Number) x = ((Number) prev).intValue();
+                            if (type == ItemEvent.SELECTED) x = (x | xorValue);
+                            else x = (x ^ xorValue);
+                            value = new Integer(x);
                         }
-                        else hubSelect.remove(obj);
+
+                        if (OACompare.compare(prev, value) == 0) {
+                            bFlag = false;
+                            return;
+                        }
+                        
+                        boolean bValid = true;
+                        String msg = isValid(obj, value);
+                        if (msg != null) {
+                            JOptionPane.showMessageDialog(SwingUtilities.getRoot(component), 
+                                "Invalid Entry "+msg,
+                                "Invalid Entry", JOptionPane.ERROR_MESSAGE);
+                            bValid = false;
+                        }
+                        else if (!confirm(obj, value)) bValid = false;
+                        // else if (!confirm()) bValid = false;
+                        if (!bValid) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    afterChangeActiveObject();
+                                    bFlag = false;
+                                }
+                            });
+                            return;
+                        }
+                        
+                        setValue(obj, value);
+                        /* was
+                        method = getSetMethod();
+                        if (method == null) throw new RuntimeException("Hub2ToggleButton.itemStateChanged() - cant find setMethod for property \""+getPropertyName()+"\"");
+                        method.invoke(obj, new Object[] { value } );
+                        */
+                        if (getEnableUndo()) {
+                            OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, obj, endPropertyName, prev, value));
+                        }
+
+                        bFlag = false;
+                        Object objx = hub.getActiveObject();
+                        if (obj == objx) { // 20130919, object could have been removed
+                            afterChangeActiveObject();  // check to make sure value "took"
+                        }
+                        // 09/03/2000 was:
+                        // if (method != null && (method.getParameterTypes())[0].equals(boolean.class)) method.invoke(obj, new Object[] { new Boolean(value) } );
                     }
-                    else {
-                        Method method = null;
+                    catch (Exception e) {
+                        // this needs a better solution
+                        System.out.println("ToggleButtonController exception: "+e);
+                        e.printStackTrace();
+                        bFlag = false;
                         try {
-                            Object prev = getPropertyPathValue(obj);
-                            
-                            if (xorValue > 0) {
-                                int x = 0;
-                                if (prev instanceof Number) x = ((Number) prev).intValue();
-                                if (type == ItemEvent.SELECTED) x = (x | xorValue);
-                                else x = (x ^ xorValue);
-                                value = new Integer(x);
-                            }
-
-                            setPropertyPathValue(obj, value);
-                            /* was
-                            method = getSetMethod();
-                            if (method == null) throw new RuntimeException("Hub2ToggleButton.itemStateChanged() - cant find setMethod for property \""+getPropertyName()+"\"");
-                            method.invoke(obj, new Object[] { value } );
-                            */
-                            if (getEnableUndo()) {
-                                OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, obj, getPropertyPathFromActualHub(), prev, getPropertyPathValue(obj)) );
-                            }
-
-                            bFlag = false;
-                            Object objx = getActualHub().getActiveObject();
-                            if (obj == objx) { // 20130919, object could have been removed
-                                afterChangeActiveObject(null);  // check to make sure value "took"
-                            }
-                            // 09/03/2000 was:
-                            // if (method != null && (method.getParameterTypes())[0].equals(boolean.class)) method.invoke(obj, new Object[] { new Boolean(value) } );
+                            afterChangeActiveObject(); // reset
                         }
-                        catch (Exception e) {
-                            // this needs a better solution
-                            System.out.println("ToggleButtonController exception: "+e);
-                            e.printStackTrace();
-                            bFlag = false;
-                            try {
-                                afterChangeActiveObject(null); // reset
-                            }
-                            catch (Exception ex) {}
-                            /*
-                            hubChangeActiveObject(null); // set back
-                            Throwable t = e.getTargetException();
-                            if (t instanceof OAException) {
-                                throw ((OAException) t);
-                            }
-                            else {
-                                throw new OAException("Hub2ToggleButton.itemStateChanged() exception invoking method="+ method.getName()+" class="+this.getActualHub().getObjectClass().getName()+" "+t,t);
-                            }
-                            */
+                        catch (Exception ex) {}
+                        /*
+                        hubChangeActiveObject(null); // set back
+                        Throwable t = e.getTargetException();
+                        if (t instanceof OAException) {
+                            throw ((OAException) t);
                         }
+                        else {
+                            throw new OAException("Hub2ToggleButton.itemStateChanged() exception invoking method="+ method.getName()+" class="+this.getActualHub().getObjectClass().getName()+" "+t,t);
+                        }
+                        */
                     }
-                }                               
-            }
-        }
-        finally {
-            bFlag = false;
+                }
+            }                               
         }
     }
     
@@ -408,28 +378,8 @@ public class ToggleButtonController extends JFCController implements ItemListene
         return this.xorValue;
     }
 
-    /*
-    Popup message used to confirm button click before running code.
-    */
-    public void setConfirmMessage(String msg) {
-        confirmMessage = msg;
-    }
-    /**
-        Popup message used to confirm button click before running code.
-    */
-    public String getConfirmMessage() {
-        return confirmMessage;
-    }
-    
-    /** returns true if command is allowed */
-    protected boolean confirm() {
-        int x = JOptionPane.showOptionDialog(SwingUtilities.getWindowAncestor(button), confirmMessage, "Confirmation", 0, JOptionPane.QUESTION_MESSAGE,null, new String[] {"Yes","No"}, "Yes");
-        return (x == 0);
-    }
-
-    
     @Override
-    protected void update() {
+    public void update() {
         if (button == null) return;
         
         Object obj = null;
@@ -437,6 +387,5 @@ public class ToggleButtonController extends JFCController implements ItemListene
         super.update();
         super.update(button, obj);
     }
-    
 }
 

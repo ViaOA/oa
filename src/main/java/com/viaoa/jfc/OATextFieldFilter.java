@@ -53,14 +53,10 @@ public class OATextFieldFilter<T extends OAObject> extends JTextField implements
     }
 
     @Override
-    public void setHub(Hub hub) {
-    }
-    @Override
     public String getPropertyPath() {
         return this.propertyPath;
     }
 
-    @Override
     public void setPropertyPath(String path) {
         this.propertyPath = path;
     }

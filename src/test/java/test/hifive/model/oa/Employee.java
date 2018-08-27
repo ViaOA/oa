@@ -415,12 +415,12 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
         this.lastName = newValue;
         firePropertyChange(P_LastName, old, this.lastName);
     }
-    public boolean isValidLastName(String newValue, OAEditMessage msg) {
+    public boolean isValidLastName(String newValue, OAObjectEditQuery msg) {
         // check valud of validateTestType   see:HubEventDelegateTest
         validateTestResult++;
         if (validateTestType == 2 && !"test".equals(newValue)) return false;
         if (validateTestType == 3) {
-            msg.setMessage("cant set last name for this employee");
+            msg.setResponse("cant set last name for this employee");
             return false;
         }
         return true;
@@ -1025,11 +1025,11 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
         this.countryCode = newValue;
         firePropertyChange(P_CountryCode, old, this.countryCode);
     }
-    public boolean isValidCountryCode(CountryCode newValue, OAEditMessage msg) {
+    public boolean isValidCountryCode(CountryCode newValue, OAObjectEditQuery msg) {
         // check valud of validateTestType   see:HubEventDelegateTest
         validateTestResult++;
         if (validateTestType == 3) {
-            msg.setMessage("cant set CountryCode for this employee");
+            msg.setResponse("cant set CountryCode for this employee");
             return false;
         }
         return true;
@@ -1050,7 +1050,7 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
         }
         return hubEmployeeAwards;
     }
-    public boolean isValidEmployeeAwards(EmployeeAward employeeAward, OAEditMessage msg) {
+    public boolean isValidEmployeeAwards(EmployeeAward employeeAward, OAObjectEditQuery msg) {
         validateTestResult++;
         // check valud of validateTestType   see:HubEventDelegateTest
         if (msg == null) return true;
@@ -1060,7 +1060,7 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
         switch (msg.getType()) {
         case Unknown:
             break;
-        case RemoveAll:
+        case OnRemoveAll:
             if (validateTestType == 2) return false;
             break;
         }

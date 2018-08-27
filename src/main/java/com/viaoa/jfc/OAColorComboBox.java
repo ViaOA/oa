@@ -31,14 +31,9 @@ import com.viaoa.util.*;
 public class OAColorComboBox extends OACustomComboBox {
     private static final long serialVersionUID = 1L;
 
-    /**
-        Create an unbound ColorComboBox.
-    */
     public OAColorComboBox() {
-        setupRenderer();
-        initialize();
     }
-
+    
     /**
         Create a ColorComboBox that is bound to a property for the active object in a Hub.
         @param hub is Hub that used to display and edit color property in active object
@@ -69,7 +64,7 @@ public class OAColorComboBox extends OACustomComboBox {
         @param columns is width to use, using average character width
     */
     public OAColorComboBox(Object obj, String propertyPath, int columns) {
-        super(obj,propertyPath, columns, true);
+        super(obj, propertyPath, columns, true);
         setupRenderer();
         initialize();
     }
@@ -89,13 +84,11 @@ public class OAColorComboBox extends OACustomComboBox {
     public void initialize() {
     }
     
-    
     public void setSelectedItem(Object item) {
         super.setSelectedItem(item);
         repaint();  // since there is not a model
     }
 
-    
     
     private MyListCellRenderer lblRenderer;
     protected void setupRenderer() {
@@ -142,24 +135,6 @@ public class OAColorComboBox extends OACustomComboBox {
     public void setText(String s) {
         if (lblRenderer != null) lblRenderer.setText(s);
     }
-    /*
-    public Dimension getSize() {
-        Dimension d = super.getSize();
-        if (lblRenderer != null) d.width = lblRenderer.getSize().width + 8;
-        return d;
-    }
-
-    public Dimension getPreferredSize() {
-        Dimension d = super.getPreferredSize();
-        if (lblRenderer != null) d.width = lblRenderer.getSize().width + 8;
-        return d;
-    }
-    public Dimension getMinimumSize() {
-        Dimension d = super.getMinimumSize();
-        if (lblRenderer != null) d.width = lblRenderer.getSize().width + 8;
-        return d;
-    }
-    */
 
     private MyTableLabel lblRendererTable;
     class MyTableLabel extends JLabel {
@@ -199,7 +174,7 @@ public class OAColorComboBox extends OACustomComboBox {
         Hub h = ((OATable) table).getHub();
         if (h != null) {
             Object obj = h.elementAt(row);
-            obj = control.getPropertyPathValue(obj);
+            obj = control.getValue(obj);
             //was:  obj = OAReflect.getPropertyValue(obj, control.getGetMethods());
             if (obj instanceof Color) color = (Color) obj;
         }
@@ -229,7 +204,7 @@ public class OAColorComboBox extends OACustomComboBox {
         if (obj instanceof Color) c = (Color) obj;
         else {
             if (obj != null && obj.getClass().equals(control.getHub().getObjectClass())) {
-                obj = control.getPropertyPathValue(obj);
+                obj = control.getValue(obj);
             	//was: obj = OAReflect.getPropertyValue(obj, control.getGetMethods());
                 if (obj instanceof Color) c = (Color) obj;
             }
@@ -270,6 +245,15 @@ public class OAColorComboBox extends OACustomComboBox {
 	    };
         setUI(cui);
     }
+
+    @Override
+    public String getPropertyPath() {
+        return control.getPropertyPath();
+    }
+    public String getEndPropertyName() {
+        return control.getEndPropertyName();
+    }
+
 }
 
 

@@ -25,35 +25,26 @@ import com.viaoa.util.*;
  * @author vvia
  *
  */
-public class ListController extends JFCController implements ListSelectionListener {
+public class ListController extends OAJfcController implements ListSelectionListener {
     JList list;
     MyListModel myListModel = new MyListModel();
     ListCellRenderer listCellRenderer;
     protected boolean bAllowDelete, bAllowInsert, bAllowRemove;
-    protected Hub hubSelect;
-    protected String confirmMessage;
+    protected HubListener hubMultiSelectListener;
     
-    /**
-        Create an unbound list.
-    */
-    public ListController(JList list) {
-        nullDescription = null;
-    	initialCreate(list);
-    }
-
     /**
         Create list that is bound to a property for the active object in a Hub.
     */
     public ListController(Hub hub, JList list, String propertyPath) {
-        super(hub, propertyPath, list); // this will add hub listener
+        super(hub, propertyPath, list, HubChangeListener.Type.HubValid); // this will add hub listener
         nullDescription = null;
-        initialCreate(list);
+        create(list, 7);
     }
 
     public ListController(Object object, JList list, String propertyPath) {
-        super(object, propertyPath, list); // this will add hub listener
+        super(object, propertyPath, list, HubChangeListener.Type.HubValid); // this will add hub listener
         nullDescription = null;
-        initialCreate(list);
+        create(list, 7);
     }
 
     /**
@@ -61,34 +52,17 @@ public class ListController extends JFCController implements ListSelectionListen
         @param visibleRowCount number of rows to visually display.
     */
     public ListController(Hub hub, JList list, String propertyPath, int visibleRowCount) {
-        super(hub, propertyPath, list); // this will add hub listener
+        super(hub, propertyPath, list, HubChangeListener.Type.HubValid); // this will add hub listener
         nullDescription = null;
-        initialCreate(list, visibleRowCount);
+        create(list, visibleRowCount);
     }
 
 
-    HubListener hubSelectListener;
-    /** 
-        Used for selecting more then one value from JList.  The selectHub will contain all of 
-        the objects that have been selected.
-    */
-    public void setSelectHub(Hub hub) {
-        setSelectionHub(hub);
-    }
-
-    public Hub getSelectHub() {
-        return hubSelect;
-    }
-    
-    /** 
-        Used for selecting more then one value from JList.  The selectHub will contain all of 
-        the objects that have been selected.
-    */
-    public void setSelectionHub(Hub hub) {
-        if (hubSelect != null && hubSelectListener != null) hubSelect.removeHubListener(hubSelectListener);
+    @Override
+    public void setSelectHub(Hub newHub) {
+        super.setSelectHub(newHub);
 
         ListSelectionModel model = list.getSelectionModel();
-        hubSelect = hub;
         if (hubSelect == null) {
             model.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         }
@@ -98,7 +72,7 @@ public class ListController extends JFCController implements ListSelectionListen
             model.clearSelection();
             changeFlag = false;
 
-            hubSelectListener = new HubListenerAdapter() {
+            hubMultiSelectListener = new HubListenerAdapter() {
                 public @Override void afterAdd(HubEvent e) {
                     if (selectionFlag) return;
                     if (e.getObject() != null) {
@@ -129,11 +103,9 @@ public class ListController extends JFCController implements ListSelectionListen
                 	onNewSelectionHubList();
                 }
             };
-            hubSelect.addHubListener(hubSelectListener);
-
+            hubSelect.addHubListener(hubMultiSelectListener);
         	onNewSelectionHubList();
         }
-        create(list);
     }
     
     protected void onNewSelectionHubList() {
@@ -148,7 +120,7 @@ public class ListController extends JFCController implements ListSelectionListen
                 if (pos >= 0) model.addSelectionInterval(pos, pos);
                 else {
                     /* 20131224 dont remove, other hubs might not be updated yet
-                    hubSelect.remove(i);
+                    hubMultiSelect.remove(i);
                     i--;
                     */
                 }
@@ -157,98 +129,92 @@ public class ListController extends JFCController implements ListSelectionListen
         } 
     }
 
-    private void initialCreate(JList list) {
-        initialCreate(list, 7);
+    @Override
+    protected void reset() {
+        super.reset();
+        if (list != null) create(list, 7);
     }
-
-    private void initialCreate(JList list, int rows) {
+    
+    
+    protected void create(JList list, int rows) {
         // called once by constructor
+        if (this.list != null) this.list.getSelectionModel().removeListSelectionListener(this);
+        this.list = list;
+
         list.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//vvv        list.setPrototypeCellValue("1234567890ABCDEF"); // this keeps JList from reading all rows, DONT REMOVE
-// 2005/06/05 this next line had been commented out
+        // list.setPrototypeCellValue("1234567890ABCDEF"); // this keeps JList from reading all rows, DONT REMOVE
         list.setVisibleRowCount(rows);
-        create(list);
+        
+        list.getSelectionModel().addListSelectionListener(this);
+        if (listCellRenderer == null) {
+            list.setModel(myListModel);
+        
+            listCellRenderer = list.getCellRenderer();
+            list.setCellRenderer(new MyListCellRenderer());
+        }
+        if (hubSelect == null) {
+            // not needed? might need to be put in the addNotify() method
+            // list.getUI().getList().setCellRenderer(new MyListCellRenderer());
+            HubEvent e = new HubEvent(getHub(), getHub().getActiveObject());
+            afterChangeActiveObject(e);
+        }
         
         list.registerKeyboardAction( new ActionListener() {
-                public void actionPerformed(ActionEvent e) {  
-                    Hub h = getHub();
-                    Object ho = h.getActiveObject();
-                    int pos = h.getPos();
-                    if (ho != null && pos > 0) {
-                        if (confirmMessage != null && !confirm()) return;
-                        h.move(pos,pos-1);
-                        HubAODelegate.setActiveObjectForce(h, ho);
-                    }
+            public void actionPerformed(ActionEvent e) {  
+                Hub h = getHub();
+                Object ho = h.getActiveObject();
+                int pos = h.getPos();
+                if (ho != null && pos > 0) {
+                    h.move(pos,pos-1);
+                    HubAODelegate.setActiveObjectForce(h, ho);
                 }
-            },  KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.CTRL_MASK, false), JComponent.WHEN_FOCUSED);
+            }
+        },  KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.CTRL_MASK, false), JComponent.WHEN_FOCUSED);
         
         list.registerKeyboardAction( new ActionListener() {
-                public void actionPerformed(ActionEvent e) {  
-                    Hub h = getHub();
-                    Object ho = h.getActiveObject();
-                    int pos = h.getPos();
-                    if (ho != null && pos+1 != h.getSize()) {
-                        if (confirmMessage != null && !confirm()) return;
-                        h.move(pos,pos+1);
-                        HubAODelegate.setActiveObjectForce(h, ho);
-                    }
+            public void actionPerformed(ActionEvent e) {  
+                Hub h = getHub();
+                Object ho = h.getActiveObject();
+                int pos = h.getPos();
+                if (ho != null && pos+1 != h.getSize()) {
+                    h.move(pos,pos+1);
+                    HubAODelegate.setActiveObjectForce(h, ho);
                 }
-            },  KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.CTRL_MASK, false), JComponent.WHEN_FOCUSED);
-
+            }
+        },  KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.CTRL_MASK, false), JComponent.WHEN_FOCUSED);
 
         list.registerKeyboardAction( new ActionListener() {
-                public void actionPerformed(ActionEvent e) {  
-                    if (!bAllowDelete && !bAllowRemove) return;
-                    Hub h = getHub();
-                    Object ho = h.getActiveObject();
-                    if (ho != null && (ho instanceof OAObject)) {
-                        if (confirmMessage != null && !confirm()) return;
-                        if (bAllowDelete) ((OAObject)ho).delete();
-                        else if (bAllowRemove) h.remove(ho);
-                    }
+            public void actionPerformed(ActionEvent e) {  
+                if (!bAllowDelete || !bAllowRemove) return;
+                Hub h = getHub();
+                Object ho = h.getActiveObject();
+                if (ho != null && (ho instanceof OAObject)) {
+                    if (bAllowDelete) ((OAObject)ho).delete();
+                    else if (bAllowRemove) h.remove(ho);
                 }
-            },  KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0, true), JComponent.WHEN_FOCUSED);
+            }
+        },  KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0, true), JComponent.WHEN_FOCUSED);
     
         list.registerKeyboardAction( new ActionListener() {
-                public void actionPerformed(ActionEvent e) {  
-                    if (!bAllowInsert) return;
-                    Hub hub = getHub();
-                    // 2005/1/5 was: Hub hub = getActualHub();
-                    if (hub == null) return;
-                    Class c = hub.getObjectClass();
-                    if (c == null) return;
-                    if (confirmMessage != null && !confirm()) return;
-                    Object obj = OAObjectReflectDelegate.createNewObject(c);
+            public void actionPerformed(ActionEvent e) {  
+                if (!bAllowInsert) return;
+                Hub hub = getHub();
+                if (hub == null) return;
+                Class c = hub.getObjectClass();
+                if (c == null) return;
+                Object obj = OAObjectReflectDelegate.createNewObject(c);
 
-
-                    int pos = hub.getPos();
-                    if (pos < 0) pos = 0;
-                    hub.insert(obj, pos);
-                    
-                    if (getEnableUndo()) OAUndoManager.add(OAUndoableEdit.createUndoableInsert(undoDescription, hub, obj, pos));
-                    
-                    hub.setActiveObject(obj);
-                }
-            },  KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0, true), JComponent.WHEN_FOCUSED);
-
+                int pos = hub.getPos();
+                if (pos < 0) pos = 0;
+                hub.insert(obj, pos);
+                
+                if (getEnableUndo()) OAUndoManager.add(OAUndoableEdit.createUndoableInsert(undoDescription, hub, obj, pos));
+                hub.setActiveObject(obj);
+            }
+        },  KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0, true), JComponent.WHEN_FOCUSED);
     }
 
     
-    private String undoDescription;
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public void setUndoDescription(String s) {
-        undoDescription = s;
-    }
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public String getUndoDescription() {
-        return undoDescription;
-    }
     
     /**
         Flag to know if a row/object can be removed from the Hub by using the [Delete] key.
@@ -289,64 +255,11 @@ public class ListController extends JFCController implements ListSelectionListen
         return bAllowInsert;
     }
     
-    /** 
-        Popup message that will be used to confirm an insert/remove/delete/new.
-    */
-    public void setConfirmMessage(String msg) {
-        confirmMessage = msg;
-    }
-    /** 
-        Popup message that will be used to confirm an insert/remove/delete/new.
-    */
-    public String getConfirmMessage() {
-        return confirmMessage;
-    }
-
-
-    /** 
-        Returns true if delete is allowed.
-    */
-    protected boolean confirm() {
-        int x = JOptionPane.showOptionDialog(null, confirmMessage, "", 0, JOptionPane.QUESTION_MESSAGE,null, new String[] {"Yes","No"}, "Yes");
-        return (x == 0);
-    }
-
-
-
     public void close() {
         if (this.list != null) this.list.getSelectionModel().removeListSelectionListener(this);
-        if (hubSelect != null && hubSelectListener != null) hubSelect.removeHubListener(hubSelectListener);
         super.close();  // this will call hub.removeHubListener()
     }
 
-    protected void create(JList list) {
-        if (this.list != null) this.list.getSelectionModel().removeListSelectionListener(this);
-        this.list = list;
-        
-        if (getHub() != null) {
-            if (list != null) {
-                this.list.getSelectionModel().addListSelectionListener(this);
-                if (listCellRenderer == null) {
-                    list.setModel(myListModel);
-                
-                    listCellRenderer = list.getCellRenderer();
-                    list.setCellRenderer(new MyListCellRenderer());
-                }
-                if (hubSelect == null) {
-                    // not needed? might need to be put in the addNotify() method
-                    // list.getUI().getList().setCellRenderer(new MyListCellRenderer());
-                    HubEvent e = new HubEvent(getHub(),getHub().getActiveObject());
-                    this.afterChangeActiveObject(e);
-                }
-            }
-            getEnabledController().add(getActualHub(), null, OAAnyValueObject.instance); // so that Hub.isValid will be the only check
-        }
-    }
-
-    protected void resetHubOrProperty() {  // called when Hub or PropertyName is changed
-        super.resetHubOrProperty();
-        if (list != null) create(list);
-    }
 
     // ListSelectionModel Events
     boolean changeFlag, selectionFlag;
@@ -390,65 +303,6 @@ public class ListController extends JFCController implements ListSelectionListen
         }
     }
     
-    
-    /**
-        Hub Event that will change the rows in the List that are selected.
-    */
-    public @Override synchronized void afterChangeActiveObject(HubEvent evt) {
-        if (!selectionFlag && hubSelect == null && list != null) {
-            changeFlag = true;
-            Object oaObject = getHub().getActiveObject();
-            if (oaObject == null) {
-                list.clearSelection();
-                list.scrollRectToVisible(new Rectangle(0,0,1,1));
-            }
-            else list.setSelectedValue(oaObject,true);
-            changeFlag = false;
-        }
-    }
-
-    /**
-        Hub Event that a property has changed, causing a repaint on the List.
-    */
-    public @Override void afterPropertyChange(HubEvent e) {
-        String prop = e.getPropertyName();
-        if (prop == null || list == null) return;
-
-        // 20101220 hubListener will also include dependent properties
-        if (prop.equalsIgnoreCase(getHubListenerPropertyName())) {
-            list.repaint();
-        }
-        /*was
-        if (prop.equalsIgnoreCase(getPropertyName()) || 
-    		prop.equalsIgnoreCase(getIconColorProperty()) || 
-    		prop.equalsIgnoreCase(getImageProperty()) || 
- 	    	prop.equalsIgnoreCase(getForegroundColorProperty()) ||
- 	    	prop.equalsIgnoreCase(getFontProperty()) ||
-    		prop.equalsIgnoreCase(getBackgroundColorProperty())
-    		)
-        {
-            list.repaint();
-        }
-        */
-    }
-
-    protected void invoker(final int pos, final boolean bAdd) {
-    	if (pos < 0) return;
-    	if (SwingUtilities.isEventDispatchThread()) {
-            if (bAdd) myListModel.fireAdd(pos);
-            else myListModel.fireRemove(pos);
-        }
-        else {
-            SwingUtilities.invokeLater( new Runnable() {
-                public void run() {   
-                    if (bAdd) myListModel.fireAdd(pos);
-                    else myListModel.fireRemove(pos);
-                }
-            });
-        }
-    }
-
-
     /**
         Hub Event that will insert the object into the List.
     */
@@ -460,10 +314,8 @@ public class ListController extends JFCController implements ListSelectionListen
         Hub Event that will add the object to the List.
     */
     public @Override void afterAdd(HubEvent e) {
-        if (getHub() != null) invoker(e.getPos(), true);
+        invoker(e.getPos(), true);
     }
-
-    
 
     /**
         Hub Event that will remove the object to the List.
@@ -473,24 +325,20 @@ public class ListController extends JFCController implements ListSelectionListen
     }
 
     public @Override void afterMove(HubEvent e) {
-    	_afterMove(e.getPos(), e.getToPos());
-    }
-
-    private void _afterMove(final int fromPos, final int toPos) {
-    	if (SwingUtilities.isEventDispatchThread()) {
-        	myListModel.fireMove(fromPos, toPos);
+        final int fromPos = e.getPos();
+        final int toPos = e.getToPos();
+        if (SwingUtilities.isEventDispatchThread()) {
+            myListModel.fireMove(fromPos, toPos);
         }
         else {
             SwingUtilities.invokeLater( new Runnable() {
                 public void run() {   
-                	myListModel.fireMove(fromPos, toPos);
+                    myListModel.fireMove(fromPos, toPos);
                 }
             });
         }
     }
-    
-    
-    
+
     /**
         Hub Event that will refresh the List.
     */
@@ -515,9 +363,47 @@ public class ListController extends JFCController implements ListSelectionListen
     public @Override void afterSort(HubEvent e) {
         onNewList(e);
     }
+    
+    /**
+        Hub Event that will change the rows in the List that are selected.
+    */
+    public @Override synchronized void afterChangeActiveObject() {
+        if (!selectionFlag && hubSelect == null && list != null) {
+            changeFlag = true;
+            Object oaObject = getHub().getActiveObject();
+            if (oaObject == null) {
+                list.clearSelection();
+                list.scrollRectToVisible(new Rectangle(0,0,1,1));
+            }
+            else list.setSelectedValue(oaObject,true);
+            changeFlag = false;
+        }
+    }
+
+    /**
+        Hub Event that a property has changed, causing a repaint on the List.
+    */
+    public @Override void afterPropertyChange() {
+        list.repaint();
+    }
+
+    protected void invoker(final int pos, final boolean bAdd) {
+    	if (pos < 0) return;
+    	if (SwingUtilities.isEventDispatchThread()) {
+            if (bAdd) myListModel.fireAdd(pos);
+            else myListModel.fireRemove(pos);
+        }
+        else {
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {   
+                    if (bAdd) myListModel.fireAdd(pos);
+                    else myListModel.fireRemove(pos);
+                }
+            });
+        }
+    }
 
     
-
 
     //==============================================================================
     // all methods must be called by the AWT Thread
@@ -588,7 +474,7 @@ public class ListController extends JFCController implements ListSelectionListen
         if (value instanceof String) s = (String) value; // JList will send "setPrototypeCellValue" for measuring
         else if (value == null) s = "";
         else {
-            s = getPropertyPathValueAsString(value, getFormat());
+            s = getValueAsString(value, getFormat());
             //was: s = OAReflect.getPropertyValueAsString( value, getGetMethods() );
         }
         if (renderer instanceof JLabel) {
@@ -624,8 +510,6 @@ public class ListController extends JFCController implements ListSelectionListen
         }
         return renderer;
     }
-    
-    
     
     //==============================================================================
     class MyListCellRenderer extends JLabel implements ListCellRenderer {

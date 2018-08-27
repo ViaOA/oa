@@ -33,7 +33,7 @@ public interface OATableComponent {
     /**
         Hub that this component is bound to.
     */
-    public void setHub(Hub hub);
+    // public void setHub(Hub hub);
 
     /**
         A dot (".") separated list of property names.
@@ -42,7 +42,7 @@ public interface OATableComponent {
     /**
         A dot (".") separated list of property names.
     */
-    public void setPropertyPath(String path);
+    // public void setPropertyPath(String path);
 
     /**
         Width of component, based on average width of the font's character.

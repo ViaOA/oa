@@ -72,12 +72,12 @@ public class OATreeComboBox extends OACustomComboBox {
         // 20110801
         if (hub != null) {
             if (hub.getLinkHub() != null) {
-                control.getEnabledController().clear();
-                setEnabled(hub.getLinkHub(), null);
+                control.getEnabledChangeListener().clear();
+                control.getEnabledChangeListener().add(hub.getLinkHub(), HubChangeListener.Type.HubValid);
             }
             if (hub.getMasterHub() != null) {
-                control.getEnabledController().clear();
-                setEnabled(hub.getMasterHub(), null);
+                control.getEnabledChangeListener().clear();
+                control.getEnabledChangeListener().add(hub.getMasterHub(), HubChangeListener.Type.HubValid);
             }
         }
     }

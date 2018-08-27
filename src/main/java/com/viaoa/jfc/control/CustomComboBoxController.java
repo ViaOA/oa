@@ -24,82 +24,56 @@ import com.viaoa.jfc.*;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 
-
 /**
- * Functionality for binding custom JComboBox to OA.
+ * Functionality for binding a custom JComboBox to OA.
  * @author vvia
  */
-public class CustomComboBoxController extends JFCController {
+public class CustomComboBoxController extends OAJfcController {
     JComboBox comboBox;
     public boolean bDisplayPropertyOnly; // 2007/05/25 used by OATreeComboBox so that setSelectedItem() does not try to update property
     protected boolean bTypeEditProperty; // if true, then this will edit hub.property, else it updates hub.ao
     
     public CustomComboBoxController(Hub hub, JComboBox cb, String propertyPath, boolean bTypeEditProperty) {
-        super(hub, propertyPath, cb); // this will add hub listener
+        super(hub, propertyPath, cb, HubChangeListener.Type.HubValid); // this will add hub listener
         create(cb);
     }
 
     public CustomComboBoxController(Object obj, JComboBox cb, String propertyPath, boolean bTypeEditProperty) {
-        super(obj, propertyPath, cb); // this will add hub listener
+        super(obj, propertyPath, cb, HubChangeListener.Type.HubValid); // this will add hub listener
         create(cb);
     }
 
+    @Override
+    protected void reset() {
+        super.reset();
+        if (comboBox != null) create(comboBox);
+    }
+    
     protected void create(JComboBox cb) {
         this.comboBox = cb;
 
-        // 20110116 so all combos will have a renderer for calculating width
+        if (getHub() == null) return;
+        // so all combos will have a renderer for calculating width
         comboBox.setRenderer(new MyListCellRenderer());
 
-        Hub h = getHub();
-        if (h != null) {
-            if (comboBox != null) {
-                comboBox.setModel(new MyComboBoxModel());
-                // was: comboBox.setRenderer(new MyListCellRenderer());
+        comboBox.setModel(new MyComboBoxModel());
 
-                HubEvent e = new HubEvent(getHub(),getHub().getActiveObject());
-                this.afterChangeActiveObject(e);  // this will set selectedPos in JComboBox
-            }
-        }
-        createEnabledController();
-    }
-    
-    protected void createEnabledController() {
-        Hub h = getHub();
-        if (h == null) return;
-
-        if (bTypeEditProperty) {
-            getEnabledController().add(h, null, OANotNullObject.instance); //was: OAAnyValueObject.instance); // so that Hub.isValid will be the only check
-        }
-        else {
-            Hub hx = HubLinkDelegate.getHubWithLink(h, true);
-            if (hx != null) {
-                getEnabledController().add(h.getLinkHub(), null, OANotNullObject.instance); // so that it will verify that hub is valid
-            }
-            if (h.getMasterHub() != null) {
-                getEnabledController().add(h.getMasterHub(), null, OANotNullObject.instance);//was: OAAnyValueObject.instance); // so that Hub.isValid will be the only check
-            }
-        }
+        HubEvent e = new HubEvent(getHub(), getHub().getActiveObject());
+        afterChangeActiveObject(e);  // this will set selectedPos in JComboBox
     }
 
-    protected void resetHubOrProperty() {  // called when Hub or PropertyName is changed
-        super.resetHubOrProperty();
-        if (comboBox != null) create(comboBox);
-    }
-
-    
     /**
         Changing active object in Hub will set the select item in ComboBox.
         ComboBox is enabled based on if Hub is valid.
     */
     public @Override void afterChangeActiveObject(HubEvent evt) {
-        OAObject oaObject = (OAObject) getActualHub().getActiveObject(); // use hub instead of actualHub
-
         if (comboBox == null) return;
+        OAObject oaObject = (OAObject) getHub().getActiveObject();
         comboBox.hidePopup();  // this is for CustomComboBoxes that will change AO, so that it will auto close
         
         Object value;
         if (oaObject == null) value = null;
-        else value = getPropertyPathValue(oaObject);
+        else value = getValue(oaObject);
         // was: else value = oaObject.getProperty(getPropertyName());
         
         if (evt != null) {
@@ -107,8 +81,8 @@ public class CustomComboBoxController extends JFCController {
         }
         update();
         comboBox.repaint();
+        super.afterChangeActiveObject(evt);
     }
-
     /**
         Used to change selected item if property name matches property used by ComboBox.
     */
@@ -116,23 +90,7 @@ public class CustomComboBoxController extends JFCController {
         if (comboBox != null && e.getPropertyName().equalsIgnoreCase(getHubListenerPropertyName()) ) {
             afterChangeActiveObject(e);
         }
-    }
-
-    
-    private String undoDescription;
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public void setUndoDescription(String s) {
-        undoDescription = s;
-    }
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public String getUndoDescription() {
-        return undoDescription;
+        super.afterPropertyChange(e);
     }
     
 
@@ -141,19 +99,19 @@ public class CustomComboBoxController extends JFCController {
         in the Hub.
     */
     public void updatePropertyValue(Object value) {
-        if (bDisplayPropertyOnly) return; // 2007/05/25
+        if (bDisplayPropertyOnly) return; 
 
     	Hub h = getHub();
         if (getEnableUndo() && h != null) {
             OAObject obj = (OAObject) h.getAO();
 	        if (obj != null) {
-                Object prev = getPropertyPathValue(obj);
+                Object prev = getValue(obj);
 	            // was; Object prev = obj.getProperty(getPropertyName());
 	            if (value != prev && (value == null || !value.equals(prev))) {
 	                if (getEnableUndo()) {
-	                    OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, obj, getPropertyPathFromActualHub(), prev, value) );
+	                    OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, obj, endPropertyName, prev, value) );
 	                }
-                    setPropertyPathValue(obj, value);
+                    setValue(obj, value);
 	                // was: obj.setProperty(getPropertyName(), value);
 	            }
 	        }
@@ -186,7 +144,7 @@ public class CustomComboBoxController extends JFCController {
         	s = (String) value;
         }
         else {
-            Object obj = getPropertyPathValue(value);
+            Object obj = getValue(value);
             // was: Object obj = OAReflect.getPropertyValue(value, getGetMethods());
             s = OAConv.toString(obj, getFormat());
             if (s.length() == 0) s = " ";  // if length == 0 then Jlist wont show any

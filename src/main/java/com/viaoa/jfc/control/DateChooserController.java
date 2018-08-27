@@ -24,12 +24,12 @@ import com.viaoa.jfc.*;
     @see OADateChooser
     @see OADateComboBox
 */
-public class DateChooserController extends JFCController implements PropertyChangeListener {
+public class DateChooserController extends OAJfcController implements PropertyChangeListener {
     private OADateChooser dateChooser;
     private String prevValue;
 
     public DateChooserController(Hub hub, OADateChooser dc, String propertyPath) {
-        super(hub, propertyPath, dc); // this will add hub listener
+        super(hub, propertyPath, dc, HubChangeListener.Type.AoNotNull); // this will add hub listener
         create(dc);
     }
     protected void create(OADateChooser dc) {
@@ -41,21 +41,8 @@ public class DateChooserController extends JFCController implements PropertyChan
         if (dateChooser != null) {
             dateChooser.addPropertyChangeListener(this);
         }
-        // set initial value of textField
-        // this needs to run before listeners are added
-        if (getActualHub() != null) {
-            HubEvent e = new HubEvent(getActualHub(),getActualHub().getActiveObject());
-            this.afterChangeActiveObject(e);
-        }
-        afterChangeActiveObject(null);
-        if (getHub() != null) {
-            getEnabledController().add(getHub());
-        }
-    }
 
-    protected void resetHubOrProperty() { // called when Hub or PropertyName is changed
-        super.resetHubOrProperty();
-        if (dateChooser != null) create(dateChooser);
+        this.afterChangeActiveObject();
     }
 
     public void close() {
@@ -70,12 +57,11 @@ public class DateChooserController extends JFCController implements PropertyChan
     /**
         Used to update the selected date for the value of property in the active object.
     */
-    public @Override void afterChangeActiveObject(HubEvent e) {
-        if (getActualHub() == null) return;
-        Object oaObject = getActualHub().getActiveObject();
+    public @Override void afterChangeActiveObject() {
+        Object oaObject = hub.getAO();
         OADate d = null;
         if (oaObject != null) {
-             Object obj = getPropertyPathValue(oaObject);
+             Object obj = getValue(oaObject);
              if (obj instanceof OADate) d = (OADate) obj;
         }
         bAO = true;
@@ -87,11 +73,8 @@ public class DateChooserController extends JFCController implements PropertyChan
     /**
         Used to update the selected date for the value of property in the active object.
     */
-    public @Override void afterPropertyChange(HubEvent e) {
-        if (getActualHub() == null) return;
-        if (e.getObject() == getActualHub().getActiveObject() && e.getPropertyName().equalsIgnoreCase(this.getHubListenerPropertyName()) ) {
-            afterChangeActiveObject(e); // could be calculated property
-        }
+    public @Override void afterPropertyChange() {
+        afterChangeActiveObject(); // could be calculated property
     }
 
     /**
@@ -99,32 +82,14 @@ public class DateChooserController extends JFCController implements PropertyChan
     */
     public void propertyChange(PropertyChangeEvent evt) {
         if (bAO) return;
-        Hub h = getActualHub();
-        if (h == null) return;
-        Object obj = h.getActiveObject();
+        Object obj = hub.getActiveObject();
         if (obj != null) {
-            Object prev = getPropertyPathValue(obj);
-            if (getEnableUndo()) OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription,obj, getPropertyPathFromActualHub(), prev, dateChooser.getDate()));
-            setPropertyPathValue(obj, dateChooser.getDate());
-            // OAReflect.setPropertyValue(obj, getSetMethod(), dateChooser.getDate());
+            Object prev = getValue(obj);
+            if (getEnableUndo()) OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription,obj, endPropertyName, prev, dateChooser.getDate()));
+            setValue(obj, dateChooser.getDate());
         }
     }
 
-    private String undoDescription;
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public void setUndoDescription(String s) {
-        undoDescription = s;
-    }
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public String getUndoDescription() {
-        return undoDescription;
-    }
 
 }
 

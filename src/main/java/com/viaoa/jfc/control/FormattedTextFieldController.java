@@ -29,7 +29,7 @@ import com.viaoa.jfc.*;
  * Functionality for binding OAFormattedTextField to OA.
  * @author vvia
  */
-public class FormattedTextFieldController extends JFCController implements FocusListener, KeyListener, MouseListener {
+public class FormattedTextFieldController extends OAJfcController implements FocusListener, KeyListener, MouseListener {
     private OAFormattedTextField textField;
     private String prevText;
     private boolean bSettingValue;
@@ -37,21 +37,13 @@ public class FormattedTextFieldController extends JFCController implements Focus
     private Object focusActiveObject;
     private int dataSourceMax=-2;
     private int max=-1;
-    private OAPlainDocument document;
-    
-    /**
-        Create an unbound TextField.
-    */
-    public FormattedTextFieldController(OAFormattedTextField tf) {
-        create(tf);
-    }
 
     /**
         Create TextField that is bound to a property path in a Hub.
         @param propertyPath path from Hub, used to find bound property.
     */
     public FormattedTextFieldController(Hub hub, OAFormattedTextField tf, String propertyPath) {
-        super(hub, propertyPath, tf); // this will add hub listener
+        super(hub, propertyPath, tf, HubChangeListener.Type.AoNotNull); // this will add hub listener
         create(tf);
     }
 
@@ -60,12 +52,10 @@ public class FormattedTextFieldController extends JFCController implements Focus
         @param propertyPath path from Hub, used to find bound property.
     */
     public FormattedTextFieldController(Object object, OAFormattedTextField tf, String propertyPath) {
-        super(object, propertyPath, tf); // this will add hub listener
+        super(object, propertyPath, tf, HubChangeListener.Type.AoNotNull); // this will add hub listener
         create(tf);
     }
 
-    
-    
     
     protected void create(OAFormattedTextField tf) {
         if (textField != null) {
@@ -74,10 +64,8 @@ public class FormattedTextFieldController extends JFCController implements Focus
             textField.removeMouseListener(this);
         }
         textField = tf;
-        if (actualHub == null) return; 
         
-        Class c = OAReflect.getClass(getLastMethod());
-        if (OAReflect.isNumber(c)) {
+        if (OAReflect.isNumber(endPropertyClass)) {
             textField.setHorizontalAlignment(JTextField.RIGHT);
         }
         else {
@@ -89,54 +77,7 @@ public class FormattedTextFieldController extends JFCController implements Focus
             textField.addKeyListener(this);
             textField.addMouseListener(this);
         }
-        // set initial value of textField
-        // this needs to run before listeners are added
-        if (getActualHub() != null) {
-            HubEvent e = new HubEvent(getActualHub(),getActualHub().getActiveObject());
-            this.afterChangeActiveObject(e);
-            
-            getEnabledController().add(getActualHub());
-        }
-    }
-
-
-
-    public int getDataSourceMax() {
-        if (dataSourceMax == -2) {
-            if (hub != null) {
-            	dataSourceMax = -1;
-                OADataSource ds = OADataSource.getDataSource(actualHub.getObjectClass());
-                if (ds != null) {
-                    dataSourceMax = ds.getMaxLength(actualHub.getObjectClass(), getHubListenerPropertyName());
-                    Method method = getLastMethod();
-                    if (method != null) {
-                        if (method.getReturnType().equals(String.class)) {
-                            if (dataSourceMax > 254) dataSourceMax = -1;
-                        }
-                        else dataSourceMax = -1;
-                    }
-                }
-            }
-        }
-        return dataSourceMax;
-    }
-    public int getMax() {
-        if (max > getDataSourceMax() || max < 0) {
-            if (dataSourceMax >= 0) return dataSourceMax;
-        }
-        return max;
-    }
-    /** max length of text.  If -1 (default) then unlimited.  
-    */
-    public void setMax(int x) {
-        max = x;
-    	if (document != null) document.setMaxLength(getMax());
-    }
-    
-    
-    protected void resetHubOrProperty() { // called when Hub or PropertyName is changed
-        super.resetHubOrProperty();
-        if (textField != null) create(textField);
+        this.afterChangeActiveObject();
     }
 
     public void close() {
@@ -149,15 +90,11 @@ public class FormattedTextFieldController extends JFCController implements Focus
     }
 
 
-    public @Override void afterPropertyChange(HubEvent e) {
-        if (activeObject != null && e.getObject() == activeObject) {
-            if (e.getPropertyName().equalsIgnoreCase(getHubListenerPropertyName()) ) {
-                update();
-            }
-        }
+    public @Override void afterPropertyChange() {
+        update();
     }
 
-    public @Override void afterChangeActiveObject(HubEvent e) {
+    public @Override void afterChangeActiveObject() {
         boolean b = (focusActiveObject != null && focusActiveObject == activeObject);
         if (b) {
             try {
@@ -170,8 +107,8 @@ public class FormattedTextFieldController extends JFCController implements Focus
             focusActiveObject = null;
         }
         
-        Hub h = getActualHub();
-        if (h != null) activeObject = getActualHub().getActiveObject();
+        Hub h = getHub();
+        if (h != null) activeObject = getHub().getActiveObject();
         else activeObject = null;
         
         update(); 
@@ -226,26 +163,22 @@ public class FormattedTextFieldController extends JFCController implements Focus
                 return;
             }
             
-            
-            String msg = validateNewValue(activeObject, convertedValue);
-            if (msg == null) {
-                msg = isValid(activeObject, convertedValue);
-            }
-
+            String msg = isValid(activeObject, convertedValue);
             if (msg != null) {
                 JOptionPane.showMessageDialog(SwingUtilities.getRoot(textField), 
-                        "Invalid Entry \""+text+"\"\n"+msg,
-                        "Invalid Entry", JOptionPane.ERROR_MESSAGE);
+                    "Invalid Entry \""+text+"\"\n"+msg,
+                    "Invalid Entry", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            if (!confirm(activeObject, convertedValue)) return;
 
             prevText = text;
-            Object prevValue = getPropertyPathValue(activeObject);
+            Object prevValue = getValue(activeObject);
             
-            String prop = getHubListenerPropertyName();
+            String prop = endPropertyName;
             if (prop == null || prop.length() == 0) {  // use object.  (ex: String.class)
                 Object oldObj = activeObject;
-                Hub h = getActualHub();
+                Hub h = getHub();
                 Object newObj = getConvertedValue(text, getFormat());
                 // was: Object newObj = OAReflect.convertParameterFromString(h.getObjectClass(), text);
                 if (newObj != null) {
@@ -255,17 +188,9 @@ public class FormattedTextFieldController extends JFCController implements Focus
                 }
             }
             else {
-                setPropertyPathValue(activeObject, convertedValue);
-                // OAReflect.setPropertyValue(activeObject, getSetMethod(), convertedValue);
-                if (text == null || text.length() == 0) {
-                    Class c = getLastMethod().getReturnType();
-                    if (OAReflect.isNumber(c) && activeObject instanceof OAObject) {
-                        OAObjectReflectDelegate.setProperty((OAObject)activeObject, getPropertyPathFromActualHub(), null, null);  // was: setNull(prop)
-                    	//was:OAObjectReflectDelegate.setProperty((OAObject)activeObject, getPropertyName(), null, null);  // was: setNull(prop)
-                    }
-                }
+                setValue(activeObject, convertedValue);
             }
-            if (getEnableUndo()) OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, getPropertyPathFromActualHub(), prevValue, getPropertyPathValue(activeObject)) );
+            if (getEnableUndo()) OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, activeObject, endPropertyName, prevValue, getValue(activeObject)) );
         }
         catch (Exception e) {
         	JOptionPane.showMessageDialog(SwingUtilities.getRoot(textField), 
@@ -274,22 +199,6 @@ public class FormattedTextFieldController extends JFCController implements Focus
         }
     }
 
-    private String undoDescription;
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public void setUndoDescription(String s) {
-        undoDescription = s;
-    }
-    /**
-        Description to use for Undo and Redo presentation names.
-        @see OAUndoableEdit#setPresentationName
-    */
-    public String getUndoDescription() {
-        return undoDescription;
-    }
-    
 
     // Key Events
     private boolean bConsumeEsc;
@@ -343,43 +252,32 @@ public class FormattedTextFieldController extends JFCController implements Focus
     }
     
     @Override
-    protected void update() {
+    public void update() {
         if (textField == null) return;
         if (focusActiveObject == null) {
-            
-            if (getActualHub() != null) {
-                String text = null;
-                if (activeObject != null) {
-                    Object value = getPropertyValue(activeObject);
-                    if (value == null) text = "";
-                    else text = OAConv.toString(value, null);  // dont use formatting, since mask is being used
-                }
-                if (text == null) {
-                    text = getNullDescription();
-                    if (text == null) text = " ";
-                }
-                boolean bHold = bSettingValue;
-                bSettingValue = true;
-                textField.setValue(text);
-                bSettingValue = bHold;
-            }   
+            String text = null;
+            if (activeObject != null) {
+                Object value = getPropertyValue(activeObject);
+                if (value == null) text = "";
+                else text = OAConv.toString(value, null);  // dont use formatting, since mask is being used
+            }
+            if (text == null) {
+                text = getNullDescription();
+                if (text == null) text = " ";
+            }
+            boolean bHold = bSettingValue;
+            bSettingValue = true;
+            textField.setValue(text);
+            bSettingValue = bHold;
         }        
         super.update();
-        super.update(textField, activeObject);
     }
     
     protected Object getPropertyValue(Object obj) {
         if (obj == null) return null;
-        if (getPropertyPath() == null) return null;
-        Object value = getPropertyPathValue(obj);
+        if (endPropertyName == null) return null;
+        Object value = getValue(obj);
         if (value instanceof OANullObject) value = null;
-        
-        if (value != null && obj instanceof OAObject) {
-            String ss = getHubListenerPropertyName();
-            if (isPropertyPathValueNull(obj)) value = null;
-            //was: if (OAObjectReflectDelegate.getPrimitiveNull((OAObject)obj, ss) ) value = null;
-        }
-        
         return value;
     }
     
@@ -387,9 +285,5 @@ public class FormattedTextFieldController extends JFCController implements Focus
         super.getTableRenderer(label, table, value, isSelected, hasFocus, row, column);
         return label;
     }
-
-    
 }
-
-
 

@@ -47,14 +47,6 @@ public class VisibleController extends HubPropController {
         update();
     }
 
-    private boolean bIsCallingUpdate;
-    @Override
-    public void directlySet(boolean b, boolean bEnableValue) {
-        if (!bIsCallingUpdate) {
-            super.directlySet(b, bEnableValue);
-        }
-    }
-    
     @Override
     public void update() {
         if (SwingUtilities.isEventDispatchThread()) {

@@ -21,23 +21,18 @@ import com.viaoa.object.OAObject;
  * 
  * @author vvia
  */
-public class ComboBoxController extends JFCController implements FocusListener {
+public class ComboBoxController extends OAJfcController implements FocusListener {
     JComboBox comboBox;
     MyComboBoxModel myComboBoxModel = new MyComboBoxModel();
     JList list;
 
-    public ComboBoxController(JComboBox cb) {
-        super(cb);
-        create(cb);
-    }
-
     public ComboBoxController(Hub hub, JComboBox cb, String propertyPath) {
-        super(hub, propertyPath, cb); // this will add hub listener
+        super(hub, propertyPath, cb, HubChangeListener.Type.HubValid); // this will add hub listener
         create(cb);
     }
 
     public ComboBoxController(Object object, JComboBox cb, String propertyPath) {
-        super(object, propertyPath, cb); // this will add hub listener
+        super(object, propertyPath, cb, HubChangeListener.Type.HubValid); // this will add hub listener
         create(cb);
     }
 
@@ -46,74 +41,36 @@ public class ComboBoxController extends JFCController implements FocusListener {
         Hub thisHub = getHub();
         if (eHub == null || thisHub == null) return false;
         if (eHub == thisHub) return true;
-        Hub hubReal = thisHub.getRealHub();
-        if (eHub == hubReal) return true;
-        Hub eRealHub = eHub.getRealHub();
-        if (eRealHub == hubReal) return true;
-        if (eHub == getActualHub()) return true;
-        hubReal = getActualHub().getRealHub();
-        if (eHub == hubReal) return true;
-        if (eRealHub == hubReal) return true;
+        
         return false;
     }
 
-    private String undoDescription;
-
-    /**
-     * Description to use for Undo and Redo presentation names.
-     * 
-     * @see OAUndoableEdit#setPresentationName
-     */
-    public void setUndoDescription(String s) {
-        undoDescription = s;
+    @Override
+    protected void reset() {
+        super.reset();
+        if (comboBox != null) create(comboBox);
     }
-
-    /**
-     * Description to use for Undo and Redo presentation names.
-     * 
-     * @see OAUndoableEdit#setPresentationName
-     */
-    public String getUndoDescription() {
-        return undoDescription;
-    }
-
+    
     protected void create(JComboBox cb) {
         if (comboBox != null) comboBox.removeFocusListener(this);
         if (comboBox != cb && cb != null) cb.setMaximumRowCount(12);
         comboBox = cb;
 
-        Hub h = getHub();
-        if (h != null) {
-            if (comboBox != null) {
-                myComboBoxModel.flag = true; // this will keep the activeObject
-                                             // from getting changed. JComboBox
-                                             // sets selectetPos to "0"
+        if (getHub() == null) return;
+        myComboBoxModel.flag = true; // this will keep the activeObject
+                                     // from getting changed. JComboBox
+                                     // sets selectetPos to "0"
 
-                comboBox.setModel(myComboBoxModel);
-                comboBox.setRenderer(new MyListCellRenderer());
-                myComboBoxModel.flag = false;
+        comboBox.setModel(myComboBoxModel);
+        comboBox.setRenderer(new MyListCellRenderer());
+        myComboBoxModel.flag = false;
 
-                comboBox.addFocusListener(this);
-                // not needed? might need to be put in the addNotify() method
-                // comboBox.getUI().getList().setCellRenderer(new
-                // MyListCellRenderer());
-                HubEvent e = new HubEvent(getHub(), getHub().getActiveObject());
-                this.afterChangeActiveObject(e); // this will set selectedPos in
-                                                 // JComboBox
-                myComboBoxModel.fireChange(-1, -1); // hack: must initialize
-                                                    // listeners ?!?!?
-
-                if (getHub() != null) {
-                    getEnabledController().add(getHub(), null, OAAnyValueObject.instance); // so that it will verify that hub is valid
-                }
-            }
-        }
-    }
-
-    protected void resetHubOrProperty() { // called when Hub or PropertyName is
-                                          // changed
-        super.resetHubOrProperty();
-        if (comboBox != null) create(comboBox);
+        comboBox.addFocusListener(this);
+        // not needed? might need to be put in the addNotify() method
+        // comboBox.getUI().getList().setCellRenderer(new
+        // MyListCellRenderer());
+        afterChangeActiveObject(); // this will set selectedPos in  JComboBox
+        myComboBoxModel.fireChange(-1, -1); // hack: must initialize
     }
 
     public void close() {
@@ -121,68 +78,9 @@ public class ComboBoxController extends JFCController implements FocusListener {
         super.close(); // this will call hub.removeHubListener()
     }
 
-    /**
-     * Hub event to updated selected value.
-     */
-    public @Override void afterChangeActiveObject(HubEvent evt) {
-        if (getHub() == null) return;
-        Object oaObject = getHub().getActiveObject(); // use hub instead of
-                                                      // actualHub
-
-        if (comboBox != null) {
-            if (evt != null) {
-                myComboBoxModel.flag = true;
-                comboBox.setSelectedItem(oaObject);
-                myComboBoxModel.flag = false;
-            }
-            if (list != null) {
-                if (oaObject == null) oaObject = OANullObject.instance;
-                myComboBoxModel.flag = true;
-                try {
-                    list.setSelectedValue(oaObject, true);
-                }
-                catch (Exception e) {
-                }
-                myComboBoxModel.flag = false;
-            }
-            update();
-            comboBox.repaint();
-        }
-    }
-
-    /**
-     * Hub property change event that causes ComboBox to be repainted.
-     */
-    public @Override void afterPropertyChange(HubEvent e) {
-        if (isForThisHub(e) && comboBox != null && e.getPropertyName().equalsIgnoreCase(getHubListenerPropertyName())) {
-            comboBox.repaint();
-        }
-    }
-
-    /**
-     * Hub insert event to update row in ComboBox.
-     */
-    public @Override void afterInsert(HubEvent e) {
-        if (!isForThisHub(e)) return;
-        final int pos = e.getPos();
-        if (SwingUtilities.isEventDispatchThread()) {
-            myComboBoxModel.fireChange(pos, pos);
-        }
-        else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    myComboBoxModel.fireChange(pos, pos);
-                }
-            });
-        }
-    }
-
-    /**
-     * Hub add event to add a row in ComboBox.
-     */
+    
     @Override
     public void afterAdd(HubEvent e) {
-        if (!isForThisHub(e)) return;
         final Object obj = e.getObject();
 
         Hub h = getHub();
@@ -199,13 +97,8 @@ public class ComboBoxController extends JFCController implements FocusListener {
             });
         }
     }
-
-    /**
-     * Hub add event to remove a row in ComboBox.
-     */
     @Override
     public void afterRemove(HubEvent e) {
-        if (!isForThisHub(e)) return;
         final int pos = e.getPos();
         if (pos < 0) return;
         if (SwingUtilities.isEventDispatchThread()) {
@@ -219,11 +112,6 @@ public class ComboBoxController extends JFCController implements FocusListener {
             });
         }
     }
-
-    /**
-     * Hub event to notify that a new list of objects has been loaded into the Hub. The ComboBox will be
-     * updated to show new list.
-     */
     public @Override void onNewList(HubEvent e) {
         if (!isForThisHub(e)) return;
         if (myComboBoxModel == null) return;
@@ -235,8 +123,7 @@ public class ComboBoxController extends JFCController implements FocusListener {
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    myComboBoxModel.fireChange(0, size); // this includes
-                                                         // nullObject!!!
+                    myComboBoxModel.fireChange(0, size); // this includes nullObject
                     afterChangeActiveObject(null);
                 }
             });
@@ -249,6 +136,46 @@ public class ComboBoxController extends JFCController implements FocusListener {
     public @Override void afterSort(HubEvent e) {
         onNewList(e);
     }
+    
+    @Override
+    public void afterInsert(HubEvent e) {
+        final int pos = e.getPos();
+        if (SwingUtilities.isEventDispatchThread()) {
+            myComboBoxModel.fireChange(pos, pos);
+        }
+        else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    myComboBoxModel.fireChange(pos, pos);
+                }
+            });
+        }
+    }
+    public @Override void afterChangeActiveObject(HubEvent e) {
+        Object oaObject = getHub().getActiveObject();
+        myComboBoxModel.flag = true;
+        comboBox.setSelectedItem(oaObject);
+        myComboBoxModel.flag = false;
+
+        if (list != null) {
+            if (oaObject == null) oaObject = OANullObject.instance;
+            myComboBoxModel.flag = true;
+            try {
+                list.setSelectedValue(oaObject, true);
+            }
+            catch (Exception ex) {
+            }
+            myComboBoxModel.flag = false;
+        }
+        ComboBoxController.this.update();
+        ComboBoxController.this.comboBox.repaint();
+    }
+    public @Override void afterPropertyChange() {
+        ComboBoxController.this.comboBox.repaint();
+    }
+    
+
+
 
     // ==============================================================================
     // note: these need to be ran in the AWT Thread, use
@@ -293,30 +220,38 @@ public class ComboBoxController extends JFCController implements FocusListener {
             if (!flag && obj != getHub().getActiveObject()) {
                 Hub h = getHub();
 
-                boolean b = getEnableUndo();
-                if (b) {
-                    OAUndoableEdit ue = OAUndoableEdit.createUndoableChangeAO(undoDescription, h, h.getAO(), obj);
-                    String s = undoDescription;
-                    if (s == null || s.length() == 0) s = ue.getPresentationName();
-                    OAUndoManager.startCompoundEdit(s);
-                    OAUndoManager.add(ue);
-                }
 
-                String msg = validateNewValue(obj, obj);
-                if (msg == null) {
-                    msg = isValid(obj, obj);
+                Object activeObject = null;
+                Hub hubx = getHub().getLinkHub();
+                if (hubx != null) {
+                    activeObject = hubx.getAO();
                 }
+                
+                String msg = isValid(activeObject, obj);
                 if (msg != null) {
                     JOptionPane.showMessageDialog(SwingUtilities.getRoot(comboBox), "Invalid selection\n" + msg, "Invalid selection",
                             JOptionPane.ERROR_MESSAGE);
-                    return;
                 }
-
-                getHub().setActiveObject(obj);
-                if (b) {
-                    OAUndoManager.endCompoundEdit();
+                else {
+                    if (!confirm(activeObject, obj)) return;
+                    boolean b = getEnableUndo();
+                    try {
+                        if (b) {
+                            OAUndoableEdit ue = OAUndoableEdit.createUndoableChangeAO(undoDescription, h, h.getAO(), obj);
+                            String s = undoDescription;
+                            if (s == null || s.length() == 0) s = ue.getPresentationName();
+                            OAUndoManager.startCompoundEdit(s);
+                            OAUndoManager.add(ue);
+                        }
+                        getHub().setActiveObject(obj);
+                    }
+                    finally {
+                        if (b) {
+                            OAUndoManager.endCompoundEdit();
+                        }
+                    }
+                    onItemSelected(getHub().getPos());
                 }
-                onItemSelected(getHub().getPos());
             }
         }
 
@@ -423,7 +358,7 @@ public class ComboBoxController extends JFCController implements FocusListener {
             s = (String) value;
         }
         else {
-            Object obj = getPropertyPathValue(value);
+            Object obj = getValue(value);
             // Object obj = OAReflect.getPropertyValue(value, getGetMethods());
             s = OAConv.toString(obj, getFormat());
             if (s == null) {

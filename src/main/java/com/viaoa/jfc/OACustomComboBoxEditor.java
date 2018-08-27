@@ -45,8 +45,8 @@ class OACustomComboBoxEditor implements ComboBoxEditor,FocusListener, java.io.Se
             obj = (OAObject) cbo.getHub().getActiveObject();
         }
         else {
-            if (editor.getController().getActualHub() == null) return null;
-            obj = (OAObject) editor.getController().getActualHub().getActiveObject();
+            if (editor.getController().getHub() == null) return null;
+            obj = (OAObject) editor.getController().getHub().getActiveObject();
         }
         if (obj == null) return null;
         return obj.getProperty(cbo.getController().getPropertyPath());

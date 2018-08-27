@@ -43,8 +43,8 @@ public class OAComboBoxEditor implements ComboBoxEditor,FocusListener, java.io.S
             return cbo.getHub().getActiveObject();
         }
 
-        if (editor.getController().getActualHub() == null) return null;
-        return editor.getController().getActualHub().getActiveObject();
+        if (editor.getController().getHub() == null) return null;
+        return editor.getController().getHub().getActiveObject();
     }
 
     public void selectAll() {

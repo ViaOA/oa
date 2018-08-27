@@ -23,7 +23,7 @@ import com.viaoa.object.OAObject;
 import com.viaoa.hub.*;
 
 // See OAButton - this is a copy of the same code
-public class OAMenuItem extends JMenuItem implements OAJFCComponent {
+public class OAMenuItem extends JMenuItem implements OAJfcComponent {
     private OAMenuItemController control;
 
     public static ButtonCommand OTHER = ButtonCommand.Other;
@@ -70,33 +70,7 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         
         if (command == null) command = ButtonCommand.Other;
         
-        if (enabledMode == null) {
-            
-            // first, last, new,insert,add,nwe_manual, add_manual            
-            
-            // get default enabledMode
-            switch (command) {
-            case Other:
-                if (hub != null) {
-                    enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
-                }
-                else enabledMode = ButtonEnabledMode.UsesIsEnabled;
-                break;
-            case First:
-            case Last:
-            case New:
-            case Insert:
-            case Add:
-            case NewManual:
-            case AddManual:
-            case Paste:
-                enabledMode = ButtonEnabledMode.HubIsValid;
-                break;
-            default:
-                enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
-                break;
-            }
-        }
+        if (enabledMode == null) enabledMode = getDefaultEnabledMode(hub, command);
         
         control = new OAMenuItemController(hub, enabledMode, command) {
         };
@@ -105,6 +79,32 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         initialize();
     }
 
+    public static ButtonEnabledMode getDefaultEnabledMode(Hub hub, ButtonCommand command) {
+        ButtonEnabledMode enabledMode = ButtonEnabledMode.HubIsValid;
+        switch (command) {
+        case Other:
+            if (hub != null) {
+                enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
+            }
+            else enabledMode = ButtonEnabledMode.UsesIsEnabled;
+            break;
+        case First:
+        case Last:
+        case New:
+        case Insert:
+        case Add:
+        case NewManual:
+        case AddManual:
+        case Paste:
+            enabledMode = ButtonEnabledMode.HubIsValid;
+            break;
+        default:
+            enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
+            break;
+        }
+        return enabledMode;
+    }
+    
     public OAMenuItem() {
         this(null, null, null, null, null);
     }
@@ -181,9 +181,17 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         return control;
     }
 
+    public void bind(Hub hub, ButtonCommand buttonCommad) {
+        setHub(hub);
+        getController().setCommand(buttonCommad);
+    }
+    public void bind(Hub hub) {
+        setHub(hub);
+    }
+    
     /**
      * Built in command. Set command value and set button text, tooltip, and icon.
-     */
+     *
     public void setCommand(ButtonCommand command) {
         if (command == ButtonCommand.NewManual) {
             control.setCommand(ButtonCommand.Add);
@@ -191,6 +199,7 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         }
         control.setCommand(command);
     }
+    */
 
     /**
      * Built in command.
@@ -199,9 +208,11 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         return control.getCommand();
     }
 
+    /*
     public void setEnabledMode(ButtonEnabledMode mode) {
         control.setEnabledMode(mode);
     }
+    */
 
     
     public void setManual(boolean b) {
@@ -310,19 +321,21 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
 
     /**
      * Bind menuItem to automatically work with a Hub and command.
-     */
+     *
     public void bind(Hub hub, ButtonCommand command) {
         setHub(hub);
         setCommand(command);
     }
+    */
 
     /**
      * Bind menuItem to automatically work with a Hub. This will setAnyTime(false);
-     */
+     *
     public void bind(Hub hub) {
         setHub(hub);
         setCommand(null);
     }
+    */
 
     /**
      * Description to use for Undo and Redo presentation names.
@@ -367,17 +380,17 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
 
     public void setMultiSelectHub(Hub hubMultiSelect) {
         if (control == null) return;
-        control.setMultiSelectHub(hubMultiSelect);
+        control.setSelectHub(hubMultiSelect);
     }
 
     public Hub getHubMultiSelect() {
         if (control == null) return null;
-        return control.getMultiSelectHub();
+        return control.getSelectHub();
     }
 
     public Hub getMultiSelectHub() {
         if (control == null) return null;
-        return control.getMultiSelectHub();
+        return control.getSelectHub();
     }
 
     /**
@@ -457,7 +470,7 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
      * Popup message used to confirm button click before running code.
      */
     public String getConfirmMessage() {
-        return control.default_getConfirmMessage();
+        return control.getConfirmMessage();
     }
 
     /**
@@ -515,15 +528,15 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
      * Other Hub/Property used to determine if component is enabled.
      */
     public void setEnabled(Hub hub) {
-        control.getEnabledController().add(hub);
+        control.getEnabledChangeListener().add(hub);
     }
 
     public void setEnabled(Hub hub, String prop) {
-        control.getEnabledController().add(hub, prop);
+        control.getEnabledChangeListener().add(hub, prop);
     }
 
     public void setEnabled(Hub hub, String prop, Object compareValue) {
-        control.getEnabledController().add(hub, prop, compareValue);
+        control.getEnabledChangeListener().add(hub, prop, compareValue);
     }
 
     protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
@@ -534,15 +547,15 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
      * Other Hub/Property used to determine if component is visible.
      */
     public void setVisible(Hub hub) {
-        control.getVisibleController().add(hub);
+        control.getVisibleChangeListener().add(hub);
     }
 
     public void setVisible(Hub hub, String prop) {
-        control.getVisibleController().add(hub, prop);
+        control.getVisibleChangeListener().add(hub, prop);
     }
 
     public void setVisible(Hub hub, String prop, Object compareValue) {
-        control.getVisibleController().add(hub, prop, compareValue);
+        control.getVisibleChangeListener().add(hub, prop, compareValue);
     }
 
     protected boolean isVisible(boolean bIsCurrentlyVisible) {
@@ -610,7 +623,7 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         }
 
         @Override
-        protected String isValid(Object object, Object value) {
+        public String isValid(Object object, Object value) {
             String msg = OAMenuItem.this.isValid(object, value);
             if (msg == null) msg = super.isValid(object, value);
             return msg;
@@ -672,13 +685,6 @@ public class OAMenuItem extends JMenuItem implements OAJFCComponent {
         protected OAObject _createCopy(OAObject obj) {
             return super.createCopy(obj);
         }
-    }
-
-    public void setAnytime(boolean b) {
-        control.setAnytime(b);
-    }
-    public void setAnyTime(boolean b) {
-        control.setAnytime(b);
     }
 
     public void setDisplayComponent(JComponent comp) {

@@ -28,7 +28,7 @@ import com.viaoa.jfc.table.*;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 
 
-public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComponent {
+public class OAComboBox extends JComboBox implements OATableComponent, OAJfcComponent {
     private OAComboBoxController control;
     private OATextField vtf;
     private OATable table;
@@ -61,7 +61,7 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
         @param columns is width of list using character width size.
     */
     public OAComboBox(Hub hub, String propertyPath, int columns) {
-        this(hub,propertyPath);
+        this(hub, propertyPath);
         setColumns(columns);
         initialize();
     }
@@ -77,7 +77,7 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
         };
         Color c = UIManager.getColor("ComboBox.foreground");
         if (c == null) c = Color.black;
-        //20151002 removed: UIManager.put("ComboBox.disabledForeground", c);
+        // removed: UIManager.put("ComboBox.disabledForeground", c);
         initialize();
     }
 
@@ -113,84 +113,6 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJFCComp
     	return control;
     }
 
-    @Override
-    public void setEnabled(boolean enabled) {
-        if (control != null) {
-            control.getEnabledController().directlySet(true, enabled);
-        }
-        super.setEnabled(enabled);
-    }
-    
-    /**
-     * Other Hub/Property used to determine if component is enabled.
-     */
-    public void setEnabled(Hub hub) {
-        control.getEnabledController().add(hub);
-    }
-    public void setEnabled(Hub hub, String prop) {
-        control.getEnabledController().add(hub, prop);
-    }
-    public void setEnabled(Hub hub, String prop, Object compareValue) {
-        control.getEnabledController().add(hub, prop, compareValue);
-    }
-    protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-        return bIsCurrentlyEnabled;
-    }
-    
-    /** removed, to "not use" the enabledController, need to call it directly - since it has 2 params now, and will need 
-     * to be turned on and off   
-    
-    @Override
-    public void setEnabled(boolean b) {
-        if (control != null) {
-            b = control.getEnabledController().directSetEnabledCalled(b);
-        }
-        super.setEnabled(b);
-    }
-    */
-    /**
-     * Other Hub/Property used to determine if component is visible.
-     */
-    public void setVisible(Hub hub) {
-        control.getVisibleController().add(hub);
-    }    
-    public void setVisible(Hub hub, String prop) {
-        control.getVisibleController().add(hub, prop);
-    }    
-    public void setVisible(Hub hub, String prop, Object compareValue) {
-        control.getVisibleController().add(hub, prop, compareValue);
-    }
-    
-    
-    // 20170515    
-    @Override
-    public void setVisible(boolean aFlag) {
-        if (control != null) {
-            control.getVisibleController().directlySet(true, aFlag);
-        }
-        super.setVisible(aFlag);
-    }
-    
-/* was:    
-    private boolean bManualVisible;
-    private boolean bManualVisibleValue;
-    @Override
-    public void setVisible(boolean b) {
-        super.setVisible(b);
-        bManualVisible = true;
-        bManualVisibleValue = b;
-    }
-*/    
-    protected boolean isVisible(boolean bIsCurrentlyVisible) {
-/*        
-        if (bManualVisible) {
-            return bManualVisibleValue;
-        }
-*/        
-        return bIsCurrentlyVisible;
-    }
-    
-    
     @Override
     public Dimension getSize() {
         Dimension d = super.getSize();
@@ -315,14 +237,6 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
 	}
     
     
-    /**
-     	Bind this comboBox to a Hub and property.
-	*/
-	public void bind(Hub hub, String propertyPath) {
-	    setHub(hub);
-	    setPropertyPath(propertyPath);
-	}
-    
     /** 
         Format used to display this property.  Used to format Date, Times and Numbers.
     */
@@ -340,20 +254,20 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         Property used to get file name of image icon.
     */
     public void setImageProperty(String prop) {
-        control.setImageProperty(prop);
+        control.setImagePropertyPath(prop);
     }
     /**
         Property used to get file name of image icon.
     */
     public String getImageProperty() {
-        return control.getImageProperty();
+        return control.getImagePropertyPath();
     }
 
     /**
         Root directory where images are stored.
     */
     public void setImagePath(String path) {
-        control.setImagePath(path);
+        control.setImagePropertyPath(path);
     }
 
     /**
@@ -361,7 +275,7 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         @see #getImageProperty
     */
     public String getImagePath() {
-        return control.getImagePath();
+        return control.getImagePropertyPath();
     }
 
     /**
@@ -379,10 +293,10 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
 
     
     public void setIconColorProperty(String s) {
-    	control.setIconColorProperty(s);
+    	control.setIconColorPropertyPath(s);
     }
     public String getIconColorProperty() {
-    	return control.getIconColorProperty();
+    	return control.getIconColorPropertyPath();
     }
     
     
@@ -405,6 +319,12 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         control.setNullDescription(s);
     }
 
+    
+    public void bind(Hub hub, String propertyPath) {
+        control.setHub(hub);
+        control.setPropertyPath(propertyPath);
+    }
+
 
     // ----- OATableComponent Interface methods -----------------------zzzzzzz
 
@@ -414,15 +334,7 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
     public Hub getHub() {
         return control.getHub();
     }
-    /** 
-        Hub that this component is bound to.
-    */
-    public void setHub(Hub hub) {
-        control.setHub(hub);
-        if (table != null) {
-            table.resetColumn(this);
-        }
-    }
+
     /**
         Set by OATable when this component is used as a column.  
     */
@@ -488,16 +400,12 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         Property path used to retrieve/set value for this component.
 
     */
+    @Override
     public String getPropertyPath() {
         return control.getPropertyPath();
     }
-    /**
-        Property path used to retrieve/set value for this component.
-
-    */
-    public void setPropertyPath(String path) {
-        control.setPropertyPath(path);
-        if (table != null) table.resetColumn(this);
+    public String getEndPropertyName() {
+        return control.getEndPropertyName();
     }
 
     /**
@@ -530,7 +438,7 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
 
 
 
-    OAComboBoxTableCellEditor tableCellEditor;
+    private OAComboBoxTableCellEditor tableCellEditor;
     /**
         Editor used when this component is used as a column in an OATable.
     */
@@ -544,7 +452,7 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
 
 
     // hack: JComboBox could be container, so set focus to first good component
-    JComponent focusComp;
+    private JComponent focusComp;
     /**
         Overwritten, to setup editor component.
     */
@@ -612,7 +520,7 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
     		String s = null;
     		if (obj instanceof String) s = (String) obj;
     		else {
-    			if (obj instanceof OAObject) s = ((OAObject) obj).getPropertyAsString(control.getPropertyPath());
+    			if (obj instanceof OAObject) s = control.getValueAsString(obj);
     		}
     		if (s != null && s.length() > 0) {
     			if (ch == Character.toUpperCase(s.charAt(0))) {
@@ -664,7 +572,7 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
             // was: if (h2.getLinkHub() != null) {
             	try {  // 20081010 add catch, in case the propertyPath for tableColumn is being used instead of using the link value
 	            	obj = HubLinkDelegate.getPropertyValueInLinkedToHub(h2, h.elementAt(row));
-	            	s = control.getPropertyPathValueAsString(obj, control.getFormat());
+	            	s = control.getValueAsString(obj, control.getFormat());
 	                //was: s = OAReflect.getPropertyValueAsString(obj, control.getGetMethods());
             	}
             	catch (Exception e) {
@@ -716,9 +624,6 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
 
 
     class OAComboBoxController extends ComboBoxController {
-        public OAComboBoxController() {
-            super(OAComboBox.this);
-        }    
         public OAComboBoxController(Hub hub, String propertyPath) {
             super(hub, OAComboBox.this, propertyPath);
         }
@@ -735,7 +640,7 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
             return OAComboBox.this.isVisible(bIsCurrentlyVisible);
         }
         @Override
-        protected String isValid(Object object, Object value) {
+        public String isValid(Object object, Object value) {
             String msg = OAComboBox.this.isValid(object, value);
             if (msg == null) msg = super.isValid(object, value);
             return msg;
@@ -798,7 +703,46 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         getController().setLabel(lbl);
     }
     public JLabel getLabel() {
+        if (getController() == null) return null;
         return getController().getLabel();
+    }
+    @Override
+    public void setEnabled(boolean b) {
+        super.setEnabled(b);
+        JLabel lbl = getLabel();
+        if (lbl != null) lbl.setEnabled(b);
+    }
+    @Override
+    public void setVisible(boolean b) {
+        super.setVisible(b);
+        JLabel lbl = getLabel();
+        if (lbl != null) lbl.setVisible(b);
+    }
+
+
+    public void addEnabledCheck(Hub hub) {
+        control.getEnabledChangeListener().add(hub);
+    }
+    public void addEnabledCheck(Hub hub, String propPath) {
+        control.getEnabledChangeListener().add(hub, propPath);
+    }
+    public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
+        control.getEnabledChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isEnabled(boolean defaultValue) {
+        return defaultValue;
+    }
+    public void addVisibleCheck(Hub hub) {
+        control.getVisibleChangeListener().add(hub);
+    }
+    public void addVisibleCheck(Hub hub, String propPath) {
+        control.getVisibleChangeListener().add(hub, propPath);
+    }
+    public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
+        control.getVisibleChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isVisible(boolean defaultValue) {
+        return defaultValue;
     }
 }
 

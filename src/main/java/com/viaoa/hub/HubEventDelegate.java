@@ -34,7 +34,7 @@ public class HubEventDelegate {
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub,obj, pos);
             HubListener hl;
-            if (!OARemoteThreadDelegate.isRemoteThread()) hl = getObjectValidateListener(thisHub);
+            if (!OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
             else hl = null;
 	        try {
 	            OAThreadLocalDelegate.setSendingEvent(true);
@@ -113,7 +113,7 @@ public class HubEventDelegate {
 	    if (x > 0) {
             HubEvent hubEvent = new HubEvent(thisHub);
             HubListener hl;
-            if (!OARemoteThreadDelegate.isRemoteThread()) hl = getObjectValidateListener(thisHub);
+            if (!OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
             else hl = null;
             try {
                 OAThreadLocalDelegate.setSendingEvent(true);
@@ -173,7 +173,7 @@ public class HubEventDelegate {
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
 	        HubListener hl;
-	        if (!OAThreadLocalDelegate.isLoading() && !OARemoteThreadDelegate.isRemoteThread()) hl = getObjectValidateListener(thisHub);
+	        if (!OAThreadLocalDelegate.isLoading() && !OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
 	        else hl = null;
 	        try {
 	            OAThreadLocalDelegate.setSendingEvent(true);
@@ -252,7 +252,7 @@ public class HubEventDelegate {
 	    if (x > 0) {
             HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
             HubListener hl;
-            if (!OAThreadLocalDelegate.isLoading() && !OARemoteThreadDelegate.isRemoteThread()) hl = getObjectValidateListener(thisHub);
+            if (!OAThreadLocalDelegate.isLoading() && !OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
             else hl = null;
 	        try {
                 OAThreadLocalDelegate.setSendingEvent(true);
@@ -370,7 +370,7 @@ public class HubEventDelegate {
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub, obj);
             HubListener hl;
-            if (!OARemoteThreadDelegate.isRemoteThread()) hl = getObjectValidateListener(thisHub);
+            if (!OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
             else hl = null;
             try {
                 OAThreadLocalDelegate.setSendingEvent(true);
@@ -681,6 +681,10 @@ public class HubEventDelegate {
         getHubListenerTree(thisHub).addListener(hl, property, bActiveObjectOnly);
         clearGetAllListenerCache(thisHub);
     }
+    public static void addHubListener(Hub thisHub, HubListener hl, boolean bActiveObjectOnly) {
+        getHubListenerTree(thisHub).addListener(hl, bActiveObjectOnly);
+        clearGetAllListenerCache(thisHub);
+    }
 	
 	/**
 	    Add a new Hub Listener, that receives all Hub and OAObject events.
@@ -727,7 +731,7 @@ public class HubEventDelegate {
 	    return getAllListeners(thisHub,0);
 	}
 
-	public static HubObjectValidateListener getObjectValidateListener(Hub thisHub) {
+	public static OAObjectEditQueryHubListener getOAObjectEditQueryHubListener(Hub thisHub) {
 	    if (thisHub == null) return null;
 	    
 	    thisHub = HubShareDelegate.getMainSharedHub(thisHub);
@@ -735,8 +739,8 @@ public class HubEventDelegate {
 	    
 	    HubListener[] hls = getHubListeners(thisHub);
 	    for (HubListener hl : hls) {
-	        if (hl instanceof HubObjectValidateListener) {
-	            return ((HubObjectValidateListener) hl);
+	        if (hl instanceof OAObjectEditQueryHubListener) {
+	            return ((OAObjectEditQueryHubListener) hl);
 	        }
 	    }
 	    return null;
