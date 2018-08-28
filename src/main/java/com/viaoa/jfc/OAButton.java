@@ -725,18 +725,6 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         return null;
     }
 
-    /**
-     * Other Hub/Property used to determine if component is enabled.
-     */
-    public void setEnabled(Hub hub) {
-        control.getEnabledChangeListener().addAoNotNull(hub);
-    }
-    public void setEnabled(Hub hub, String prop) {
-        control.getEnabledChangeListener().add(hub, prop);
-    }
-    public void setEnabled(Hub hub, String prop, Object compareValue) {
-        control.getEnabledChangeListener().add(hub, prop, compareValue);
-    }
     protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
         if (!bIsCurrentlyEnabled) {
             if (getSelectHub() != null && getSelectHub().size() > 0) {
@@ -746,22 +734,32 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         return bIsCurrentlyEnabled;
     }
     
-    /**
-     * Other Hub/Property used to determine if component is visible.
- 
-
-     */
-    public void setVisible(Hub hub) {
-        control.getVisibleChangeListener().addAoNotNull(hub);
-    }    
-    public void setVisible(Hub hub, String prop) {
-        control.getVisibleChangeListener().add(hub, prop);
-    }    
-    public void setVisible(Hub hub, String prop, Object compareValue) {
-        control.getVisibleChangeListener().add(hub, prop, compareValue);
-    }    
-    protected boolean isVisible(boolean bIsCurrentlyVisible) {
-        return bIsCurrentlyVisible;
+    
+    public void addEnabledCheck(Hub hub) {
+        control.getEnabledChangeListener().add(hub);
+    }
+    public void addEnabledCheck(Hub hub, String propPath) {
+        control.getEnabledChangeListener().add(hub, propPath);
+    }
+    public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
+        control.getEnabledChangeListener().add(hub, propPath, compareValue);
+    }
+    /*
+    protected boolean isEnabled(boolean defaultValue) {
+        return defaultValue;
+    }
+    */
+    public void addVisibleCheck(Hub hub) {
+        control.getVisibleChangeListener().add(hub);
+    }
+    public void addVisibleCheck(Hub hub, String propPath) {
+        control.getVisibleChangeListener().add(hub, propPath);
+    }
+    public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
+        control.getVisibleChangeListener().add(hub, propPath, compareValue);
+    }
+    protected boolean isVisible(boolean defaultValue) {
+        return defaultValue;
     }
 
 

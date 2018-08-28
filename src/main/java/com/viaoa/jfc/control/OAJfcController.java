@@ -202,9 +202,6 @@ static int cntx;//qqqqqqqqqq
     protected void reset() {
         // note: dont call close, want to keep visibleChangeListener, enabledChangeListener
         if (hubLast != null) {
-cntx++;
-System.out.println("==> "+cntx);//qqqqqqqqqqqqqqqq
-
             hubLast.removeHubListener(this);
         }
         if (hubObjectLast != null) {
