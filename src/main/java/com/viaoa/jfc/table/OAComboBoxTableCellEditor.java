@@ -57,7 +57,8 @@ public class OAComboBoxTableCellEditor extends OATableCellEditor {
         }
         super.focusGained(e);
     }
-
+    
+    
 
     public Object getCellEditorValue() {
         return vcb.getSelectedItem();    

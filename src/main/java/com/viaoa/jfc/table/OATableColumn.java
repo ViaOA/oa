@@ -94,6 +94,10 @@ public class OATableColumn {
         return toolTipText;
     }
     
+    public boolean allowEdit() {
+        if (oaComp == null) return true;
+        return oaComp.allowEdit();
+    }
     
     public OATableColumn(OATable table, String path, TableCellEditor comp, TableCellRenderer rend, OATableComponent oaComp, String fmt) {
         this.table = table;
@@ -103,7 +107,7 @@ public class OATableColumn {
         this.oaComp = oaComp;
         this.fmt = fmt;
 
-///qqqqq 20131109 testing, so that it will verify that methods can be found when column is created.
+        // verify that methods can be found when column is created.
         Method[] ms = getMethods(table.getHub());
         int xx = 4;
         xx++;
@@ -215,80 +219,6 @@ public class OATableColumn {
         return obj;
     }
     
-    // 20140404 moved this to OAObjectReflectDelegate
-    /** 20140211
-     * This is used to expand a propertyPath from the Table hub, to the OAComp hub 
-     * for a column, so that the value of the rows can be found.
-     *
-    public String expandPropertyPath(Hub hubTable, Hub hubComp, String path) {
-        if (hubTable == null) return path;
-        if (hubComp == null) return path;
-
-        if (HubLinkDelegate.getLinkedOnPos(hubComp, true)) {
-            String s = HubLinkDelegate.getLinkToProperty(hubComp, true);
-            return s;
-        }
-        
-        // check if there is a link "from" property used
-        String fromProp = HubLinkDelegate.getLinkFromProperty(hubComp, true);
-        if (fromProp != null) {
-            return fromProp;
-        }
-
-        // see if there is a link path
-        String hold = path;
-        Hub h = hubComp;
-        
-        for ( ;; ) {
-            Hub hx = HubLinkDelegate.getLinkToHub(h, true);
-            if (hx == null) {
-                path = hold;
-                break;
-            }
-
-            if (path.length() == 0) path = HubLinkDelegate.getLinkHubPath(h, true);
-            else path = HubLinkDelegate.getLinkHubPath(h, true) + "." + path;
-            
-            // found the links back to table hub
-            if (hx == hubTable) {
-                return path;
-            }
-            if (HubShareDelegate.isUsingSameSharedAO(hubTable, hx, true)) {
-                return path;
-            }
-            if (hubTable.getMasterHub() == null) { // 20131109 could be a hub copy
-                if (hx.getObjectClass().equals(hubTable.getObjectClass())) {
-                    return path;
-                }
-            }
-            h = hx;
-        }
-
-        // see if if there is a detail path using masterHub
-        h = oaComp.getHub();
-        for ( ;; ) {
-            Hub hx = h.getMasterHub();
-            if (hx == null) {
-                path = hold;
-                return path;
-            }
-            if (path.length() == 0) path = HubDetailDelegate.getPropertyFromMasterToDetail(h);
-            else path = HubDetailDelegate.getPropertyFromMasterToDetail(h) + "." + path;
-            if (hx == hubTable) {
-                return path;
-            }
-            if (HubShareDelegate.isUsingSameSharedAO(hubTable, hx, true)) {
-                return path;
-            }
-            if (hubTable.getMasterHub() == null) { // 20131109 could be a hub copy
-                if (hx.getObjectClass().equals(hubTable.getObjectClass())) {
-                    return path;
-                }
-            }
-            h = hx;
-        }
-    }
-    */
 
     public String getPathFromTableHub(Hub hubTable) {
         getMethods(hubTable);

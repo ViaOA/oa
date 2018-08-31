@@ -1828,7 +1828,8 @@ public void setEnabled(boolean enabled) {
                     TableCellEditor ed = getCellEditor();
                     if (ed != editComp) return;
                     if (focusRow != getHub().getPos()) return;
-                    ed.stopCellEditing();
+                    // 20180830 removed, since components already have focus listener that stop the editing                      
+                    // ed.stopCellEditing();
                 }
                 @Override
                 public void focusGained(FocusEvent e) {
@@ -2270,7 +2271,7 @@ public void setEnabled(boolean enabled) {
 
     /**
      * Capture double click and call double click button.
-     * 
+     * 111111111
      * @see #getDoubleClickButton
      */
     @Override
@@ -3401,6 +3402,10 @@ public void setEnabled(boolean enabled) {
 
     @Override
     public TableCellEditor getCellEditor(int row, int column) {
+        // 20180830
+        OATableColumn tc = (OATableColumn) columns.elementAt(column);
+        if (!tc.getOATableComponent().allowEdit()) return null;
+        
         return super.getCellEditor(row, column);
     }
 

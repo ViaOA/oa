@@ -11,62 +11,24 @@
 package com.viaoa.jfc;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.awt.event.KeyEvent;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.table.*;
 
-import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
 
-public class OALabel extends JLabel implements OATableComponent, OAJfcComponent {
-    private OALabelController control;
+public class OAAutoCompleteTextField extends JTextField implements OATableComponent, OAJfcComponent {
+    private AutoCompleteTextFieldController control;
     private OATable table;
     private String heading = "";
 
-    /**
-        Create label that is bound to a property for the active object in a Hub.
-    */
-    public OALabel(Hub hub, String propertyPath) {
-        control = new OALabelController(hub, propertyPath);
-        initialize();
-    }
-    /**
-        Create label that is bound to a property for the active object in a Hub.
-        @param cols width of label.
-    */
-    public OALabel(Hub hub, String propertyPath, int cols) {
-        control = new OALabelController(hub, propertyPath);
+    public OAAutoCompleteTextField(Hub hub, String propertyPath, int cols) {
+        control = new AutoCompleteTextFieldController(hub, this, propertyPath);
         setColumns(cols);
-        initialize();
-    }
-
-    /**
-        Create label that is bound to a property for an object.
-    */
-    public OALabel(OAObject hubObject, String propertyPath) {
-        control = new OALabelController(hubObject, propertyPath);
-        initialize();
-    }
-
-    /**
-        Create label that is bound to a property for an object.
-        @param cols width of label.
-    */
-    public OALabel(OAObject hubObject, String propertyPath, int cols) {
-        control = new OALabelController(hubObject, propertyPath);
-        setColumns(cols);
-        // setText(" ");  //<-- this screws preferredSize if before setColumns()
-        initialize();
-    }
-
-    /** Used with imageProperty, imagePath to display icon */
-    public OALabel(Hub hub) {
-        control = new OALabelController(hub);
         initialize();
     }
 
@@ -74,105 +36,28 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     public void initialize() {
     }
     
-    public OALabelController getController() {
+    public AutoCompleteTextFieldController getController() {
     	return control;
     }
 
-    public void setPassword(boolean b) {
-        getController().setPassword(b);
-    }
-    public boolean isPassword() {
-        return getController().isPassword();
-    }
-    
-    /** 
-        Format used to display this property.  Used to format Date, Times and Numbers.
-    */
     public void setFormat(String fmt) {
         control.setFormat(fmt);
     }
-    /** 
-        Format used to display this property.  Used to format Date, Times and Numbers.
-    */
     public String getFormat() {
         return control.getFormat();
     }
 
-    public void addNotify() {
-        if (getColumns() > 0) setColumns(getColumns());
-        super.addNotify();
-    }
-    
-    
-    /**
-        Get the property name used for displaying an image with component.
-    */
-    public void setImageProperty(String prop) {
-        control.setImagePropertyPath(prop);
-    }
-    /**
-        Get the property name used for displaying an image with component.
-    */
-    public String getImageProperty() {
-        return control.getImagePropertyPath();
-    }
-
-    /**
-        Root directory path where images are stored.
-    */
-    public void setImagePath(String path) {
-        control.setImagePropertyPath(path);
-    }
-    /**
-        Root directory path where images are stored.
-    */
-    public String getImagePath() {
-        return control.getImagePropertyPath();
-    }
-
-    
-    public int getMaxImageHeight() {
-    	return control.getMaxImageHeight();
-	}
-	public void setMaxImageHeight(int maxImageHeight) {
-		control.setMaxImageHeight(maxImageHeight);
-	}
-
-	public int getMaxImageWidth() {
-		return control.getMaxImageWidth();
-	}
-	public void setMaxImageWidth(int maxImageWidth) {
-		control.setMaxImageWidth(maxImageWidth);
-	}
-    
-    
-    /**
-        Hub this this component is bound to.
-    */
     public Hub getHub() {
         if (control == null) return null;
         return control.getHub();
     }
 
-    /**
-        Returns the single object that is bound to this component.
-    */
-    public Object getObject() {
-        return control.getObject();
-    }
 
-    /**
-        Set by OATable when this component is used as a column.
-    */
     public void setTable(OATable table) {
         this.table = table;
         if (table != null) table.resetColumn(this);
     }
 
-
-    /**
-        Set by OATable when this component is used as a column.
-    */
     public OATable getTable() {
         return table;
     }
@@ -298,8 +183,46 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     /**
         Editor used when this component is used as a column in an OATable.
     */
+    protected OATableCellEditor tableCellEditor;
     public TableCellEditor getTableCellEditor() {
-        return null;
+        if (tableCellEditor != null) return tableCellEditor;
+            
+        tableCellEditor = new OATableCellEditor(OAAutoCompleteTextField.this) {
+            public Object getCellEditorValue() {
+                return OAAutoCompleteTextField.this.getText();
+            }
+
+            public void startCellEditing(java.util.EventObject e) {
+                super.startCellEditing(e);
+                OAAutoCompleteTextField.this.selectAll();
+            }
+
+            int pos1, pos2;
+            public void keyPressed(KeyEvent e) {
+                pos1 = OAAutoCompleteTextField.this.getSelectionStart();
+                pos2 = OAAutoCompleteTextField.this.getSelectionEnd();
+            }
+
+            public void keyReleased(KeyEvent e) {
+                int key = e.getKeyCode();
+                editArrowKeys = (OATableCellEditor.UP | OATableCellEditor.DOWN | OATableCellEditor.LEFT | OATableCellEditor.RIGHT );
+                if (pos1 == pos2) {
+                    if (key == KeyEvent.VK_LEFT) {
+                        if (pos1 == 0) editArrowKeys = 0;
+                    }
+                    if (key == KeyEvent.VK_RIGHT) {
+                        int x = OAAutoCompleteTextField.this.getText().length();
+                        if (pos2 == x) editArrowKeys = 0;
+                    }
+                }
+                super.keyReleased(e);
+            }
+            
+        };
+
+        this.setBorder(new LineBorder(UIManager.getColor("Table.selectionBackground"), 1));
+        
+        return tableCellEditor;
     }
 
     // OATableComponent Interface method
@@ -350,39 +273,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     protected boolean isVisible(boolean defaultValue) {
         return defaultValue;
     }
-
     
-
-    public class OALabelController extends LabelController {
-        public OALabelController(Hub hub) {
-            super(hub, OALabel.this);
-        }
-        public OALabelController(Hub hub, String propertyPath) {
-            super(hub, OALabel.this, propertyPath);
-        }
-        public OALabelController(OAObject hubObject, String propertyPath) {
-            super(hubObject, OALabel.this, propertyPath);
-        }        
-        
-        @Override
-        protected boolean isVisible(boolean bIsCurrentlyVisible) {
-            bIsCurrentlyVisible = super.isVisible(bIsCurrentlyVisible);
-            return OALabel.this.isVisible(bIsCurrentlyVisible);
-        }
-        
-        // 20160516
-        @Override
-        protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-            return true;
-            /*
-            if (bIsCurrentlyEnabled) return bIsCurrentlyEnabled;
-            if (bIsHubCalc) {
-                return hub.isValid();
-            }
-            return false;
-            */
-        }
-    }
 
     @Override
     public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
@@ -398,50 +289,4 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     }
 
 
-    public void setLabel(JLabel lbl) {
-        getController().setLabel(lbl);
-    }
-    public JLabel getLabel() {
-        if (getController() == null) return null;
-        return getController().getLabel();
-    }
-
-    private Color fgColor, bgColor;
-    private final AtomicInteger aiBlink = new AtomicInteger();
-    
-    public void blink(final Color fcolor, final Color bcolor, final int numberOfTimes) {
-        final int cntBlink = aiBlink.getAndIncrement();
-        if (fgColor == null) fgColor = this.getForeground(); 
-        if (bgColor == null) bgColor = this.getBackground(); 
-        final Timer timer = new Timer(150, null);
-
-        ActionListener al = new ActionListener() {
-            int cnt;
-            public void actionPerformed(ActionEvent e) {
-                if (cntBlink != aiBlink.get()) {
-                    cnt = numberOfTimes-1;
-                }
-
-                boolean b = (cnt++ % 2 == 0);
-                
-                Color c;
-                if (fcolor != null) {
-                    c = (b ? fcolor : fgColor);
-                    setForeground(c);
-                }
-                if (bcolor != null) {
-                    c = (b ? bcolor : bgColor);
-                    setBackground(c);
-                }
-
-                if (!b && ((cnt / 2) >= numberOfTimes) ) {
-                    timer.stop();
-                }
-            }
-        };                 
-        timer.addActionListener(al);
-        timer.setRepeats(true);
-        timer.setInitialDelay(250);
-        timer.start();
-    }
 }

@@ -33,8 +33,8 @@ public class LabelController extends OAJfcController {
     /**
         Bind a label to a property for the active object in a Hub.
     */
-    public LabelController(Hub hub, JLabel lab, String propertyName) {
-        super(hub, propertyName, lab, HubChangeListener.Type.AoNotNull); // this will add hub listener
+    public LabelController(Hub hub, JLabel lab, String propertyPath) {
+        super(hub, propertyPath, lab, HubChangeListener.Type.AoNotNull); // this will add hub listener
         init(lab);
     }
 
@@ -81,7 +81,7 @@ public class LabelController extends OAJfcController {
         
         if (bUsed) {
             siblingHelper = new OASiblingHelper(this.hub);
-            siblingHelper.add(endPropertyName);
+            siblingHelper.add(this.propertyPath);
         }
         update();
     }
@@ -131,7 +131,5 @@ public class LabelController extends OAJfcController {
         
         if (bIsPassword) text = "*****";
         label.setText(text);
-   
-        super.update(label, obj);  // will update icon, font, colors, etc
     }
 }

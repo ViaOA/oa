@@ -19,6 +19,8 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
 
+import com.viaoa.util.OAString;
+
 /**
  * Base class for building an autocomplete lookup.
  * 
@@ -96,6 +98,11 @@ public abstract class AutoCompleteBase {
                                 popup.setVisible(false);
                             }
                             bIgnorePopup = false;
+                        }
+                        else {
+                            if (textComp != null && OAString.isEmpty(textComp.getText())) {
+                                onSelection();
+                            }
                         }
                         break;
                     case KeyEvent.VK_SPACE:
@@ -374,7 +381,7 @@ public abstract class AutoCompleteBase {
     protected void searchAndDisplay(final String search, final int offset) {
         final int cnt = aiCnt.incrementAndGet();
         SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
-            Dimension dim;
+            volatile Dimension dim;
             @Override
             protected Void doInBackground() throws Exception {
                 for (int i=0; i<80; i++) {
@@ -409,7 +416,14 @@ public abstract class AutoCompleteBase {
                 popup.setPopupSize(dim);
                 
                 try {
+                    Point pt1 = textComp.getLocationOnScreen();
                     popup.show(textComp, 3, textComp.getHeight());
+                    Point pt2 = popup.getLocationOnScreen();
+                    if (pt1.y > pt2.y) {  // if popup is above (and overlapping) the component
+                        Dimension d = popup.getSize();
+                        int y = pt2.y - (d.height - (pt1.y-pt2.y)) ;
+                        popup.setLocation(pt2.x, y);
+                    }
                 }
                 catch (Exception e) {
                 }
@@ -417,7 +431,6 @@ public abstract class AutoCompleteBase {
             }
         };
         sw.execute();
-
     }
 
 }

@@ -81,7 +81,7 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
             return this.type;
         }
     }
-/*    
+    
     public static ButtonEnabledMode UsesIsEnabled = ButtonEnabledMode.UsesIsEnabled;
     public static ButtonEnabledMode Always = ButtonEnabledMode.Always;
     public static ButtonEnabledMode ActiveObjectNotNull = ButtonEnabledMode.ActiveObjectNotNull;
@@ -93,7 +93,7 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     public static ButtonEnabledMode AOPropertyIsEmpty = ButtonEnabledMode.AOPropertyIsEmpty;
     public static ButtonEnabledMode SelectHubIsNotEmpty = ButtonEnabledMode.SelectHubIsNotEmpty;
     public static ButtonEnabledMode SelectHubIsEmpty = ButtonEnabledMode.SelectHubIsEmpty;
-*/    
+    
     /**
         Create a new OAButton that is bound to a Hub and command.
     */

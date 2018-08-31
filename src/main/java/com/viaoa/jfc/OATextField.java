@@ -217,6 +217,10 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
         return tableCellEditor;
     }
 
+    @Override
+    public boolean allowEdit() {
+        return isEnabled();
+    }
     
     public void addEnabledCheck(Hub hub) {
         control.getEnabledChangeListener().add(hub);

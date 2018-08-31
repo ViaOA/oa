@@ -32,10 +32,39 @@ public class OACompareTest extends OAUnitTest {
     @Test
     public void isEqualTest() {
         String s = "abcde";
-        
         assertTrue(OACompare.isEqual(s, s));
         assertFalse(OACompare.isEqual(s, null));
         assertFalse(OACompare.isEqual(null, s));
+        assertTrue(OACompare.isEqual(s, "ABcde", true));
+        assertFalse(OACompare.isEqual(s, "ABcde", false));
+        assertTrue(OACompare.isEqual(s, "abcde", false));
+        
+        assertTrue(OACompare.isEqual(null, null));
+        assertTrue(OACompare.isEqual(null, 0));
+        assertTrue(OACompare.isEqual(false, 0));
+        
+        assertTrue(OACompare.isEqual(0.0D, 0F));
+        assertTrue(OACompare.isEqual(1.0D, 1F));
+        assertTrue(OACompare.isEqual(0.01D, 0.01F, 2));
+        assertTrue(OACompare.isEqual(0.01D, 0.009999F, 2));
+        assertTrue(OACompare.isEqual(0.01D, ".010001", 2));
+        assertTrue(OACompare.isEqual(0.01D, ".010001", 5));
+        
+        assertTrue(OACompare.isEqual(true, 1));
+        assertTrue(OACompare.isEqual(true, -1));
+        assertFalse(OACompare.isEqual(true, 0));
+        assertTrue(OACompare.isEqual(false, 0));
+        assertTrue(OACompare.isEqual(true, 't'));
+        assertFalse(OACompare.isEqual(false, 'f'));
+        assertTrue(OACompare.isEqual(true, "true"));
+        assertTrue(OACompare.isEqual("true", true));
+        assertTrue(OACompare.isEqual(false, "false"));
+        assertTrue(OACompare.isEqual("false", false));
+        assertTrue(OACompare.isEqual(true, "fx"));
+        assertTrue(OACompare.isEqual("fx", true));
+        assertTrue(OACompare.isEqual(false, ""));
+        assertTrue(OACompare.isEqual(false, null));
+
     }
     
     @Test

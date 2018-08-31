@@ -129,6 +129,10 @@ public abstract class HubChangeListener {
         add(hub, propertyName, compareValue);
     }
 
+    public HubChangeListener(Hub hub, HubChangeListener.Type type) {
+        add(hub, type);
+    }
+    
     /**
      * Add an addition hub to base the check on.  
      * Since there is no propertyName, then it will be based on AO.

@@ -99,4 +99,8 @@ public interface OATableComponent {
     default public String getTablePropertyPath(OATable table) {
         return null;
     }
+    
+    default boolean allowEdit() {
+        return true;
+    }
 }

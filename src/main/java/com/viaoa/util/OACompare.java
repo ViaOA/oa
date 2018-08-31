@@ -19,7 +19,12 @@ import com.viaoa.object.OAObjectReflectDelegate;
 
 // 20140124
 /**
- * Used to compare objects.
+ * Used to compare objects, even if objects are different classes.
+ * Ex: String "1234" will equal double 1234.00
+ * ex: boolean true will equal any number but 0, any value except null, any string except '' blank
+ * 
+ * Also allows for comparing with Hub or Array to another Hub/Array, or single object (hub.AO or hub[0]&size=1,  array.length=1&array[0])
+ * 
  * @author vvia
  */
 public class OACompare {
@@ -48,11 +53,12 @@ public class OACompare {
      */
     public static boolean isLike(Object value, Object matchValue) {
         if (value == matchValue) return true;
-        if (value == null || matchValue == null) return false;
-        if (value.equals(matchValue)) return true;
-
+        if (compare(value, matchValue) == 0) return true;
+        if (value == null || matchValue == null) {
+            return false;
+        }
         if (!(matchValue instanceof String)) {
-            return isEqual(value, matchValue);
+            return false;
         }
         
         // convert to strings
@@ -103,80 +109,25 @@ public class OACompare {
         return isEqual(value, matchValue, true);
     }
     public static boolean isEqual(Object value, Object matchValue) {
-        return isEqual(value, matchValue, false);
+        int x = compare(value, matchValue);
+        return x == 0;
     }    
     
+    
     public static boolean isEqual(Object value, Object matchValue, boolean bIgnoreCase) {
-        if (value == matchValue) return true;
-        if (value == null || matchValue == null) return false;
-        if (value.equals(matchValue)) return true;
-
-        
-        // allow OAObject to be compared with a pkey value
-        //    ex:  Order.equals(5), is true if order.id == 5
-        if (value instanceof OAObject) {
-            return ((OAObject)value).equals(matchValue);
-        }
-        if (matchValue instanceof OAObject) {
-            return ((OAObject)matchValue).equals(value);
-        }
-        
-        if (matchValue instanceof Hub) {
-            Hub h = (Hub) matchValue;
-            return (h.getSize() == 1 && h.getAt(0) == matchValue);
-        }
-        
-        if (matchValue.getClass().isArray()) {
-            if (!value.getClass().isArray()) {
-                int x = Array.getLength(matchValue);
-                if (x != 1) return false;
-                Object val2 = Array.get(matchValue, 0);
-                return (isEqual(value, val2));
-            }
-            int x1 = Array.getLength(value);
-            int x2 = Array.getLength(matchValue);
-            if (x1 != x2) return false;
-            for (int i=0; i<x1; i++) {
-                Object val1 = Array.get(value, i);
-                Object val2 = Array.get(matchValue, i);
-                if (!isEqual(val1, val2)) return false;
-            }
-            return true;
-        }
-        
-        if (value.getClass().isArray()) {
-            int x = Array.getLength(value);
-            if (x != 1) return false;
-            Object val1 = Array.get(value, 0);
-            return (isEqual(val1, matchValue));
-        }
-        
+        return isEqual(value, matchValue, bIgnoreCase, -1);
+    }
+    public static boolean isEqual(Object value, Object matchValue, int decimalPlaces) {
+        return isEqual(value, matchValue, false, decimalPlaces);
+    }
+    
+    public static boolean isEqual(Object value, Object matchValue, boolean bIgnoreCase, int decimalPlaces) {
         if (bIgnoreCase) {
-            if (!(value instanceof String)) {
-                value = OAConverter.toString(value);
-                if (value == null) return false;
-            }
-            if (!(matchValue instanceof String)) {
-                matchValue = OAConverter.toString(matchValue);
-                if (matchValue == null) return false;
-            }
+            if (value instanceof String) value = ((String) value).toLowerCase();
+            if (matchValue instanceof String) matchValue = ((String) matchValue).toLowerCase();
         }
-        else {
-            Class c = matchValue.getClass();
-            if (!c.equals(value.getClass())) {
-                Object valx = OAConverter.convert(c, value);
-                if (valx == null) return false;
-                return matchValue.equals(valx);
-            }
-        }
-        
-        if (value instanceof String) {
-            if (bIgnoreCase) {
-                return ((String) value).equalsIgnoreCase((String) matchValue);
-            }
-            return ((String) value).equals((String) matchValue);
-        }
-        return value.equals(matchValue); 
+        int x = compare(value, matchValue, decimalPlaces);
+        return x == 0;
     }
 
     public static boolean isBetween(Object value, Object fromValue, Object toValue) {
@@ -234,22 +185,151 @@ public class OACompare {
         if (a > b) return 1;
         return -1;
     }
-    
+
     public static int compare(Object value, Object matchValue) {
+        return compare(value, matchValue, -1);
+    }
+    
+    /**
+     * Compare objects, converting them (using OAConverter class) if necessary.
+     * value, matchValue can be any type of object, including Hub or Array.
+     * value, matchValue do not have to be same class. 
+     */
+    public static int compare(Object value, Object matchValue, final int decimalPlaces) {
+        if (value == matchValue) return 0;
+
+        Class classValue = (value == null) ? null : value.getClass();
+        Class classMatchValue = (matchValue == null) ? null : matchValue.getClass();
+
+        // check if using array        
+        if (classValue != null && classValue.isArray()) {
+            if (classMatchValue != null && classMatchValue.isArray()) {
+                // all objects must be same
+                int x1 = Array.getLength(value);
+                int x2 = Array.getLength(matchValue);
+                if (x1 < x2) return -1;
+                if (x1 > x2) return 1;
+                for (int i=0; i<x1; i++) {
+                    Object v1 = Array.get(value, i);
+                    Object v2 = Array.get(matchValue, i);
+                    int x = compare(v1, v2);
+                    if (x != 0) return x;
+                }
+                return 0;
+            }
+            // take value from [0]
+            int x = Array.getLength(value);
+            if (x > 1) return 1;
+            if (x == 0) value = null;
+            else value = Array.get(value, 0);
+            x = compare(value, matchValue, decimalPlaces);
+            return x;
+        }
+        if (classMatchValue != null && classMatchValue.isArray()) {
+            // take value from [0]
+            int x = Array.getLength(matchValue);
+            if (x > 1) return -1;
+            if (x == 0) matchValue = null;
+            else matchValue = Array.get(matchValue, 0);
+            x = compare(value, matchValue);
+            return x;
+        }
+        
+        // check if using hub
+        if (value instanceof Hub) {
+            if (matchValue instanceof Hub) {
+                // all objects must be same
+                Hub h1 = (Hub) value;
+                Hub h2 = (Hub) matchValue;
+                int x1 = h1.getSize();
+                int x2 = h2.getSize();
+                if (x1 < x2) return -1;
+                if (x1 > x2) return 1;
+                for (int i=0; i<x1; i++) {
+                    if (h1.getAt(i) != h2.getAt(i)) return -1;
+                }
+                return 0;
+            }
+            // take value from hub.AO or pos=0 & size=1
+            Hub h = (Hub) value;
+            value = h.getAO();
+            if (value == null) {
+                if (h.getSize() > 1) return 1;
+                value = h.getAt(0);
+            }
+            int x = compare(value, matchValue);
+            return x;
+        }
+        else if (matchValue instanceof Hub) {
+            Hub h = (Hub) matchValue;
+            matchValue = h.getAO();
+            if (matchValue == null) {
+                if (h.getSize() > 1) return -1;
+                matchValue = h.getAt(0);
+            }
+            int x = compare(value, matchValue);
+            return x;
+        }
+        
+        
         if (value == null) {
-            if (matchValue == null) return 0;
-            return -1;
+            value = OAConverter.convert(classMatchValue, value);
+            classValue = (value == null) ? null : value.getClass();
         }
-        if (matchValue == null) return 1;
-        
-        
-        Class c = matchValue.getClass();
-        if (!c.equals(value.getClass())) {
-            value = OAConverter.convert(c, value);
-            if (value == null) return -1;
+        else if (matchValue == null) {
+            matchValue = OAConverter.convert(classValue, matchValue);
+            classMatchValue = (matchValue == null) ? null : matchValue.getClass();
+        }
+        else if (classValue.equals(classMatchValue)) {
+            // noop
+        }
+        else if (classValue.equals(Boolean.class)) {
+            matchValue = OAConv.toBoolean(matchValue);
+            classMatchValue = (matchValue == null) ? null : matchValue.getClass();
+        }
+        else if (classMatchValue.equals(Boolean.class)) {
+            value = OAConv.toBoolean(value);
+            classValue = (value == null) ? null : value.getClass();
+        }
+        else if (OAReflect.isFloat(classValue) && (matchValue == null || OAReflect.isNumber(classMatchValue) || (classMatchValue.equals(String.class) && OAString.isNumber((String) matchValue)))) {
+            matchValue = OAConv.convert(classValue, matchValue);
+            classMatchValue = (matchValue == null) ? null : matchValue.getClass();
+        }
+        else if (OAReflect.isFloat(classMatchValue) && (value == null || OAReflect.isNumber(classValue) || (classValue.equals(String.class) && OAString.isNumber((String) value)))) {
+            value = OAConv.convert(classMatchValue, value);
+            classValue = (value == null) ? null : value.getClass();
+        }
+        else {
+            try {
+                value = OAConverter.convert(classMatchValue, value);
+                if (value == null) return -1;
+            }
+            catch (Throwable e) {
+                try {
+                    matchValue = OAConverter.convert(classValue, matchValue);
+                }
+                catch (Throwable ex) {
+                    return 1;
+                }
+            }
+            classValue = (value == null) ? null : value.getClass();
+            classMatchValue = (matchValue == null) ? null : matchValue.getClass();
+        }
+
+        if (decimalPlaces > 0) {
+            if (OAReflect.isFloat(classValue)) {
+                double d = OAConv.toDouble(value);
+                value = OAConv.round(d, decimalPlaces);
+            }
+            if (OAReflect.isFloat(classMatchValue)) {
+                double d = OAConv.toDouble(matchValue);
+                matchValue = OAConv.round(d, decimalPlaces);
+            }
+            classValue = (value == null) ? null : value.getClass();
+            classMatchValue = (matchValue == null) ? null : matchValue.getClass();
         }
         
-        if (!(matchValue instanceof Comparable)) {
+        if (!(matchValue instanceof Comparable) || !(value instanceof Comparable)) {
             if (value.equals(matchValue)) return 0;
             return -1;
         }

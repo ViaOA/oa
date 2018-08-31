@@ -50,13 +50,12 @@ public class OAConverterBoolean implements OAConverterInterface {
         return null;
     }        
 
-    private static final Boolean bFalse = new Boolean(false);
     public Boolean convertToBoolean(Object value, String fmt) {
         if (value instanceof Boolean) {
             return (Boolean) value;
         }
         if (value == null) {
-            return bFalse;
+            return Boolean.FALSE;
         }
         
         boolean b = false;

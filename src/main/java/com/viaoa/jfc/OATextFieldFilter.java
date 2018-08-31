@@ -33,6 +33,10 @@ import com.viaoa.jfc.table.OATextFieldTableCellEditor;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAString;
+import com.viaoa.util.filter.OAGreaterFilter;
+import com.viaoa.util.filter.OAGreaterOrEqualFilter;
+import com.viaoa.util.filter.OALessFilter;
+import com.viaoa.util.filter.OALessOrEqualFilter;
 import com.viaoa.util.filter.OALikeFilter;
 import com.viaoa.util.filter.OANotLikeFilter;
 import com.viaoa.util.filter.OAQueryFilter;
@@ -154,13 +158,26 @@ public class OATextFieldFilter<T extends OAObject> extends JTextField implements
             return filter;
         };
         
-        final boolean bNot = text.charAt(0) == '!';
-        if (bNot) {
-            text = text.substring(1);
-            filter = new OANotLikeFilter(propertyPath, "*"+text+"*");
+        final char c1 = text.charAt(0);
+        final char c2 = text.length() == 1 ? 0 : text.charAt(1);
+
+        if (c1 == '!') {
+            if (text.indexOf('*') < 0) filter = new OANotLikeFilter(propertyPath, "*"+text.substring(1)+"*");
+            else filter = new OANotLikeFilter(propertyPath, text.substring(1));
+        }
+        else if (c1 == '>') {
+            if (c2 != '=') filter = new OAGreaterFilter(propertyPath, text.substring(1));
+            else filter = new OAGreaterOrEqualFilter(propertyPath, text.substring(2));
+        }
+        else if (c1 == '<') {
+            if (c2 != '=') filter = new OALessFilter(propertyPath, text.substring(1));
+            else filter = new OALessOrEqualFilter(propertyPath, text.substring(2));
+        }
+        else if (text.indexOf('*') < 0) {
+            filter = new OALikeFilter(propertyPath, "*"+text+"*");
         }
         else {
-            filter = new OALikeFilter(propertyPath, "*"+text+"*");
+            filter = new OALikeFilter(propertyPath, text);
         }
         
         return filter;
@@ -177,8 +194,6 @@ public class OATextFieldFilter<T extends OAObject> extends JTextField implements
         if (f != null) {
             return f.isUsed(obj);
         }
-        
-        
         
         String txt = getText();
         if (txt == null || txt.length() == 0) return true;

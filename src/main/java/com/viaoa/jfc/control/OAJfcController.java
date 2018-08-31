@@ -25,6 +25,7 @@ import javax.swing.text.JTextComponent;
 import com.viaoa.annotation.OAEditQuery;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
+import com.viaoa.hub.HubChangeListener.HubProp;
 import com.viaoa.util.*;
 import com.viaoa.jfc.image.*;
 import com.viaoa.jfc.*;
@@ -555,10 +556,6 @@ static int cntx;//qqqqqqqqqq
     public String getFormat() {
         if (format != null) return format;
 
-        Object objx = hub.getAO();
-        if (objx instanceof OAObject) {
-            return OAObjectEditQueryDelegate.getFormat((OAObject)objx, endPropertyName, defaultFormat);
-        }
         
         if (!bDefaultFormat) {
             bDefaultFormat = true;
@@ -569,6 +566,12 @@ static int cntx;//qqqqqqqqqq
                 defaultFormat = OAConverter.getFormat(endPropertyClass);
             }
         }
+        
+        Object objx = hub.getAO();
+        if (objx instanceof OAObject) {
+            return OAObjectEditQueryDelegate.getFormat((OAObject)objx, endPropertyName, defaultFormat);
+        }
+        
         return defaultFormat;
     }
 
@@ -641,21 +644,21 @@ static int cntx;//qqqqqqqqqq
         return this.colorForeground;
     }
     public void setForegroundColorPropertyPath(String pp) {
-        backgroundColorPropertyPath = pp;
+        foregroundColorPropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
         update();
     }
     public String getForegroundColorPropertyPath() {
-        return backgroundColorPropertyPath;
+        return foregroundColorPropertyPath;
     }
     public Color getForegroundColor(Object obj) {
-        if (OAString.isEmpty(backgroundColorPropertyPath)) return this.colorForeground;
+        if (OAString.isEmpty(foregroundColorPropertyPath)) return this.colorForeground;
         obj = getRealObject(obj);
         if (obj == null || obj instanceof OANullObject) return this.colorForeground;
         if (!(obj instanceof OAObject)) return this.colorForeground;
         if (hub == null) return this.colorForeground;
 
-        Object objx = ((OAObject) obj).getProperty(backgroundColorPropertyPath);
+        Object objx = ((OAObject) obj).getProperty(foregroundColorPropertyPath);
         Color color = (Color) OAConv.convert(Color.class, objx);
         return color;
     }
@@ -696,21 +699,21 @@ static int cntx;//qqqqqqqqqq
         return this.colorIcon;
     }
     public void setIconColorPropertyPath(String pp) {
-        backgroundColorPropertyPath = pp;
+        iconColorPropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
         update();
     }
     public String getIconColorPropertyPath() {
-        return backgroundColorPropertyPath;
+        return iconColorPropertyPath;
     }
     public Color getIconColor(Object obj) {
-        if (OAString.isEmpty(backgroundColorPropertyPath)) return this.colorIcon;
+        if (OAString.isEmpty(iconColorPropertyPath)) return this.colorIcon;
         obj = getRealObject(obj);
         if (obj == null || obj instanceof OANullObject) return this.colorIcon;
         if (!(obj instanceof OAObject)) return this.colorIcon;
         if (hub == null) return this.colorIcon;
 
-        Object objx = ((OAObject) obj).getProperty(backgroundColorPropertyPath);
+        Object objx = ((OAObject) obj).getProperty(iconColorPropertyPath);
         Color color = (Color) OAConv.convert(Color.class, objx);
         return color;
     }
@@ -816,7 +819,7 @@ static int cntx;//qqqqqqqqqq
         
         Icon icon2 = null;
     
-        Object objx = obj.getProperty(endPropertyName);
+        Object objx = obj.getProperty(propertyPath);
         
         if (objx instanceof Icon) {
             icon2 = (Icon) objx;
@@ -830,7 +833,7 @@ static int cntx;//qqqqqqqqqq
             catch (IOException ex) {
             }
         }
-        else if (objx instanceof String && ((String) objx).length() > 0) {
+        else if (OAString.isNotEmpty(getImageDirectory()) && objx instanceof String && ((String) objx).length() > 0) {
             String s = (String) objx;
             if (OAString.isNotEmpty(getImageDirectory())) {
                 s = getImageDirectory() + "/" + s;
@@ -847,7 +850,7 @@ static int cntx;//qqqqqqqqqq
             icon = icon2;
             icon2 = null;
         }
-        if (icon2 != null) {
+        else if (icon2 != null) {
             if (myMultiIcon == null) myMultiIcon = new MultiIcon();
             myMultiIcon.setIcon1(icon);
             myMultiIcon.setIcon2(icon2);
@@ -883,7 +886,13 @@ static int cntx;//qqqqqqqqqq
         };
         return changeListener;
     }
-
+    public HubProp addEnabledCheck(Hub hub, String pp, Object value) {
+        return getEnabledChangeListener().add(hub, pp, value);
+    }
+    public HubProp addEnabledCheck(Hub hub, String property, HubChangeListener.Type type) {
+        return getEnabledChangeListener().add(hub, property, type);
+    }
+    
     public HubChangeListener getEnabledChangeListener() {
         if (changeListenerEnabled != null) return changeListenerEnabled;
         changeListenerEnabled = new HubChangeListener() {
@@ -894,6 +903,8 @@ static int cntx;//qqqqqqqqqq
         };
         return changeListenerEnabled;
     }
+
+    
     public HubChangeListener getVisibleChangeListener() {
         if (changeListenerVisible != null) return changeListenerVisible;
         changeListenerVisible = new HubChangeListener() {
@@ -903,6 +914,12 @@ static int cntx;//qqqqqqqqqq
             }
         };
         return changeListenerVisible;
+    }
+    public HubProp addVisibleCheck(Hub hub, String pp, Object value) {
+        return getVisibleChangeListener().add(hub, pp, value);
+    }
+    public HubProp addVisibleCheck(Hub hub, String property, HubChangeListener.Type type) {
+        return getVisibleChangeListener().add(hub, property, type);
     }
     
     
@@ -963,6 +980,10 @@ static int cntx;//qqqqqqqqqq
     }
     protected void updateEnabled(final JComponent comp, final Object object) {
         if (comp == null) return;
+if (DEBUG) {
+    int xx = 4;
+    xx++;
+}
         boolean bEnabled = true;
         if (object instanceof OAObject) {
             bEnabled = OAObjectEditQueryDelegate.getAllowChange((OAObject) object, endPropertyName);

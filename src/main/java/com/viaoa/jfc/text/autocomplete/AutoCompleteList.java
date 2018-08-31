@@ -25,6 +25,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.*;
 
 import com.viaoa.jfc.control.ListController;
+import com.viaoa.util.OAString;
 
 /**
  * Autocomplete that uses a JList for the popup component. This is used by
@@ -118,19 +119,25 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
         }
     }
 
-    // called when the popup isVisible and [enter]
+    // called when popup is visible and [Enter], text is empty and [Enter]
     @Override
     protected boolean onSelection() {
-        // called when popup is visible and [Enter]
+        if (textComp != null && OAString.isEmpty(textComp.getText())) {
+            onValueSelected(-1, null);
+            return true;
+        }
+
         Object obj = list.getSelectedValue();
-        if (obj == null) return false; // nothing selected, use hit [enter]
+        if (obj == null) {
+            return false; // nothing selected, use hit [enter]
+        }
 
         int pos = list.getSelectedIndex();
         String s = getTextForSelectedValue(pos, (String) obj);
         if (s == null) s = "";
 
         onValueSelected(pos, (String) obj);
-        textComp.setText(s);
+        //was: textComp.setText(s);
         return true;
     }
 

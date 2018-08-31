@@ -113,10 +113,12 @@ public class ButtonController extends OAJfcController implements ActionListener 
         if (command == null) command = OAButton.ButtonCommand.Other;        
         this.command = command;
         this.enabledMode = enabledMode;
+        update();
     }
     
     public void setCommand(OAButton.ButtonCommand command) {
         this.command = command;
+        update();
     }
     
     
@@ -126,6 +128,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
     */
     public void setMasterControl(boolean b) {
         bMasterControl = b;
+        update();
     }
 
     public boolean getMasterControl() {
@@ -139,6 +142,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
         this.updateObject = object;
         this.updateProperty = property;
         this.updateValue = newValue;
+        update();
     }
 
     /**
@@ -148,6 +152,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
         this.updateObject = null;
         this.updateProperty = property;
         this.updateValue = newValue;
+        update();
     }
 
     /**
