@@ -100,6 +100,7 @@ public void setEnabled(boolean enabled) {
     
     protected int prefCols = 1, prefRows = 5;
     protected Hub hub;
+    protected Hub hubFilterMaster;
     protected HubFilter hubFilter;
     protected Hub hubSelect;
     protected OATableModel oaTableModel;
@@ -520,8 +521,19 @@ public void setEnabled(boolean enabled) {
      */
     public void setHub(Hub h) {
         this.hub = h;
-
-        siblingHelper = new OASiblingHelper(this.hub);
+        resetFilterHub();
+        oaTableModel = new OATableModel(hub);
+        setModel(oaTableModel);
+        hubAdapter = new MyHubAdapter(hub, this);
+    }
+    
+    protected void resetFilterHub() {
+        Hub hx = getMasterFilterHub();
+        if (hx == null) {
+            hx = this.hub;
+            if (hx == null) return;
+        }
+        siblingHelper = new OASiblingHelper(hx);
 
         int x = columns.size();
         for (int i = 0; i < x; i++) {
@@ -529,9 +541,6 @@ public void setEnabled(boolean enabled) {
             tc.setMethods(null);
             siblingHelper.add(tc.getPathFromTableHub(hub));
         }
-        oaTableModel = new OATableModel(hub);
-        setModel(oaTableModel);
-        hubAdapter = new MyHubAdapter(hub, this);
     }
 
     // 20160722 
@@ -2371,9 +2380,11 @@ public void setEnabled(boolean enabled) {
     public Hub getMasterFilterHub() {
         return hubFilterMaster;
     }
-    Hub hubFilterMaster;
     public void setMasterFilterHub(Hub hubFilterMaster) {
         this.hubFilterMaster = hubFilterMaster;
+        
+        resetFilterHub();
+
         if (headerRenderer != null) {
             if (hubFilterMaster == null) headerRenderer.remove(headerRenderer.label);
             else headerRenderer.add(headerRenderer.label, BorderLayout.CENTER);
@@ -2415,6 +2426,7 @@ public void setEnabled(boolean enabled) {
         oaTableModel.fireTableStructureChanged();
     }
 
+    
     public void refreshFilter() {
         final HubFilter hf = (hubFilter != null || tableRight == null) ? hubFilter : tableRight.hubFilter;
         
@@ -2426,6 +2438,7 @@ public void setEnabled(boolean enabled) {
             @Override
             protected Void doInBackground() throws Exception {
                 boolean b = false;
+                boolean bx = OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
                 try {
                     if (hubAdapter != null) {
                         b = true;
@@ -2435,6 +2448,7 @@ public void setEnabled(boolean enabled) {
                 }
                 finally {
                     if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                    if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
                 }
                 oaTableModel.fireTableStructureChanged();
                 return null;

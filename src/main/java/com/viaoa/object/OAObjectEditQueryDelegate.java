@@ -26,7 +26,7 @@ public class OAObjectEditQueryDelegate {
         return isAllowed(getOnChangeEditQuery(obj, name, newValue));
     }
     public static boolean getAllowVisible(OAObject obj, String name) {
-        return isAllowed(getAllowChangeEditQuery(obj, name));
+        return isAllowed(getAllowVisibleEditQuery(obj, name));
     }
     public static boolean getAllowAdd(OAObject obj, String name) {
         return isAllowed(getAllowAddEditQuery(obj, name));

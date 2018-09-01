@@ -980,13 +980,12 @@ static int cntx;//qqqqqqqqqq
     }
     protected void updateEnabled(final JComponent comp, final Object object) {
         if (comp == null) return;
-if (DEBUG) {
-    int xx = 4;
-    xx++;
-}
         boolean bEnabled = true;
+
         if (object instanceof OAObject) {
-            bEnabled = OAObjectEditQueryDelegate.getAllowChange((OAObject) object, endPropertyName);
+            if (OAString.isNotEmpty(endPropertyName)) {
+                bEnabled = OAObjectEditQueryDelegate.getAllowChange((OAObject) object, endPropertyName);
+            }
         }
         bEnabled &= getEnabledChangeListener().getValue();
         bEnabled = isEnabled(bEnabled);

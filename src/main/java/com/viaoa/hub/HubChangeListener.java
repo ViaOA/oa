@@ -142,14 +142,15 @@ public abstract class HubChangeListener {
     }    
 
     /**
-     * If compare value is null: if propertyPath is null then uses OANotNullObject, else uses Boolean.true 
-     * @param hub
-     * @param propertyPath
+     * adds property without any check.  This is good for adding dependendent properties
+     * @see #addPropertyNotNull(Hub, String)
+     * @see #addPropertyNull(Hub, String)
+     * @see #add(Hub, String, Object)
      */
     public HubProp add(Hub hub, String propertyPath) {
         if (propertyPath == null) return add(hub);
         else {
-            return add(hub, propertyPath, true, Type.PropertyNotNull, null);
+            return add(hub, propertyPath, true, Type.AlwaysTrue, null);
         }
     }
 
