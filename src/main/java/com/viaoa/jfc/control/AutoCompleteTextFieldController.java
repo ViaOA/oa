@@ -44,11 +44,17 @@ public class AutoCompleteTextFieldController extends OAJfcController {
     @Override
     public void update() {
         try {
-            _update();
+            // _update();  // dont update txtField.text
         }
         finally {
         }
         super.update();
+    }
+    
+    @Override
+    public void update(JComponent comp, Object object) {
+        // TODO Auto-generated method stub
+        super.update(comp, object);
     }
     
     protected void _update() {

@@ -25,6 +25,7 @@ import com.viaoa.jfc.dialog.OAPasswordDialog;
 import com.viaoa.jfc.table.OAButtonTableCellEditor;
 import com.viaoa.jfc.table.OATableComponent;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
 
@@ -112,8 +113,30 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         
         if (enabledMode == null) enabledMode = getDefaultEnabledMode(hub, command);
         
-        control = new OAButtonController(hub, enabledMode, command) {
-        };
+        control = new OAButtonController(hub, enabledMode, command);
+
+        
+        boolean b = false;
+        if (command != null) {
+            switch (command) {
+            case New:
+            case NewManual:
+            case Add:
+            case AddManual:
+            case Paste:
+            case Insert:
+            case Cancel:
+            case Remove:
+            case Delete:
+            case Cut:
+                b = true;
+            }
+        }
+        control.setEnabledChecksMasterHub(b);
+        
+        if (command == SAVE) {
+            control.getChangeListener().add(getHub(), OAObjectDelegate.WORD_Changed);
+        }
         
         if (bCallSetup) setup();
     }

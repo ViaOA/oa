@@ -35,6 +35,7 @@ public class OAPropertyInfo implements java.io.Serializable {
     private boolean isImportMatch;
     private boolean isPassword;
     private Hub<String> hubNameValue;
+    private boolean isCurrency;
 
 	
 	public OAPropertyInfo() {
@@ -155,6 +156,14 @@ public class OAPropertyInfo implements java.io.Serializable {
         if (hubNameValue == null) hubNameValue = new Hub<String>(String.class);  
         return hubNameValue;
     }
+    
+    public boolean isCurrency() {
+        return isCurrency;
+    }
+    public void setCurrency(boolean b) {
+        this.isCurrency = b;
+    }
+    
 }
 
 

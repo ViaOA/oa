@@ -330,6 +330,11 @@ public class OACompare {
         }
         
         if (!(matchValue instanceof Comparable) || !(value instanceof Comparable)) {
+            if (value == null) {
+                if (value == matchValue) return 0;
+                return -1;
+            }
+            if (matchValue == null) return 1;
             if (value.equals(matchValue)) return 0;
             return -1;
         }

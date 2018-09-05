@@ -188,10 +188,9 @@ public abstract class AutoCompleteBase {
  
     
     private void showPopup() {
+        if (!textComp.isEnabled()) return;
         showPopup(textComp.getCaretPosition());
     }
-
-    
     
     protected void showPopup(int offset) {
         if (bIgnorePopup) return;
@@ -379,6 +378,13 @@ public abstract class AutoCompleteBase {
     // 20140408 use swingworker for search and display
     private AtomicInteger aiCnt = new AtomicInteger();
     protected void searchAndDisplay(final String search, final int offset) {
+        if (!textComp.isEnabled()) {
+            return;
+        }
+        if (!textComp.isEditable()) {
+            return;
+        }
+        
         final int cnt = aiCnt.incrementAndGet();
         SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
             volatile Dimension dim;

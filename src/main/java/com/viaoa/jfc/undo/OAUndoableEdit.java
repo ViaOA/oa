@@ -41,6 +41,7 @@ public class OAUndoableEdit implements UndoableEdit {
     public static final int CHANGEAO = 4;
     public static final int PROPCHANGE = 5;
     public static final int PROPERTYCHANGE = 5;
+    public static final int HOLDER = 6;
 
     private OAUndoableEdit() {
     }
@@ -138,6 +139,15 @@ public class OAUndoableEdit implements UndoableEdit {
         return oe;
     }
 
+    public static OAUndoableEdit createUndoable(String presentationName) {
+        OAUndoableEdit oe = new OAUndoableEdit();
+        oe.type = HOLDER;
+        oe.presentationName = presentationName;
+        return oe;
+    }
+    
+    
+    
     private String getClassName() {
         Class c = null;
         String s = null;
@@ -172,6 +182,8 @@ public class OAUndoableEdit implements UndoableEdit {
     public void undo() throws CannotUndoException {
         bCanUndo = false;
         switch (type) {
+            case HOLDER:
+                break;
             case ADD:  
                 hub.remove(object);
                 break;
@@ -197,6 +209,8 @@ public class OAUndoableEdit implements UndoableEdit {
     public void redo() throws CannotRedoException {
         bCanUndo = true;
         switch (type) {
+            case HOLDER:
+                break;
             case ADD:  
                 hub.add(object);
                 break;

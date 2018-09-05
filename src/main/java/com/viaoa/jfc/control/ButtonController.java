@@ -88,6 +88,25 @@ public class ButtonController extends OAJfcController implements ActionListener 
     private boolean bUseSwingWorker;
     public String processingTitle, processingMessage;
 
+    
+    public static ButtonController createHubValid(AbstractButton button, Hub hub) {
+        ButtonController bc = new ButtonController(hub, button, OAButton.ButtonEnabledMode.ActiveObjectNotNull, null);
+        return bc;
+    }
+    public static ButtonController createAoNotNull(AbstractButton button, Hub hub) {
+        ButtonController bc = new ButtonController(hub, button, OAButton.ButtonEnabledMode.HubIsValid, null);
+        return bc;
+    }
+    public static ButtonController createHubNotEmpty(AbstractButton button, Hub hub) {
+        ButtonController bc = new ButtonController(hub, button, OAButton.ButtonEnabledMode.HubIsNotEmpty, null);
+        return bc;
+    }
+    public static ButtonController createAlwaysTrue(AbstractButton button, Hub hub) {
+        ButtonController bc = new ButtonController(hub, button, OAButton.ButtonEnabledMode.Always, null);
+        return bc;
+    }
+    
+    
     /**
         Used to bind an AbstractButton to a Hub, with built in support for a command.
         <p>

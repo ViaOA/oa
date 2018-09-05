@@ -28,6 +28,9 @@ public class OAObjectEditQueryDelegate {
     public static boolean getAllowVisible(OAObject obj, String name) {
         return isAllowed(getAllowVisibleEditQuery(obj, name));
     }
+    public static boolean getAllowVisible(OAObject obj, String name, boolean defaultValue) {
+        return isAllowed(getAllowVisibleEditQuery(obj, name, defaultValue));
+    }
     public static boolean getAllowAdd(OAObject obj, String name) {
         return isAllowed(getAllowAddEditQuery(obj, name));
     }

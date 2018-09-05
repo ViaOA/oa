@@ -62,6 +62,10 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         return table;
     }
 
+    public void setLabel(JLabel lbl) {
+        getController().setLabel(lbl);
+    }
+
     /**
         Width of label, based on average width of the font's character 'w'.
     */

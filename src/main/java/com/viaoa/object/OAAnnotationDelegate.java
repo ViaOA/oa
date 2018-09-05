@@ -162,6 +162,7 @@ public class OAAnnotationDelegate {
             pi.setUnicode(oaprop.isUnicode());
             pi.setImportMatch(oaprop.isImportMatch());
             pi.setPassword(oaprop.isPassword());
+            pi.setCurrency(oaprop.isCurrency());
             pi.setOAProperty(oaprop);
             
             if (oaprop.isNameValue()) {

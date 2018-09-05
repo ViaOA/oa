@@ -59,32 +59,41 @@ public class OAObjectEventDelegate {
 	    }
 	    else if (!OARemoteThreadDelegate.isRemoteThread()) {
 	        // 20180617 validate
-            OAObjectEditQuery em = new OAObjectEditQuery(OAObjectEditQuery.Type.AllowChange);
-	        em.setName(propertyName);
-            try {
-                OAObjectEditQueryDelegate.performEditQuery(oaObj, em);
-            }
-            catch (Throwable e) {
-                em.setThrowable(e);
-            }
-
-            if (em.getAllowChange()) {
-                em = new OAObjectEditQuery(OAObjectEditQuery.Type.OnChange);
-                em.setValue(newObj);
-    	        try {
-    	            OAObjectEditQueryDelegate.performEditQuery(oaObj, em);
+	        boolean bSkip = false;
+	        if (propertyName != null) {
+	            bSkip = OAObjectDelegate.WORD_Changed.equalsIgnoreCase(propertyName);
+                bSkip = bSkip || OAObjectDelegate.WORD_New.equalsIgnoreCase(propertyName);
+                bSkip = bSkip || OAObjectDelegate.WORD_Deleted.equalsIgnoreCase(propertyName);
+	        }
+	        
+	        if (!bSkip) {
+                OAObjectEditQuery em = new OAObjectEditQuery(OAObjectEditQuery.Type.AllowChange);
+    	        em.setName(propertyName);
+                try {
+                    OAObjectEditQueryDelegate.performEditQuery(oaObj, em);
+                }
+                catch (Throwable e) {
+                    em.setThrowable(e);
+                }
+    
+                if (em.getAllowChange()) {
+                    em = new OAObjectEditQuery(OAObjectEditQuery.Type.OnChange);
+                    em.setValue(newObj);
+        	        try {
+        	            OAObjectEditQueryDelegate.performEditQuery(oaObj, em);
+        	        }
+        	        catch (Throwable e) {
+        	            em.setThrowable(e);
+        	        }
+                }
+    	        if (!em.getAllowChange() || em.getThrowable() != null) {
+    	            String msg = em.getResponse();
+    	            if (em.getThrowable() != null) {
+    	                msg = OAString.concat(msg, "Exception: "+em.getThrowable().getMessage(), ", ");
+    	            }
+    	            else if (OAString.isEmpty(msg)) msg = "Invalid property value, property="+propertyName+", value="+newObj;
+    	            throw new RuntimeException(msg, em.getThrowable());
     	        }
-    	        catch (Throwable e) {
-    	            em.setThrowable(e);
-    	        }
-            }
-	        if (!em.getAllowChange() || em.getThrowable() != null) {
-	            String msg = em.getResponse();
-	            if (em.getThrowable() != null) {
-	                msg = OAString.concat(msg, "Exception: "+em.getThrowable().getMessage(), ", ");
-	            }
-	            else if (OAString.isEmpty(msg)) msg = "Invalid property value, property="+propertyName+", value="+newObj;
-	            throw new RuntimeException(msg, em.getThrowable());
 	        }
 	    }
 	    

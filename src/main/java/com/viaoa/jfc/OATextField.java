@@ -376,7 +376,5 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
         }
         
     }
-    
-    
 }
 

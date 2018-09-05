@@ -92,12 +92,6 @@ import com.viaoa.util.*;
 public class OATable extends JTable implements DragGestureListener, DropTargetListener {
     private static Logger LOG = Logger.getLogger(OATable.class.getName());
 
-@Override
-public void setEnabled(boolean enabled) {
-    // TODO Auto-generated method stub
-    super.setEnabled(enabled);
-}    
-    
     protected int prefCols = 1, prefRows = 5;
     protected Hub hub;
     protected Hub hubFilterMaster;
@@ -2319,7 +2313,8 @@ public void setEnabled(boolean enabled) {
             Point pt = e.getPoint();
             int row = rowAtPoint(pt);
             if (row < 0) { // 20150428
-                hub.setPos(-1);
+                setHubPos(-1);  // 20180905
+                //was: hub.setPos(-1);
             }
             if (e.getClickCount() == 2) {
                 if (hub.getPos() == row && row >= 0) {
@@ -2459,10 +2454,63 @@ public void setEnabled(boolean enabled) {
         };
         sw.execute();
     }
+
+    
+    private String confirmMessage;
+    public void setConfirmMessage(String msg) {
+        confirmMessage = msg;
+    }
+    public String getConfirmMessage() {
+        return confirmMessage;
+    }
+    protected boolean confirm(int newRow) {
+        String confirmMessage = getConfirmMessage();
+        String confirmTitle = "Confirm";
+        Object obj = null;
+        if (hub != null && hub.getLinkHub() != null) {
+            obj = hub.getLinkHub().getAO();
+        }
+        if (obj instanceof OAObject) {
+            String s = HubLinkDelegate.getLinkToProperty(hub);
+            OAObjectEditQuery em = OAObjectEditQueryDelegate.getOnConfirm((OAObject)obj, s, hub.getAt(newRow), confirmMessage, confirmTitle);
+            confirmMessage = em.getConfirmMessage();
+            confirmTitle = em.getConfirmTitle();
+        }
+        
+        boolean result = true;
+        if (OAString.isNotEmpty(confirmMessage)) {
+            if (OAString.isEmpty(confirmTitle)) confirmTitle = "Confirmation";
+            int x = JOptionPane.showOptionDialog(OAJFCUtil.getWindow(OATable.this), confirmMessage, confirmTitle, 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
+            result = (x == 0);
+        }
+        return result;
+    }
+    
+    
+    protected boolean bEnableUndo=true;
+    public void setEnableUndo(boolean b) {
+        bEnableUndo = b;
+    }
+    public boolean getEnableUndo() {
+        return bEnableUndo;
+    }
     private final AtomicInteger aiRow = new AtomicInteger();
-    // 20171230
-    protected void setHubPos(final int row) {
-        if (row < 0) return;
+    protected void setHubPos(int row) {
+        if (hub == null || hub.getPos() == row) return;
+        if (!confirm(row)) row = hub.getPos();
+        boolean b = getEnableUndo() && hub != null && hub.getLinkHub() != null;
+        if (b) {
+            OAUndoableEdit ue = OAUndoableEdit.createUndoablePropertyChange(
+                "Change " + HubLinkDelegate.getLinkToProperty(hub), 
+                hub.getLinkHub().getAO(), 
+                HubLinkDelegate.getLinkToProperty(hub), 
+                hub.getAO(), hub.getAt(row));
+            
+            OAUndoManager.add(ue);
+        }
+        _setHubPos(row);
+    }
+    protected void _setHubPos(final int row) {
         aiRow.set(row);
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         
@@ -3613,6 +3661,7 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     public MyHubAdapter(Hub hub, OATable table) {
         super(hub, table, HubChangeListener.Type.HubValid);
         this.table = table;
+        setEnabledChecksMasterHub(false);
         table.getSelectionModel().addListSelectionListener(this);
         // getHub().addHubListener(this);
         afterChangeActiveObject(null);

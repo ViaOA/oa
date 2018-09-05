@@ -73,6 +73,7 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!textComp.isEnabled()) return;
+                if (!textComp.isEditable()) return;
                 // only send if one is in list, otherwise not sure which value was selected.
                 String s = textComp.getText();
                 String[] ss = getSearchData(s, s.length());

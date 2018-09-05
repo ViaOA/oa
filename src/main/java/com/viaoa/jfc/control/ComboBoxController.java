@@ -219,8 +219,6 @@ public class ComboBoxController extends OAJfcController implements FocusListener
             if (obj instanceof OANullObject) obj = null;
             if (!flag && obj != getHub().getActiveObject()) {
                 Hub h = getHub();
-
-
                 Object activeObject = null;
                 Hub hubx = getHub().getLinkHub();
                 if (hubx != null) {
@@ -234,20 +232,30 @@ public class ComboBoxController extends OAJfcController implements FocusListener
                 }
                 else {
                     if (!confirm(activeObject, obj)) return;
-                    boolean b = getEnableUndo();
+                    boolean b = getEnableUndo() && hub != null && hub.getLinkHub() != null;
                     try {
                         if (b) {
+                            OAUndoableEdit ue = OAUndoableEdit.createUndoablePropertyChange(
+                                "Change " + HubLinkDelegate.getLinkToProperty(hub), 
+                                activeObject, 
+                                HubLinkDelegate.getLinkToProperty(hub), 
+                                hub.getAO(), obj);
+                                
+                            OAUndoManager.add(ue);
+                            
+                            /* was
                             OAUndoableEdit ue = OAUndoableEdit.createUndoableChangeAO(undoDescription, h, h.getAO(), obj);
                             String s = undoDescription;
                             if (s == null || s.length() == 0) s = ue.getPresentationName();
                             OAUndoManager.startCompoundEdit(s);
                             OAUndoManager.add(ue);
+                            */
                         }
                         getHub().setActiveObject(obj);
                     }
                     finally {
                         if (b) {
-                            OAUndoManager.endCompoundEdit();
+                            //was: OAUndoManager.endCompoundEdit();
                         }
                     }
                     onItemSelected(getHub().getPos());

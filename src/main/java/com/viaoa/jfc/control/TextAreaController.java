@@ -140,6 +140,8 @@ public class TextAreaController extends OAJfcController implements FocusListener
         if (hub != null) activeObject = hub.getActiveObject();
         else activeObject = null;
         
+        update();
+        
         if (b) onFocusGained();
         super.afterChangeActiveObject();
     }
@@ -196,8 +198,7 @@ public class TextAreaController extends OAJfcController implements FocusListener
         if (text.equals(prevText)) return;
         
         try {
-            Object convertedValue = getConvertedValue(text, null); // dont include format - it is for display only
-            // Object convertedValue = OAReflect.convertParameterFromString(getSetMethod(), text, null); // dont include format - it is for display only
+            Object convertedValue = getConvertedValue(text, null); 
             
             if (convertedValue == null && text.length() > 0) {
                 JOptionPane.showMessageDialog(SwingUtilities.getRoot(textArea), 

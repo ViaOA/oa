@@ -23,6 +23,9 @@ import java.util.logging.Logger;
 
 import com.viaoa.hub.*;
 import com.viaoa.jfc.undo.*;
+import com.viaoa.object.OAObjectInfo;
+import com.viaoa.object.OAObjectInfoDelegate;
+import com.viaoa.object.OAPropertyInfo;
 import com.viaoa.util.*;
 import com.viaoa.jfc.*;
 
@@ -35,7 +38,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
     private static Logger LOG = Logger.getLogger(TextFieldController.class.getName());
     protected JTextField textField;
     protected volatile String prevText;
-    private final AtomicInteger aiSettingText = new AtomicInteger();
+    private final AtomicInteger aiIgnoreSetText = new AtomicInteger();
     private Object activeObject;
     private Object focusActiveObject;
     private OAPlainDocument document;
@@ -110,14 +113,14 @@ public class TextFieldController extends OAJfcController implements FocusListene
             this.afterChangeActiveObject();
         }
         else {
-            aiSettingText.incrementAndGet();
+            aiIgnoreSetText.incrementAndGet();
             if (document != null) document.setAllowAll(true);
             if (tf != null) {
                 if (tf instanceof OATextField) ((OATextField)tf).setText("", false);
                 else tf.setText("");
             }
             if (document != null) document.setAllowAll(false);
-            aiSettingText.decrementAndGet();
+            aiIgnoreSetText.decrementAndGet();
         }
 
         document = new OAPlainDocument() {
@@ -166,11 +169,19 @@ public class TextFieldController extends OAJfcController implements FocusListene
         
         if (OAReflect.isNumber(endPropertyClass)) {
             final boolean bFloat = !OAReflect.isInteger(endPropertyClass);
+            
+            OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(getHub().getObjectClass());
+            OAPropertyInfo pi = oi.getPropertyInfo(endPropertyName);
+            
+            final boolean isCurrency = pi != null && pi.isCurrency(); 
+            String s = "";
+            if (isCurrency) s = "$"; 
+            
             if (bFloat) {
-                document.setValidChars("0123456789-. ");
+                document.setValidChars("0123456789-. "+s);
             }
             else {
-                document.setValidChars("0123456789- ");
+                document.setValidChars("0123456789- "+s);
             }
 
             document.setDocumentFilter(new DocumentFilter() {
@@ -194,7 +205,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
                     String s = "";
                     for (int i=0; i<text.length(); i++) {
                         char ch = text.charAt(i);
-                        if (Character.isDigit(ch) || ch == '-' || (bFloat && ch == '.') || ch == ',') {
+                        if (Character.isDigit(ch) || ch == '-' || (bFloat && ch == '.') || ch == ',' || (isCurrency && (ch == '$' || ch == ' '))) {
                             s += text.charAt(i);
                         }
                     }
@@ -226,10 +237,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
 
 
     public @Override void afterPropertyChange() {
-        Object value = getValue(activeObject);
-        if (value == null) prevText = "";
-        else prevText = OAConv.toString(value, null);
-        update();
+        update();  // will update prevText if it is activeObject
     }
 
     public void onAddNotify() {
@@ -238,17 +246,24 @@ public class TextFieldController extends OAJfcController implements FocusListene
     }
     
     public @Override void afterChangeActiveObject() {
-        boolean b = (focusActiveObject != null && focusActiveObject == activeObject);
-        if (b) onFocusLost();
+        boolean bHasFocus = (focusActiveObject != null && focusActiveObject == activeObject);
+        if (bHasFocus) onFocusLost();
         
         if (hub != null) activeObject = hub.getActiveObject();
         else activeObject = null;
         
-        Object value = getValue(activeObject);
-        if (value == null) prevText = "";
-        else prevText = OAConv.toString(value, null);
+        if (!bHasFocus) {
+            prevText = getFormattedTextValue(activeObject);
+            try {
+                aiIgnoreSetText.incrementAndGet();
+                textField.setText(prevText);
+            }
+            finally {
+                aiIgnoreSetText.decrementAndGet();
+            }
+        }
         
-        if (b) onFocusGained();
+        if (bHasFocus) onFocusGained();
         super.afterChangeActiveObject();
     }
 
@@ -258,7 +273,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
      * 'T'itle, 
      * 'J'ava identifier
      * 'E'ncrpted password/encrypt
-     * 'S'HA password
+     * 'S'HA password  (one way hash)
      */
     public void setConversion(char conv) {
         conversion = conv;
@@ -284,45 +299,33 @@ public class TextFieldController extends OAJfcController implements FocusListene
     }    
     protected void onFocusGained() {
         focusActiveObject = activeObject;
-
-    	if (activeObject != null && !OAString.isEmpty(getFormat())) {
-            // need to settext, without the formatting
+    	if (activeObject == null) return;
+    	if (OAString.isEmpty(getFormat())) return;
     	    
-            Object value = getValue(activeObject);
+        Object value = getValue(activeObject);
 
-            // 201106076 make sure that text was not changed by keystroke from OATable
-            //       compare the "last known" value set with the current textField.getText
-            String ftext = OAConv.toString(value, getFormat());
-            if (ftext == null) {
-                ftext = getNullDescription();
-                if (ftext == null) ftext = " ";
-            }
-            if (ftext.equals(textField.getText())) {  // otherwise, it was changed by OATable keystroke
-                String text; 
-                if (value == null) text = "";
-                else text = OAConv.toString(value, getFormat()); // 20160705 allow editing with format chars
-                //was: else text = OAConv.toString(value, null); // dont include format, need raw/edit version
+        // make sure that text was not changed by keystroke from OATable
+        //       compare the "last known" value set with the current textField.getText
+        String ftext = getFormattedTextValue(value);
+        
+        if (ftext.equals(textField.getText())) {  // otherwise, it was changed by OATable keystroke
+            String text = ftext; 
+            if (value == null) text = "";
 
-                if (text == null) {
-                    text = getNullDescription();
-                    if (text == null) text = "";
-                }
-                aiSettingText.incrementAndGet();
-                
-                // 20110605 see if select all is current done
-                int p1 = textField.getSelectionStart();
-                int p2 = textField.getSelectionEnd();
-                boolean b = p1 == 0 && text != null && p2 == text.length(); 
-    
-                textField.setText(text);
-                
-                if (b) {
-                    textField.selectAll();
-                }
-                aiSettingText.decrementAndGet();
+            aiIgnoreSetText.incrementAndGet();
+            
+            // see if select all is currently done
+            int p1 = textField.getSelectionStart();
+            int p2 = textField.getSelectionEnd();
+            boolean b = p1 == 0 && text != null && p2 == text.length(); 
+
+            textField.setText(text);
+            
+            if (b) {
+                textField.selectAll();
             }
-    	}
-    	
+            aiIgnoreSetText.decrementAndGet();
+        }
     }
     
     @Override
@@ -337,7 +340,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
             saveText();
         }
         focusActiveObject = null;
-        update(); // will settext with formatting
+        update();
     }
 
     
@@ -345,12 +348,12 @@ public class TextFieldController extends OAJfcController implements FocusListene
     @Override
     public void actionPerformed(ActionEvent e) {
         saveText();
-        textField.selectAll(); // 20110606
+        textField.selectAll();
     }
 
     private boolean bSaving; // only used by saveChanges(), calling setText generates actionPerformed()
     public void saveText() {
-        if (aiSettingText.get() > 0) return;
+        if (aiIgnoreSetText.get() > 0) return;
         if (bSaving) return;
         try {
             bSaving = true;
@@ -404,8 +407,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
         }
         
         try {
-            Object convertedValue = getConvertedValue(text, null); // dont include format - it is for display only
-            // Object convertedValue = OAReflect.convertParameterFromString(getSetMethod(), text, null); // dont include format - it is for display only
+            Object convertedValue = getConvertedValue(text, null);
             
             if (convertedValue == null && text.length() > 0) {
                 JOptionPane.showMessageDialog(SwingUtilities.getRoot(textField), 
@@ -426,8 +428,6 @@ public class TextFieldController extends OAJfcController implements FocusListene
             prevText = text;
             Object prevValue = getValue(activeObject);
             
-            setValue(activeObject, text, null);
-     
             if (endPropertyName == null || endPropertyName.length() == 0) {  // use object.  (ex: String.class)
                 Object oldObj = activeObject;
                 Object newObj = OAReflect.convertParameterFromString(hub.getObjectClass(), text);
@@ -523,19 +523,14 @@ public class TextFieldController extends OAJfcController implements FocusListene
     public void update() {
         if (textField == null) return;
         if (focusActiveObject == null || bAllowChangesWhileFocused) {
-            String text = null;
-            if (activeObject != null) {
-                Object value = getValue(activeObject);
-                if (value == null) text = "";
-                else text = OAConv.toString(value, getFormat());
-            }
-            if (text == null) {
-                text = getNullDescription();
-                if (text == null) text = " ";
-            }
-            aiSettingText.incrementAndGet();
+            Object obj;
+            if (hub != null) obj = hub.getActiveObject();
+            else obj = null;
+            
+            String text = getFormattedTextValue(obj);
+            aiIgnoreSetText.incrementAndGet();
             try {
-                // 20110605 see if select all is currently done
+                // see if select all is currently done
                 int p1 = textField.getSelectionStart();
                 int p2 = textField.getSelectionEnd();
                 boolean b = p1 == 0 && text != null && p2 == text.length(); 
@@ -548,10 +543,24 @@ public class TextFieldController extends OAJfcController implements FocusListene
                 }
             }
             finally {
-                aiSettingText.decrementAndGet();
+                aiIgnoreSetText.decrementAndGet();
             }
         }        
         super.update();
+    }
+    
+    protected String getFormattedTextValue(Object obj) {
+        String text = null;
+        if (obj != null) {
+            Object value = getValue(obj);
+            if (value == null) text = null;
+            else text = OAConv.toString(value, getFormat());
+        }
+        if (text == null) {
+            text = getNullDescription();
+            if (text == null) text = " ";
+        }
+        return text;
     }
     
     @Override
