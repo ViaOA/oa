@@ -1060,9 +1060,11 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
         switch (msg.getType()) {
         case Unknown:
             break;
+/*qqqqqqqqqqq            
         case OnRemoveAll:
             if (validateTestType == 2) return false;
             break;
+*/            
         }
         return true;
     }

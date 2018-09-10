@@ -72,7 +72,13 @@ public class OAAnnotationDelegate {
                 String[] pps = oaclass.rootTreePropertyPaths();
                 oi.setRootTreePropertyPaths(pps);
                 oi.setLookup(oaclass.isLookup());
-                oi.setPreSelect(oaclass.isPreSelect());
+            }
+            OAEditQuery eq = (OAEditQuery) clazz.getAnnotation(OAEditQuery.class);
+            if (eq != null) {
+                oi.setEnabledProperty(eq.enableProperty());
+                oi.setEnabledValue(eq.enableValue());
+                oi.setVisibleProperty(eq.visibleProperty());
+                oi.setVisibleValue(eq.visibleValue());
             }
         }
         // prop ids
@@ -181,6 +187,14 @@ public class OAAnnotationDelegate {
                 catch (Exception e) {
                 }
             }
+            
+            OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
+            if (eq != null) {
+                pi.setEnabledProperty(eq.enableProperty());
+                pi.setEnabledValue(eq.enableValue());
+                pi.setVisibleProperty(eq.visibleProperty());
+                pi.setVisibleValue(eq.visibleValue());
+            }
         }
       
         // calcProperties
@@ -209,6 +223,14 @@ public class OAAnnotationDelegate {
             }
             ci.setOACalculatedProperty(annotation);
             ci.setClassType(m.getReturnType());
+
+            OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
+            if (eq != null) {
+                ci.setEnabledProperty(eq.enableProperty());
+                ci.setEnabledValue(eq.enableValue());
+                ci.setVisibleProperty(eq.visibleProperty());
+                ci.setVisibleValue(eq.visibleValue());
+            }
         }
 
         // linkInfos
@@ -240,6 +262,14 @@ public class OAAnnotationDelegate {
             li.setCalculated(annotation.isCalculated());
             //li.setRecursive(annotation.recursive());
             li.setOAOne(annotation);
+
+            OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
+            if (eq != null) {
+                li.setEnabledProperty(eq.enableProperty());
+                li.setEnabledValue(eq.enableValue());
+                li.setVisibleProperty(eq.visibleProperty());
+                li.setVisibleValue(eq.visibleValue());
+            }
         }
         // Manys
         for (Method m : methods) {
@@ -302,6 +332,14 @@ public class OAAnnotationDelegate {
             s = annotation.mergerPropertyPath();
             li.setMergerPropertyPath(s);
             li.setOAMany(annotation);
+
+            OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
+            if (eq != null) {
+                li.setEnabledProperty(eq.enableProperty());
+                li.setEnabledValue(eq.enableValue());
+                li.setVisibleProperty(eq.visibleProperty());
+                li.setVisibleValue(eq.visibleValue());
+            }
         }
     }
 

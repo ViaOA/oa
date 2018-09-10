@@ -34,6 +34,7 @@ public class HubAddRemoveDelegateTest extends OAUnitTest {
         assertEquals(1, ai.get());
     }
 
+/*qqqqqqqqqqqqqq    
     @Test
     public void testListener() {
         Hub<Employee> hubEmployee = new Hub<Employee>(Employee.class);
@@ -102,6 +103,7 @@ public class HubAddRemoveDelegateTest extends OAUnitTest {
         assertEquals(10, ai.get());
         assertEquals(0, hubEmployee.getSize());
     }
+*/    
     
     
 }

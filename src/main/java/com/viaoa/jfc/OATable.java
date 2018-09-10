@@ -2472,9 +2472,12 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         if (obj instanceof OAObject) {
             String s = HubLinkDelegate.getLinkToProperty(hub);
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+/*            
             OAObjectEditQuery em = OAObjectEditQueryDelegate.getOnConfirm((OAObject)obj, s, hub.getAt(newRow), confirmMessage, confirmTitle);
             confirmMessage = em.getConfirmMessage();
             confirmTitle = em.getConfirmTitle();
+*/            
         }
         
         boolean result = true;
@@ -3661,7 +3664,6 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     public MyHubAdapter(Hub hub, OATable table) {
         super(hub, table, HubChangeListener.Type.HubValid);
         this.table = table;
-        setEnabledChecksMasterHub(false);
         table.getSelectionModel().addListSelectionListener(this);
         // getHub().addHubListener(this);
         afterChangeActiveObject(null);

@@ -42,6 +42,7 @@ public class OAObjectModel {
     protected boolean bAllowPaste;
     protected boolean bViewOnly;
     protected boolean bCreateUI;
+    protected boolean bAllowMove;
     
     protected String displayName;
     protected String displayNamePlural;
@@ -59,6 +60,7 @@ public class OAObjectModel {
         setAllowAdd(true);
         setAllowNew(true);
         setAllowRemove(true);
+        setAllowRemove(false);
         setAllowSave(true);
         setAllowDelete(true);
         setAllowClear(true);
@@ -234,4 +236,10 @@ public class OAObjectModel {
         bAllowDownload = b;
     }
     
+    public boolean getAllowMove() {
+        return bAllowMove;
+    }
+    public void setAllowMove(boolean b) {
+        bAllowMove = b;
+    }
 }

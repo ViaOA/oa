@@ -898,7 +898,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Flag to know if add/remove are enabled
      */
     public boolean getEnabled() {
-        return !data.isDisabled();
+        if (!data.isDisabled()) return false;
+        return OAObjectEditQueryDelegate.getAllowEnabled(this);
     }
     public void setEnabled(boolean b) {
         this.data.setDisabled(!b);
@@ -2139,31 +2140,16 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     }
     
     public boolean canAdd() {
-        return HubEventDelegate.canAdd(this);
+        return OAObjectEditQueryDelegate.getAllowAdd(this);
     }
     public boolean canAdd(OAObject obj) {
-        return HubEventDelegate.canAdd(this, obj);
+        return OAObjectEditQueryDelegate.getVerifyAdd(this, obj);
     }
     public boolean canRemove() {
-        return HubEventDelegate.canRemove(this);
+        return OAObjectEditQueryDelegate.getAllowRemove(this);
     }
     public boolean canRemove(OAObject obj) {
-        return HubEventDelegate.canRemove(this, obj);
-    }
-    public boolean canDelete() {
-        return HubEventDelegate.canDelete(this);
-    }
-    public boolean canDelete(OAObject obj) {
-        return HubEventDelegate.canDelete(this, obj);
-    }
-    public boolean canChangeProperty(String prop) {
-        return HubEventDelegate.canChangeProperty(this, prop);
-    }
-    public boolean canChangeProperty(OAObject obj, String prop) {
-        return HubEventDelegate.canChangeProperty(this, obj, prop);
-    }
-    public boolean canChangeProperty(OAObject obj, String prop, Object oldValue, Object newValue) {
-        return HubEventDelegate.canChangeProperty(this, obj, prop, oldValue, newValue);
+        return OAObjectEditQueryDelegate.getVerifyRemove(this, obj);
     }
     
     public void setLoading(boolean b) {

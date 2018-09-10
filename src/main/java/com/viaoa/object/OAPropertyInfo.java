@@ -164,6 +164,35 @@ public class OAPropertyInfo implements java.io.Serializable {
         this.isCurrency = b;
     }
     
+    private String enabledProperty;
+    private boolean enabledValue;
+    private String visibleProperty;
+    private boolean visibleValue;
+    public String getEnabledProperty() {
+        return enabledProperty;
+    }
+    public void setEnabledProperty(String s) {
+        enabledProperty = s;
+    }
+    public boolean getEnabledValue() {
+        return enabledValue;
+    }
+    public void setEnabledValue(boolean b) {
+        enabledValue = b;
+    }
+
+    public String getVisibleProperty() {
+        return visibleProperty;
+    }
+    public void setVisibleProperty(String s) {
+        visibleProperty = s;
+    }
+    public boolean getVisibleValue() {
+        return visibleValue;
+    }
+    public void setVisibleValue(boolean b) {
+        visibleValue = b;
+    }
 }
 
 

@@ -68,7 +68,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
     private AbstractButton button;
     
     private OAButton.ButtonEnabledMode enabledMode;
-    private OAButton.ButtonCommand command;
+    protected OAButton.ButtonCommand command;
 
     private boolean bMasterControl = true;
     private String confirmMessage;
@@ -1335,6 +1335,23 @@ public class ButtonController extends OAJfcController implements ActionListener 
             }
             if (flag && !HubDelegate.isValid(hub)) flag = false;
         }
+        
+        if (flag) {
+            OAObjectEditQuery eq;
+            switch (command) {
+            case Delete:
+                flag = ((OAObject) obj).canDelete();
+                break;
+            case Remove:
+                flag = hub.canRemove((OAObject) obj);
+                break;
+            case Add:
+            case Insert:
+            case New:
+                flag = hub.canAdd();
+            }            
+        }
+        
         return flag;
     }
 

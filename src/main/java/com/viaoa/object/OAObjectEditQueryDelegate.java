@@ -4,10 +4,14 @@ import java.lang.reflect.Method;
 
 import javax.swing.JLabel;
 
+import com.viaoa.annotation.OAEditQuery;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubDetailDelegate;
+import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubEventDelegate;
-import com.viaoa.hub.OAObjectEditQueryHubListener;
+import com.viaoa.hub.HubListener;
 import com.viaoa.object.OAObjectEditQuery.Type;
+import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
 
 /**
@@ -16,286 +20,579 @@ import com.viaoa.util.OAString;
  */
 public class OAObjectEditQueryDelegate {
 
-    public static boolean getAllowChange(OAObject obj, String name) {
-        return isAllowed(getAllowChangeEditQuery(obj, name));
+    public static boolean getAllowEnabled(OAObject obj, String name) {
+        return getAllowEnabledEditQuery(obj, name).getAllowed();
     }
-    public static boolean getAllowChange(OAObject obj, String name, boolean defaultValue) {
-        return isAllowed(getAllowChangeEditQuery(obj, name, defaultValue));
-    }
-    public static boolean getOnChange(OAObject obj, String name, Object newValue) {
-        return isAllowed(getOnChangeEditQuery(obj, name, newValue));
+    public static boolean getAllowEnabled(Hub hub) {
+        return getAllowEnabledEditQuery(hub).getAllowed();
     }
     public static boolean getAllowVisible(OAObject obj, String name) {
-        return isAllowed(getAllowVisibleEditQuery(obj, name));
-    }
-    public static boolean getAllowVisible(OAObject obj, String name, boolean defaultValue) {
-        return isAllowed(getAllowVisibleEditQuery(obj, name, defaultValue));
-    }
-    public static boolean getAllowAdd(OAObject obj, String name) {
-        return isAllowed(getAllowAddEditQuery(obj, name));
-    }
-    public static boolean getOnAdd(OAObject obj, String name, Object newValue) {
-        return isAllowed(getOnAddEditQuery(obj, name, newValue));
-    }
-    public static boolean getAllowInsert(OAObject obj, String name) {
-        return isAllowed(getAllowInsertEditQuery(obj, name));
-    }
-    public static boolean getOnInsert(OAObject obj, String name, Object newValue) {
-        return isAllowed(getOnInsertEditQuery(obj, name, newValue));
-    }
-    public static boolean getAllowRemove(OAObject obj, String name) {
-        return isAllowed(getAllowRemoveEditQuery(obj, name));
-    }
-    public static boolean getOnRemove(OAObject obj, String name, Object newValue) {
-        return isAllowed(getOnRemoveEditQuery(obj, name, newValue));
-    }
-    public static boolean getAllowRemoveAll(OAObject obj, String name) {
-        return isAllowed(getAllowRemoveAllEditQuery(obj, name));
-    }
-    public static boolean getOnRemoveAll(OAObject obj, String name, Object newValue) {
-        return isAllowed(getOnRemoveAllEditQuery(obj, name, newValue));
-    }
-    public static boolean getAllowDelete(OAObject obj, String name) {
-        return isAllowed(getAllowDeleteEditQuery(obj, name));
-    }
-    public static boolean getOnDelete(OAObject obj, String name, Object newValue) {
-        return isAllowed(getOnDeleteEditQuery(obj, name, newValue));
+        return getAllowVisibleEditQuery(obj, name).getAllowed();
     }
 
-    public static String getFormat(OAObject obj, String name, String defaultFormat) {
+    public static boolean getVerifyPropertyChange(OAObject obj, String propertyName, Object oldValue, Object newValue) {
+        return getVerifyPropertyChangeEditQuery(obj, propertyName, oldValue, newValue).getAllowed();
+    }
+    
+    public static boolean getAllowAdd(Hub hub) {
+        return getAllowAddEditQuery(hub).getAllowed();
+    }
+    public static boolean getVerifyAdd(Hub hub, OAObject obj) {
+        return getVerifyAddEditQuery(hub, obj).getAllowed();
+    }
+    
+    public static boolean getAllowRemove(Hub hub) {
+        return getAllowRemoveEditQuery(hub).getAllowed();
+    }
+    public static boolean getVerifyRemove(Hub hub, OAObject obj) {
+        return getVerifyRemoveEditQuery(hub, obj).getAllowed();
+    }
+    
+    public static boolean getAllowRemoveAll(Hub hub) {
+        return getAllowRemoveAllEditQuery(hub).getAllowed();
+    }
+    public static boolean getVerifyRemoveAll(Hub hub) {
+        return getVerifyRemoveAllEditQuery(hub).getAllowed();
+    }
+    
+    public static boolean getAllowDelete(OAObject obj) {
+        return getAllowDeleteEditQuery(obj).getAllowed();
+    }
+    public static boolean getVerifyDelete(OAObject obj) {
+        return getVerifyDeleteEditQuery(obj).getAllowed();
+    }
+    
+    
+    public static String getFormat(OAObject obj, String propertyName, String defaultFormat) {
         OAObjectEditQuery em = new OAObjectEditQuery(Type.GetFormat);
-        em.setName(name);
+        em.setName(propertyName);
         em.setFormat(defaultFormat);
-        performEditQuery(obj, em);
+        callEditQuery(obj, null, em);
+        callEditQuery(obj, propertyName, em);
         return em.getFormat();
     }
-    public static String getToolTip(OAObject obj, String name, String defaultToolTip) {
+    public static String getToolTip(OAObject obj, String propertyName, String defaultToolTip) {
         OAObjectEditQuery em = new OAObjectEditQuery(Type.GetToolTip);
-        em.setName(name);
+        em.setName(propertyName);
         em.setToolTip(defaultToolTip);
-        performEditQuery(obj, em);
+        callEditQuery(obj, null, em);
+        callEditQuery(obj, propertyName, em);
         return em.getToolTip();
     }
-    public static void RenderLabel(OAObject obj, String name, JLabel label) {
+    public static void RenderLabel(OAObject obj, String propertyName, JLabel label) {
         OAObjectEditQuery em = new OAObjectEditQuery(Type.RenderLabel);
-        em.setName(name);
-        performEditQuery(obj, em);
+        em.setName(propertyName);
+        em.setLabel(label);
+        callEditQuery(obj, null, em);
+        callEditQuery(obj, propertyName, em);
     }
     
-    
-    public static OAObjectEditQuery getAllowChangeEditQuery(OAObject obj, String name) {
-        return getAllowChangeEditQuery(obj, name, true);
+    // @param name used for property, calc properfy, method
+    public static OAObjectEditQuery getAllowEnabledEditQuery(final OAObject oaObj, final String name) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowEnabled);
+        editQuery.setName(name);
+        processEditQuery(editQuery, oaObj, name, null, null);
+        return editQuery;
     }
-    public static OAObjectEditQuery getAllowChangeEditQuery(OAObject obj, String name, boolean defaultValue) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.AllowChange);
-        em.setAllowChange(defaultValue);
-        em.setName(name);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getOnChangeEditQuery(OAObject obj, String name, Object newValue) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.OnChange);
-        em.setName(name);
-        em.setValue(newValue);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getAllowVisibleEditQuery(OAObject obj, String name) {
-        return getAllowVisibleEditQuery(obj, name, true);
-    }
-    public static OAObjectEditQuery getAllowVisibleEditQuery(OAObject obj, String name, boolean defaultValue) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.AllowVisible);
-        em.setAllowVisible(defaultValue);
-        em.setName(name);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getAllowAddEditQuery(OAObject obj, String name) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.AllowAdd);
-        em.setName(name);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getOnAddEditQuery(OAObject obj, String name, Object newValue) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.OnAdd);
-        em.setName(name);
-        em.setValue(newValue);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getAllowInsertEditQuery(OAObject obj, String name) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.AllowInsert);
-        em.setName(name);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getOnInsertEditQuery(OAObject obj, String name, Object newValue) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.OnInsert);
-        em.setName(name);
-        em.setValue(newValue);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getAllowRemoveEditQuery(OAObject obj, String name) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.AllowRemove);
-        em.setName(name);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getOnRemoveEditQuery(OAObject obj, String name, Object newValue) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.OnRemove);
-        em.setName(name);
-        em.setValue(newValue);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getAllowRemoveAllEditQuery(OAObject obj, String name) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.AllowRemoveAll);
-        em.setName(name);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getOnRemoveAllEditQuery(OAObject obj, String name, Object newValue) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.OnRemoveAll);
-        em.setName(name);
-        em.setValue(newValue);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getAllowDeleteEditQuery(OAObject obj, String name) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.AllowDelete);
-        em.setName(name);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getOnDeleteEditQuery(OAObject obj, String name, Object newValue) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.OnDelete);
-        em.setName(name);
-        em.setValue(newValue);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getOnConfirm(OAObject obj, String name, Object newValue) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.OnConfirm);
-        em.setName(name);
-        em.setValue(newValue);
-        performEditQuery(obj, em);
-        return em;
-    }
-    public static OAObjectEditQuery getOnConfirm(OAObject obj, String name, Object newValue, String defaultConfirmMessage, String defaultConfirmTitle) {
-        OAObjectEditQuery em = new OAObjectEditQuery(Type.OnConfirm);
-        em.setName(name);
-        em.setValue(newValue);
-        em.setConfirmMessage(defaultConfirmMessage);
-        em.setConfirmTitle(defaultConfirmTitle);
-        performEditQuery(obj, em);
-        return em;
-    }
-    
-    
-    
-    
-    // get the return boolean from a "allow" or "on" query
-    public static boolean isAllowed(OAObjectEditQuery em) {
-        if (em == null) return false;
-        if (em.getThrowable() != null) return false;
-        
-        switch (em.getType()) {
-        case AllowChange:
-        case OnChange:
-            if (!em.getAllowChange()) return false;
-            break;
-        case AllowVisible:
-            if (!em.getAllowVisible()) return false;
-            break;
-        case AllowAdd:
-        case OnAdd:
-            if (!em.getAllowAdd()) return false;
-            break;
-        case AllowInsert:
-        case OnInsert:
-            if (!em.getAllowInsert()) return false;
-            break;
-        case AllowRemove:
-        case OnRemove:
-            if (!em.getAllowRemove()) return false;
-            break;
-        case AllowRemoveAll:
-        case OnRemoveAll:
-            if (!em.getAllowRemoveAll()) return false;
-            break;
-        case AllowDelete:
-        case OnDelete:
-            if (!em.getAllowDelete()) return false;
-            break;
+    public static OAObjectEditQuery getAllowEnabledEditQuery(Hub hub) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowEnabled);
+
+        OAObject objMaster = hub.getMasterObject();
+        if (objMaster == null) {
+            processEditQueryForHubListeners(editQuery, hub, null, null, null, null);
         }
-        return true;
+        else {
+            String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            editQuery.setName(propertyName);
+            processEditQuery(editQuery, objMaster, propertyName, null, null);
+        }
+        return editQuery;
+    }
+    public static OAObjectEditQuery getVerifyPropertyChangeEditQuery(final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.VerifyPropertyChange);
+        editQuery.setName(propertyName);
+        editQuery.setValue(newValue);
+        
+        processEditQuery(editQuery, oaObj, propertyName, oldValue, newValue);
+        return editQuery;
+    }
+    
+    public static OAObjectEditQuery getAllowVisibleEditQuery(final OAObject oaObj, final String name) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowVisible);
+        editQuery.setName(name);
+        
+        processEditQuery(editQuery, oaObj, name, null, null);
+        return editQuery;
+    }
+    
+    
+    public static OAObjectEditQuery getAllowAddEditQuery(final Hub hub) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowAdd);
+
+        OAObject objMaster = hub.getMasterObject();
+        if (objMaster == null) {
+            processEditQueryForHubListeners(editQuery, hub, null, null, null, null);
+        }
+        else {
+            String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            editQuery.setName(propertyName);
+            processEditQuery(editQuery, objMaster, propertyName, null, null);
+        }
+        return editQuery;
+    }
+    public static OAObjectEditQuery getVerifyAddEditQuery(final Hub hub, final OAObject oaObj) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.VerifyAdd);
+        editQuery.setValue(oaObj);
+
+        OAObject objMaster = hub.getMasterObject();
+        if (objMaster == null) {
+            processEditQueryForHubListeners(editQuery, hub, oaObj, null, null, null);
+        }
+        else {
+            String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            editQuery.setName(propertyName);
+            processEditQuery(editQuery, objMaster, propertyName, null, null);
+        }
+        return editQuery;
+    }
+
+    public static OAObjectEditQuery getAllowRemoveEditQuery(final Hub hub) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowRemove);
+
+        OAObject objMaster = hub.getMasterObject();
+        if (objMaster == null) {
+            processEditQueryForHubListeners(editQuery, hub, null, null, null, null);
+        }
+        else {
+            String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            editQuery.setName(propertyName);
+            processEditQuery(editQuery, objMaster, propertyName, null, null);
+        }
+        return editQuery;
+    }
+    public static OAObjectEditQuery getVerifyRemoveEditQuery(final Hub hub, final OAObject oaObj) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.VerifyRemove);
+        editQuery.setValue(oaObj);
+
+        OAObject objMaster = hub.getMasterObject();
+        if (objMaster == null) {
+            processEditQueryForHubListeners(editQuery, hub, oaObj, null, null, null);
+        }
+        else {
+            String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            editQuery.setName(propertyName);
+            processEditQuery(editQuery, objMaster, propertyName, null, null);
+        }
+        return editQuery;
+    }
+        
+    public static OAObjectEditQuery getAllowRemoveAllEditQuery(final Hub hub) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowRemoveAll);
+
+        OAObject objMaster = hub.getMasterObject();
+        if (objMaster == null) {
+            processEditQueryForHubListeners(editQuery, hub, null, null, null, null);
+        }
+        else {
+            String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            editQuery.setName(propertyName);
+            processEditQuery(editQuery, objMaster, propertyName, null, null);
+        }
+        return editQuery;
+    }
+    public static OAObjectEditQuery getVerifyRemoveAllEditQuery(final Hub hub) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.VerifyRemoveAll);
+
+        OAObject objMaster = hub.getMasterObject();
+        if (objMaster == null) {
+            processEditQueryForHubListeners(editQuery, hub, null, null, null, null);
+        }
+        else {
+            String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            editQuery.setName(propertyName);
+            processEditQuery(editQuery, objMaster, propertyName, null, null);
+        }
+        return editQuery;
+    }
+
+    public static OAObjectEditQuery getAllowDeleteEditQuery(final OAObject oaObj) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowDelete);
+        editQuery.setValue(oaObj);
+        
+        processEditQuery(editQuery, oaObj, null, null, null);
+        return editQuery;
+    }
+    public static OAObjectEditQuery getVerifyDeleteEditQuery(final OAObject oaObj) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.VerifyDelete);
+        editQuery.setValue(oaObj);
+        
+        processEditQuery(editQuery, oaObj, null, null, null);
+        return editQuery;
+    }
+    
+    public static OAObjectEditQuery getConfirmPropertyChangeEditQuery(final OAObject oaObj, String property, Object newValue, String confirmMessage, String confirmTitle) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.GetConfirmPropertyChange);
+        editQuery.setValue(newValue);
+        editQuery.setName(property);
+        editQuery.setConfirmMessage(confirmMessage);
+        editQuery.setConfirmTitle(confirmTitle);
+        
+        processEditQuery(editQuery, oaObj, property, null, newValue);
+        return editQuery;
     }
     
     
     /**
-     * Allows interaction with OAObject property, using information in em
-     * @see OAObject#onEdit(String, OAObjectEditQuery)
+     * This will process an Edit Query, calling editQuery methods on OAObject, properties, links, methods (depending on type of edit query)
+     * 
+     * Steps:
+     *    call owner objects enabled or visible
+     *    call class @editQuery
+     *    call class editQuery(eq)
+     *    call method @editQuery
+     *    call oaObject.editQueryName(eq)
+     *    call all hubListeners
+     *
+     *  used by:
+     *      OAJfcController to see if an UI component should be enabled
+     *      OAObjetEventDelegate.fireBeforePropertyChange 
+     * qqqqq <MORE> qqq
      */
-    public static void performEditQuery(OAObject obj, OAObjectEditQuery em) {
-        if (obj == null || em == null) return;
+    protected static void processEditQuery(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue) {
+        if (oaObj == null) return;
+        // first call owners (recursive)
+        if (editQuery.getType().checkOwner) {
+            if (editQuery.getType() == Type.AllowVisible || editQuery.getType() == Type.AllowEnabled) {
+                // get default value from owner
+                callOwnerObjects(editQuery, oaObj, propertyName);
+            }
+            else {
+                // need to check owner using AllowEnabled
+                Type type = editQuery.getType();
+                
+                OAObjectEditQuery editQueryX = new OAObjectEditQuery(Type.AllowEnabled);
+                callOwnerObjects(editQueryX, oaObj, propertyName);
+                // set this query to default value from owner property's enabled value
+                editQuery.setAllowed(editQueryX.getAllowed());
+            }
+        }
+
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+
+        // 1: check @OAEditQuery for class
+        if (editQuery.getType() == Type.AllowEnabled) {
+            String sx = oi.getEnabledProperty();
+            boolean bx;
+            if (OAString.isNotEmpty(sx)) {
+                bx = oi.getEnabledValue();
+                Object valx = OAObjectReflectDelegate.getProperty(oaObj, sx);
+                if (bx != OAConv.toBoolean(valx)) editQuery.setAllowed(false);
+            }
+        }            
+        else if (editQuery.getType() == Type.AllowVisible) {
+            String sx = oi.getVisibleProperty();
+            boolean bx;
+            if (OAString.isNotEmpty(sx)) {
+                bx = oi.getVisibleValue();
+                Object valx = OAObjectReflectDelegate.getProperty(oaObj, sx);
+                if (bx != OAConv.toBoolean(valx)) editQuery.setAllowed(false);
+            }
+        }            
+
+        // 2: call editQuery method for class
+        callEditQuery(oaObj, null, editQuery);
         
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(obj);
+            
+        // 3: check @EditQuery for method
+        if (editQuery.getType() == Type.AllowEnabled) {
+            String sx = null;
+            boolean bx = true;
+            OAPropertyInfo pi = oi.getPropertyInfo(propertyName);
+            if (pi != null) {
+                sx = pi.getEnabledProperty();
+                bx = pi.getEnabledValue();
+            }
+            else {
+                OALinkInfo li = oi.getLinkInfo(propertyName);
+                if (li != null) {
+                    sx = li.getEnabledProperty();
+                    bx = li.getEnabledValue();
+                }
+                else {
+                    OACalcInfo ci = oi.getCalcInfo(propertyName);
+                    if (ci != null) {
+                        sx = ci.getEnabledProperty();
+                        bx = ci.getEnabledValue();
+                    }
+                    else {
+                        Method m = OAObjectInfoDelegate.getMethod(oi, propertyName);
+                        if (m != null) {
+                            OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
+                            if (eq != null) {
+                                sx = eq.enableProperty();
+                                bx = eq.enableValue();
+                            }
+                            
+                        }
+                    }
+                }
+                if (OAString.isNotEmpty(sx)) {
+                    Object valx = OAObjectReflectDelegate.getProperty(oaObj, sx);
+                    if (bx != OAConv.toBoolean(valx)) editQuery.setAllowed(false);
+                }
+            }
+        }
+        else if (editQuery.getType() == Type.AllowVisible) {
+            String sx = null;
+            boolean bx = true;
+            OAPropertyInfo pi = oi.getPropertyInfo(propertyName);
+            if (pi != null) {
+                sx = pi.getVisibleProperty();
+                bx = pi.getVisibleValue();
+            }
+            else {
+                OALinkInfo li = oi.getLinkInfo(propertyName);
+                if (li != null) {
+                    sx = li.getVisibleProperty();
+                    bx = li.getVisibleValue();
+                }
+                else {
+                    OACalcInfo ci = oi.getCalcInfo(propertyName);
+                    if (ci != null) {
+                        sx = ci.getVisibleProperty();
+                        bx = ci.getVisibleValue();
+                    }
+                    else {
+                        Method m = OAObjectInfoDelegate.getMethod(oi, propertyName);
+                        if (m != null) {
+                            OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
+                            if (eq != null) {
+                                sx = eq.visibleProperty();
+                                bx = eq.visibleValue();
+                            }
+                        }
+                    }
+                }
+                if (OAString.isNotEmpty(sx)) {
+                    Object valx = OAObjectReflectDelegate.getProperty(oaObj, sx);
+                    if (bx != OAConv.toBoolean(valx)) editQuery.setAllowed(false);
+                }
+            }
+        }
         
-        // query object first
-        Method m = OAObjectInfoDelegate.getMethod(oi, "query", 1);
-        if (m != null) {
-            Class[] cs = m.getParameterTypes();
+        // 4: call editQuery method for method
+        callEditQuery(oaObj, propertyName, editQuery);
+        
+        // 5: call hub listeners
+        Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
+        if (hubs != null) {
+            // check hub.listeners
+            for (Hub h : hubs) {
+                processEditQueryForHubListeners(editQuery, h, oaObj, propertyName, oldValue, newValue);
+            }
+        }
+    }
+
+    protected static int callOwnerObjects(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName) {
+        return callOwnerObjects(editQuery, oaObj, propertyName, null);
+    }
+    protected static int callOwnerObjects(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final OALinkInfo linkInfo) {
+        // recursive, goto top owner first
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+        
+        OALinkInfo li = oi.getOwnedByOne();
+        if (li == null) return 0;
+
+        if (li.editQueryMethodFlag < 0) return li.editQueryMethodFlag;  // nothing set up in the parent to check
+
+        OAObject objOwner = (OAObject) li.getValue(oaObj);
+        if (objOwner == null) return -1;
+        
+        li.editQueryMethodFlag = callOwnerObjects(editQuery, objOwner, li.getReverseName(), li);  // recursive
+
+        if (linkInfo == null) return 0;
+        li = linkInfo;
+        
+        // now call editQuery & editQuery[propertyName]
+        int result = 0;
+
+        // check @OAEditQuery Annotation
+        if (editQuery.getType() == Type.AllowEnabled) {
+            String pp = li.getEnabledProperty();
+            boolean b = li.getEnabledValue();
+            if (OAString.isEmpty(pp)) {
+                pp = oi.getEnabledProperty();
+                b = oi.getEnabledValue();
+            }
+            if (OAString.isNotEmpty(pp)) {
+                result = 1;
+                if (editQuery.getAllowed()) {  // only allow enabled property to turn allow=false (not =true)
+                    Object valx = OAObjectReflectDelegate.getProperty(objOwner, pp);
+                    boolean bx  = OAConv.toBoolean(valx); 
+                    if (bx != b) editQuery.setAllowed(false);
+                }
+            }
+        }
+        else if (editQuery.getType() == Type.AllowVisible) {
+            String pp = li.getVisibleProperty();
+            boolean b = li.getVisibleValue();
+            if (OAString.isEmpty(pp)) {
+                pp = oi.getVisibleProperty();
+                b = oi.getVisibleValue();
+            }
+            if (OAString.isNotEmpty(pp)) {
+                result = 1;
+                if (editQuery.getAllowed()) { // only allow enabled property to turn allow=false (not =true)
+                    Object valx = OAObjectReflectDelegate.getProperty(objOwner, pp);
+                    boolean bx = OAConv.toBoolean(valx); 
+                    if (bx != b) editQuery.setAllowed(false);
+                }
+            }
+        }
+        
+        boolean b = callEditQuery(oaObj, null, editQuery);
+        if (b) result = 1;
+        
+        if (OAString.isNotEmpty(propertyName)) {
+            b = callEditQuery(oaObj, propertyName, editQuery);
+            if (b) result = 1;
+        }
+
+        if (result == 0) {
+            if (OAString.isNotEmpty(oi.getVisibleProperty()) || OAString.isNotEmpty(li.getVisibleProperty())) result = 1;
+            else if (OAString.isNotEmpty(oi.getEnabledProperty()) || OAString.isNotEmpty(li.getEnabledProperty())) result = 1;
+            else result = -1;  // no check defined
+        }
+        
+        return result;
+    }
+    
+    
+    
+    // called directly if hub.masterObject=null
+    protected static void processEditQueryForHubListeners(OAObjectEditQuery editQuery, final Hub hub, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue) {
+        HubListener[] hl = HubEventDelegate.getAllListeners(hub);
+        if (hl == null) return;
+        int x = hl.length;
+        if (x == 0) return;
+
+        HubEvent hubEvent = null;
+        boolean b=true;
+        try {
+            for (int i=0; i<x; i++) {
+                switch (editQuery.getType()) {
+                case AllowEnabled:
+                    if (hubEvent == null) hubEvent = new HubEvent(hub, oaObj, propertyName);
+                    b = (hl[i].getAllowEnabled(hubEvent));
+                    break;
+                case AllowVisible:
+                    if (hubEvent == null) hubEvent = new HubEvent(hub, oaObj, propertyName);
+                    b = (hl[i].getAllowVisible(hubEvent));
+                    break;
+
+                case VerifyPropertyChange:
+                    if (hubEvent == null) hubEvent = new HubEvent(hub, oaObj, propertyName, oldValue, newValue);
+                    b = (hl[i].isValidPropertyChange(hubEvent));
+                    break;
+
+                case AllowAdd:
+                    if (hubEvent == null) hubEvent = new HubEvent(hub);
+                    b = (hl[i].getAllowAdd(hubEvent));
+                    break;
+                case VerifyAdd:
+                    if (hubEvent == null) hubEvent = new HubEvent(hub, newValue);
+                    b = (hl[i].isValidAdd(hubEvent));
+                    break;
+                case AllowRemove:
+                    if (hubEvent == null) hubEvent = new HubEvent(hub);
+                    b = (hl[i].getAllowRemove(hubEvent));
+                    break;
+                case VerifyRemove:
+                    if (hubEvent == null) hubEvent = new HubEvent(hub, newValue);
+                    b = (hl[i].isValidRemove(hubEvent));
+                    break;
+                case AllowRemoveAll:
+                    if (hubEvent == null) hubEvent = new HubEvent(hub);
+                    b = (hl[i].getAllowRemoveAll(hubEvent));
+                    break;
+                case VerifyRemoveAll:
+                    if (hubEvent == null) hubEvent = new HubEvent(hub, newValue);
+                    b = (hl[i].isValidRemoveAll(hubEvent));
+                    break;
+                case AllowDelete:
+                    if (hubEvent == null) hubEvent = new HubEvent(hub);
+                    b = (hl[i].getAllowDelete(hubEvent));
+                    break;
+                case VerifyDelete:
+                    if (hubEvent == null) hubEvent = new HubEvent(hub, newValue);
+                    b = (hl[i].isValidDelete(hubEvent));
+                    break;
+                }
+                
+                if (hubEvent == null) break;
+                if (!b) {
+                    editQuery.setAllowed(false);
+                    String s = hubEvent.getResponse();
+                    if (OAString.isNotEmpty(s)) editQuery.setResponse(s);
+                    break;
+                }
+            }
+        }
+        catch (Exception e) {
+            b = false;
+            editQuery.setThrowable(e);
+            editQuery.setAllowed(false);
+        }
+        
+        if (!b) {
+            editQuery.setAllowed(false);
+            String s = editQuery.getResponse();
+            if (OAString.isEmpty(s)) s = editQuery.getType() + " failed for " + oaObj.getClass().getSimpleName() + "." + propertyName;
+            editQuery.setResponse(s);
+        }
+    }
+    
+    protected static boolean callEditQuery(final OAObject oaObj, String propertyName, final OAObjectEditQuery em) {
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
+        
+        if (propertyName == null) propertyName = ""; 
+        Method method = OAObjectInfoDelegate.getMethod(oi, "onEditQuery"+propertyName, 1);
+        if (method != null) {
+            Class[] cs = method.getParameterTypes();
             if (cs[0].equals(OAObjectEditQuery.class)) {
                 try {
-                    Object objx = m.invoke(obj, new Object[] {em});
+                    method.invoke(oaObj, new Object[] {em});
                 }
                 catch (Exception e) {
-                    if (em != null) em.setThrowable(e);
+                    em.setThrowable(e);
+                    em.setAllowed(false);
                 }
             }
         }
-
-        // query property/method 
-        String name = em.getName();
-        if (OAString.isNotEmpty(name)) {
-            m = OAObjectInfoDelegate.getMethod(oi, "query" + name, 1);
-            if (m != null) {
-                Class[] cs = m.getParameterTypes();
-                if (cs[0].equals(OAObjectEditQuery.class)) {
-                    try {
-                        Object objx = m.invoke(obj, new Object[] {em});
-                    }
-                    catch (Exception e) {
-                        if (em != null) em.setThrowable(e);
-                    }
+        return (method != null);
+    }    
+   
+    
+    /**
+     * Used by OAObjectModel objects to allow reference models to be updated after they are created.
+     * @param clazz, ex: from SalesOrderModel, SalesOrder.class
+     * @param property  ex:  "SalesOrderItems"
+     * @param model ex: SalesOrderItemModel
+     */
+    public static void onEditQueryModel(Class clazz, String property, OAObjectModel model) {
+        if (clazz == null || OAString.isEmpty(property) || model == null) return;
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
+        Method m = OAObjectInfoDelegate.getMethod(oi, "onEditQuery" + property + "Model", 1);
+        if (m != null) {
+            Class[] cs = m.getParameterTypes();
+            if (cs[0].equals(OAObjectModel.class)) {
+                try {
+                    m.invoke(null, new Object[] {model});
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("Exception calling static method onEditQuery"+property, e);
                 }
             }
         }
     }
-
-    
-    public static boolean setupEditQueryHubListener(final OAObject oaObj, String property, Hub<?> hub) {
-        if (oaObj == null || OAString.isEmpty(property) || hub == null) return false;
-        if (hub.getMasterObject() == null) return false;
-        
-        // make sure hub does not already have validator listener
-        if (HubEventDelegate.getOAObjectEditQueryHubListener(hub) != null) return false;
-        
-        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
-        final Method methodValidate = OAObjectInfoDelegate.getMethod(oi, "onEdit" + property, 1);
-        if (methodValidate == null) return false;
-                
-        Class[] cs = methodValidate.getParameterTypes();
-        if (!cs[1].equals(OAObjectEditQuery.class)) return false;
-        
-        Class c = hub.getObjectClass();
-        if (c == null || !cs[0].equals(c)) return false;
-        
-        // add hub listener
-        hub.addHubListener(new OAObjectEditQueryHubListener(oaObj, methodValidate));
-        return true;
-    }
-    
-    
 }

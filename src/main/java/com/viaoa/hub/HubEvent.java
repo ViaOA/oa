@@ -24,6 +24,7 @@ public class HubEvent<T> extends java.beans.PropertyChangeEvent {
     T object;
     int pos, toPos;
     boolean bCancel;
+    String response;
 
     /** used to testing/watching events. */
     static int cnt = 0; 
@@ -162,4 +163,10 @@ if (bError) {
 		return oldObj;
     }
     
+    public void setResponse(String response) {
+        this.response = response;
+    }
+    public String getResponse() {
+        return this.response;
+    }
 }

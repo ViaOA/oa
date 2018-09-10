@@ -27,6 +27,7 @@ public class OAMail implements java.io.Serializable {
     private String userId;
     private String password;
     private boolean bDebug;
+    private boolean bUseSSL;
 
     
     public static class OAMailAttachment {
@@ -56,6 +57,12 @@ public class OAMail implements java.io.Serializable {
         this.password = pw;
     }
 
+    public void setUseSSL(boolean b) {
+        bUseSSL = b;
+    }
+    public boolean getUsesSSL() {
+        return bUseSSL;
+    }
     
     public void setDebug(boolean b) {
         this.bDebug = b;
@@ -232,8 +239,11 @@ public class OAMail implements java.io.Serializable {
         message.setContent(mp);
         message.setSentDate(new java.util.Date());
         message.saveChanges();
+      
+        String s = "stmp";
+        if (getUsesSSL()) s += "s";
         
-        transport = session.getTransport("smtp");
+        transport = session.getTransport(s); 
         transport.connect(host, port, userId, password);
         transport.sendMessage(message, message.getAllRecipients());
 
@@ -256,7 +266,7 @@ public class OAMail implements java.io.Serializable {
     }
     
 
-    public static void main(String[] args) throws Exception {
+    public static void mainAaa(String[] args) throws Exception {
         String msg = "";
         String contentType = "text/html; charset=UTF-8";
         
@@ -277,6 +287,27 @@ public class OAMail implements java.io.Serializable {
                 "Email from Hi5 Server", 
                 "<html><body>This is <i>another</i> email from the <h3>goHi5</h3> server, with an attachment</body></html>", null, 
                 new String[] {"c:\\temp\\cem.jpg"});
+    }
+    public static void main(String[] args) throws Exception {
+
+// 20180907 test vj        
+        // mail.send("titan.uslec.net", "vvia@viaoa.com", "autoresponse@vetjobs.com", "HTTP Post Response", s);
+        
+        // OAMail m = new OAMail("mail.gohi5.com", 2525, "notifications@gohi5.com","pnruf013" );
+
+        String pw = "PUT IN HERE";
+        OAMail m = new OAMail("secure.emailsrvr.com", 465, "smtp@vetjobs.com", pw);
+        m.setUseSSL(true);
+        m.setDebug(true);
+
+        m.sendSmtp(
+            new String[]{"vince@viaoa.com"}, 
+            new String[]{}, 
+            "info@vetjobs.com",
+            "Test Email from info vj",
+            "<html><body>This is a test</body></html>", "text/html; charset=UTF-8", 
+            new String[] {}
+        );
     }
 
 }

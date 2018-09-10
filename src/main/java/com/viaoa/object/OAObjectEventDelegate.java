@@ -44,7 +44,9 @@ public class OAObjectEventDelegate {
 	        Object oldObj, final Object newObj, final boolean bLocalOnly, final boolean bSetChanged) {
 	    
 	    if (oaObj == null || propertyName == null) return;
-
+        if (oldObj == newObj) return;
+        if (oldObj != null && oldObj.equals(newObj)) return;
+	    
 	    final boolean bIsLoading = OAThreadLocalDelegate.isLoading(); 
 	    if (bIsLoading) {
 	        if (!OAObjectHubDelegate.isInHub(oaObj)) {  // 20110719: could be in the OAObjectCache.SelectAllHubs
@@ -67,26 +69,8 @@ public class OAObjectEventDelegate {
 	        }
 	        
 	        if (!bSkip) {
-                OAObjectEditQuery em = new OAObjectEditQuery(OAObjectEditQuery.Type.AllowChange);
-    	        em.setName(propertyName);
-                try {
-                    OAObjectEditQueryDelegate.performEditQuery(oaObj, em);
-                }
-                catch (Throwable e) {
-                    em.setThrowable(e);
-                }
-    
-                if (em.getAllowChange()) {
-                    em = new OAObjectEditQuery(OAObjectEditQuery.Type.OnChange);
-                    em.setValue(newObj);
-        	        try {
-        	            OAObjectEditQueryDelegate.performEditQuery(oaObj, em);
-        	        }
-        	        catch (Throwable e) {
-        	            em.setThrowable(e);
-        	        }
-                }
-    	        if (!em.getAllowChange() || em.getThrowable() != null) {
+	            OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery(oaObj, propertyName, oldObj, newObj);
+    	        if (!em.getAllowed() || em.getThrowable() != null) {
     	            String msg = em.getResponse();
     	            if (em.getThrowable() != null) {
     	                msg = OAString.concat(msg, "Exception: "+em.getThrowable().getMessage(), ", ");
@@ -102,25 +86,7 @@ public class OAObjectEventDelegate {
             if (OAObjectReflectDelegate.getPrimitiveNull(oaObj, propertyName) || oldObj instanceof OANullObject) oldObj = null;
         }
         
-        if (oldObj == newObj) return;
-        if (oldObj != null && oldObj.equals(newObj)) return;
-
-        
-        // 20160606 verify to the prop can be changed
-        if (!bIsLoading && !OARemoteThreadDelegate.isRemoteThread()) {
-            Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
-            if (hubs != null) {
-                for (Hub h : hubs) {
-                    if (h == null) continue;
-                    if (!h.canChangeProperty(oaObj, propertyName, oldObj, newObj)) {
-                        throw new RuntimeException("can change property returned false, property cant be changed.");
-                    }
-                }
-            }
-        }
-        
-        
-        // 20150109 verify that change is permitted
+        // verify that change is permitted
         // verify if recursive link that new parent is allowed
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
         final String propertyU = propertyName.toUpperCase();
@@ -162,21 +128,21 @@ public class OAObjectEventDelegate {
             }
         }
 
-//qqqqqqqqqqqqqqqq
-// 20170420 check to see if owner is being reassigned to null
-    if (linkInfo != null && oldObj instanceof OAObject && newObj == null && !oaObj.isDeleted() && !oaObj.isNew() && linkInfo.getType() == OALinkInfo.ONE && !linkInfo.getCalculated()) {
-        if (!OAThreadLocalDelegate.isDeleting() && OASync.isServer()) {
-            OAObjectInfo oix = OAObjectInfoDelegate.getOAObjectInfo((OAObject)oldObj);
-            if (!oix.getLookup() && !oix.getPreSelect()) {
-                cntSetOwnerNull++;
-                if (throttleSetOwnerNull.check()) {
-                    String s = "FYI (no exception), reference is being set to null, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj+", old value="+oldObj;
-                    RuntimeException e = new RuntimeException(s);
-                    LOG.log(Level.FINE, "cnt="+(cntSetOwnerNull)+" " + s, e);
+
+        // 20170420 check to see if owner is being reassigned to null
+        if (linkInfo != null && oldObj instanceof OAObject && newObj == null && !oaObj.isDeleted() && !oaObj.isNew() && linkInfo.getType() == OALinkInfo.ONE && !linkInfo.getCalculated()) {
+            if (!OAThreadLocalDelegate.isDeleting() && OASync.isServer()) {
+                OAObjectInfo oix = OAObjectInfoDelegate.getOAObjectInfo((OAObject)oldObj);
+                if (!oix.getLookup() && !oix.getPreSelect()) {
+                    cntSetOwnerNull++;
+                    if (throttleSetOwnerNull.check()) {
+                        String s = "FYI (no exception), reference is being set to null, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj+", old value="+oldObj;
+                        RuntimeException e = new RuntimeException(s);
+                        LOG.log(Level.FINE, "cnt="+(cntSetOwnerNull)+" " + s, e);
+                    }
                 }
             }
         }
-    }
         
         
         if (linkInfo == null && !OARemoteThreadDelegate.isRemoteThread()) {

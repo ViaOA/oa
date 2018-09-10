@@ -55,6 +55,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     private boolean isImportMatch;
     private boolean couldBeLarge;
     
+    
     // runtime
     protected transient int cacheSize;
     private OALinkInfo revLinkInfo;
@@ -67,6 +68,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     private String mergerPropertyPath;
     private OAOne oaOne;
     private OAMany oaMany;
+    protected int editQueryMethodFlag; // 0=has not checked, -1=false, 1=true   see: OAObjectEditQueryDelegate
     
     public OALinkInfo(String name, Class toClass, int type) {
         this(name, toClass, type, false, false, null, false);
@@ -386,5 +388,38 @@ public class OALinkInfo { //implements java.io.Serializable {
         if (rli.getType() != TYPE_ONE) return false;
         return true;
     }
+
+    private String enabledProperty;
+    private boolean enabledValue;
+    private String visibleProperty;
+    private boolean visibleValue;
+    public String getEnabledProperty() {
+        return enabledProperty;
+    }
+    public void setEnabledProperty(String s) {
+        enabledProperty = s;
+    }
+    public boolean getEnabledValue() {
+        return enabledValue;
+    }
+    public void setEnabledValue(boolean b) {
+        enabledValue = b;
+    }
+
+    public String getVisibleProperty() {
+        return visibleProperty;
+    }
+    public void setVisibleProperty(String s) {
+        visibleProperty = s;
+    }
+    public boolean getVisibleValue() {
+        return visibleValue;
+    }
+    public void setVisibleValue(boolean b) {
+        visibleValue = b;
+    }
 }
+
+
+
 

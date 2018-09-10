@@ -337,9 +337,21 @@ public class OAObject implements java.io.Serializable, Comparable {
     }
 
 
-    // allows other components to interact with OAObject property
-    public void editQuery(OAObjectEditQuery em) {
-        OAObjectEditQueryDelegate.performEditQuery(this, em);
+    // allows other components to interact with OAObject property, by call onEditQueryXxxx method(s)
+    public boolean isValidPropertyChange(String propertyName, Object oldValue, Object newValue) {
+        return OAObjectEditQueryDelegate.getVerifyPropertyChange(this, propertyName, oldValue, newValue);
+    }
+    public boolean isEnabled(String propertyName) {
+        return OAObjectEditQueryDelegate.getAllowEnabled(this, propertyName);
+    }
+    public boolean isEnabled() {
+        return OAObjectEditQueryDelegate.getAllowEnabled(this, null);
+    }
+    public boolean isVisible(String propertyName) {
+        return OAObjectEditQueryDelegate.getAllowVisible(this, propertyName);
+    }
+    public boolean isVisible() {
+        return OAObjectEditQueryDelegate.getAllowVisible(this, null);
     }
     
     /**
@@ -739,13 +751,13 @@ public class OAObject implements java.io.Serializable, Comparable {
         see Hub#deleted
     */
     public void delete() {
-        if (!canDelete(null)) {
+        if (!canDelete()) {
             throw new RuntimeException("can Delete returned false for "+getClass().getSimpleName());
         }
     	OAObjectDeleteDelegate.delete(this);
     }
-    public boolean canDelete(OAObjectEditQuery em) {
-        return true;
+    public boolean canDelete() {
+        return OAObjectEditQueryDelegate.getAllowDelete(this);
     }
     /**
      * called after an object is deleted.

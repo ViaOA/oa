@@ -599,8 +599,9 @@ public class OAJfcController extends HubListenerAdapter {
     protected boolean confirm(final Object obj, Object newValue) {
         String confirmMessage = getConfirmMessage();
         String confirmTitle = "Confirm";
+        
         if (obj instanceof OAObject) {
-            OAObjectEditQuery em = OAObjectEditQueryDelegate.getOnConfirm((OAObject)obj, endPropertyName, newValue, confirmMessage, confirmTitle);
+            OAObjectEditQuery em = OAObjectEditQueryDelegate.getConfirmPropertyChangeEditQuery((OAObject)obj, endPropertyName, newValue, confirmMessage, confirmTitle);
             confirmMessage = em.getConfirmMessage();
             confirmTitle = em.getConfirmTitle();
         }
@@ -632,20 +633,11 @@ public class OAJfcController extends HubListenerAdapter {
         
         String fmt = getFormat();
         newValue = getConvertedValue(newValue, fmt);
-        
-        // 1: check the object to see if changes are allowed
-        OAObjectEditQuery em = OAObjectEditQueryDelegate.getAllowChangeEditQuery(oaObj, endPropertyName);
-        em.setValue(newValue);
-        boolean bAllow = OAObjectEditQueryDelegate.isAllowed(em);
 
-        // 2: call OAObject.onEdit(prop, em)
-        if (bAllow) {
-            em = OAObjectEditQueryDelegate.getOnChangeEditQuery(oaObj, endPropertyName, newValue);
-            bAllow = OAObjectEditQueryDelegate.isAllowed(em);
-        }
-        
+        OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery((OAObject)obj, endPropertyName, null, newValue);
+
         String result = null;
-        if (!bAllow) {
+        if (!em.getAllowed()) {
             result = em.getResponse();
             if (OAString.isEmpty(result) && em.getThrowable() != null) {
                 result = em.getThrowable().toString(); 
@@ -1083,15 +1075,6 @@ public class OAJfcController extends HubListenerAdapter {
             ((OAJfcComponent) component).customizeRenderer(lbl, object, object, false, false, pos, false, false);
         }
     }
-
-    private boolean bEnabledChecksMasterHub=true;
-    public void setEnabledChecksMasterHub(boolean b) {
-        bEnabledChecksMasterHub = b;
-        update();
-    }
-    public boolean getEnabledChecksMasterHub() {
-        return bEnabledChecksMasterHub;
-    }
     
     protected void updateEnabled() {
         updateEnabled(component, hub==null ? null : hub.getAO());
@@ -1105,41 +1088,20 @@ public class OAJfcController extends HubListenerAdapter {
             hubLink = hub.getLinkHub();            
             bEnabled = hub.isValid();
             if (bEnabled) {
-                // check master obj first
-                if (getEnabledChecksMasterHub() && hubLink == null && HubDetailDelegate.isOwned(hub)) {
-                    Object objx = hub.getMasterObject();
-                    String s = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
-                    bEnabled = OAObjectEditQueryDelegate.getAllowChange((OAObject) objx, s);
-                }
-                
                 // check link hub
-                if (bEnabled && hubLink != null) {
+                if (hubLink != null) {
                     bEnabled = hubLink.isValid();
                     if (bEnabled) {
-                        if (getEnabledChecksMasterHub() && HubDetailDelegate.isOwned(hubLink)) {
-                            Object objx = hubLink.getMasterObject();
-                            String s = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
-                            bEnabled = OAObjectEditQueryDelegate.getAllowChange((OAObject) objx, s);
-                        }
-                        
-                        Object objx = hubLink.getAO();
-                        if (objx == null) {
-                            bEnabled = false;
-                        }
-                        else {
-                            String s = HubLinkDelegate.getLinkToProperty(hub);
-                            bEnabled = OAObjectEditQueryDelegate.getAllowChange((OAObject) objx, s, bEnabled);
-                        }
+                        String s = HubLinkDelegate.getLinkToProperty(hub);
+                        bEnabled = OAObjectEditQueryDelegate.getAllowEnabled((OAObject) hubLink.getAO(), s);
                     }
+                }
+                else {
+                    bEnabled = OAObjectEditQueryDelegate.getAllowEnabled((OAObject)object, endPropertyName);
                 }
             }
         }
         
-        if (hubLink == null && object instanceof OAObject) {
-            if (OAString.isNotEmpty(endPropertyName)) {
-                bEnabled = OAObjectEditQueryDelegate.getAllowChange((OAObject) object, endPropertyName, bEnabled);
-            }
-        }
         bEnabled = bEnabled && getEnabledChangeListener().getValue();
         bEnabled = isEnabled(bEnabled);
         
@@ -1182,32 +1144,20 @@ public class OAJfcController extends HubListenerAdapter {
         boolean bVisible = true;
         Hub hubLink = null;
         if (hub != null) {
-            hubLink = hub.getLinkHub();
-            // check master obj first
-            if (hubLink== null && HubDetailDelegate.isOwned(hub)) {
-                Object objx = hub.getMasterObject();
-                String s = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
-                bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject) objx, s);
-            }
-            // check link hub
-            if (bVisible && hubLink != null) {
-                if (HubDetailDelegate.isOwned(hubLink)) {
-                    Object objx = hubLink.getMasterObject();
-                    String s = HubDetailDelegate.getPropertyFromMasterToDetail(hubLink);
-                    bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject) objx, s, bVisible);
+            hubLink = hub.getLinkHub();            
+            bVisible = hub.isValid();
+            if (bVisible) {
+                // check link hub
+                if (hubLink != null) {
+                    bVisible = hubLink.isValid();
+                    if (bVisible) {
+                        String s = HubLinkDelegate.getLinkToProperty(hub);
+                        bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject) hubLink.getAO(), s);
+                    }
                 }
-                
-                Object objx = hubLink.getAO();
-                if (objx != null) {
-                    String s = HubLinkDelegate.getLinkToProperty(hub);
-                    bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject) objx, s, bVisible);
+                else {
+                    bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject)object, endPropertyName);
                 }
-            }
-        }
-        
-        if (bVisible && hubLink == null && object instanceof OAObject) {
-            if (OAString.isNotEmpty(endPropertyName)) {
-                bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject) object, endPropertyName, bVisible);
             }
         }
         bVisible = bVisible && getVisibleChangeListener().getValue();

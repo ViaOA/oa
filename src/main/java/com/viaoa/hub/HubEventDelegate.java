@@ -32,6 +32,12 @@ public class HubEventDelegate {
 	    HubListener[] hls = getAllListeners(thisHub);
 	    int x = hls.length;
 	    if (x > 0) {
+	        
+//qqqqqqqqqqqqqqqqq	        
+//            OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyRemoveEditQuery(thisHub, obj);
+	        
+	        
+/*qqqqqqqqqqqq fix and add back in qqqqqqqqqqq	        
 	        HubEvent hubEvent = new HubEvent(thisHub,obj, pos);
             HubListener hl;
             if (!OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
@@ -47,7 +53,9 @@ public class HubEventDelegate {
 	        finally {
 	            OAThreadLocalDelegate.setSendingEvent(false);
 	        }
+*/	        
 	    }
+	    
 	}
 	
 	public static void fireAfterRemoveEvent(Hub thisHub, final Object obj, int pos) {
@@ -111,6 +119,7 @@ public class HubEventDelegate {
 	    HubListener[] hls = getAllListeners(thisHub);
 	    int x = hls.length;
 	    if (x > 0) {
+/*qqqqqqqqqqqqqq	        
             HubEvent hubEvent = new HubEvent(thisHub);
             HubListener hl;
             if (!OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
@@ -126,6 +135,7 @@ public class HubEventDelegate {
             finally {
                 OAThreadLocalDelegate.setSendingEvent(false);
             }
+*/            
 	    }
 	}
 	public static void fireAfterRemoveAllEvent(Hub thisHub) {
@@ -171,6 +181,7 @@ public class HubEventDelegate {
 	    HubListener[] hls = getAllListeners(thisHub);
 	    int x = hls.length;
 	    if (x > 0) {
+/*qqqqqqqqqqqqqqqqqq	        
 	        HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
 	        HubListener hl;
 	        if (!OAThreadLocalDelegate.isLoading() && !OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
@@ -186,7 +197,9 @@ public class HubEventDelegate {
 	        finally {
 	            OAThreadLocalDelegate.setSendingEvent(false);
 	        }
+*/	        
 	    }
+	    
 	}
 	public static void fireAfterAddEvent(Hub thisHub, final Object obj, int pos) {
 	    if (OAThreadLocalDelegate.isLoading()) return;
@@ -250,6 +263,7 @@ public class HubEventDelegate {
 	    HubListener[] hls = getAllListeners(thisHub);
 	    int x = hls.length;
 	    if (x > 0) {
+/*qqqqqqqqqq	        
             HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
             HubListener hl;
             if (!OAThreadLocalDelegate.isLoading() && !OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
@@ -265,6 +279,7 @@ public class HubEventDelegate {
 	        finally {
 	            OAThreadLocalDelegate.setSendingEvent(false);
 	        }
+*/	        
 	    }
 	}
 	public static void fireAfterInsertEvent(Hub thisHub, final Object obj, int pos) {
@@ -368,6 +383,7 @@ public class HubEventDelegate {
 	    HubListener[] hls = getAllListeners(thisHub);
 	    int x = hls.length;
 	    if (x > 0) {
+/*qqqqqqqqqqq	        
 	        HubEvent hubEvent = new HubEvent(thisHub, obj);
             HubListener hl;
             if (!OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
@@ -383,6 +399,7 @@ public class HubEventDelegate {
             finally {
                 OAThreadLocalDelegate.setSendingEvent(false);
             }
+*/            
 	    }
 	}
 	public static void fireAfterDeleteEvent(Hub thisHub, Object obj) {
@@ -731,21 +748,6 @@ public class HubEventDelegate {
 	    return getAllListeners(thisHub,0);
 	}
 
-	public static OAObjectEditQueryHubListener getOAObjectEditQueryHubListener(Hub thisHub) {
-	    if (thisHub == null) return null;
-	    
-	    thisHub = HubShareDelegate.getMainSharedHub(thisHub);
-	    if (thisHub.getMasterObject() == null) return null;
-	    
-	    HubListener[] hls = getHubListeners(thisHub);
-	    for (HubListener hl : hls) {
-	        if (hl instanceof OAObjectEditQueryHubListener) {
-	            return ((OAObjectEditQueryHubListener) hl);
-	        }
-	    }
-	    return null;
-	}
-	
 	// 20160606 cache for getAllListeners
     static final int maxCacheGetAllListeners = 12;
 	private static class CacheGetAllListeners {
@@ -917,6 +919,31 @@ public class HubEventDelegate {
         }
     }
     
+/*qqqqqqqqqqqqqqqqqqqqqqq call OAObjectEditQueryDelegate.getAllowXxx methods instead    
+    public static boolean canChangeProperty(Hub thisHub, String propName) {
+        return canChangeProperty(thisHub, null, propName, null, null);
+    }
+    public static boolean canChangeProperty(Hub thisHub, OAObject obj, String propName) {
+        return canChangeProperty(thisHub, obj, propName, null, null);
+    }
+    public static boolean canChangeProperty(Hub thisHub, OAObject obj, String propName, Object oldValue, Object newValue) {
+        HubEvent hubEvent = new HubEvent(thisHub, obj, propName, oldValue, newValue);
+        return canChangeProperty(thisHub, hubEvent);
+    }
+    
+    public static boolean canChangeProperty(Hub thisHub, HubEvent hubEvent) {
+        HubListener[] hl = getAllListeners(thisHub);
+        if (hl == null) return true;
+        int x = hl.length;
+        int i;
+        if (x > 0) {
+            for (i=0; i<x; i++) {
+                if (!hl[i].canChangeProperty(hubEvent)) return false;
+            }
+        }
+        return true;
+    }
+
     public static boolean canAdd(Hub thisHub) {
         return canAdd(thisHub, null);
     }
@@ -968,24 +995,5 @@ public class HubEventDelegate {
         return true;
     }
 
-    public static boolean canChangeProperty(Hub thisHub, String propName) {
-        return canChangeProperty(thisHub, null, propName, null, null);
-    }
-    public static boolean canChangeProperty(Hub thisHub, OAObject obj, String propName) {
-        return canChangeProperty(thisHub, obj, propName, null, null);
-    }
-    
-    public static boolean canChangeProperty(Hub thisHub, OAObject obj, String propName, Object oldValue, Object newValue) {
-        HubListener[] hl = getAllListeners(thisHub);
-        if (hl == null) return true;
-        int x = hl.length;
-        int i;
-        if (x > 0) {
-            HubEvent hubEvent = new HubEvent(thisHub, obj, propName, oldValue, newValue);
-            for (i=0; i<x; i++) {
-                if (!hl[i].canChangeProperty(hubEvent)) return false;
-            }
-        }
-        return true;
-    }
+*/    
 }

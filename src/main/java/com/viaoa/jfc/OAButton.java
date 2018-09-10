@@ -115,25 +115,6 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         
         control = new OAButtonController(hub, enabledMode, command);
 
-        
-        boolean b = false;
-        if (command != null) {
-            switch (command) {
-            case New:
-            case NewManual:
-            case Add:
-            case AddManual:
-            case Paste:
-            case Insert:
-            case Cancel:
-            case Remove:
-            case Delete:
-            case Cut:
-                b = true;
-            }
-        }
-        control.setEnabledChecksMasterHub(b);
-        
         if (command == SAVE) {
             control.getChangeListener().add(getHub(), OAObjectDelegate.WORD_Changed);
         }

@@ -55,11 +55,6 @@ public @interface OAClass {
 
     // property path from a root class to this class.
     String[] rootTreePropertyPaths() default {};
-
-    String visibleProperty() default "";
-    boolean visibleValue() default true;
-    String enableProperty() default "";
-    boolean enableValue() default true;
 }
 
 

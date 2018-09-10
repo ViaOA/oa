@@ -613,9 +613,6 @@ public class OAObjectReflectDelegate {
             new HubMerger(oaObj, hub, spp);
         }
         
-        // check to see if there is an onEditXxx(OAObjectEditMessage) to validate hub changes
-        OAObjectEditQueryDelegate.setupEditQueryHubListener(oaObj, linkPropertyName, hub);
-        
         return hub;
     }
     
@@ -1037,9 +1034,6 @@ public class OAObjectReflectDelegate {
                     OAObjectPropertyDelegate.setPropertyHubIfNotSet(obj, linkPropertyName, hx);
                 }
                 OAObjectPropertyDelegate.releasePropertyLock(obj, linkPropertyName);
-                
-                // check to see if there is an onEditXxx(OAObjectEditMessage) to validate hub changes
-                OAObjectEditQueryDelegate.setupEditQueryHubListener(obj, linkPropertyName, hx);
             }
         }
         if (siblingKeys != null) {

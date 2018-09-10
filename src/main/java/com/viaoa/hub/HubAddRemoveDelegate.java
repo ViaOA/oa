@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 
 import com.viaoa.remote.multiplexer.OARemoteThread;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.util.OAString;
 import com.viaoa.object.*;
 
 /**
@@ -145,25 +146,20 @@ public class HubAddRemoveDelegate {
         }
         return true;
     }
-    public static boolean canDelete(final Hub thisHub, final Object obj) {
-        if (thisHub == null) return false;
-        if (obj instanceof OAObject) {
-            if (!thisHub.canDelete((OAObject) obj)) {
-                return false;
-            }
-        }
-        else if (!thisHub.canDelete()) {
-            return false;
-        }
-        return true;
-    }
-    
 
     public static void clear(final Hub thisHub) {
         clear(thisHub, true, true);
     }
     
     public static void clear(final Hub thisHub, final boolean bSetAOtoNull, final boolean bSendNewList) {
+        
+        OAObjectEditQuery eq = OAObjectEditQueryDelegate.getVerifyRemoveAllEditQuery(thisHub);
+        if (eq.getAllowed()) {
+            String s = eq.getResponse();
+            if (OAString.isEmpty(s)) s = "Cant remove object, OAObjectEditQuery allowRemoveAll retured false";
+            throw new RuntimeException(s);
+        }
+        
         boolean b = false;
         if (thisHub.getSize() == 0) return;
         try {
@@ -310,6 +306,16 @@ public class HubAddRemoveDelegate {
         // 20130728
         if (!thisHub.getEnabled()) {
             return "add is disabled";
+        }
+
+        OAObjectEditQuery eq = OAObjectEditQueryDelegate.getVerifyAddEditQuery(thisHub, (OAObject) obj);
+        if (!eq.getAllowed()) {
+            String s = eq.getResponse();
+            if (OAString.isEmpty(s)) return s;
+            if (eq.getThrowable() != null) {
+                return eq.getThrowable().getMessage();
+            }
+            return "editQuery for add returned false";
         }
         
         if (thisHub.datau.getSharedHub() != null) {

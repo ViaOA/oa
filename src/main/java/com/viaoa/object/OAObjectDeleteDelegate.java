@@ -58,9 +58,11 @@ public class OAObjectDeleteDelegate {
         if (hubs != null) {
             for (Hub h : hubs) {
                 if (h == null) continue;
+/*qqqqqqqqqqqqqqqqqqqqqq                
                 if (!HubEventDelegate.canDelete(h, oaObj)) {
                     throw new RuntimeException("can delete returned false, object can not be deleted.");
                 }
+*/                
                 HubEventDelegate.fireBeforeDeleteEvent(h, oaObj);
             }
         }
