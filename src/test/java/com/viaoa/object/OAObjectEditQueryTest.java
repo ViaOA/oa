@@ -178,10 +178,61 @@ public class OAObjectEditQueryTest extends OAUnitTest {
     }    
     @Test
     public void testLinkMany() throws Exception {
+        Employee emp = new Employee();
+        
+        assertTrue(emp.getAddresses().canAdd());
+        assertTrue(emp.getAddresses().canRemove());
+        assertTrue(emp.getAddresses().canAdd());
+        assertTrue(OAObjectEditQueryDelegate.getAllowAdd(emp.getAddresses()));
+        assertTrue(OAObjectEditQueryDelegate.getAllowEnabled(emp.getAddresses()));
+
+        emp.setCreated(null);
+        assertFalse(emp.getAddresses().canAdd());
+        assertFalse(emp.getAddresses().canRemove());
+        assertFalse(emp.getAddresses().canAdd());
+        assertFalse(OAObjectEditQueryDelegate.getAllowAdd(emp.getAddresses()));
+        assertFalse(OAObjectEditQueryDelegate.getAllowAdd(emp.getAddresses()));
+        assertFalse(OAObjectEditQueryDelegate.getAllowEnabled(emp.getAddresses()));
+        
+        emp.setCreated(new OADate());
+        assertTrue(emp.getAddresses().canAdd());
+        assertTrue(emp.getAddresses().canRemove());
+        assertTrue(emp.getAddresses().canAdd());
+        
+        Address address = new Address();
+        emp.getAddresses().add(address);
+        
+        emp.setCreated(null);
+        emp.setInactiveDate(new OADate());
+        assertFalse(emp.getAddresses().canAdd());
+        assertFalse(emp.getAddresses().canRemove());
+        assertFalse(emp.getAddresses().canAdd());
+        assertFalse(OAObjectEditQueryDelegate.getAllowAdd(emp.getAddresses()));
+        assertFalse(OAObjectEditQueryDelegate.getAllowAdd(emp.getAddresses()));
+        assertFalse(OAObjectEditQueryDelegate.getAllowEnabled(emp.getAddresses()));
+        
+//qqqqqqqqqqq have to load owner ?????        
+        assertFalse(address.isEnabled());
+        assertTrue(address.isVisible());
+        assertFalse(address.isEnabled(Address.P_Address1));
+        
     }    
     @Test
     public void testCommand() throws Exception {
-    }    
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(Employee.class);
+        OAMethodInfo mi = oi.getMethodInfo("command");
+        assertNotNull(oi);
+        assertEquals("", mi.getEnabledProperty());
+        assertEquals("birthDate", mi.getVisibleProperty());
+        
+        Employee emp = new Employee();
+        boolean b = OAObjectEditQueryDelegate.getAllowVisible(emp, "command");
+        assertFalse(b);
+
+        emp.setBirthDate(new OADate("05/04/99"));
+        b = OAObjectEditQueryDelegate.getAllowVisible(emp, "command");
+        assertTrue(b);
+    }   
     
 }
 

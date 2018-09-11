@@ -514,21 +514,22 @@ public class OAObjectEditQueryDelegate {
     }
 
     protected static void callOwnerObjects(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName) {
-        callOwnerObjects(editQuery, oaObj, propertyName, null);
+        _callOwnerObjects(editQuery, oaObj, propertyName, null);
     }
-    protected static void callOwnerObjects(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final OALinkInfo linkInfo) {
+    protected static void _callOwnerObjects(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final OALinkInfo linkInfo) {
         // recursive, goto top owner first
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
         
         OALinkInfo li = oi.getOwnedByOne();
-        if (li == null) return;
-
-        OAObject objOwner = (OAObject) li.getValue(oaObj);
-        if (objOwner == null) return;
-        
-        callOwnerObjects(editQuery, objOwner, li.getReverseName(), li);  // recursive
-
-        if (linkInfo == null) return;
+        if (li != null) {
+            OAObject objOwner = (OAObject) li.getValue(oaObj);
+            if (objOwner != null) {
+                _callOwnerObjects(editQuery, objOwner, li.getReverseName(), li);  // recursive
+            }
+        }
+        if (linkInfo == null) {
+            return;
+        }
         li = linkInfo;
         
         // now call editQuery & editQuery[propertyName]
@@ -544,7 +545,7 @@ public class OAObjectEditQueryDelegate {
             boolean bAlreadySet = false;
             if (OAString.isNotEmpty(pp)) {
                 bAlreadySet = true;
-                Object valx = OAObjectReflectDelegate.getProperty(objOwner, pp);
+                Object valx = OAObjectReflectDelegate.getProperty(oaObj, pp);
                 boolean bx = OAConv.toBoolean(valx); 
                 editQuery.setAllowed((bx == b));
             }
@@ -574,7 +575,7 @@ public class OAObjectEditQueryDelegate {
             boolean bAlreadySet = false;
             if (OAString.isNotEmpty(pp)) {
                 bAlreadySet = true;
-                Object valx = OAObjectReflectDelegate.getProperty(objOwner, pp);
+                Object valx = OAObjectReflectDelegate.getProperty(oaObj, pp);
                 boolean bx = OAConv.toBoolean(valx); 
                 editQuery.setAllowed((bx == b));
             }
