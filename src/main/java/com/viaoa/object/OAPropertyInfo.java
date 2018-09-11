@@ -10,6 +10,8 @@
 */
 package com.viaoa.object;
 
+import java.lang.reflect.Method;
+
 import com.viaoa.annotation.OAProperty;
 import com.viaoa.hub.Hub;
 
@@ -36,6 +38,7 @@ public class OAPropertyInfo implements java.io.Serializable {
     private boolean isPassword;
     private Hub<String> hubNameValue;
     private boolean isCurrency;
+    private Method editQueryMethod;
 
 	
 	public OAPropertyInfo() {
@@ -192,6 +195,13 @@ public class OAPropertyInfo implements java.io.Serializable {
     }
     public void setVisibleValue(boolean b) {
         visibleValue = b;
+    }
+
+    public void setEditQueryMethod(Method m) {
+        this.editQueryMethod = m;
+    }
+    public Method getEditQueryMethod() {
+        return editQueryMethod;
     }
 }
 

@@ -288,7 +288,7 @@ public class OAMail implements java.io.Serializable {
                 "<html><body>This is <i>another</i> email from the <h3>goHi5</h3> server, with an attachment</body></html>", null, 
                 new String[] {"c:\\temp\\cem.jpg"});
     }
-    public static void main(String[] args) throws Exception {
+    public static void mainB(String[] args) throws Exception {
 
 // 20180907 test vj        
         // mail.send("titan.uslec.net", "vvia@viaoa.com", "autoresponse@vetjobs.com", "HTTP Post Response", s);
@@ -310,6 +310,56 @@ public class OAMail implements java.io.Serializable {
         );
     }
 
+    
+    public static void main(String[] args) throws Exception {
+
+        String fromEmail = "info@vetjobs.com";//qqqqqqqqqqqqqqqq
+        fromEmail = "vinceX@viaoa.com";        
+        String subject = "test subject";
+        String msg = "test message";
+        String toEmail = "vince@viaoa.com";
+        
+        fromEmail = "vinceX@viaoa.com";        
+        subject = "test subject";
+        msg = "test message";
+        toEmail = "vince@viaoa.com";
+        
+        try {
+                  Properties props = System.getProperties();
+                  props.put("mail.smtp.auth", "true"); // required
+            
+                  Session session = Session.getInstance(props);
+                  session.setDebug(true);
+
+                  MimeMessage message = new MimeMessage(session);
+                  message.setFrom(new InternetAddress(fromEmail));
+                  message.addRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+                  
+                  message.setSubject(""+subject);
+                  
+                  MimeBodyPart mbp1 = new MimeBodyPart();
+                  mbp1.setContent( msg, "text/html; charset=UTF-8");
+                  
+                  Multipart mp = new MimeMultipart();
+                  mp.addBodyPart(mbp1);
+                  
+                  message.setContent(mp);
+                  message.setSentDate(new java.util.Date());
+                  message.saveChanges();
+                  
+                  Transport transport = session.getTransport("smtps");
+        
+                  transport.connect("secure.emailsrvr.com", 465, "smtp@vetjobs.com", "oyfT8en3pi9wRa");
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>> CONNECT worked *********************");
+                  transport.sendMessage(message, message.getAllRecipients());
+                  transport.close();
+
+        }
+        catch (Exception e) {
+            System.out.println("Error sending email");
+            e.printStackTrace();
+        }
+    }
 }
 
 

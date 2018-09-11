@@ -1,4 +1,20 @@
 
+20180910 install eclipse Photon
+    quickmarks will no longer work
+        this eclipse version does not support old 2.0 plugins (see below)
+    now using "Quick Bookmarks"
+        https://marketplace.eclipse.org/content/quick-bookmarks-plugin
+        https://stackoverflow.com/questions/3141493/bookmarks-in-eclipse-set-and-go-using-hotkeys-do-they-exist
+            see answer from Pierre Thibault  (middle of page)
+                install Quick Bookmarks plugin (1.2.1 by domui.org)
+                
+        goto preferences/general/keys to remap bookmark keys
+           "Goto quick bookmark #"
+           "Set Quick Bookmark # '
+                
+
+
+
 20180422 docker
     eclipse docker tooling plugin from marketplace
     https://devops.stackexchange.com/questions/1511/how-to-configure-docker-tooling-on-eclipse

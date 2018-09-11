@@ -308,14 +308,16 @@ public class HubAddRemoveDelegate {
             return "add is disabled";
         }
 
-        OAObjectEditQuery eq = OAObjectEditQueryDelegate.getVerifyAddEditQuery(thisHub, (OAObject) obj);
-        if (!eq.getAllowed()) {
-            String s = eq.getResponse();
-            if (OAString.isEmpty(s)) return s;
-            if (eq.getThrowable() != null) {
-                return eq.getThrowable().getMessage();
+        if (obj instanceof OAObject) {
+            OAObjectEditQuery eq = OAObjectEditQueryDelegate.getVerifyAddEditQuery(thisHub, (OAObject) obj);
+            if (!eq.getAllowed()) {
+                String s = eq.getResponse();
+                if (OAString.isEmpty(s)) return s;
+                if (eq.getThrowable() != null) {
+                    return eq.getThrowable().getMessage();
+                }
+                return "editQuery for add returned false";
             }
-            return "editQuery for add returned false";
         }
         
         if (thisHub.datau.getSharedHub() != null) {

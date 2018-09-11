@@ -260,6 +260,7 @@ public class OAObjectEditQueryDelegate {
      */
     protected static void processEditQuery(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue) {
         if (oaObj == null) return;
+        
         // first call owners (recursive)
         if (editQuery.getType().checkOwner) {
             if (editQuery.getType() == Type.AllowVisible || editQuery.getType() == Type.AllowEnabled) {
@@ -280,7 +281,7 @@ public class OAObjectEditQueryDelegate {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
 
         // 1: check @OAEditQuery for class
-        if (editQuery.getType() == Type.AllowEnabled) {
+        if (editQuery.getType().checkEnabled) {
             String sx = oi.getEnabledProperty();
             boolean bx;
             if (OAString.isNotEmpty(sx)) {
@@ -304,7 +305,7 @@ public class OAObjectEditQueryDelegate {
         
             
         // 3: check @EditQuery for method
-        if (editQuery.getType() == Type.AllowEnabled) {
+        if (editQuery.getType().checkEnabled) {
             String sx = null;
             boolean bx = true;
             OAPropertyInfo pi = oi.getPropertyInfo(propertyName);
@@ -393,31 +394,28 @@ public class OAObjectEditQueryDelegate {
         }
     }
 
-    protected static int callOwnerObjects(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName) {
-        return callOwnerObjects(editQuery, oaObj, propertyName, null);
+    protected static void callOwnerObjects(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName) {
+        callOwnerObjects(editQuery, oaObj, propertyName, null);
     }
-    protected static int callOwnerObjects(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final OALinkInfo linkInfo) {
+    protected static void callOwnerObjects(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final OALinkInfo linkInfo) {
         // recursive, goto top owner first
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
         
         OALinkInfo li = oi.getOwnedByOne();
-        if (li == null) return 0;
-
-        if (li.editQueryMethodFlag < 0) return li.editQueryMethodFlag;  // nothing set up in the parent to check
+        if (li == null) return;
 
         OAObject objOwner = (OAObject) li.getValue(oaObj);
-        if (objOwner == null) return -1;
+        if (objOwner == null) return;
         
-        li.editQueryMethodFlag = callOwnerObjects(editQuery, objOwner, li.getReverseName(), li);  // recursive
+        callOwnerObjects(editQuery, objOwner, li.getReverseName(), li);  // recursive
 
-        if (linkInfo == null) return 0;
+        if (linkInfo == null) return;
         li = linkInfo;
         
         // now call editQuery & editQuery[propertyName]
-        int result = 0;
 
         // check @OAEditQuery Annotation
-        if (editQuery.getType() == Type.AllowEnabled) {
+        if (editQuery.getType().checkEnabled) {
             String pp = li.getEnabledProperty();
             boolean b = li.getEnabledValue();
             if (OAString.isEmpty(pp)) {
@@ -425,7 +423,6 @@ public class OAObjectEditQueryDelegate {
                 b = oi.getEnabledValue();
             }
             if (OAString.isNotEmpty(pp)) {
-                result = 1;
                 if (editQuery.getAllowed()) {  // only allow enabled property to turn allow=false (not =true)
                     Object valx = OAObjectReflectDelegate.getProperty(objOwner, pp);
                     boolean bx  = OAConv.toBoolean(valx); 
@@ -441,7 +438,6 @@ public class OAObjectEditQueryDelegate {
                 b = oi.getVisibleValue();
             }
             if (OAString.isNotEmpty(pp)) {
-                result = 1;
                 if (editQuery.getAllowed()) { // only allow enabled property to turn allow=false (not =true)
                     Object valx = OAObjectReflectDelegate.getProperty(objOwner, pp);
                     boolean bx = OAConv.toBoolean(valx); 
@@ -450,21 +446,10 @@ public class OAObjectEditQueryDelegate {
             }
         }
         
-        boolean b = callEditQuery(oaObj, null, editQuery);
-        if (b) result = 1;
-        
+        callEditQuery(oaObj, null, editQuery);
         if (OAString.isNotEmpty(propertyName)) {
-            b = callEditQuery(oaObj, propertyName, editQuery);
-            if (b) result = 1;
+            callEditQuery(oaObj, propertyName, editQuery);
         }
-
-        if (result == 0) {
-            if (OAString.isNotEmpty(oi.getVisibleProperty()) || OAString.isNotEmpty(li.getVisibleProperty())) result = 1;
-            else if (OAString.isNotEmpty(oi.getEnabledProperty()) || OAString.isNotEmpty(li.getEnabledProperty())) result = 1;
-            else result = -1;  // no check defined
-        }
-        
-        return result;
     }
     
     
@@ -552,14 +537,16 @@ public class OAObjectEditQueryDelegate {
         }
     }
     
-    protected static boolean callEditQuery(final OAObject oaObj, String propertyName, final OAObjectEditQuery em) {
+    protected static void callEditQuery(final OAObject oaObj, String propertyName, final OAObjectEditQuery em) {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
         
-        if (propertyName == null) propertyName = ""; 
-        Method method = OAObjectInfoDelegate.getMethod(oi, "onEditQuery"+propertyName, 1);
-        if (method != null) {
-            Class[] cs = method.getParameterTypes();
-            if (cs[0].equals(OAObjectEditQuery.class)) {
+        if (propertyName == null) propertyName = "";
+        
+        Method method = oi.getEditQueryMethod(propertyName);
+        //was: Method method = OAObjectInfoDelegate.getMethod(oi, "onEditQuery"+propertyName, 1);
+        if (method == null) return;
+            //Class[] cs = method.getParameterTypes();
+            //if (cs[0].equals(OAObjectEditQuery.class)) {
                 try {
                     method.invoke(oaObj, new Object[] {em});
                 }
@@ -567,9 +554,7 @@ public class OAObjectEditQueryDelegate {
                     em.setThrowable(e);
                     em.setAllowed(false);
                 }
-            }
-        }
-        return (method != null);
+            //}
     }    
    
     

@@ -341,6 +341,60 @@ public class OAAnnotationDelegate {
                 li.setVisibleValue(eq.visibleValue());
             }
         }
+        
+        // onEditQueryXxx 
+        for (Method m : methods) {
+            OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
+            if (eq == null) continue;
+            String name = m.getName();
+            if (name.startsWith("get")) continue;
+            if (name.startsWith("set")) continue;
+            if (name.startsWith("is")) continue;
+            
+            String s2 = "onEditQuery";
+            if (!name.startsWith(s2)) {
+                s = "OAEditQuery annotation, class="+clazz+", method="+m+", should be named onEditQuery*";
+                throw new RuntimeException(s);
+            }
+            Class[] cs = m.getParameterTypes();
+            boolean b = (cs != null && cs.length == 1);
+            if (b) {
+                b = cs[0].equals(OAObjectEditQuery.class);
+                if (!b && cs[0].equals(OAObjectModel.class)) continue;
+            }
+            if (!b) {
+                s = "OAEditQuery annotation, class="+clazz+", method="+m+", should have one param of OAObjectEditQuery";
+                throw new RuntimeException(s);
+            }
+            name = name.substring(s2.length());
+            
+            oi.addEditQueryMethod(name, m);
+            
+            // make sure it belongs to a prop/calc/link/method
+            OAPropertyInfo pi = oi.getPropertyInfo(name);
+            if (pi != null) {
+                pi.setEditQueryMethod(m);
+            }
+            else {
+                OALinkInfo li = oi.getLinkInfo(name);
+                if (li != null) {
+                    li.setEditQueryMethod(m);
+                }
+                else {
+                    b = false;
+                    for (Method mx : methods) {
+                        if (mx.getName().equals(name)) {
+                            b = true;
+                            break;
+                        }
+                    }
+                    if (!b) {
+                        s = "OAEditQuery annotation, class="+clazz+", method="+m+", could not find method that it goes with";
+                        throw new RuntimeException(s);
+                    }
+                }
+            }
+        }        
     }
 
     // 20160305 OACallback annotations

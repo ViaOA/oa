@@ -58,18 +58,18 @@ public class OAObjectEditQuery {
         Unknown(false),
 
         // set: confirmeTitle/Message to have UI interact with user
-        AllowEnabled(true),    // use: allowEnabled
+        AllowEnabled(true, true),    // use: allowEnabled
         AllowVisible(true),    // use: allowVisible
         AllowAdd(true),        // use: allowAdd
         AllowRemove(true),     // use: allowRemove
         AllowRemoveAll(true),  // use: allowRemoveAll
-        AllowDelete(true),     // use: allowDelete
+        AllowDelete(true, true),     // use: allowDelete
                              
-        VerifyPropertyChange(true),// use: value to get new value, name, response, throwable - set allowEnablede=false, or throwable!=null to cancel
+        VerifyPropertyChange(true, true),// use: value to get new value, name, response, throwable - set allowEnablede=false, or throwable!=null to cancel
         VerifyAdd(true),           // use: value to get added object, allowAdd, throwable - set allowAdd=false, or throwable!=null to cancel
         VerifyRemove(true),        // use: value to get removed object, allowRemove, throwable - set allowRemove=false, or throwable!=null to cancel
         VerifyRemoveAll(true),     // use: allowRemoveAll, response, throwable - set allowRemoveAll=false, or throwable!=null to cancel
-        VerifyDelete(true),        // use: value to get deleted object, allowDelete, throwable - set allowDelete=false, or throwable!=null to cancel
+        VerifyDelete(true, true),        // use: value to get deleted object, allowDelete, throwable - set allowDelete=false, or throwable!=null to cancel
         
         GetConfirmPropertyChange(false),
         GetConfirmAdd(false),
@@ -80,9 +80,13 @@ public class OAObjectEditQuery {
         RenderLabel(false),     // use: label and update it's props
         GetFormat(false);        // use: format
         
-        public boolean checkOwner;
+        public boolean checkOwner, checkEnabled;
         Type(boolean checkOwner) {
             this.checkOwner = checkOwner;
+        }
+        Type(boolean checkOwner, boolean checkEnabled) {
+            this.checkOwner = checkOwner;
+            this.checkEnabled = checkEnabled;
         }
     }
     

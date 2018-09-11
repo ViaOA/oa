@@ -898,7 +898,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Flag to know if add/remove are enabled
      */
     public boolean getEnabled() {
-        if (!data.isDisabled()) return false;
+        if (data.isDisabled()) return false;
         return OAObjectEditQueryDelegate.getAllowEnabled(this);
     }
     public void setEnabled(boolean b) {

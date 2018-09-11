@@ -3,6 +3,7 @@ package test.hifive.model.oa;
  
 import java.sql.*;
 import com.viaoa.object.*;
+import com.viaoa.object.OAObjectEditQuery.Type;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 import com.viaoa.annotation.*;
@@ -31,6 +32,7 @@ import test.hifive.model.oa.propertypath.*;
         @OAIndex(name = "EmployeePointsNextApproval", columns = { @OAIndexColumn(name = "PointsNextApprovalId") })
     }
 )
+@OAEditQuery(enableProperty = "inactiveDate", enableValue = false)
 public class Employee extends OAObject {
     private static final long serialVersionUID = 1L;
     public static final String PROPERTY_Id = "Id";
@@ -503,6 +505,13 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
     @OAColumn(maxLength = 150)
     public String getInactiveReason() {
         return inactiveReason;
+    }
+    @OAEditQuery()
+    public void onEditQueryInactiveDate(OAObjectEditQuery eq) {
+        if (eq == null) return;
+        if (eq.getType() == Type.VerifyPropertyChange) {
+            eq.setAllowEnabled(true);
+        }
     }
     
     public void setInactiveReason(String newValue) {

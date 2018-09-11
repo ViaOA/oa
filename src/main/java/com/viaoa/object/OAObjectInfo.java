@@ -10,6 +10,7 @@
 */
 package com.viaoa.object;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -290,6 +291,18 @@ public class OAObjectInfo { //implements java.io.Serializable {
         hmPropertyInfo = null; 
     }
 
+    private HashMap<String, Method> hmEditQueryMethod;
+    public Method getEditQueryMethod(String name) {
+        if (hmEditQueryMethod == null) return null;
+        if (name == null) return null;
+        return hmEditQueryMethod.get(name.toUpperCase());
+    }
+    public void addEditQueryMethod(String name, Method m) {
+        if (name == null || m == null) return;
+        if (hmEditQueryMethod == null) hmEditQueryMethod = new HashMap<>();
+        hmEditQueryMethod.put(name.toUpperCase(), m);
+    }
+    
     private HashMap<String,OAPropertyInfo> hmPropertyInfo;
     
     public OAPropertyInfo getPropertyInfo(String propertyName) {

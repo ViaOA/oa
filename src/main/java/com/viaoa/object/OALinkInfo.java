@@ -68,7 +68,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     private String mergerPropertyPath;
     private OAOne oaOne;
     private OAMany oaMany;
-    protected int editQueryMethodFlag; // 0=has not checked, -1=false, 1=true   see: OAObjectEditQueryDelegate
+    private Method editQueryMethod;
     
     public OALinkInfo(String name, Class toClass, int type) {
         this(name, toClass, type, false, false, null, false);
@@ -417,6 +417,13 @@ public class OALinkInfo { //implements java.io.Serializable {
     }
     public void setVisibleValue(boolean b) {
         visibleValue = b;
+    }
+
+    public void setEditQueryMethod(Method m) {
+        this.editQueryMethod = m;
+    }
+    public Method getEditQueryMethod() {
+        return editQueryMethod;
     }
 }
 
