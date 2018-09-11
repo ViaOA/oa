@@ -17,7 +17,7 @@ import com.viaoa.util.OADate;
         @OAIndex(name = "EmployerParentEmployer", columns = { @OAIndexColumn(name = "ParentEmployerId") })
     }
 )
-@OAEditQuery(enableProperty = "endDate", enableValue = false)
+@OAEditQuery(enabledProperty = "endDate", enabledValue = false)
 public class Employer extends OAObject {
     private static final long serialVersionUID = 1L;
     public static final String P_Id = "Id";

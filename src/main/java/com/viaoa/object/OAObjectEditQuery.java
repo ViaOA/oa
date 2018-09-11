@@ -17,8 +17,7 @@ import com.viaoa.util.OAConv;
 /**
  * Used to allow interaction with OAObject and other (ex: UI) components.
  * 
- * Use getType to see what type of information is being requested.
- * 
+ * @see OAObjectEditQueryDelegate
  * @author vvia
  */
 public class OAObjectEditQuery {
@@ -58,17 +57,17 @@ public class OAObjectEditQuery {
         Unknown(false),
 
         // set: confirmeTitle/Message to have UI interact with user
-        AllowEnabled(true, true),    // use: allowEnabled
+        AllowEnabled(true, false),    // use: allowEnabled  NOTE: this is also called for all types that have checkEnabledFirst=true
         AllowVisible(true),    // use: allowVisible
-        AllowAdd(true),        // use: allowAdd
-        AllowRemove(true),     // use: allowRemove
-        AllowRemoveAll(true),  // use: allowRemoveAll
+        AllowAdd(true, true),        // use: allowAdd
+        AllowRemove(true, true),     // use: allowRemove
+        AllowRemoveAll(true, true),  // use: allowRemoveAll
         AllowDelete(true, true),     // use: allowDelete
                              
         VerifyPropertyChange(true, true),// use: value to get new value, name, response, throwable - set allowEnablede=false, or throwable!=null to cancel
-        VerifyAdd(true),           // use: value to get added object, allowAdd, throwable - set allowAdd=false, or throwable!=null to cancel
-        VerifyRemove(true),        // use: value to get removed object, allowRemove, throwable - set allowRemove=false, or throwable!=null to cancel
-        VerifyRemoveAll(true),     // use: allowRemoveAll, response, throwable - set allowRemoveAll=false, or throwable!=null to cancel
+        VerifyAdd(true, true),           // use: value to get added object, allowAdd, throwable - set allowAdd=false, or throwable!=null to cancel
+        VerifyRemove(true, true),        // use: value to get removed object, allowRemove, throwable - set allowRemove=false, or throwable!=null to cancel
+        VerifyRemoveAll(true, true),     // use: allowRemoveAll, response, throwable - set allowRemoveAll=false, or throwable!=null to cancel
         VerifyDelete(true, true),        // use: value to get deleted object, allowDelete, throwable - set allowDelete=false, or throwable!=null to cancel
         
         GetConfirmPropertyChange(false),
@@ -80,13 +79,13 @@ public class OAObjectEditQuery {
         RenderLabel(false),     // use: label and update it's props
         GetFormat(false);        // use: format
         
-        public boolean checkOwner, checkEnabled;
+        public boolean checkOwner, checkEnabledFirst;
         Type(boolean checkOwner) {
             this.checkOwner = checkOwner;
         }
-        Type(boolean checkOwner, boolean checkEnabled) {
+        Type(boolean checkOwner, boolean checkEnabledFirst) {
             this.checkOwner = checkOwner;
-            this.checkEnabled = checkEnabled;
+            this.checkEnabledFirst = checkEnabledFirst;
         }
     }
     
@@ -97,6 +96,13 @@ public class OAObjectEditQuery {
     public void setType(Type t) {
         this.type = t;
     }
+    /**
+     * Type of query.  
+     * 
+     * NOTE: Type.AllowEnabled will also be called for all types that have checkEnabledFirst=true
+     * 
+     * @return
+     */
     public Type getType() {
         return this.type;
     }
@@ -218,7 +224,6 @@ public class OAObjectEditQuery {
         switch (getType()) {
         case AllowEnabled:
         case VerifyPropertyChange:
-            if (!getAllowEnabled()) return false;
             break;
         case AllowVisible:
             if (!getAllowVisible()) return false;

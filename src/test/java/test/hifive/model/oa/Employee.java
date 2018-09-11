@@ -32,8 +32,9 @@ import test.hifive.model.oa.propertypath.*;
         @OAIndex(name = "EmployeePointsNextApproval", columns = { @OAIndexColumn(name = "PointsNextApprovalId") })
     }
 )
-@OAEditQuery(enableProperty = "inactiveDate", enableValue = false)
+@OAEditQuery(enabledProperty = "xxxx", enabledValue = false)
 public class Employee extends OAObject {
+    
     private static final long serialVersionUID = 1L;
     public static final String PROPERTY_Id = "Id";
     public static final String P_Id = "Id";
@@ -316,7 +317,23 @@ public class Employee extends OAObject {
         this();
         setId(id);
     }
-     
+
+    public OAObjectEditQuery TestEditQuery_Class;
+    
+    @OAEditQuery(enabledProperty = "inactiveDate", enabledValue = false)
+    public void onEditQuery(OAObjectEditQuery eq) {
+        if (TestEditQuery_Class == null) return;
+        
+        switch (eq.getType()) {
+        case AllowEnabled:
+            eq.setAllowEnabled(TestEditQuery_Class.getAllowEnabled());
+            break;
+        case AllowVisible:
+            eq.setAllowVisible(TestEditQuery_Class.getAllowVisible());
+            break;
+        }
+    }
+    
     @OAProperty(isUnique = true, displayLength = 5)
     @OAId()
     @OAColumn(sqlType = java.sql.Types.INTEGER)
@@ -510,9 +527,11 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
     public void onEditQueryInactiveDate(OAObjectEditQuery eq) {
         if (eq == null) return;
         if (eq.getType() == Type.VerifyPropertyChange) {
-            eq.setAllowEnabled(true);
+            eq.setAllowed(true);
         }
     }
+    
+    
     
     public void setInactiveReason(String newValue) {
         fireBeforePropertyChange(P_InactiveReason, this.inactiveReason, newValue);
@@ -872,6 +891,8 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
        return 0;//PointsDelegate.getDiscretionaryPoints(this);
     }
     
+    
+    
      
     @OAMany(
         toClass = Address.class, 
@@ -880,11 +901,15 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
         cascadeSave = true, 
         cascadeDelete = true
     )
+    @OAEditQuery(enabledProperty="created")
     public Hub<Address> getAddresses() {
         if (hubAddresses == null) {
             hubAddresses = (Hub<Address>) getHub(P_Addresses);
         }
         return hubAddresses;
+    }
+    public static void onEditQueryAddressesModel(OAObjectModel model) {
+        //qqqqqqqqqqqq
     }
     
     @OAMany(
@@ -1059,24 +1084,24 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
         }
         return hubEmployeeAwards;
     }
-    public boolean isValidEmployeeAwards(EmployeeAward employeeAward, OAObjectEditQuery msg) {
-        validateTestResult++;
-        // check valud of validateTestType   see:HubEventDelegateTest
-        if (msg == null) return true;
-        
-        if (validateTestType == 3) return false;
-        
-        switch (msg.getType()) {
-        case Unknown:
-            break;
-/*qqqqqqqqqqq            
-        case OnRemoveAll:
-            if (validateTestType == 2) return false;
-            break;
-*/            
+    @OAEditQuery
+    public void onEditQueryEmployeeAwards(OAObjectEditQuery eq) {
+        if (validateTestType == 3) {
+            eq.setAllowed(false);
+            return;
         }
-        return true;
+        switch (eq.getType()) {
+        case VerifyRemoveAll:
+            if (validateTestType == 2) {
+                eq.setAllowed(false);
+                return;
+            }
+            break;
+        }
     }
+    public static void onEditQueryEmployeeAwardsModel(OAObjectModel om) {
+    }
+    
     
     
     @OAMany(
@@ -1851,6 +1876,15 @@ if (objectKey != null) {
 
         changedFlag = false;
         newFlag = false;
+    }
+    
+    @OAMethod
+    @OAEditQuery(visibleProperty="xxxx")
+    public void command() {
+    }
+    @OAEditQuery(visibleProperty="birthDate")
+    public void onEditQueryCommand(OAObjectEditQuery eq) {
+        
     }
 }
  

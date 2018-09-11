@@ -10,6 +10,7 @@
 */
 package com.viaoa.object;
 
+import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import com.viaoa.annotation.OACalculatedProperty;
@@ -62,6 +63,7 @@ public class OACalcInfo implements java.io.Serializable {
      *  true if this calcProp is for the whole Hub, and the method has a static method with a Hub param
      */
     boolean bIsForHub;  
+    private Method editQueryMethod;
 
     /** 
      Create new Calculated Property.  
@@ -128,7 +130,6 @@ public class OACalcInfo implements java.io.Serializable {
     public void setEnabledValue(boolean b) {
         enabledValue = b;
     }
-
     public String getVisibleProperty() {
         return visibleProperty;
     }
@@ -141,5 +142,42 @@ public class OACalcInfo implements java.io.Serializable {
     public void setVisibleValue(boolean b) {
         visibleValue = b;
     }
+
+    private String userEnabledProperty;
+    private boolean userEnabledValue;
+    private String userVisibleProperty;
+    private boolean userVisibleValue;
+    public String getUserEnabledProperty() {
+        return userEnabledProperty;
+    }
+    public void setUserEnabledProperty(String s) {
+        userEnabledProperty = s;
+    }
+    public boolean getUserEnabledValue() {
+        return userEnabledValue;
+    }
+    public void setUserEnabledValue(boolean b) {
+        userEnabledValue = b;
+    }
+    public String getUserVisibleProperty() {
+        return userVisibleProperty;
+    }
+    public void setUserVisibleProperty(String s) {
+        userVisibleProperty = s;
+    }
+    public boolean getUserVisibleValue() {
+        return userVisibleValue;
+    }
+    public void setUserVisibleValue(boolean b) {
+        userVisibleValue = b;
+    }
+
+    public void setEditQueryMethod(Method m) {
+        this.editQueryMethod = m;
+    }
+    public Method getEditQueryMethod() {
+        return editQueryMethod;
+    }
+
 }
 

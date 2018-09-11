@@ -25,8 +25,13 @@ import java.lang.annotation.Target;
 @Target( {ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME) 
 public @interface OAEditQuery {
+    String enabledProperty() default "";
+    boolean enabledValue() default true;
     String visibleProperty() default "";
     boolean visibleValue() default true;
-    String enableProperty() default "";
-    boolean enableValue() default false;
+
+    String userEnabledProperty() default "";
+    boolean userEnabledValue() default true;
+    String userVisibleProperty() default "";
+    boolean userVisibleValue() default true;
 }

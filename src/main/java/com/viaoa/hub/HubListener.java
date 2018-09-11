@@ -45,18 +45,40 @@ public interface HubListener<T> extends EventListener {
 	public void beforeAdd(HubEvent<T> e);
 
 	
-    public boolean getAllowEnabled(HubEvent<T> e);
-    public boolean getAllowVisible(HubEvent<T> e);
-    public boolean getAllowAdd(HubEvent<T> e);
-    public boolean getAllowRemove(HubEvent<T> e);
-    public boolean getAllowRemoveAll(HubEvent<T> e);
-    public boolean getAllowDelete(HubEvent<T> e);
+    public default boolean getAllowEnabled(HubEvent<T> e, boolean bCurrentValue) {
+        return bCurrentValue;
+    }
+    public default boolean getAllowVisible(HubEvent<T> e, boolean bCurrentValue) {
+        return bCurrentValue;
+    }
+    public default boolean getAllowAdd(HubEvent<T> e, boolean bCurrentValue) {
+        return bCurrentValue;
+    }
+    public default boolean getAllowRemove(HubEvent<T> e, boolean bCurrentValue) {
+        return bCurrentValue;
+    }
+    public default boolean getAllowRemoveAll(HubEvent<T> e, boolean bCurrentValue) {
+        return bCurrentValue;
+    }
+    public default boolean getAllowDelete(HubEvent<T> e, boolean bCurrentValue) {
+        return bCurrentValue;
+    }
 	
-    public boolean isValidPropertyChange(HubEvent<T> e);
-    public boolean isValidAdd(HubEvent<T> e);
-    public boolean isValidRemove(HubEvent<T> e);
-    public boolean isValidRemoveAll(HubEvent<T> e);
-    public boolean isValidDelete(HubEvent<T> e);
+    public default boolean isValidPropertyChange(HubEvent<T> e, boolean bCurrentValue) {
+        return bCurrentValue;
+    }
+    public default boolean isValidAdd(HubEvent<T> e, boolean bCurrentValue) {
+        return bCurrentValue;
+    }
+    public default boolean isValidRemove(HubEvent<T> e, boolean bCurrentValue) {
+        return bCurrentValue;
+    }
+    public default boolean isValidRemoveAll(HubEvent<T> e, boolean bCurrentValue) {
+        return bCurrentValue;
+    }
+    public default boolean isValidDelete(HubEvent<T> e, boolean bCurrentValue) {
+        return bCurrentValue;
+    }
     
     
     /** 

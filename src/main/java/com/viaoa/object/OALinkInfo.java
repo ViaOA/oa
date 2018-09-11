@@ -405,7 +405,6 @@ public class OALinkInfo { //implements java.io.Serializable {
     public void setEnabledValue(boolean b) {
         enabledValue = b;
     }
-
     public String getVisibleProperty() {
         return visibleProperty;
     }
@@ -419,6 +418,36 @@ public class OALinkInfo { //implements java.io.Serializable {
         visibleValue = b;
     }
 
+    private String userEnabledProperty;
+    private boolean userEnabledValue;
+    private String userVisibleProperty;
+    private boolean userVisibleValue;
+    public String getUserEnabledProperty() {
+        return userEnabledProperty;
+    }
+    public void setUserEnabledProperty(String s) {
+        userEnabledProperty = s;
+    }
+    public boolean getUserEnabledValue() {
+        return userEnabledValue;
+    }
+    public void setUserEnabledValue(boolean b) {
+        userEnabledValue = b;
+    }
+    public String getUserVisibleProperty() {
+        return userVisibleProperty;
+    }
+    public void setUserVisibleProperty(String s) {
+        userVisibleProperty = s;
+    }
+    public boolean getUserVisibleValue() {
+        return userVisibleValue;
+    }
+    public void setUserVisibleValue(boolean b) {
+        userVisibleValue = b;
+    }
+    
+    
     public void setEditQueryMethod(Method m) {
         this.editQueryMethod = m;
     }

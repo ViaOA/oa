@@ -289,8 +289,8 @@ public class OAJfcController extends HubListenerAdapter {
 
         OAEditQuery oaq = (OAEditQuery) endPropertyFromClass.getAnnotation(OAEditQuery.class);
         if (oaq != null) {
-            String s = oaq.enableProperty();
-            boolean b = oaq.enableValue();
+            String s = oaq.enabledProperty();
+            boolean b = oaq.enabledValue();
             if (OAString.isNotEmpty(s)) getEnabledChangeListener().add(hub, s, b);
             s = oaq.visibleProperty();
             b = oaq.visibleValue();
@@ -301,8 +301,8 @@ public class OAJfcController extends HubListenerAdapter {
         if (m != null) {
             oaq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
             if (oaq != null) {
-                String s = oaq.enableProperty();
-                boolean b = oaq.enableValue();
+                String s = oaq.enabledProperty();
+                boolean b = oaq.enabledValue();
                 if (OAString.isNotEmpty(s)) getEnabledChangeListener().add(hub, s, b);
                 s = oaq.visibleProperty();
                 b = oaq.visibleValue();
@@ -318,8 +318,8 @@ public class OAJfcController extends HubListenerAdapter {
 
             oaq = (OAEditQuery) hx.getObjectClass().getAnnotation(OAEditQuery.class);
             if (oaq != null) {
-                s = oaq.enableProperty();
-                boolean b = oaq.enableValue();
+                s = oaq.enabledProperty();
+                boolean b = oaq.enabledValue();
                 if (OAString.isNotEmpty(s)) getEnabledChangeListener().add(hx, s, b);
                 s = oaq.visibleProperty();
                 b = oaq.visibleValue();
@@ -330,8 +330,8 @@ public class OAJfcController extends HubListenerAdapter {
             if (m != null) {
                 oaq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
                 if (oaq != null) {
-                    s = oaq.enableProperty();
-                    boolean b = oaq.enableValue();
+                    s = oaq.enabledProperty();
+                    boolean b = oaq.enabledValue();
                     if (OAString.isNotEmpty(s)) getEnabledChangeListener().add(hx, s, b);
                     s = oaq.visibleProperty();
                     b = oaq.visibleValue();
@@ -347,8 +347,8 @@ public class OAJfcController extends HubListenerAdapter {
 
                 oaq = (OAEditQuery) hx.getObjectClass().getAnnotation(OAEditQuery.class);
                 if (oaq != null) {
-                    s = oaq.enableProperty();
-                    boolean b = oaq.enableValue();
+                    s = oaq.enabledProperty();
+                    boolean b = oaq.enabledValue();
                     if (OAString.isNotEmpty(s)) getEnabledChangeListener().add(hx, s, b);
                     s = oaq.visibleProperty();
                     b = oaq.visibleValue();
@@ -359,8 +359,8 @@ public class OAJfcController extends HubListenerAdapter {
                 if (m != null) {
                     oaq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
                     if (oaq != null) {
-                        s = oaq.enableProperty();
-                        boolean b = oaq.enableValue();
+                        s = oaq.enabledProperty();
+                        boolean b = oaq.enabledValue();
                         if (OAString.isNotEmpty(s)) getEnabledChangeListener().add(hx, s, b);
                         s = oaq.visibleProperty();
                         b = oaq.visibleValue();
@@ -378,8 +378,8 @@ public class OAJfcController extends HubListenerAdapter {
 
             oaq = (OAEditQuery) hx.getObjectClass().getAnnotation(OAEditQuery.class);
             if (oaq != null) {
-                s = oaq.enableProperty();
-                boolean b = oaq.enableValue();
+                s = oaq.enabledProperty();
+                boolean b = oaq.enabledValue();
                 if (OAString.isNotEmpty(s)) getEnabledChangeListener().add(hx, s, b);
                 s = oaq.visibleProperty();
                 b = oaq.visibleValue();
@@ -390,8 +390,8 @@ public class OAJfcController extends HubListenerAdapter {
             if (m != null) {
                 oaq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
                 if (oaq != null) {
-                    s = oaq.enableProperty();
-                    boolean b = oaq.enableValue();
+                    s = oaq.enabledProperty();
+                    boolean b = oaq.enabledValue();
                     if (OAString.isNotEmpty(s)) getEnabledChangeListener().add(hx, s, b);
                     s = oaq.visibleProperty();
                     b = oaq.visibleValue();

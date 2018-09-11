@@ -75,10 +75,14 @@ public class OAAnnotationDelegate {
             }
             OAEditQuery eq = (OAEditQuery) clazz.getAnnotation(OAEditQuery.class);
             if (eq != null) {
-                oi.setEnabledProperty(eq.enableProperty());
-                oi.setEnabledValue(eq.enableValue());
+                oi.setEnabledProperty(eq.enabledProperty());
+                oi.setEnabledValue(eq.enabledValue());
                 oi.setVisibleProperty(eq.visibleProperty());
                 oi.setVisibleValue(eq.visibleValue());
+                oi.setUserEnabledProperty(eq.userEnabledProperty());
+                oi.setUserEnabledValue(eq.userEnabledValue());
+                oi.setUserVisibleProperty(eq.userVisibleProperty());
+                oi.setUserVisibleValue(eq.userVisibleValue());
             }
         }
         // prop ids
@@ -190,10 +194,14 @@ public class OAAnnotationDelegate {
             
             OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
             if (eq != null) {
-                pi.setEnabledProperty(eq.enableProperty());
-                pi.setEnabledValue(eq.enableValue());
+                pi.setEnabledProperty(eq.enabledProperty());
+                pi.setEnabledValue(eq.enabledValue());
                 pi.setVisibleProperty(eq.visibleProperty());
                 pi.setVisibleValue(eq.visibleValue());
+                pi.setUserEnabledProperty(eq.userEnabledProperty());
+                pi.setUserEnabledValue(eq.userEnabledValue());
+                pi.setUserVisibleProperty(eq.userVisibleProperty());
+                pi.setUserVisibleValue(eq.userVisibleValue());
             }
         }
       
@@ -226,11 +234,16 @@ public class OAAnnotationDelegate {
 
             OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
             if (eq != null) {
-                ci.setEnabledProperty(eq.enableProperty());
-                ci.setEnabledValue(eq.enableValue());
+                ci.setEnabledProperty(eq.enabledProperty());
+                ci.setEnabledValue(eq.enabledValue());
                 ci.setVisibleProperty(eq.visibleProperty());
                 ci.setVisibleValue(eq.visibleValue());
+                ci.setUserEnabledProperty(eq.userEnabledProperty());
+                ci.setUserEnabledValue(eq.userEnabledValue());
+                ci.setUserVisibleProperty(eq.userVisibleProperty());
+                ci.setUserVisibleValue(eq.userVisibleValue());
             }
+            ci.setEditQueryMethod(m);
         }
 
         // linkInfos
@@ -265,10 +278,14 @@ public class OAAnnotationDelegate {
 
             OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
             if (eq != null) {
-                li.setEnabledProperty(eq.enableProperty());
-                li.setEnabledValue(eq.enableValue());
+                li.setEnabledProperty(eq.enabledProperty());
+                li.setEnabledValue(eq.enabledValue());
                 li.setVisibleProperty(eq.visibleProperty());
                 li.setVisibleValue(eq.visibleValue());
+                li.setUserEnabledProperty(eq.userEnabledProperty());
+                li.setUserEnabledValue(eq.userEnabledValue());
+                li.setUserVisibleProperty(eq.userVisibleProperty());
+                li.setUserVisibleValue(eq.userVisibleValue());
             }
         }
         // Manys
@@ -335,32 +352,112 @@ public class OAAnnotationDelegate {
 
             OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
             if (eq != null) {
-                li.setEnabledProperty(eq.enableProperty());
-                li.setEnabledValue(eq.enableValue());
+                li.setEnabledProperty(eq.enabledProperty());
+                li.setEnabledValue(eq.enabledValue());
                 li.setVisibleProperty(eq.visibleProperty());
                 li.setVisibleValue(eq.visibleValue());
+                li.setUserEnabledProperty(eq.userEnabledProperty());
+                li.setUserEnabledValue(eq.userEnabledValue());
+                li.setUserVisibleProperty(eq.userVisibleProperty());
+                li.setUserVisibleValue(eq.userVisibleValue());
+            }
+        }
+
+        // methods
+        for (Method m : methods) {
+            OAMethod oamethod = (OAMethod) m.getAnnotation(OAMethod.class);
+            if (oamethod == null) continue;
+            final String name = m.getName();
+            if (hs.contains("method." + name)) continue;
+            hs.add("method."+name);
+            
+            OAMethodInfo mi = oi.getMethodInfo(name);            
+            if (mi == null) {
+                mi = new OAMethodInfo();
+                mi.setName(name);
+                mi.setOAMethod(oamethod);
+                oi.addMethodInfo(mi);
+            }
+            
+            OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
+            if (eq != null) {
+                mi.setEnabledProperty(eq.enabledProperty());
+                mi.setEnabledValue(eq.enabledValue());
+                mi.setVisibleProperty(eq.visibleProperty());
+                mi.setVisibleValue(eq.visibleValue());
+                mi.setUserEnabledProperty(eq.userEnabledProperty());
+                mi.setUserEnabledValue(eq.userEnabledValue());
+                mi.setUserVisibleProperty(eq.userVisibleProperty());
+                mi.setUserVisibleValue(eq.userVisibleValue());
             }
         }
         
+        
         // onEditQueryXxx 
-        for (Method m : methods) {
-            OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
-            if (eq == null) continue;
+        for (final Method m : methods) {
             String name = m.getName();
-            if (name.startsWith("get")) continue;
-            if (name.startsWith("set")) continue;
-            if (name.startsWith("is")) continue;
+            final OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
+            final Class[] cs = m.getParameterTypes();
+            if (eq == null) {
+                if (name.toUpperCase().indexOf("EDITQUERY") >= 0 && name.indexOf("$") < 0) {
+                    if (!name.endsWith("Model")) {
+                        s = "missing @OAEditQuery() annotation, class="+clazz+", method="+m;
+                        throw new RuntimeException(s);
+                    }
+                }
+                else {
+                    continue;
+                }
+            }
+            if (oi.getMethodInfo(name) != null) continue;
+            s = getPropertyName(name);
+            if (!s.equals(name)) {
+                boolean b = true;
+                if (oi.getPropertyInfo(s) == null) {
+                    if (oi.getLinkInfo(s) == null) {
+                        if (oi.getCalcInfo(s) == null) {
+                            b = false;
+                        }
+                    }
+                }
+                if (b) continue;
+            }
             
             String s2 = "onEditQuery";
             if (!name.startsWith(s2)) {
                 s = "OAEditQuery annotation, class="+clazz+", method="+m+", should be named onEditQuery*";
                 throw new RuntimeException(s);
             }
-            Class[] cs = m.getParameterTypes();
             boolean b = (cs != null && cs.length == 1);
             if (b) {
                 b = cs[0].equals(OAObjectEditQuery.class);
-                if (!b && cs[0].equals(OAObjectModel.class)) continue;
+                if (!Modifier.isPublic(m.getModifiers())) {
+                    s = "OAEditQuery annotation, class="+clazz+", method="+m+", should be public";
+                    throw new RuntimeException(s);
+                }
+                if (!b && cs[0].isAssignableFrom(OAObjectModel.class)) {
+                    // public static void onEditQueryAddressesModel(OAObjectModel model)
+                    if (!name.endsWith("Model")) {
+                        s = "OAEditQuery annotation, class="+clazz+", method="+m+", should be named onEditQuery*Model";
+                        throw new RuntimeException(s);
+                    }
+                    s = name.substring(s2.length());
+                    s = s.substring(0, s.length()-5);
+                    OALinkInfo lix = oi.getLinkInfo(s);
+                    if (lix == null) {
+                        s = "OAEditQuery annotation, class="+clazz+", method="+m+", link not found, name="+s;
+                        throw new RuntimeException(s);
+                    }
+                    if (!Modifier.isStatic(m.getModifiers())) {
+                        s = "OAEditQuery annotation, class="+clazz+", method="+m+", should be static";
+                        throw new RuntimeException(s);
+                    }
+                    continue;
+                }
+                if (Modifier.isStatic(m.getModifiers())) {
+                    s = "OAEditQuery annotation, class="+clazz+", method="+m+", should not be static";
+                    throw new RuntimeException(s);
+                }
             }
             if (!b) {
                 s = "OAEditQuery annotation, class="+clazz+", method="+m+", should have one param of OAObjectEditQuery";
@@ -374,23 +471,121 @@ public class OAAnnotationDelegate {
             OAPropertyInfo pi = oi.getPropertyInfo(name);
             if (pi != null) {
                 pi.setEditQueryMethod(m);
+                if (eq != null) {
+                    s = eq.enabledProperty();
+                    if (OAString.isNotEmpty(s)) {
+                        pi.setEnabledProperty(s);
+                        pi.setEnabledValue(eq.enabledValue());
+                    }
+                    s = eq.visibleProperty();
+                    if (OAString.isNotEmpty(s)) {
+                        pi.setVisibleProperty(s);
+                        pi.setVisibleValue(eq.visibleValue());
+                    }
+                    s = eq.userEnabledProperty();
+                    if (OAString.isNotEmpty(s)) {
+                        pi.setUserEnabledProperty(s);
+                        pi.setUserEnabledValue(eq.userEnabledValue());
+                    }
+                    s = eq.userVisibleProperty();
+                    if (OAString.isNotEmpty(s)) {
+                        pi.setUserVisibleProperty(s);
+                        pi.setUserVisibleValue(eq.userVisibleValue());
+                    }
+                }
             }
             else {
-                OALinkInfo li = oi.getLinkInfo(name);
-                if (li != null) {
-                    li.setEditQueryMethod(m);
-                }
-                else {
-                    b = false;
-                    for (Method mx : methods) {
-                        if (mx.getName().equals(name)) {
-                            b = true;
-                            break;
+                if (name.length() == 0) {
+                    oi.setEditQueryMethod(m);
+                    if (eq != null) {
+                        s = eq.enabledProperty();
+                        if (OAString.isNotEmpty(s)) {
+                            oi.setEnabledProperty(s);
+                            oi.setEnabledValue(eq.enabledValue());
+                        }
+                        s = eq.visibleProperty();
+                        if (OAString.isNotEmpty(s)) {
+                            oi.setVisibleProperty(s);
+                            oi.setVisibleValue(eq.visibleValue());
+                        }
+                        s = eq.userEnabledProperty();
+                        if (OAString.isNotEmpty(s)) {
+                            oi.setUserEnabledProperty(s);
+                            oi.setUserEnabledValue(eq.userEnabledValue());
+                        }
+                        s = eq.userVisibleProperty();
+                        if (OAString.isNotEmpty(s)) {
+                            oi.setUserVisibleProperty(s);
+                            oi.setUserVisibleValue(eq.userVisibleValue());
                         }
                     }
-                    if (!b) {
-                        s = "OAEditQuery annotation, class="+clazz+", method="+m+", could not find method that it goes with";
-                        throw new RuntimeException(s);
+                }
+                else {
+                    OALinkInfo li = oi.getLinkInfo(name);
+                    if (li != null) {
+                        li.setEditQueryMethod(m);
+                        if (eq != null) {
+                            s = eq.enabledProperty();
+                            if (OAString.isNotEmpty(s)) {
+                                li.setEnabledProperty(s);
+                                li.setEnabledValue(eq.enabledValue());
+                            }
+                            s = eq.visibleProperty();
+                            if (OAString.isNotEmpty(s)) {
+                                li.setVisibleProperty(s);
+                                li.setVisibleValue(eq.visibleValue());
+                            }
+                            s = eq.userEnabledProperty();
+                            if (OAString.isNotEmpty(s)) {
+                                li.setUserEnabledProperty(s);
+                                li.setUserEnabledValue(eq.userEnabledValue());
+                            }
+                            s = eq.userVisibleProperty();
+                            if (OAString.isNotEmpty(s)) {
+                                li.setUserVisibleProperty(s);
+                                li.setUserVisibleValue(eq.userVisibleValue());
+                            }
+                        }
+                    }
+                    else {
+                        OAMethodInfo mi = oi.getMethodInfo(name);
+                        if (mi != null) {
+                            mi.setEditQueryMethod(m);
+                            if (eq != null) {
+                                s = eq.enabledProperty();
+                                if (OAString.isNotEmpty(s)) {
+                                    mi.setEnabledProperty(s);
+                                    mi.setEnabledValue(eq.enabledValue());
+                                }
+                                s = eq.visibleProperty();
+                                if (OAString.isNotEmpty(s)) {
+                                    mi.setVisibleProperty(s);
+                                    mi.setVisibleValue(eq.visibleValue());
+                                }
+                                if (OAString.isNotEmpty(s)) {
+                                    mi.setUserEnabledProperty(s);
+                                    mi.setUserEnabledValue(eq.userEnabledValue());
+                                }
+                                s = eq.userVisibleProperty();
+                                if (OAString.isNotEmpty(s)) {
+                                    mi.setUserVisibleProperty(s);
+                                    mi.setUserVisibleValue(eq.userVisibleValue());
+                                }
+                            }
+                        }
+                        else {
+                            b = false;
+                            for (Method mx : methods) {
+                                if (mx.getName().equals(name)) {
+                                    b = true;
+                                    break;
+                                }
+                            }
+                            if (!b) {
+                                s = "OAEditQuery annotation, class="+clazz+", method="+m+", could not find method that it goes with, ex: get"+name;
+                                throw new RuntimeException(s);
+                            }
+                        }
                     }
                 }
             }

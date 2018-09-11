@@ -51,49 +51,4 @@ public class HubListenerAdapter<T> implements HubListener<T> {
     public void afterLoad(HubEvent<T> e) {
     }
 
-    
-    @Override
-    public boolean getAllowEnabled(HubEvent<T> e) {
-        return true;
-    }
-    @Override
-    public boolean getAllowVisible(HubEvent<T> e) {
-        return true;
-    }
-    @Override
-    public boolean getAllowAdd(HubEvent<T> e) {
-        return true;
-    }
-    @Override
-    public boolean getAllowRemove(HubEvent<T> e) {
-        return true;
-    }
-    @Override
-    public boolean getAllowRemoveAll(HubEvent<T> e) {
-        return true;
-    }
-    @Override
-    public boolean getAllowDelete(HubEvent<T> e) {
-        return true;
-    }
-    @Override
-    public boolean isValidPropertyChange(HubEvent<T> e) {
-        return true;
-    }
-    @Override
-    public boolean isValidAdd(HubEvent<T> e) {
-        return true;
-    }
-    @Override
-    public boolean isValidRemove(HubEvent<T> e) {
-        return true;
-    }
-    @Override
-    public boolean isValidRemoveAll(HubEvent<T> e) {
-        return true;
-    }
-    @Override
-    public boolean isValidDelete(HubEvent<T> e) {
-        return true;
-    }
 }

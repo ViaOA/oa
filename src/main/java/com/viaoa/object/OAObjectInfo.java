@@ -49,6 +49,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
     protected String[] idProperties;
     protected String[] importMatchProperties;
     protected ArrayList<OAPropertyInfo> alPropertyInfo;
+    protected ArrayList<OAMethodInfo> alMethodInfo;
     
     protected boolean bUseDataSource = true;
     protected boolean bLocalOnly = false;  // dont send to OAServer
@@ -76,6 +77,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
     protected OALinkInfo liLinkToOwner;  // set by OAObjectInfoDelegate.getLinkToOwner
     
     protected boolean bLookup;
+    private Method editQueryMethod;
     
     
     public OAObjectInfo() {
@@ -291,20 +293,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
         hmPropertyInfo = null; 
     }
 
-    private HashMap<String, Method> hmEditQueryMethod;
-    public Method getEditQueryMethod(String name) {
-        if (hmEditQueryMethod == null) return null;
-        if (name == null) return null;
-        return hmEditQueryMethod.get(name.toUpperCase());
-    }
-    public void addEditQueryMethod(String name, Method m) {
-        if (name == null || m == null) return;
-        if (hmEditQueryMethod == null) hmEditQueryMethod = new HashMap<>();
-        hmEditQueryMethod.put(name.toUpperCase(), m);
-    }
-    
     private HashMap<String,OAPropertyInfo> hmPropertyInfo;
-    
     public OAPropertyInfo getPropertyInfo(String propertyName) {
         if (propertyName == null) return null;
         HashMap<String,OAPropertyInfo> hm = hmPropertyInfo;
@@ -319,7 +308,48 @@ public class OAObjectInfo { //implements java.io.Serializable {
         }
         return hm.get(propertyName.toUpperCase());
     }
+
     
+    public ArrayList<OAMethodInfo> getMethodInfos() {
+        if (alMethodInfo == null) alMethodInfo = new ArrayList(5);
+        return alMethodInfo;
+    }
+    public void addMethod(OAMethodInfo mi) {
+        getMethodInfos().add(mi);
+        hmMethodInfo = null; 
+    }
+    public void addMethodInfo(OAMethodInfo mi) {
+        getMethodInfos().add(mi);
+        hmMethodInfo = null; 
+    }
+    
+    private HashMap<String, OAMethodInfo> hmMethodInfo;
+    public OAMethodInfo getMethodInfo(String name) {
+        if (name == null) return null;
+        HashMap<String, OAMethodInfo> hm = hmMethodInfo;
+        if (hm == null) {
+            hm = new HashMap<String, OAMethodInfo>();
+            for (OAMethodInfo mi : getMethodInfos()) {
+                String s = mi.getName();
+                if (s == null) continue;
+                hm.put(s.toUpperCase(), mi);
+            }
+            hmMethodInfo = hm;
+        }
+        return hm.get(name.toUpperCase());
+    }
+    
+    private HashMap<String, Method> hmEditQueryMethod;
+    public Method getEditQueryMethod(String name) {
+        if (hmEditQueryMethod == null) return null;
+        if (name == null) return null;
+        return hmEditQueryMethod.get(name.toUpperCase());
+    }
+    public void addEditQueryMethod(String name, Method m) {
+        if (name == null || m == null) return;
+        if (hmEditQueryMethod == null) hmEditQueryMethod = new HashMap<>();
+        hmEditQueryMethod.put(name.toUpperCase(), m);
+    }
     
     // set by OAObjectInfoDelegate.initialize().  All primitive properties, in uppercase, sorted - 
     //   used for the bit position for OAObject.nulls
@@ -957,4 +987,39 @@ public class OAObjectInfo { //implements java.io.Serializable {
         visibleValue = b;
     }
 
+    private String userEnabledProperty;
+    private boolean userEnabledValue;
+    private String userVisibleProperty;
+    private boolean userVisibleValue;
+    public String getUserEnabledProperty() {
+        return userEnabledProperty;
+    }
+    public void setUserEnabledProperty(String s) {
+        userEnabledProperty = s;
+    }
+    public boolean getUserEnabledValue() {
+        return userEnabledValue;
+    }
+    public void setUserEnabledValue(boolean b) {
+        userEnabledValue = b;
+    }
+    public String getUserVisibleProperty() {
+        return userVisibleProperty;
+    }
+    public void setUserVisibleProperty(String s) {
+        userVisibleProperty = s;
+    }
+    public boolean getUserVisibleValue() {
+        return userVisibleValue;
+    }
+    public void setUserVisibleValue(boolean b) {
+        userVisibleValue = b;
+    }
+    
+    public void setEditQueryMethod(Method m) {
+        this.editQueryMethod = m;
+    }
+    public Method getEditQueryMethod() {
+        return editQueryMethod;
+    }
 }
