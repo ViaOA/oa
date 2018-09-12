@@ -516,21 +516,19 @@ public class OAObjectEditQueryDelegate {
     protected static void callOwnerObjects(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName) {
         _callOwnerObjects(editQuery, oaObj, propertyName, null);
     }
-    protected static void _callOwnerObjects(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final OALinkInfo linkInfo) {
+    protected static void _callOwnerObjects(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final OALinkInfo li) {
         // recursive, goto top owner first
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
         
-        OALinkInfo li = oi.getOwnedByOne();
-        if (li != null) {
-            OAObject objOwner = (OAObject) li.getValue(oaObj);
+        OALinkInfo lix = oi.getOwnedByOne();
+        if (lix != null) {
+            OAObject objOwner = (OAObject) lix.getValue(oaObj);
             if (objOwner != null) {
-                _callOwnerObjects(editQuery, objOwner, li.getReverseName(), li);  // recursive
+                lix = lix.getReverseLinkInfo();
+                _callOwnerObjects(editQuery, objOwner, lix.getName(), lix);
             }
         }
-        if (linkInfo == null) {
-            return;
-        }
-        li = linkInfo;
+        if (li == null) return;
         
         // now call editQuery & editQuery[propertyName]
 

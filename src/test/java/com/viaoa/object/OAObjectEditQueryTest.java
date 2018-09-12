@@ -211,10 +211,22 @@ public class OAObjectEditQueryTest extends OAUnitTest {
         assertFalse(OAObjectEditQueryDelegate.getAllowAdd(emp.getAddresses()));
         assertFalse(OAObjectEditQueryDelegate.getAllowEnabled(emp.getAddresses()));
         
-//qqqqqqqqqqq have to load owner ?????        
         assertFalse(address.isEnabled());
         assertTrue(address.isVisible());
         assertFalse(address.isEnabled(Address.P_Address1));
+        assertFalse(emp.getAddresses().canAdd());
+
+        emp.setInactiveDate(null);
+        emp.setCreated(null);
+        assertFalse(address.isEnabled());
+        assertTrue(address.isVisible());
+        assertFalse(address.isEnabled(Address.P_Address1));
+        assertFalse(emp.getAddresses().canAdd());
+        
+        emp.setCreated(new OADate());
+        assertTrue(address.isEnabled());
+        assertTrue(address.isVisible());
+        assertTrue(address.isEnabled(Address.P_Address1));
         
     }    
     @Test
