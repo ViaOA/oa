@@ -172,9 +172,31 @@ public class OAObjectEditQueryTest extends OAUnitTest {
     }    
     @Test
     public void testCalcProperty() throws Exception {
+        Employee emp = new Employee();
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(Employee.class);
+        OACalcInfo ci = oi.getCalcInfo(emp.P_FullName);
+        assertNotNull(ci);
+        if (ci.getEnabledProperty() != null) assertEquals("", ci.getEnabledProperty());
     }    
     @Test
     public void testLinkOne() throws Exception {
+        Employee emp = new Employee();
+        assertNull(emp.getEmployeeType());
+        assertTrue(emp.isEnabled());
+        assertTrue(emp.isEnabled(emp.P_EmployeeType));
+        
+        EmployeeAward ea = new EmployeeAward();
+        assertTrue(ea.isEnabled());
+        assertTrue(ea.isVisible());
+        ea.setEmployee(emp);
+        assertTrue(ea.isEnabled());
+        assertTrue(ea.isVisible());
+        emp.setInactiveDate(new OADate());
+        assertFalse(ea.isEnabled());
+        assertTrue(ea.isVisible());
+        emp.setInactiveDate(null);
+        assertTrue(ea.isEnabled());
+        assertTrue(ea.isVisible());
     }    
     @Test
     public void testLinkMany() throws Exception {
