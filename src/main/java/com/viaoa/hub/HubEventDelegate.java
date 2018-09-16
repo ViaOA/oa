@@ -17,6 +17,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.util.OAString;
 
 /**
  * Delegate used to register Hub listeners, get Listeners and to send Events to Hub listeners. 
@@ -29,31 +30,32 @@ public class HubEventDelegate {
     }
     
 	public static void fireBeforeRemoveEvent(Hub thisHub, Object obj, int pos) {
+	    // verify with editQuery
+        if (!OARemoteThreadDelegate.isRemoteThread()) {
+            if (obj instanceof OAObject) {
+                OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyRemoveEditQuery(thisHub, (OAObject) obj);
+                if (!em.getAllowed()) {
+                    String s = em.getResponse();
+                    if (OAString.isEmpty(s)) s = "edit query returned false for remove, Hub="+thisHub;
+                    throw new RuntimeException(s, em.getThrowable());
+                }
+            }
+        }
+
+        // call listeners
 	    HubListener[] hls = getAllListeners(thisHub);
 	    int x = hls.length;
 	    if (x > 0) {
-	        
-//qqqqqqqqqqqqqqqqq	        
-//            OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyRemoveEditQuery(thisHub, obj);
-	        
-	        
-/*qqqqqqqqqqqq fix and add back in qqqqqqqqqqq	        
 	        HubEvent hubEvent = new HubEvent(thisHub,obj, pos);
-            HubListener hl;
-            if (!OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
-            else hl = null;
 	        try {
 	            OAThreadLocalDelegate.setSendingEvent(true);
-	            if (hl != null) hl.beforeRemove(hubEvent);
 	            for (int i=0; i<x; i++) {
-	                if (hls[i] == hl) continue;
 	                hls[i].beforeRemove(hubEvent);
 	            }
 	        }
 	        finally {
 	            OAThreadLocalDelegate.setSendingEvent(false);
 	        }
-*/	        
 	    }
 	    
 	}
@@ -116,26 +118,29 @@ public class HubEventDelegate {
 	}
 
 	public static void fireBeforeRemoveAllEvent(Hub thisHub) {
+        // verify with editQuery
+        if (!OARemoteThreadDelegate.isRemoteThread()) {
+            OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyRemoveAllEditQuery(thisHub);
+            if (!em.getAllowed()) {
+                String s = em.getResponse();
+                if (OAString.isEmpty(s)) s = "edit query returned false for removeAll, Hub="+thisHub;
+                throw new RuntimeException(s, em.getThrowable());
+            }
+        }
+	    
 	    HubListener[] hls = getAllListeners(thisHub);
 	    int x = hls.length;
 	    if (x > 0) {
-/*qqqqqqqqqqqqqq	        
             HubEvent hubEvent = new HubEvent(thisHub);
-            HubListener hl;
-            if (!OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
-            else hl = null;
             try {
                 OAThreadLocalDelegate.setSendingEvent(true);
-                if (hl != null) hl.beforeRemoveAll(hubEvent);
                 for (int i=0; i<x; i++) {
-                    if (hls[i] == hl) continue;
                     hls[i].beforeRemoveAll(hubEvent);
                 }
             }
             finally {
                 OAThreadLocalDelegate.setSendingEvent(false);
             }
-*/            
 	    }
 	}
 	public static void fireAfterRemoveAllEvent(Hub thisHub) {
@@ -178,28 +183,32 @@ public class HubEventDelegate {
         }
 	}
 	public static void fireBeforeAddEvent(Hub thisHub, Object obj, int pos) {
+        // verify with editQuery
+        if (!OARemoteThreadDelegate.isRemoteThread()) {
+            if (obj instanceof OAObject) {
+                OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyAddEditQuery(thisHub, (OAObject) obj);
+                if (!em.getAllowed()) {
+                    String s = em.getResponse();
+                    if (OAString.isEmpty(s)) s = "edit query returned false for add, Hub="+thisHub;
+                    throw new RuntimeException(s, em.getThrowable());
+                }
+            }
+        }
+	    
 	    HubListener[] hls = getAllListeners(thisHub);
 	    int x = hls.length;
 	    if (x > 0) {
-/*qqqqqqqqqqqqqqqqqq	        
 	        HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
-	        HubListener hl;
-	        if (!OAThreadLocalDelegate.isLoading() && !OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
-	        else hl = null;
 	        try {
 	            OAThreadLocalDelegate.setSendingEvent(true);
-                if (hl != null) hl.beforeAdd(hubEvent);
     	        for (int i=0; i<x; i++) {
-                    if (hls[i] == hl) continue;
     	        	hls[i].beforeAdd(hubEvent);
     	        }
 	        }
 	        finally {
 	            OAThreadLocalDelegate.setSendingEvent(false);
 	        }
-*/	        
 	    }
-	    
 	}
 	public static void fireAfterAddEvent(Hub thisHub, final Object obj, int pos) {
 	    if (OAThreadLocalDelegate.isLoading()) return;
@@ -260,26 +269,31 @@ public class HubEventDelegate {
         }
 	}
 	public static void fireBeforeInsertEvent(Hub thisHub, Object obj, int pos) {
+        // verify with editQuery
+        if (!OARemoteThreadDelegate.isRemoteThread()) {
+            if (obj instanceof OAObject) {
+                OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyAddEditQuery(thisHub, (OAObject) obj);
+                if (!em.getAllowed()) {
+                    String s = em.getResponse();
+                    if (OAString.isEmpty(s)) s = "edit query returned false for add/insert, Hub="+thisHub;
+                    throw new RuntimeException(s, em.getThrowable());
+                }
+            }
+        }
+
 	    HubListener[] hls = getAllListeners(thisHub);
 	    int x = hls.length;
 	    if (x > 0) {
-/*qqqqqqqqqq	        
             HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
-            HubListener hl;
-            if (!OAThreadLocalDelegate.isLoading() && !OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
-            else hl = null;
 	        try {
                 OAThreadLocalDelegate.setSendingEvent(true);
-                if (hl != null) hl.beforeInsert(hubEvent);
                 for (int i=0; i<x; i++) {
-                    if (hls[i] == hl) continue;
                     hls[i].beforeInsert(hubEvent);
                 }
 	        }
 	        finally {
 	            OAThreadLocalDelegate.setSendingEvent(false);
 	        }
-*/	        
 	    }
 	}
 	public static void fireAfterInsertEvent(Hub thisHub, final Object obj, int pos) {
@@ -380,26 +394,20 @@ public class HubEventDelegate {
         //fireMasterObjectChangeEvent(thisHub, false);
 	}
 	public static void fireBeforeDeleteEvent(Hub thisHub, Object obj) {
+	    
 	    HubListener[] hls = getAllListeners(thisHub);
 	    int x = hls.length;
 	    if (x > 0) {
-/*qqqqqqqqqqq	        
 	        HubEvent hubEvent = new HubEvent(thisHub, obj);
-            HubListener hl;
-            if (!OARemoteThreadDelegate.isRemoteThread()) hl = getOAObjectEditQueryHubListener(thisHub);
-            else hl = null;
             try {
                 OAThreadLocalDelegate.setSendingEvent(true);
-                if (hl != null) hl.beforeDelete(hubEvent);
                 for (int i=0; i<x; i++) {
-                    if (hls[i] == hl) continue;
                     hls[i].beforeDelete(hubEvent);
                 }
             }
             finally {
                 OAThreadLocalDelegate.setSendingEvent(false);
             }
-*/            
 	    }
 	}
 	public static void fireAfterDeleteEvent(Hub thisHub, Object obj) {
@@ -763,7 +771,8 @@ public class HubEventDelegate {
 	}
 	private static final AtomicInteger aiGetAllListeners = new AtomicInteger();
 	
-	protected static HubListener[] getAllListeners(Hub thisHub, int type) {
+	protected static HubListener[] getAllListeners(final Hub thisHub, int type) {
+	    if (thisHub == null) return null;
 	    /* 0: get all
 	       1: get all that are duplicates (dataa == dataa)
 	       2: get all that are shared with this hub only
@@ -791,7 +800,9 @@ public class HubEventDelegate {
 	
 	    // go to beginning of shared hub chain
 	    if (type < 2 && type != 3) {
-	        for ( ; h.datau.getSharedHub() != null ; ) h = h.datau.getSharedHub();
+	        for ( ; h.datau.getSharedHub() != null ; ) {
+	            h = h.datau.getSharedHub();
+	        }
 	    }
 	    if (type == 3) type = 1;
 	    HubListener[] hl = getAllListenersRecursive(h, thisHub, type);
@@ -918,82 +929,24 @@ public class HubEventDelegate {
             }
         }
     }
-    
-/*qqqqqqqqqqqqqqqqqqqqqqq call OAObjectEditQueryDelegate.getAllowXxx methods instead    
-    public static boolean canChangeProperty(Hub thisHub, String propName) {
-        return canChangeProperty(thisHub, null, propName, null, null);
-    }
-    public static boolean canChangeProperty(Hub thisHub, OAObject obj, String propName) {
-        return canChangeProperty(thisHub, obj, propName, null, null);
-    }
-    public static boolean canChangeProperty(Hub thisHub, OAObject obj, String propName, Object oldValue, Object newValue) {
-        HubEvent hubEvent = new HubEvent(thisHub, obj, propName, oldValue, newValue);
-        return canChangeProperty(thisHub, hubEvent);
-    }
-    
-    public static boolean canChangeProperty(Hub thisHub, HubEvent hubEvent) {
-        HubListener[] hl = getAllListeners(thisHub);
-        if (hl == null) return true;
-        int x = hl.length;
-        int i;
-        if (x > 0) {
-            for (i=0; i<x; i++) {
-                if (!hl[i].canChangeProperty(hubEvent)) return false;
-            }
-        }
-        return true;
-    }
 
     public static boolean canAdd(Hub thisHub) {
         return canAdd(thisHub, null);
     }
     public static boolean canAdd(Hub thisHub, OAObject obj) {
-        HubListener[] hl = getAllListeners(thisHub);
-        if (hl == null) return true;
-        int x = hl.length;
-        int i;
-        if (x > 0) {
-            HubEvent hubEvent = new HubEvent(thisHub);
-            for (i=0; i<x; i++) {
-                if (!hl[i].canAdd(hubEvent)) return false;
-            }
-        }
-        return true;
+        if (obj == null) return OAObjectEditQueryDelegate.getAllowAdd(thisHub);
+        return OAObjectEditQueryDelegate.getVerifyAdd(thisHub, obj);
     }
 
     public static boolean canRemove(Hub thisHub) {
         return canRemove(thisHub, null);
     }
     public static boolean canRemove(Hub thisHub, OAObject obj) {
-        HubListener[] hl = getAllListeners(thisHub);
-        if (hl == null) return true;
-        int x = hl.length;
-        int i;
-        if (x > 0) {
-            HubEvent hubEvent = new HubEvent(thisHub, obj);
-            for (i=0; i<x; i++) {
-                if (!hl[i].canRemove(hubEvent)) return false;
-            }
-        }
-        return true;
+        if (obj == null) return OAObjectEditQueryDelegate.getAllowRemove(thisHub);
+        return OAObjectEditQueryDelegate.getVerifyRemove(thisHub, obj);
     }
 
-    public static boolean canDelete(Hub thisHub) {
-        return canDelete(thisHub, null);
+    public static boolean canRemoveAll(Hub thisHub) {
+        return OAObjectEditQueryDelegate.getAllowRemoveAll(thisHub);
     }
-    public static boolean canDelete(Hub thisHub, OAObject obj) {
-        HubListener[] hl = getAllListeners(thisHub);
-        if (hl == null) return true;
-        int x = hl.length;
-        int i;
-        if (x > 0) {
-            HubEvent hubEvent = new HubEvent(thisHub, obj);
-            for (i=0; i<x; i++) {
-                if (!hl[i].canDelete(hubEvent)) return false;
-            }
-        }
-        return true;
-    }
-
-*/    
 }

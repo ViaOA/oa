@@ -155,6 +155,7 @@ public class HubAODelegate {
     */
     public static void setActiveObject(final Hub thisHub, Object object, int pos, boolean bUpdateLink, boolean bForce, boolean bCalledByShareHub, boolean bUpdateDetail) {
         if (thisHub == null) return;
+     
         if (thisHub.dataa.activeObject == object && !bForce) return;
         if (thisHub.datau.isUpdatingActiveObject()) return;
         

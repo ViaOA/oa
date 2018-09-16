@@ -192,6 +192,15 @@ public class OACompare {
     
     /**
      * Compare objects, converting them (using OAConverter class) if necessary.
+     * 
+     * Coercion Rules
+     *   will use the following for converting values before comparing:
+     * check if array type
+     *      if 
+     * check if Hub type
+     *  
+     *  
+     * 
      * value, matchValue can be any type of object, including Hub or Array.
      * value, matchValue do not have to be same class. 
      */
@@ -200,7 +209,7 @@ public class OACompare {
 
         Class classValue = (value == null) ? null : value.getClass();
         Class classMatchValue = (matchValue == null) ? null : matchValue.getClass();
-
+        
         // check if using array        
         if (classValue != null && classValue.isArray()) {
             if (classMatchValue != null && classMatchValue.isArray()) {
@@ -217,6 +226,21 @@ public class OACompare {
                 }
                 return 0;
             }
+            if (matchValue == null) {
+                int x = Array.getLength(value);
+                if (x == 0) return 0;
+                return 1;
+            }
+            if (classMatchValue.equals(Boolean.class)) {
+                boolean b = OAConv.toBoolean(matchValue);
+                int x = Array.getLength(value);
+                if (b) {
+                    if (x > 0) return 0;
+                    return -1;
+                }
+                if (x == 0) return 0;
+                return 1;
+            }
             // take value from [0]
             int x = Array.getLength(value);
             if (x > 1) return 1;
@@ -226,6 +250,21 @@ public class OACompare {
             return x;
         }
         if (classMatchValue != null && classMatchValue.isArray()) {
+            if (value == null) {
+                int x = Array.getLength(matchValue);
+                if (x == 0) return 0;
+                return 1;
+            }
+            if (classValue.equals(Boolean.class)) {
+                boolean b = OAConv.toBoolean(value);
+                int x = Array.getLength(matchValue);
+                if (b) {
+                    if (x > 0) return 0;
+                    return 1;
+                }
+                if (x == 0) return 0;
+                return -1;
+            }
             // take value from [0]
             int x = Array.getLength(matchValue);
             if (x > 1) return -1;
@@ -270,8 +309,8 @@ public class OACompare {
             int x = compare(value, matchValue);
             return x;
         }
-        
-        
+
+        boolean bNeedToConvert = false;
         if (value == null) {
             value = OAConverter.convert(classMatchValue, value);
             classValue = (value == null) ? null : value.getClass();
@@ -280,7 +319,7 @@ public class OACompare {
             matchValue = OAConverter.convert(classValue, matchValue);
             classMatchValue = (matchValue == null) ? null : matchValue.getClass();
         }
-        else if (classValue.equals(classMatchValue)) {
+        else if (classValue.equals(classMatchValue) || classValue.isAssignableFrom(classMatchValue) || classMatchValue.isAssignableFrom(classValue)) {
             // noop
         }
         else if (classValue.equals(Boolean.class)) {
@@ -299,7 +338,33 @@ public class OACompare {
             value = OAConv.convert(classMatchValue, value);
             classValue = (value == null) ? null : value.getClass();
         }
-        else {
+        else if (OAReflect.isInteger(classValue)) {
+            if (OAReflect.isFloat(classMatchValue)) {
+                value = OAConv.toDouble(value);
+                classValue = classMatchValue = Double.class;
+            }
+            else if (OAReflect.isNumber(classMatchValue) || (classMatchValue.equals(String.class) && OAString.isNumber((String) matchValue))) {
+                value = OAConv.toDouble(value);
+                matchValue = OAConv.toDouble(matchValue);
+                classValue = classMatchValue = Double.class;
+            }
+            else bNeedToConvert = true;
+        }
+        else if (OAReflect.isInteger(classMatchValue)) {
+            if (OAReflect.isFloat(classValue)) {
+                matchValue = OAConv.toDouble(matchValue);
+                classValue = classMatchValue = Double.class;
+            }
+            else if (OAReflect.isNumber(classValue) || (classValue.equals(String.class) && OAString.isNumber((String) value))) {
+                value = OAConv.toDouble(value);
+                matchValue = OAConv.toDouble(matchValue);
+                classValue = classMatchValue = Double.class;
+            }
+            else bNeedToConvert = true;
+        }
+        else bNeedToConvert = true;
+        
+        if (bNeedToConvert) {
             try {
                 value = OAConverter.convert(classMatchValue, value);
                 if (value == null) return -1;

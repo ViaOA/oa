@@ -93,7 +93,8 @@ public class OAAnnotationDelegate {
             if (oaid == null) continue;
             OAProperty oaprop = (OAProperty) m.getAnnotation(OAProperty.class);
             if (oaprop == null) {
-                throw new RuntimeException("annotation OAId - should also have OAProperty annotation");
+                String sx = "annotation OAId - should also have OAProperty annotation";
+                LOG.log(Level.WARNING, sx, new Exception(sx));
             }
             s = getPropertyName(m.getName());
             if (hs.contains("OAId." + s)) continue;
@@ -112,7 +113,8 @@ public class OAAnnotationDelegate {
                 }
                 if (ss[pos] != null) {
                     if (!ss[pos].equalsIgnoreCase(s)) {
-                        throw new RuntimeException("annotation OAId - duplicate pos for property id");
+                        String sx = "annotation OAId - duplicate pos for property id";
+                        LOG.log(Level.WARNING, sx, new Exception(sx));
                     }
                 }
             }
@@ -121,7 +123,8 @@ public class OAAnnotationDelegate {
         
         for (String sx : ss) {
             if (sx == null) {
-                throw new RuntimeException("annotation OAId - missing pos for property id(s)");
+                sx = "annotation OAId - missing pos for property id(s)";
+                LOG.log(Level.WARNING, sx, new Exception(sx));
             }
         }
         oi.setPropertyIds(ss);
@@ -399,10 +402,11 @@ public class OAAnnotationDelegate {
             final OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
             final Class[] cs = m.getParameterTypes();
             if (eq == null) {
-                if (name.toUpperCase().indexOf("EDITQUERY") >= 0 && name.indexOf("$") < 0) {
-                    if (!name.endsWith("Model")) {
+                s = name.toUpperCase();
+                if (s.indexOf("EDITQUERY") >= 0 && s.indexOf("$") < 0) {
+                    if (!s.endsWith("MODEL") && !s.startsWith("GET") && !s.startsWith("SET")) {
                         s = "missing @OAEditQuery() annotation, class="+clazz+", method="+m;
-                        throw new RuntimeException(s);
+                        LOG.log(Level.WARNING, s, new Exception(s));
                     }
                 }
                 else {
@@ -426,42 +430,42 @@ public class OAAnnotationDelegate {
             String s2 = "onEditQuery";
             if (!name.startsWith(s2)) {
                 s = "OAEditQuery annotation, class="+clazz+", method="+m+", should be named onEditQuery*";
-                throw new RuntimeException(s);
+                LOG.log(Level.WARNING, s, new Exception(s));
             }
             boolean b = (cs != null && cs.length == 1);
             if (b) {
                 b = cs[0].equals(OAObjectEditQuery.class);
                 if (!Modifier.isPublic(m.getModifiers())) {
                     s = "OAEditQuery annotation, class="+clazz+", method="+m+", should be public";
-                    throw new RuntimeException(s);
+                    LOG.log(Level.WARNING, s, new Exception(s));
                 }
                 if (!b && cs[0].isAssignableFrom(OAObjectModel.class)) {
                     // public static void onEditQueryAddressesModel(OAObjectModel model)
                     if (!name.endsWith("Model")) {
                         s = "OAEditQuery annotation, class="+clazz+", method="+m+", should be named onEditQuery*Model";
-                        throw new RuntimeException(s);
+                        LOG.log(Level.WARNING, s, new Exception(s));
                     }
                     s = name.substring(s2.length());
                     s = s.substring(0, s.length()-5);
                     OALinkInfo lix = oi.getLinkInfo(s);
                     if (lix == null) {
                         s = "OAEditQuery annotation, class="+clazz+", method="+m+", link not found, name="+s;
-                        throw new RuntimeException(s);
+                        LOG.log(Level.WARNING, s, new Exception(s));
                     }
                     if (!Modifier.isStatic(m.getModifiers())) {
                         s = "OAEditQuery annotation, class="+clazz+", method="+m+", should be static";
-                        throw new RuntimeException(s);
+                        LOG.log(Level.WARNING, s, new Exception(s));
                     }
                     continue;
                 }
                 if (Modifier.isStatic(m.getModifiers())) {
                     s = "OAEditQuery annotation, class="+clazz+", method="+m+", should not be static";
-                    throw new RuntimeException(s);
+                    LOG.log(Level.WARNING, s, new Exception(s));
                 }
             }
             if (!b) {
                 s = "OAEditQuery annotation, class="+clazz+", method="+m+", should have one param of OAObjectEditQuery";
-                throw new RuntimeException(s);
+                LOG.log(Level.WARNING, s, new Exception(s));
             }
             name = name.substring(s2.length());
             
@@ -583,7 +587,7 @@ public class OAAnnotationDelegate {
                             }
                             if (!b) {
                                 s = "OAEditQuery annotation, class="+clazz+", method="+m+", could not find method that it goes with, ex: get"+name;
-                                throw new RuntimeException(s);
+                                LOG.log(Level.WARNING, s, new Exception(s));
                             }
                         }
                     }

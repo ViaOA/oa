@@ -30,7 +30,7 @@ import com.viaoa.util.filter.OAFilterDelegate.FinderInfo;
 public class OAEqualFilter implements OAFilter {
     private static Logger LOG = Logger.getLogger(OAEqualFilter.class.getName());
     private Object matchValue;
-    private boolean bIgnoreCase=true;
+    private boolean bIgnoreCase;//was: =true;
     private OAPropertyPath pp;
     private OAFinder finder;
 

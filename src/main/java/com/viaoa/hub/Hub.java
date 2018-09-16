@@ -1577,7 +1577,7 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * Hub. This method will keep the objects sorted using the same property
      * paths used by select.
      */
-/**qqqqqqqqqqq  20150810 removed, sort will keepSorted by default  
+/**  20150810 removed, sort will keepSorted by default  
     public void keepSorted() {
         HubSortDelegate.keepSorted(this);
     }
@@ -2165,6 +2165,6 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     public void sendRefresh() {
         HubCSDelegate.sendRefresh(this);
     }
-    
+
     // public transient boolean DEBUG; // for debugging
 }

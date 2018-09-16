@@ -125,7 +125,6 @@ public class HubLinkDelegate {
 	    // fire a fake changeActiveObject
         HubEventDelegate.fireAfterChangeActiveObjectEvent(thisHub.datau.getLinkToHub(), ao, pos, true);
         //was: HubEventDelegate.fireAfterChangeActiveObjectEvent(thisHub.datau.linkToHub, thisHub.datau.linkToHub.getActiveObject(), 0, true);
-        
         HubEventDelegate.fireAfterPropertyChange(thisHub, null, "Link", null, null, null);
     }
 
@@ -604,7 +603,7 @@ public class HubLinkDelegate {
 	            }
 	        }
 
-/*qqqqqqq MIGHT not need this new change (reverted to previous) qqqqqqqqqqqq     
+/* MIGHT not need this new change (reverted to previous     
  ** ==> use the hubEvent.newList to get the change       
             // 20110808 if AO is not changing in fromHub then need to set force=true so that the fromHub hub listeners will
             //    be notified.  Example:  if masterHub.ao was null, fromHub.ao=null and fromHub was invalid (because masterHub.ao=null)

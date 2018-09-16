@@ -279,8 +279,9 @@ public class HubShareDelegate {
     
 	protected static void syncSharedHubs(Hub thisHub, boolean bShareActiveObject, HubDataActive daOld, HubDataActive daNew, boolean bUpdateLink) {
 	    // all shared hubs need to use same data
-	    Hub[] hubs = getAllSharedHubs(thisHub);
+	    Hub[] hubs = getAllSharedHubs(thisHub, true);  // 201809123 added "true" so that other details using core hub would not be changed
 	    for (int i=0; i<hubs.length; i++) {
+	        if (hubs[i] == thisHub) continue;
 	        hubs[i].data = thisHub.data;  // use same data
             hubs[i].datam = thisHub.datam;  // 20171218
 	        if (bShareActiveObject) {

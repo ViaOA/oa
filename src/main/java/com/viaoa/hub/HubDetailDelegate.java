@@ -227,7 +227,7 @@ public class HubDetailDelegate {
                 x--;
                 i--;
             }
-            else updateDetail(thisHub, hd,h, bUpdateLink);
+            else updateDetail(thisHub, hd, h, bUpdateLink);
         }
     }
     
@@ -305,7 +305,6 @@ public class HubDetailDelegate {
         detailHub.datam.liDetailToMaster = OAObjectInfoDelegate.getReverseLinkInfo(detail.liMasterToDetail);
         detailHub.datam.setMasterHub(thisHub);
 
-
         Object obj = null; // reference property
         try {
             if (thisHub.dataa.activeObject == null) obj = null;
@@ -344,7 +343,6 @@ public class HubDetailDelegate {
         }
 
         detailHub.data.setDupAllowAddRemove(true);
-    
         if (obj == null) {
             HubDataActive daOld = detailHub.dataa;
     
@@ -421,6 +419,7 @@ public class HubDetailDelegate {
         Object aoHold = detailHub.dataa.activeObject;
         HubData hd = detailHub.data;
         detailHub.dataa.activeObject = null;
+        
         HubEventDelegate.fireOnNewListEvent(detailHub, false);  // notifies all of this hub's shared hubs
         if (detailHub.data == hd && detailHub.dataa.activeObject==null) detailHub.dataa.activeObject = aoHold;
   
@@ -435,7 +434,7 @@ public class HubDetailDelegate {
     
     
     /**  initialize activeObject in detail hub.  */
-    protected static void updateDetailActiveObject(Hub thisHub, Hub hubDetailHub, boolean bUpdateLink, boolean bShareActiveObject) {
+    protected static void updateDetailActiveObject(final Hub thisHub, final Hub hubDetailHub, final boolean bUpdateLink, final boolean bShareActiveObject) {
         boolean bUseCurrent = (bShareActiveObject && thisHub.dataa == hubDetailHub.dataa);  // if hubs are sharing active object then dont change it.
         if (!bUseCurrent || (thisHub == hubDetailHub)) {
             if (thisHub.datau.getLinkToHub() == null) {
@@ -629,7 +628,7 @@ public class HubDetailDelegate {
     public static Hub getDetailHub(Hub thisHub, String path, boolean bShareActive, String selectOrder) {
         return getDetailHub(thisHub,path,null,null,null,bShareActive,selectOrder);
     }
-    
+
     /**
         Main method for setting Master/Detail relationship.
         @see Hub#getDetailHub(String,boolean,String) Full Description on Master/Detail Hubs
@@ -822,6 +821,7 @@ public class HubDetailDelegate {
             path = path.substring(pos+1);
         }
         hub.datam.setMasterHub(thisHub);
+        
         if (type == HubDetail.OAOBJECT || type == HubDetail.OBJECT) hub.datau.setDefaultPos(0);
     
         if (!bFound) {
@@ -833,6 +833,7 @@ public class HubDetailDelegate {
         Class[] c = new Class[i];
     
         if (i > 0) System.arraycopy(classes, 1, c, 0, i);
+        
         return getDetailHub(hub, path, c, lastClass, detailHub, bShareActive, selectOrder);
     }
 

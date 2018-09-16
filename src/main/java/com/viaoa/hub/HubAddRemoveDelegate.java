@@ -152,14 +152,14 @@ public class HubAddRemoveDelegate {
     }
     
     public static void clear(final Hub thisHub, final boolean bSetAOtoNull, final boolean bSendNewList) {
-        
-        OAObjectEditQuery eq = OAObjectEditQueryDelegate.getVerifyRemoveAllEditQuery(thisHub);
-        if (eq.getAllowed()) {
-            String s = eq.getResponse();
-            if (OAString.isEmpty(s)) s = "Cant remove object, OAObjectEditQuery allowRemoveAll retured false";
-            throw new RuntimeException(s);
-        }
-        
+        if (!OARemoteThreadDelegate.isRemoteThread()) {
+            OAObjectEditQuery eq = OAObjectEditQueryDelegate.getVerifyRemoveAllEditQuery(thisHub);
+            if (!eq.getAllowed()) {
+                String s = eq.getResponse();
+                if (OAString.isEmpty(s)) s = "Cant remove object, OAObjectEditQuery allowRemoveAll retured false";
+                throw new RuntimeException(s);
+            }
+        }        
         boolean b = false;
         if (thisHub.getSize() == 0) return;
         try {

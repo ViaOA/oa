@@ -90,7 +90,7 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
     }
 
     /**
-     * Create a hub on objects that are based on hubB, and are grouped by hubA. This allows a the
+     * Create a hub on objects that are based on hubB, and are grouped by hubA. This allows the
      * combined hub to have a full list like a left-join.
 
      * @param propertyPath
@@ -99,8 +99,8 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
      *            "Employee.Department") -or- HubGroupBy(hubEmpOrders, "Employee.Department")
      */
     public HubGroupBy(Hub<F> hubB, Hub<G> hubFrom, String propertyPath, boolean bCreateNullList) {
-        this.hubGroupBy = hubFrom;
         this.hubFrom = hubB;
+        this.hubGroupBy = hubFrom;
         this.classFrom = hubB.getObjectClass();
         this.classGroupBy = null;
         this.propertyPath = propertyPath;
@@ -377,10 +377,12 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             }
             @Override
             public void afterRemoveAll(HubEvent e) {
-                for (Object obj : removeObjects) {
-                    remove((OAGroupBy) obj);
+                if (removeObjects != null) {
+                    for (Object obj : removeObjects) {
+                        remove((OAGroupBy) obj);
+                    }
+                    removeObjects = null;
                 }
-                removeObjects = null;
             }
             
             @Override
@@ -693,10 +695,12 @@ public class HubGroupBy<F extends OAObject, G extends OAObject> {
             }
             @Override
             public void afterRemoveAll(HubEvent e) {
-                for (Object obj : removeObjects) {
-                    remove((OAGroupBy) obj);
+                if (removeObjects != null) {
+                    for (Object obj : removeObjects) {
+                        remove((OAGroupBy) obj);
+                    }
+                    removeObjects = null;
                 }
-                removeObjects = null;
             }
             
             @Override
