@@ -119,6 +119,16 @@ public class OAHTMLConverter {
         return getHtml(null, hubRoot, props);
     }
 
+/**qqqqqqq TODO:    
+    protected final ArrayList<String> alDependentProperties = new ArrayList<>();
+    public String[] getDependentProperties() {
+        if (alDependentProperties.size() == 0) parse ...??
+        String[] ss = new String[alDependentProperties.size()];
+        alDependentProperties.toArray(ss);
+        return ss;
+    }
+**/    
+    
     /**
      * Used to have a a call to getHtml stopped.
      */
@@ -159,6 +169,7 @@ public class OAHTMLConverter {
     }
     
     protected TreeNode createTree(String doc) {
+//qqqq        alDependentProperties.clear();
         if (doc == null) doc = "";
         TreeNode root = new TreeNode();
         String html = preprocess(doc);

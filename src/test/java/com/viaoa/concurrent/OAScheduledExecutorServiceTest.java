@@ -35,7 +35,7 @@ public class OAScheduledExecutorServiceTest {
         ScheduledFuture f = es.schedule(r, dt);
         long x = f.getDelay(TimeUnit.MILLISECONDS);
         
-        assertEquals(0, x);
+        assertTrue(x <= 0);
         
         for ( ;!f.isDone(); ) {
             Thread.sleep(5);

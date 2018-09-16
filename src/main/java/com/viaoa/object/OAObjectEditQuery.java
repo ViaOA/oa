@@ -58,6 +58,7 @@ public class OAObjectEditQuery {
 
         // set: confirmeTitle/Message to have UI interact with user
         AllowEnabled(true, false),    // use: allowEnabled  NOTE: this is also called for all types that have checkEnabledFirst=true
+        
         AllowVisible(true),    // use: allowVisible
         AllowAdd(true, true),        // use: allowAdd
         AllowRemove(true, true),     // use: allowRemove
@@ -65,6 +66,7 @@ public class OAObjectEditQuery {
         AllowDelete(true, true),     // use: allowDelete
                              
         VerifyPropertyChange(true, true),// use: value to get new value, name, response, throwable - set allowEnablede=false, or throwable!=null to cancel
+
         VerifyAdd(true, true),           // use: value to get added object, allowAdd, throwable - set allowAdd=false, or throwable!=null to cancel
         VerifyRemove(true, true),        // use: value to get removed object, allowRemove, throwable - set allowRemove=false, or throwable!=null to cancel
         VerifyRemoveAll(true, true),     // use: allowRemoveAll, response, throwable - set allowRemoveAll=false, or throwable!=null to cancel

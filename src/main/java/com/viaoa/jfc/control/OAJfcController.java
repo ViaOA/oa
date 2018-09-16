@@ -507,7 +507,7 @@ public class OAJfcController extends HubListenerAdapter {
         obj = getRealObject(obj);
         if (obj == null) return null;
 
-        if (hubSelect != null) {
+        if (OAString.isEmpty(propertyPath) && hubSelect != null) {
             return hubSelect.contains(obj);
         }
 
@@ -526,23 +526,7 @@ public class OAJfcController extends HubListenerAdapter {
         return getValueAsString(obj, getFormat());
     }
     public String getValueAsString(Object obj, String fmt) {
-        obj = getRealObject(obj);
-        if (obj == null) return null;
-
-        if (hubSelect != null) {
-            obj = hubSelect.contains(obj);
-        }
-        else if (bIsHubCalc) {
-            obj = OAObjectReflectDelegate.getProperty(getHub(), propertyPath);
-        }
-        else {
-            if (obj == null) return null;
-            if (!OAString.isEmpty(propertyPath)) {
-                if (obj instanceof OAObject) {
-                    obj = ((OAObject) obj).getProperty(propertyPath);
-                }
-            }
-        }
+        obj = getValue(obj);
         String s = OAConv.toString(obj, fmt);
         return s;
     }
@@ -964,7 +948,7 @@ public class OAJfcController extends HubListenerAdapter {
     The "word(s)" to use for the empty slot (null value).  
     Example: "none of the above".
     Default: "" (blank).  Set to null if none should be used
-*/
+    */
     public String getNullDescription() {
         return nullDescription;
     }
@@ -1081,7 +1065,6 @@ public class OAJfcController extends HubListenerAdapter {
     }
     protected void updateEnabled(final JComponent comp, final Object object) {
         if (comp == null) return;
-        
         boolean bEnabled = true;
         Hub hubLink = null;
         if (hub != null) {
@@ -1091,12 +1074,12 @@ public class OAJfcController extends HubListenerAdapter {
                 // check link hub
                 if (hubLink != null) {
                     bEnabled = hubLink.isValid();
-                    if (bEnabled) {
+                    if (bEnabled && hubLink.isOAObject()) {
                         String s = HubLinkDelegate.getLinkToProperty(hub);
                         bEnabled = OAObjectEditQueryDelegate.getAllowEnabled((OAObject) hubLink.getAO(), s);
                     }
                 }
-                else {
+                else if (object instanceof OAObject){
                     bEnabled = OAObjectEditQueryDelegate.getAllowEnabled((OAObject)object, endPropertyName);
                 }
             }
@@ -1139,8 +1122,9 @@ public class OAJfcController extends HubListenerAdapter {
         updateVisible(component, hub == null ? null : hub.getAO());
     }
     protected void updateVisible(final JComponent comp, final Object object) {
+int xxx = 3; //qqqqqqqqqqqqqqqqq
+xxx++;
         if (comp == null) return;
-        
         boolean bVisible = true;
         Hub hubLink = null;
         if (hub != null) {
@@ -1150,20 +1134,29 @@ public class OAJfcController extends HubListenerAdapter {
                 // check link hub
                 if (hubLink != null) {
                     bVisible = hubLink.isValid();
-                    if (bVisible) {
+                    if (bVisible && hubLink.isOAObject()) {
                         String s = HubLinkDelegate.getLinkToProperty(hub);
                         bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject) hubLink.getAO(), s);
                     }
                 }
-                else {
+                else if (object instanceof OAObject){
                     bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject)object, endPropertyName);
                 }
             }
         }
         bVisible = bVisible && getVisibleChangeListener().getValue();
         bVisible = isVisible(bVisible);
-        
-        if (comp.isVisible() != bVisible) comp.setVisible(bVisible);
+
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqq
+        if (comp instanceof OATextField && ((OATextField)comp).getController()!=null && ((OATextField)comp).getController().DEBUG) {
+            int xx2=0;
+            xx2++;
+        }
+if (!bVisible) {//qqqqqqqqqqqqqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
+//        if (comp.isVisible() != bVisible) comp.setVisible(bVisible);
     }
     // called by updateVisible to allow it to be overwritten
     protected boolean isVisible(boolean defaultValue) {

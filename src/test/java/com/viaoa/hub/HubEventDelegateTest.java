@@ -13,7 +13,7 @@ import test.hifive.model.oa.EmployeeAward;
 
 public class HubEventDelegateTest extends OAUnitTest {
 
-    @Test
+    // @Test
     public void testValidateProperty() {
         Employee emp = new Employee();
         emp.validateTestType = 1;  // test setLastName - no validation
@@ -85,7 +85,7 @@ public class HubEventDelegateTest extends OAUnitTest {
         assertEquals(0, ai.get());
     }
 
-    @Test
+    // @Test
     public void testValidateProperty2() {
         CountryCode cc = new CountryCode();
         Employee emp = new Employee();
@@ -150,7 +150,7 @@ public class HubEventDelegateTest extends OAUnitTest {
     }
 
     
-    @Test
+    // @Test
     public void testValidateHub() {
         Employee emp = new Employee();
         emp.validateTestType = 1;  // no validation

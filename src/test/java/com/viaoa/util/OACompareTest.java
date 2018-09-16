@@ -115,10 +115,25 @@ public class OACompareTest extends OAUnitTest {
         assertTrue(OACompare.isEmpty(null, true));
         assertTrue(OACompare.isEmpty(0));
         assertFalse(OACompare.isEmpty(-1));
-        
-        
-        
     }
+    
+    @Test
+    public void testArray() {
+        assertEquals(0, OACompare.compare(new String[] {}, false));
+        assertEquals(-1, OACompare.compare(new String[] {}, true));
+        assertEquals(1, OACompare.compare(new String[] {"z"}, false));
+        assertEquals(0, OACompare.compare(new String[] {"z"}, true));
+
+        assertEquals(0, OACompare.compare(false, new String[] {}));
+        assertEquals(1, OACompare.compare(true, new String[] {}));
+        assertEquals(-1, OACompare.compare(false, new String[] {"z"}));
+        assertEquals(0, OACompare.compare(true, new String[] {"z"}));
+    }    
+    
     
     
 }
+
+
+
+

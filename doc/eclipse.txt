@@ -1,3 +1,20 @@
+20180912 ini changes
+    -vmargs  
+    -Xverify:none
+    -Dosgi.requiredJavaVersion=1.8
+    -Dosgi.instance.area.default=@user.home/eclipse-workspace
+    -XX:+UseG1GC
+    -XX:+UseStringDeduplication
+    -Dosgi.dataAreaRequiresExplicitInit=true
+    --add-modules=ALL-SYSTEM
+    -Declipse.p2.max.threads=10
+    -Doomph.update.url=http://download.eclipse.org/oomph/updates/milestone/latest
+    -Doomph.redirection.index.redirection=index:/->http://git.eclipse.org/c/oomph/org.eclipse.oomph.git/plain/setups/
+    -Xms256m
+    -Xmx4000m
+    -Dsun.java2d.dpiaware=true
+    -Dswt.autoScale=100
+
 
 20180910 install eclipse Photon
     quickmarks will no longer work
@@ -47,7 +64,7 @@
         Oxygen: [Preferences > Install/Update > Installed Software]
         select the plugin "Dali Java Persistence Tools -JPA Support" and click "uninstall"
 
-20171209 changes for high res issue with icons
+20171209 changes for high res issue with small icons
 eclipse.ini
     -vmargs
     -Dsun.java2d.dpiaware=true

@@ -500,6 +500,7 @@ public class OAObjectHubDelegateTest extends OAUnitTest {
             assertEquals(x, hubs.length);
             
             for (Hub h : hubs) {
+                if (h == null) continue;
                 h.remove(empz);
                 assertEquals(--x, OAObjectHubDelegate.getHubReferenceCount(empz));
                 for (Employee empk : alEmp) {

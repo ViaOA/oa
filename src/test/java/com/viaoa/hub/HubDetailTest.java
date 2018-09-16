@@ -7,6 +7,8 @@ import test.hifive.HifiveDataGenerator;
 import test.hifive.HifiveUnitTest;
 import test.hifive.delegate.ModelDelegate;
 import test.hifive.model.oa.*;
+import test.hifive.model.oa.propertypath.EmployeePP;
+import test.hifive.model.oa.propertypath.ProgramPP;
 
 public class HubDetailTest extends HifiveUnitTest {
 
@@ -366,7 +368,42 @@ public class HubDetailTest extends HifiveUnitTest {
         reset();
     }
     
-    
+    @Test
+    public void testMultipleDetailsFromSameRoot() {
+        // verify bug fix
+        // hubLocation1 and hubLocation2 should keep there own datam
+        /*ex:  each of the detail location hubs should keep separate Hub.datam
+            Hub<Employee> hubEmployee = hubProgram.getDetailHub(ProgramPP.locations().employees().pp);
+            Hub<Employee> hubEmployee2 = hubEmployee.getDetailHub(EmployeePP.location().program().locations().employees().pp);
+        */
+
+        reset();
+
+        HifiveDataGenerator data = new HifiveDataGenerator();
+        data.createSampleData();
+
+        final Hub<Program> hubProgram = ModelDelegate.getPrograms().createSharedHub();
+
+        Hub<Location> hubLocation1 = hubProgram.getDetailHub(Program.P_Locations);
+        Hub<Employee> hubEmployee1 = hubLocation1.getDetailHub(Location.P_Employees);
+        
+        Hub<Location> hubLocationx = hubEmployee1.getDetailHub(Employee.P_Location);
+        Hub<Program> hubProgramx = hubLocationx.getDetailHub(Location.P_Program);
+        Hub<Location> hubLocation2 = hubProgramx.getDetailHub(Program.P_Locations);
+
+        assertNotEquals(HubDetailDelegate.getDataMaster(hubLocation1), HubDetailDelegate.getDataMaster(hubLocation2));
+        
+        hubProgram.setPos(0);
+        hubLocation1.setPos(0);
+        hubEmployee1.setPos(0);
+        
+        
+        assertEquals(hubLocation1.getMasterObject(), hubLocation2.getMasterObject());
+        assertNotEquals(hubLocation1.getMasterHub(), hubLocation2.getMasterHub());
+        assertNotEquals(HubDetailDelegate.getDataMaster(hubLocation1), HubDetailDelegate.getDataMaster(hubLocation2));
+        reset();
+    }
+        
 }
 
 

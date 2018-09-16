@@ -92,6 +92,24 @@ import com.viaoa.util.*;
 public class OATable extends JTable implements DragGestureListener, DropTargetListener {
     private static Logger LOG = Logger.getLogger(OATable.class.getName());
 
+    
+    @Override
+    public void setEnabled(boolean enabled) {
+if (enabled == false) {
+    int xx = 4;
+    xx++;//qqqqqqqqqqqq
+}
+//        super.setEnabled(enabled);
+    }
+    @Override
+    public void setVisible(boolean aFlag) {
+        if (!aFlag) {
+            int xx = 4;
+            xx++;//qqqqqqqqqqqq
+        }
+        super.setVisible(aFlag);
+    }
+    
     protected int prefCols = 1, prefRows = 5;
     protected Hub hub;
     protected Hub hubFilterMaster;
@@ -2274,7 +2292,6 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
     /**
      * Capture double click and call double click button.
-     * 111111111
      * @see #getDoubleClickButton
      */
     @Override

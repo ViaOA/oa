@@ -268,7 +268,14 @@ public class TabbedPaneController {
                     if (comp instanceof JLabel) {
                         ((JLabel) comp).setEnabled(b);
                     }
-                }                
+                }
+                updateTabs();
+            }
+        });
+        tabbedPane.addPropertyChangeListener("indexForTitle", new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateTabs();
             }
         });
         
@@ -292,12 +299,15 @@ public class TabbedPaneController {
         boolean b = tabbedPane.isEnabled();
         for (int i=0; i<tabbedPane.getTabCount(); i++) {
             JComponent comp = (JComponent) tabbedPane.getTabComponentAt(i);
-            if (comp != null) continue;
-            String s = tabbedPane.getTitleAt(i);
-            JLabel lbl = new JLabel(s);
+            if (comp == null) {
+                comp = new JLabel();
+                tabbedPane.setTabComponentAt(i, comp);
+            }
+            JLabel lbl = (JLabel) comp;
             lbl.setEnabled(b);
+            String s = tabbedPane.getTitleAt(i);
+            lbl.setText(s);
             lbl.setIcon(tabbedPane.getIconAt(i));
-            tabbedPane.setTabComponentAt(i, lbl);
         }
     }
     

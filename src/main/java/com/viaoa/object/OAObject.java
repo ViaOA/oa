@@ -721,7 +721,7 @@ public class OAObject implements java.io.Serializable, Comparable {
         @see #save()
     */
     public void save(int iCascadeRule) {
-        if (!canSave(null)) {
+        if (!canSave()) {
             if (iCascadeRule == CASCADE_NONE) {
                 throw new RuntimeException("can Save returned false for "+getClass().getSimpleName());
             }
@@ -730,7 +730,7 @@ public class OAObject implements java.io.Serializable, Comparable {
         
         OAObjectSaveDelegate.save(this, iCascadeRule);  // this will save on server if using OAClient
     }
-    public boolean canSave(OAObjectEditQuery em) {
+    public boolean canSave() {
         return true;
     }
     
@@ -751,8 +751,14 @@ public class OAObject implements java.io.Serializable, Comparable {
         see Hub#deleted
     */
     public void delete() {
-        if (!canDelete()) {
-            throw new RuntimeException("can Delete returned false for "+getClass().getSimpleName());
+        // verify with editQuery
+        if (!OARemoteThreadDelegate.isRemoteThread()) {
+            OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyDeleteEditQuery(this);
+            if (!em.getAllowed()) {
+                String s = em.getResponse();
+                if (OAString.isEmpty(s)) s = "edit query returned false for delete, object="+this;
+                throw new RuntimeException(s, em.getThrowable());
+            }
         }
     	OAObjectDeleteDelegate.delete(this);
     }

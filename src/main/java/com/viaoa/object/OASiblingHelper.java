@@ -77,7 +77,7 @@ public class OASiblingHelper<F extends OAObject> {
 
         String[] dependProps = calc.properties();
         if (dependProps == null) return;
-        
+
         String ppPrefix = "";
         if (lis != null) {
             for (OALinkInfo li : lis) {

@@ -89,8 +89,12 @@ public class OAFilterTest extends OAUnitTest {
     @Test
     public void equalFilterTest() {
         OAEqualFilter f = new OAEqualFilter("a");
+
+        assertTrue(f.isUsed("a"));
+        assertFalse(f.isUsed("A"));
         
         assertTrue(f.isUsed("a"));
+        f.setIgnoreCase(true);
         assertTrue(f.isUsed("A"));
 
         f.setIgnoreCase(false);
@@ -107,7 +111,7 @@ public class OAFilterTest extends OAUnitTest {
         
         f = new OAEqualFilter(null);
         assertFalse(f.isUsed(123));
-        assertFalse(f.isUsed(""));
+        assertTrue(f.isUsed(""));
         assertTrue(f.isUsed(null));
 
         f = new OAEqualFilter(5);
@@ -115,7 +119,7 @@ public class OAFilterTest extends OAUnitTest {
         assertTrue(f.isUsed(5.0d));
         assertTrue(f.isUsed(5.0f));
         assertTrue(f.isUsed("5.0"));
-        assertTrue(f.isUsed("5.00000001"));  // only uses Integer portion
+        assertFalse(f.isUsed("5.00000001"));
         
         f = new OAEqualFilter(5.0);
         assertTrue(f.isUsed(5));
@@ -125,7 +129,7 @@ public class OAFilterTest extends OAUnitTest {
         assertFalse(f.isUsed("5.00000001"));
         
         f = new OAEqualFilter("5.0");
-        assertFalse(f.isUsed(5));
+        assertTrue(f.isUsed(5));
         assertTrue(f.isUsed(5.0d));
         assertTrue(f.isUsed(5.00000d));
         assertFalse(f.isUsed(5.000001d));
@@ -152,7 +156,7 @@ public class OAFilterTest extends OAUnitTest {
         
         f = new OANotEqualFilter(null);
         assertTrue(f.isUsed(123));
-        assertTrue(f.isUsed(""));
+        assertFalse(f.isUsed(""));
         assertFalse(f.isUsed(null));
 
         f = new OANotEqualFilter(5);
@@ -160,7 +164,7 @@ public class OAFilterTest extends OAUnitTest {
         assertFalse(f.isUsed(5.0d));
         assertFalse(f.isUsed(5.0f));
         assertFalse(f.isUsed("5.0"));
-        assertFalse(f.isUsed("5.00000001"));  // only uses Integer portion
+        assertTrue(f.isUsed("5.00000001"));
         
         f = new OANotEqualFilter(5.0);
         assertFalse(f.isUsed(5));
@@ -170,7 +174,7 @@ public class OAFilterTest extends OAUnitTest {
         assertTrue(f.isUsed("5.00000001"));
         
         f = new OANotEqualFilter("5.0");
-        assertTrue(f.isUsed(5));
+        assertFalse(f.isUsed(5));
         assertFalse(f.isUsed(5.0d));
         assertFalse(f.isUsed(5.00000d));
         assertTrue(f.isUsed(5.000001d));
@@ -194,8 +198,8 @@ public class OAFilterTest extends OAUnitTest {
         assertFalse(f.isUsed(4));
         assertFalse(f.isUsed(4.9999));
         assertFalse(f.isUsed("4.9999"));
-        assertFalse(f.isUsed(5.0001));  // will convert to (int) 5
-        assertFalse(f.isUsed("5.001"));  // will convert to (int) 5
+        assertTrue(f.isUsed(5.0001));  
+        assertTrue(f.isUsed("5.001")); 
         assertFalse(f.isUsed("5.0")); 
         assertFalse(f.isUsed(null));
 
@@ -248,7 +252,7 @@ public class OAFilterTest extends OAUnitTest {
         assertTrue(f.isUsed("4.9999"));
         assertFalse(f.isUsed(5.0001));
         assertFalse(f.isUsed("5.001"));
-        assertFalse(f.isUsed("5.0"));  // the String compare will be true "5.0" > "5"
+        assertFalse(f.isUsed("5.0")); 
         assertTrue(f.isUsed(null));
 
         f = new OALessFilter("5.001");
@@ -272,8 +276,8 @@ public class OAFilterTest extends OAUnitTest {
         assertTrue(f.isUsed(4));
         assertTrue(f.isUsed(4.9999));
         assertTrue(f.isUsed("4.9999"));
-        assertTrue(f.isUsed(5.0001));   // converts to (int) 5
-        assertTrue(f.isUsed("5.001"));// converts to (int) 5
+        assertFalse(f.isUsed(5.0001)); 
+        assertFalse(f.isUsed("5.001"));
         assertTrue(f.isUsed("5"));
         assertTrue(f.isUsed("5.0"));
         assertTrue(f.isUsed(null));
@@ -303,6 +307,8 @@ public class OAFilterTest extends OAUnitTest {
         assertEquals(false, b);
     }
 
+    
+    
 }
 
 

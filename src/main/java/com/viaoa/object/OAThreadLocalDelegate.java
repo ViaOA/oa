@@ -930,6 +930,11 @@ static volatile int unlockCnt;
         ArrayList<OASiblingHelper> al = getSiblingHelpers(OAThreadLocalDelegate.getThreadLocal(true));
         return (al != null && al.size() > 0);
     }
+    public static void clearSiblingHelpers() {
+        if (TotalSiblingHelper.get() == 0) return;
+        ArrayList<OASiblingHelper> al = getSiblingHelpers(OAThreadLocalDelegate.getThreadLocal(true));
+        if (al != null) al.clear();
+    }
 
     private static long msSiblingHelper;
     protected static boolean addSiblingHelper(OAThreadLocal ti, OASiblingHelper sh) {

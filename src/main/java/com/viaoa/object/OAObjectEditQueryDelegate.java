@@ -508,6 +508,7 @@ public class OAObjectEditQueryDelegate {
         if (hubs != null) {
             // check hub.listeners
             for (Hub h : hubs) {
+                if (h == null) continue;
                 processEditQueryForHubListeners(editQuery, h, oaObj, propertyName, oldValue, newValue);
             }
         }

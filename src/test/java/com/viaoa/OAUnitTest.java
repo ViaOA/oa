@@ -7,6 +7,7 @@ import com.viaoa.ds.autonumber.OADataSourceAuto;
 import com.viaoa.ds.objectcache.OADataSourceObjectCache;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectDelegate;
+import com.viaoa.object.OAThreadLocalDelegate;
 
 public class OAUnitTest {
 
@@ -49,6 +50,7 @@ public class OAUnitTest {
         OAObjectCacheDelegate.clearCache();
         OAObjectDelegate.setNextGuid(0);
         OAObjectCacheDelegate.removeAllSelectAllHubs();
+        OAThreadLocalDelegate.clearSiblingHelpers();
     }
 
     public void delay() {

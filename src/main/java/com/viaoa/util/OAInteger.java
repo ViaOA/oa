@@ -18,6 +18,15 @@ public class OAInteger {
     public OAInteger(int x) {
         this.x = x;
     }
+
+    public int get() {
+        return x;
+    }
+    public void set(int x) {
+        this.x = x;
+    }
+    
+    
     public int add(int x) {
         this.x += x;
         return this.x;
@@ -31,12 +40,6 @@ public class OAInteger {
     }
     public int subtract() {
         return this.subtract(1);
-    }
-    public void set(int x) {
-        this.x = x;
-    }
-    public int get() {
-        return x;
     }
     
     public static void viewBytes(byte i) {
