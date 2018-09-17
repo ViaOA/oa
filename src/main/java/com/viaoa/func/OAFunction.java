@@ -23,6 +23,7 @@ public class OAFunction {
                 return false;
             }
         };
+        f.find();
         return cnt.get();
     }
     public static int count(Hub hub, String pp) {
@@ -35,6 +36,7 @@ public class OAFunction {
                 return false;
             }
         };
+        f.find();
         return cnt.get();
     }
 
@@ -84,6 +86,7 @@ public class OAFunction {
                 return false;
             }
         };
+        f.find();
         return sum.get();
     }
     public static double sum(Hub hub, String ppToObject, String pp) {
@@ -104,6 +107,7 @@ public class OAFunction {
                 return false;
             }
         };
+        f.find();
         return sum.get();
     }
 
@@ -154,6 +158,7 @@ public class OAFunction {
                 return false;
             }
         };
+        f.find();
         return max.get();
     }
     public static double max(Hub hub, String ppToObject, String pp) {
@@ -174,6 +179,7 @@ public class OAFunction {
                 return false;
             }
         };
+        f.find();
         return max.get();
     }
 
@@ -224,6 +230,7 @@ public class OAFunction {
                 return false;
             }
         };
+        f.find();
         return min.get();
     }
     public static double min(Hub hub, String ppToObject, String pp) {
@@ -244,6 +251,7 @@ public class OAFunction {
                 return false;
             }
         };
+        f.find();
         return min.get();
     }
     

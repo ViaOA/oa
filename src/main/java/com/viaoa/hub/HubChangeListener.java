@@ -132,7 +132,7 @@ public abstract class HubChangeListener {
     public HubChangeListener(Hub hub, HubChangeListener.Type type) {
         add(hub, type);
     }
-    
+
     /**
      * Add an additional hub to base the check on.  
      * Since there is no propertyName, then it will be based on AO.
@@ -150,49 +150,49 @@ public abstract class HubChangeListener {
     public HubProp add(Hub hub, String propertyPath) {
         if (propertyPath == null) return add(hub);
         else {
-            return add(hub, propertyPath, true, Type.AlwaysTrue, null);
+            return add(hub, propertyPath, true, Type.AlwaysTrue, null, true);
         }
     }
 
     
     /**  Checks to see if hub.isValid */
     public HubProp addHubValid(Hub hub) {
-        return add(hub, null, true, Type.HubValid, null);
+        return add(hub, null, true, Type.HubValid, null, true);
     }
     public HubProp addHubNotValid(Hub hub) {
-        return add(hub, null, true, Type.HubNotValid, null);
+        return add(hub, null, true, Type.HubNotValid, null, true);
     }
     /**  Checks to see if hub.size = 0 */
     public HubProp addHubEmpty(Hub hub) {
-        return add(hub, null, true, Type.HubEmpty, null);
+        return add(hub, null, true, Type.HubEmpty, null, true);
     }
     public HubProp addHubNotEmpty(Hub hub) {
-        return add(hub, null, true, Type.HubNotEmpty, null);
+        return add(hub, null, true, Type.HubNotEmpty, null, true);
     }
     /**  Checks to see if hub.AO = null */
     public HubProp addAoNull(Hub hub) {
-        return add(hub, null, true, Type.AoNull, null);
+        return add(hub, null, true, Type.AoNull, null, true);
     }
     public HubProp addAoNotNull(Hub hub) {
-        return add(hub, null, true, Type.AoNotNull, null);
+        return add(hub, null, true, Type.AoNotNull, null, true);
     }
     
     public HubProp addAlwaysTrue(Hub hub) {
-        return add(hub, null, true, Type.AlwaysTrue, null);
+        return add(hub, null, true, Type.AlwaysTrue, null, true);
     }
     
     public HubProp addPropertyNull(Hub hub, String prop) {
-        return add(hub, prop, true, Type.PropertyNull, null);
+        return add(hub, prop, true, Type.PropertyNull, null, true);
     }
     public HubProp addPropertyNotNull(Hub hub, String prop) {
-        return add(hub, prop, true, Type.PropertyNotNull, null);
+        return add(hub, prop, true, Type.PropertyNotNull, null, true);
     }
     
     public HubProp add(Hub hub, HubChangeListener.Type type) {
-        return add(hub, null, type==null?false:true, type, null);
+        return add(hub, null, type==null?false:true, type, null, true);
     }
     public HubProp add(Hub hub, String property, HubChangeListener.Type type) {
-        return add(hub, property, type==null?false:true, type, null);
+        return add(hub, property, type==null?false:true, type, null, true);
     }
     
     
@@ -203,15 +203,15 @@ public abstract class HubChangeListener {
      *      Note: OAAnyValueObject is used so that hub.isValid is the only check that is needed.
      */
     public HubProp add(Hub hub, final String propertyPath, Object compareValue) {
-        return add(hub, propertyPath, true, compareValue, null);
+        return add(hub, propertyPath, true, compareValue, null, true);
     }
 
     public HubProp add(Hub hub, OAFilter filter) {
-        return add(hub, null, true, null, filter);
+        return add(hub, null, true, null, filter, true);
     }
     
-    
-    protected HubProp add(Hub hub, final String propertyPath, boolean bUseCompareValue, Object compareValue, OAFilter filter) {
+        
+    public HubProp add(Hub hub, final String propertyPath, boolean bUseCompareValue, Object compareValue, OAFilter filter, final boolean bAoOnly) {
         if (hub == null) return null;
 
         String newPropertyPath;
@@ -265,8 +265,13 @@ public abstract class HubChangeListener {
             }
         };
         
-        if (props == null) hub.addHubListener(newHubProp.hubListener);
-        else hub.addHubListener(newHubProp.hubListener, newPropertyPath, props, true);
+        if (props == null) {
+            if (propertyPath == null) hub.addHubListener(newHubProp.hubListener);
+            else hub.addHubListener(newHubProp.hubListener, newPropertyPath, bAoOnly);
+        }
+        else {
+            hub.addHubListener(newHubProp.hubListener, newPropertyPath, props, bAoOnly);
+        }
         
         hubProps = (HubProp[]) OAArray.add(HubProp.class, hubProps, newHubProp);
         onChange();

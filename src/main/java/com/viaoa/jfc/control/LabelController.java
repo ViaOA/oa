@@ -26,9 +26,9 @@ import com.viaoa.jfc.*;
  *
  */
 public class LabelController extends OAJfcController {
-    private JLabel label;
-    private boolean bIsPassword;
-    private OASiblingHelper siblingHelper;
+    protected JLabel label;
+    protected boolean bIsPassword;
+    protected OASiblingHelper siblingHelper;
     
     /**
         Bind a label to a property for the active object in a Hub.
@@ -48,6 +48,11 @@ public class LabelController extends OAJfcController {
         init(lab);
     }
 
+    protected LabelController(Hub hub, JLabel lab, String propertyPath, HubChangeListener.Type type) { 
+        super(hub, propertyPath, lab, type); // this will add hub listener
+        init(lab);
+    }
+    
     /**
         Bind a label to a property for an object.
     */
@@ -91,6 +96,7 @@ public class LabelController extends OAJfcController {
     */
     public @Override void afterPropertyChange() {
     	update();
+    	if (!(label instanceof OALabel)) return; 
         // label could be in a table
         OATable t = ((OALabel)label).getTable();
         if (t != null) {
