@@ -605,6 +605,13 @@ public class OAJfcController extends HubListenerAdapter {
         boolean result = true;
         if (OAString.isNotEmpty(confirmMessage)) {
             if (OAString.isEmpty(confirmTitle)) confirmTitle = "Confirmation";
+                     
+            if (confirmMessage != null && confirmMessage.indexOf("<%=") >= 0 && obj instanceof OAObject) {
+                OATemplate temp = new OATemplate(confirmMessage);
+                temp.setProperty("newValue", newValue); // used by <%=$newValue%>
+                confirmMessage = temp.process((OAObject) obj);
+            }
+            
             int x = JOptionPane.showOptionDialog(OAJFCUtil.getWindow(component), confirmMessage, confirmTitle, 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
             result = (x == 0);
         }
@@ -824,12 +831,19 @@ public class OAJfcController extends HubListenerAdapter {
     }
     public String getToolTipText(Object obj, String ttDefault) {
         obj = getRealObject(obj);
-        if (!(obj instanceof OAObject)) return null;
+        if (!(obj instanceof OAObject)) return ttDefault;
 
         if (OAString.isNotEmpty(toolTipTextPropertyPath)) {
             ttDefault = ((OAObject) obj).getPropertyAsString(toolTipTextPropertyPath);
         }
+        
         ttDefault = OAObjectEditQueryDelegate.getToolTip((OAObject) obj, endPropertyName, ttDefault);
+        
+        if (ttDefault != null && ttDefault.indexOf("<%=") >= 0 && obj instanceof OAObject) {
+            OATemplate temp = new OATemplate(ttDefault);
+            ttDefault = temp.process((OAObject) obj);
+        }
+        
         return ttDefault;
     }
     

@@ -6,6 +6,12 @@ import com.viaoa.object.OAObject;
 import com.viaoa.util.OAProperties;
 
 /**
+ *
+ *    ************* REPLACED with com.viaoa.util.OATemplate ***************
+ *    ************* REPLACED with com.viaoa.util.OATemplate ***************
+ *    ************* REPLACED with com.viaoa.util.OATemplate ***************
+ *    ************* REPLACED with com.viaoa.util.OATemplate ***************
+ * 
  * 
  * Template builder that uses special tags to insert and build an output html template:
  *

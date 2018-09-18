@@ -20,7 +20,12 @@ import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
 
-/*  
+/*
+ *    ************* REPLACED with com.viaoa.util.OATemplate ***************
+ *    ************* REPLACED with com.viaoa.util.OATemplate ***************
+ *    ************* REPLACED with com.viaoa.util.OATemplate ***************
+ *    ************* REPLACED with com.viaoa.util.OATemplate ***************
+ *   
     <br>Tags that are supported:
  *  <ul>  
  *  <li><%=prop[,width||fmt]%>  to use value from OAProperties, or one of the values from setProperty()

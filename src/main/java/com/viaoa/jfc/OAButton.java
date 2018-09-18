@@ -919,5 +919,5 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     public String getEndPropertyName() {
         return control.getEndPropertyName();
     }
-    
+
 }

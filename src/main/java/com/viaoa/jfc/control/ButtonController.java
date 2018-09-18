@@ -382,15 +382,26 @@ public class ButtonController extends OAJfcController implements ActionListener 
         default_afterActionPerformed();
     }
     public void default_afterActionPerformed() {
-        
         String completedMessage = getCompletedMessage();
-        
         String returnMessage = getReturnMessage();
-        
         String displayMessage = "";
-        if (completedMessage != null) displayMessage = completedMessage;
+
+        boolean bUsedCompletedMsg = false;
+        if (completedMessage != null) {
+            Hub h = getHub();
+            if (h != null) {
+                Object obj = h.getAO();
+                if (completedMessage != null && completedMessage.indexOf("<%=") >= 0 && obj instanceof OAObject) {
+                    OATemplate temp = new OATemplate(completedMessage);
+                    temp.setProperty("returnMessage", returnMessage);  // used by <%=$returnMessage%>
+                    completedMessage = temp.process((OAObject) obj);
+                    bUsedCompletedMsg = true;
+                }
+            }            
+            displayMessage = completedMessage;
+        }
         
-        if (returnMessage != null) {
+        if (!bUsedCompletedMsg && returnMessage != null) {
             if (displayMessage.length() > 0) displayMessage += " ";
             displayMessage += returnMessage;
         }

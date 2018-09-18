@@ -62,18 +62,20 @@ public class OATextController {
         this.spellChecker = spellChecker;
         this.bAddUndoSupport = bAddUndoSupport;
 
-        this.autoComplete = new AutoComplete(txt) {
-            @Override
-            protected String[] getMatches(String text) {
-                if (OATextController.this.spellChecker == null) return null;
-                return OATextController.this.spellChecker.getMatches(text);
-            }
-            @Override
-            protected String[] getSoundexMatches(String text) {
-                if (OATextController.this.spellChecker == null) return null;
-                return OATextController.this.spellChecker.getSoundexMatches(text);
-            }
-        };
+        if (spellChecker != null) {
+            this.autoComplete = new AutoComplete(txt) {
+                @Override
+                protected String[] getMatches(String text) {
+                    if (OATextController.this.spellChecker == null) return null;
+                    return OATextController.this.spellChecker.getMatches(text);
+                }
+                @Override
+                protected String[] getSoundexMatches(String text) {
+                    if (OATextController.this.spellChecker == null) return null;
+                    return OATextController.this.spellChecker.getSoundexMatches(text);
+                }
+            };
+        }
         
         if (bAddUndoSupport) {
             // UndoManager
@@ -666,7 +668,7 @@ public class OATextController {
         }
         return cmdSelectAll;
     }    
-    
+
     
 /* ***************************    
 >>   COMMAND: Unselect
@@ -842,9 +844,12 @@ public class OATextController {
         popupMenu.add(getPopupSelectAllMenuItem());
         popupMenu.add(getPopupUnselectMenuItem());
 
+        addMenuItems(popupMenu);
+        
         return popupMenu;
     }
-
+    protected void addMenuItems(JPopupMenu popupMenu) {
+    }
     
     protected Window getWindow() {
         return SwingUtilities.getWindowAncestor(editor);
