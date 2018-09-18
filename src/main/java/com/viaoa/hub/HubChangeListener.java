@@ -135,10 +135,10 @@ public abstract class HubChangeListener {
 
     /**
      * Add an additional hub to base the check on.  
-     * Since there is no propertyName, then it will be based on AO.
+     * Since there is no propertyName, then it will be based on AoNotNull.
      */
     public HubProp add(Hub hub) {
-        return add(hub, null, null);
+        return add(hub, null, Type.AoNotNull);
     }    
 
     /**

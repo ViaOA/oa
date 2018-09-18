@@ -373,14 +373,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         // 20160516
         @Override
         protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-            return true;
-            /*
-            if (bIsCurrentlyEnabled) return bIsCurrentlyEnabled;
-            if (bIsHubCalc) {
-                return hub.isValid();
-            }
-            return false;
-            */
+            return bIsCurrentlyEnabled;
         }
     }
 

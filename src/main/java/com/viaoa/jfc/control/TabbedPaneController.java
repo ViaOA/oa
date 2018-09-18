@@ -30,7 +30,7 @@ import com.viaoa.hub.HubChangeListener;
 import com.viaoa.jfc.OATable;
 
 /**
- * creates an EnabledController, Keylistener (ctrl+down) to toggle tab layout policy, popup menu to
+ * creates an Keylistener (ctrl+down) to toggle tab layout policy, popup menu to
  * select tab layout policy.
  * 
  * @author vvia
@@ -47,15 +47,11 @@ public class TabbedPaneController {
     public TabbedPaneController(Hub hub, JTabbedPane tp) {
         this.hub = hub;
         this.tabbedPane = tp;
-
         if (tp != null && hub != null) {
-            new OAJfcController(hub, tp, HubChangeListener.Type.AoNotNull);
-            //was: new EnabledController(tp, hub);
+            OAJfcController jc = new OAJfcController(hub, tp, HubChangeListener.Type.AoNotNull);
         }
-
         if (tp != null) setup();
     }
-
     private void setup() {
         final JPopupMenu pmenu = new JPopupMenu();
 
@@ -82,7 +78,6 @@ public class TabbedPaneController {
                     radRight.setSelected(true);
                     break;
                 }
-
             }
 
             @Override
@@ -310,5 +305,4 @@ public class TabbedPaneController {
             lbl.setIcon(tabbedPane.getIconAt(i));
         }
     }
-    
 }

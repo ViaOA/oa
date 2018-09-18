@@ -33,14 +33,18 @@ import com.viaoa.util.OAString;
  */
 public class OAObjectEditQueryDelegate {
 
+    public static boolean getAllowVisible(OAObject obj, String name) {
+        return getAllowVisibleEditQuery(obj, name).getAllowed();
+    }
+    public static boolean getAllowVisible(Hub hub) {
+        return getAllowVisibleEditQuery(hub).getAllowed();
+    }
+    
     public static boolean getAllowEnabled(OAObject obj, String name) {
         return getAllowEnabledEditQuery(obj, name).getAllowed();
     }
     public static boolean getAllowEnabled(Hub hub) {
         return getAllowEnabledEditQuery(hub).getAllowed();
-    }
-    public static boolean getAllowVisible(OAObject obj, String name) {
-        return getAllowVisibleEditQuery(obj, name).getAllowed();
     }
 
     public static boolean getVerifyPropertyChange(OAObject obj, String propertyName, Object oldValue, Object newValue) {
@@ -99,6 +103,30 @@ public class OAObjectEditQueryDelegate {
         callEditQuery(obj, null, em);
         callEditQuery(obj, propertyName, em);
     }
+
+    
+    public static OAObjectEditQuery getAllowVisibleEditQuery(final OAObject oaObj, final String name) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowVisible);
+        editQuery.setName(name);
+        
+        processEditQuery(editQuery, oaObj, name, null, null);
+        return editQuery;
+    }
+    public static OAObjectEditQuery getAllowVisibleEditQuery(Hub hub) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowVisible);
+
+        OAObject objMaster = hub.getMasterObject();
+        if (objMaster == null) {
+            processEditQueryForHubListeners(editQuery, hub, null, null, null, null);
+        }
+        else {
+            String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            editQuery.setName(propertyName);
+            processEditQuery(editQuery, objMaster, propertyName, null, null);
+        }
+        return editQuery;
+    }
+    
     
     // @param name used for property, calc properfy, method
     public static OAObjectEditQuery getAllowEnabledEditQuery(final OAObject oaObj, final String name) {
@@ -121,6 +149,7 @@ public class OAObjectEditQueryDelegate {
         }
         return editQuery;
     }
+
     public static OAObjectEditQuery getVerifyPropertyChangeEditQuery(final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue) {
         final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.VerifyPropertyChange);
         editQuery.setName(propertyName);
@@ -129,15 +158,6 @@ public class OAObjectEditQueryDelegate {
         processEditQuery(editQuery, oaObj, propertyName, oldValue, newValue);
         return editQuery;
     }
-    
-    public static OAObjectEditQuery getAllowVisibleEditQuery(final OAObject oaObj, final String name) {
-        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowVisible);
-        editQuery.setName(name);
-        
-        processEditQuery(editQuery, oaObj, name, null, null);
-        return editQuery;
-    }
-    
     
     public static OAObjectEditQuery getAllowAddEditQuery(final Hub hub) {
         final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowAdd);
