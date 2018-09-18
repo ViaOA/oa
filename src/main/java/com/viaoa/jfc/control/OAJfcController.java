@@ -146,14 +146,25 @@ public class OAJfcController extends HubListenerAdapter {
     public OAJfcController(JComponent comp) {
         this(null, null, null, comp, null);
     }
+    
+    public OAJfcController(Hub hub, JComponent comp, boolean bEnableIfAO) {
+        this(hub, null, null, comp, bEnableIfAO ? HubChangeListener.Type.AoNotNull : HubChangeListener.Type.HubValid);
+    }
+    public OAJfcController(JComponent comp, Hub hub, boolean bEnableIfAO) {
+        this(hub, null, null, comp, bEnableIfAO ? HubChangeListener.Type.AoNotNull : HubChangeListener.Type.HubValid);
+    }
+    public OAJfcController(JComponent comp, Hub hub, String prop, boolean bEnableIfAO) {
+        this(hub, null, prop, comp, bEnableIfAO ? HubChangeListener.Type.AoNotNull : HubChangeListener.Type.HubValid);
+    }
+    
     public OAJfcController(Hub hub, JComponent comp) {
-        this(hub, null, null, comp, HubChangeListener.Type.HubValid);
+        this(hub, comp, true);
     }
     public OAJfcController(JComponent comp, Hub hub) {
-        this(hub, null, null, comp, HubChangeListener.Type.HubValid);
+        this(hub, comp, true);
     }
     public OAJfcController(JComponent comp, Hub hub, String prop) {
-        this(hub, null, prop, comp, HubChangeListener.Type.HubValid);
+        this(comp, hub, prop, true);
     }
     
     /**
@@ -1068,10 +1079,9 @@ public class OAJfcController extends HubListenerAdapter {
         boolean bEnabled = true;
         Hub hubLink = null;
         if (hub != null) {
-            hubLink = hub.getLinkHub();            
             bEnabled = hub.isValid();
             if (bEnabled) {
-                // check link hub
+                hubLink = hub.getLinkHub();            
                 if (hubLink != null) {
                     bEnabled = hubLink.isValid();
                     if (bEnabled && hubLink.isOAObject()) {
@@ -1084,7 +1094,6 @@ public class OAJfcController extends HubListenerAdapter {
                 }
             }
         }
-        
         bEnabled = bEnabled && getEnabledChangeListener().getValue();
         bEnabled = isEnabled(bEnabled);
         
@@ -1102,9 +1111,8 @@ public class OAJfcController extends HubListenerAdapter {
             }
         }
         if (comp.isEnabled() != bEnabled) {
-            comp.setEnabled(bEnabled);
+            if (!(comp instanceof OALabel)) comp.setEnabled(bEnabled);
         }
-        
         if (comp instanceof OAJfcComponent) {
             OAJfcController jc = ((OAJfcComponent) comp).getController();
             if (jc != null) {
@@ -1118,52 +1126,48 @@ public class OAJfcController extends HubListenerAdapter {
         return defaultValue;
     }
     
+
     protected void updateVisible() {
         updateVisible(component, hub == null ? null : hub.getAO());
     }
     protected void updateVisible(final JComponent comp, final Object object) {
-int xxx = 3; //qqqqqqqqqqqqqqqqq
-xxx++;
         if (comp == null) return;
         boolean bVisible = true;
         Hub hubLink = null;
         if (hub != null) {
             hubLink = hub.getLinkHub();            
-            bVisible = hub.isValid();
-            if (bVisible) {
-                // check link hub
-                if (hubLink != null) {
-                    bVisible = hubLink.isValid();
-                    if (bVisible && hubLink.isOAObject()) {
-                        String s = HubLinkDelegate.getLinkToProperty(hub);
-                        bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject) hubLink.getAO(), s);
-                    }
+            if (hubLink != null) {
+                if (hubLink.isOAObject()) {
+                    String s = HubLinkDelegate.getLinkToProperty(hub);
+                    bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject) hubLink.getAO(), s);
                 }
-                else if (object instanceof OAObject){
-                    bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject)object, endPropertyName);
+            }
+            else if (object instanceof OAObject){
+                bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject)object, endPropertyName);
+            }
+        }
+          
+        bVisible = bVisible && getVisibleChangeListener().getValue();
+        bVisible = isVisible(bVisible);
+        
+        if (comp.isVisible() != bVisible) {
+            comp.setVisible(bVisible);
+        }
+        if (comp instanceof OAJfcComponent) {
+            OAJfcController jc = ((OAJfcComponent) comp).getController();
+            if (jc != null) {
+                JLabel lbl = jc.getLabel();
+                if (lbl != null && lbl.isVisible() != bVisible) {
+                    lbl.setVisible(bVisible);
                 }
             }
         }
-        bVisible = bVisible && getVisibleChangeListener().getValue();
-        bVisible = isVisible(bVisible);
-
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqq
-        if (comp instanceof OATextField && ((OATextField)comp).getController()!=null && ((OATextField)comp).getController().DEBUG) {
-            int xx2=0;
-            xx2++;
-        }
-if (!bVisible) {//qqqqqqqqqqqqqqqqqqqqqqqqq
-    int xx = 4;
-    xx++;
-}
-//        if (comp.isVisible() != bVisible) comp.setVisible(bVisible);
     }
+
     // called by updateVisible to allow it to be overwritten
     protected boolean isVisible(boolean defaultValue) {
         return defaultValue;
     }
-    
-    
     
     public void setColumns(int x) {
         this.columns = x;
@@ -1246,6 +1250,7 @@ if (!bVisible) {//qqqqqqqqqqqqqqqqqqqqqqqqq
     public void setLabel(JLabel lbl) {
         this.label = lbl;
         lbl.setLabelFor(component);
+        update();
     }
     public JLabel getLabel() {
         return this.label;
