@@ -20,6 +20,7 @@ import javax.swing.table.*;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
+import com.viaoa.util.OAString;
 
 public class OAAutoCompleteTextField extends JTextField implements OATableComponent, OAJfcComponent {
     private AutoCompleteTextFieldController control;
@@ -64,6 +65,10 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
 
     public void setLabel(JLabel lbl) {
         getController().setLabel(lbl);
+    }
+    public JLabel getLabel() {
+        if (getController() == null) return null;
+        return getController().getLabel();
     }
 
     /**

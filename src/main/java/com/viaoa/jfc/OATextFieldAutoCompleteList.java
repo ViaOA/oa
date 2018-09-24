@@ -258,7 +258,6 @@ public abstract class OATextFieldAutoCompleteList extends JTextField implements 
      */
     protected abstract Object getPropertyValueForText(String code);
     
-    
 
 }
 

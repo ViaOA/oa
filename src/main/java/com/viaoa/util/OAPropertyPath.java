@@ -164,6 +164,9 @@ public class OAPropertyPath<F> {
     public OALinkInfo[] getLinkInfos() {
         return linkInfos;
     }
+    public boolean hasLinks() {
+        return linkInfos != null && linkInfos.length > 0;
+    }
     public OALinkInfo[] getRecursiveLinkInfos() {
         return recursiveLinkInfos;
     }
@@ -174,6 +177,11 @@ public class OAPropertyPath<F> {
     public String getValueAsString(F fromObject) {
         return getValueAsString(null, fromObject);
     }
+
+    public Object getLastLinkValue(F fromObject) {
+        return getValue(null, fromObject, true);
+    }
+    
     
     /**
      * Returns the value of the propertyPath from a base object.
@@ -181,6 +189,9 @@ public class OAPropertyPath<F> {
      * If any of the non-last properties is a Hub, then the AO will be used.
      */
     public Object getValue(Hub<F> hub, F fromObject) {
+        return getValue(hub, fromObject, false);
+    }
+    public Object getValue(Hub<F> hub, F fromObject, boolean bLinksOnly) {
         if (fromObject == null) return null;
         if (this.fromClass == null) {
             setup( (Class<F>)fromObject.getClass());
@@ -189,7 +200,7 @@ public class OAPropertyPath<F> {
         
         Object result = fromObject;
         for (int i=0; i < methods.length; i++) {
-            
+            if (bLinksOnly && (linkInfos == null || i>=linkInfos.length)) break;
             if (bLastMethodHasHubParam && i+1 == methods.length) {
                 try {
                     result = methods[i].invoke(result, hub);

@@ -107,7 +107,14 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJfcComp
         return control.getUndoDescription();
     }
     
-
+    public void setConfirmMessage(String msg) {
+        getController().setConfirmMessage(msg);
+    }
+    public String getConfirmMessage() {
+        return getController().getConfirmMessage();
+    }
+    
+    
     @Override
     public ComboBoxController getController() {
     	return control;
@@ -319,10 +326,11 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         control.setNullDescription(s);
     }
 
-    
     public void bind(Hub hub, String propertyPath) {
-        control.setHub(hub);
-        control.setPropertyPath(propertyPath);
+        this.bind(hub, propertyPath, true);
+    }
+    public void bind(Hub hub, String propertyPath, boolean useLinkHub) {
+        control.bind(hub, propertyPath, useLinkHub);
     }
 
 
@@ -627,7 +635,6 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         public OAComboBoxController(Hub hub, String propertyPath) {
             super(hub, OAComboBox.this, propertyPath);
         }
-        
 
         @Override
         protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
@@ -706,6 +713,8 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         if (getController() == null) return null;
         return getController().getLabel();
     }
+
+
     @Override
     public void setEnabled(boolean b) {
         super.setEnabled(b);

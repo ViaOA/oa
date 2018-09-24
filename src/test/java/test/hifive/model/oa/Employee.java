@@ -444,6 +444,15 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
         }
         return true;
     }
+    @OAEditQuery()
+    public void onEditQueryLastName(OAObjectEditQuery eq) {
+        if (eq == null) return;
+        if (eq.getType() == Type.VerifyPropertyChange) {
+            boolean b = isValidLastName((String) eq.getValue(), eq);
+            if (!b) eq.setAllowed(b);
+        }
+    }
+    
     
     
     @OAProperty(displayName = "Suffix", maxLength = 75, displayLength = 20, columnLength = 8)

@@ -19,6 +19,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 import com.viaoa.object.*;
+import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
@@ -390,7 +391,6 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
     }
 
-
     public void setLabel(JLabel lbl) {
         getController().setLabel(lbl);
     }
@@ -399,6 +399,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         return getController().getLabel();
     }
 
+    
     private Color fgColor, bgColor;
     private final AtomicInteger aiBlink = new AtomicInteger();
     

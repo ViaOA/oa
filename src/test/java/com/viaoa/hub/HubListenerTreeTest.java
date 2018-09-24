@@ -7,6 +7,7 @@ import com.viaoa.object.OATrigger;
 import com.viaoa.util.OADate;
 
 import test.hifive.model.oa.*;
+import test.hifive.model.oa.propertypath.EmployeeAwardPP;
 import test.hifive.model.oa.propertypath.EmployeePP;
 import test.hifive.model.oa.propertypath.LocationPP;
 import test.hifive.model.oa.propertypath.ProgramPP;
@@ -421,6 +422,37 @@ public class HubListenerTreeTest extends OAUnitTest {
         //qqqqqqqqqq
         // check triggers qqqqqqq
     }
+
+    @Test
+    public void test10() {
+        Hub<EmployeeAward> hubEa = new Hub(EmployeeAward.class);
+        hubEa.add(new EmployeeAward());
+        
+        Employee emp = new Employee();
+        hubEa.getAt(0).setEmployee(emp);
+        
+        final AtomicInteger ai = new AtomicInteger();
+        HubListener<EmployeeAward> hl = new HubListenerAdapter<EmployeeAward>() {
+            @Override
+            public void afterPropertyChange(HubEvent<EmployeeAward> e) {
+                if ("xx".equals(e.getPropertyName())) ai.incrementAndGet();
+            }
+        };
+
+        boolean b;
+        assertEquals(0, ai.get());
+        hubEa.addHubListener(hl, "xx", EmployeeAwardPP.employee().fullName(), true);
+        assertEquals(0, ai.get());
+
+        emp.setFirstName("aa");
+        assertEquals(0, ai.get());
+
+        hubEa.setPos(0);
+        emp.setFirstName("xx");
+        
+        assertEquals(1, ai.get());
+        
+    }    
     
     public static void main(String[] args) throws Exception {
         HubListenerTreeTest test = new HubListenerTreeTest();

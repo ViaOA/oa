@@ -27,7 +27,7 @@ public class ComboBoxController extends OAJfcController implements FocusListener
     JList list;
 
     public ComboBoxController(Hub hub, JComboBox cb, String propertyPath) {
-        super(hub, propertyPath, cb, HubChangeListener.Type.HubValid); // this will add hub listener
+        super(hub, propertyPath, cb, HubChangeListener.Type.HubValid, (hub==null?null:hub.getLinkHub()), (hub==null?null:hub.getLinkPath())); // this will add hub listener
         create(cb);
     }
 
@@ -224,7 +224,10 @@ public class ComboBoxController extends OAJfcController implements FocusListener
                 if (hubx != null) {
                     activeObject = hubx.getAO();
                 }
-                
+                if (HubLinkDelegate.getLinkedOnPos(h)) {
+                    obj = h.getPos();
+                }
+
                 String msg = isValid(activeObject, obj);
                 if (msg != null) {
                     JOptionPane.showMessageDialog(SwingUtilities.getRoot(comboBox), "Invalid selection\n" + msg, "Invalid selection",

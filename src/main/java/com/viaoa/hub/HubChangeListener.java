@@ -15,7 +15,8 @@ import com.viaoa.util.*;
 
 /**
  * Allows listening for changes to 1 or more Hubs and property paths.
- * Can include compare values, that can then be checked using getValue() to see if all conditions are true.  
+ * Can include compare values, that can then be checked using getValue() to see if all conditions are true. 
+ * Use add method to add as many checks and hubs necessary. 
  * 
  * @author vincevia
  */
@@ -39,84 +40,6 @@ public abstract class HubChangeListener {
         PropertyNotNull
     }
     
-    
-    public static class HubProp {
-        public Hub<?> hub;
-        public String propertyPath;  // original propertyPath
-        public String listenToPropertyName;  // name used for listener - in case property path has '.' in it, then this will replace with '_' 
-        public HubListener hubListener;
-        public Object compareValue;
-        public boolean bUseCompareValue;
-        public OAFilter filter;
-
-        public HubProp(Hub<?> h, String propertyPath, String listenPropertyName, boolean bUseCompareValue, Object compareValue, OAFilter filter) {
-            this.hub = h;
-            this.propertyPath = propertyPath;
-            this.listenToPropertyName = listenPropertyName;
-            this.bUseCompareValue = bUseCompareValue;
-            this.compareValue = compareValue;
-            this.filter = filter;
-        }
-
-        public boolean getValue() {
-            if (hub == null) return true;
-            
-            if (bUseCompareValue && compareValue != null) {
-                if (compareValue == Type.AlwaysTrue) return true;
-                if (compareValue == Type.HubValid) return hub.isValid();
-                if (compareValue == Type.HubNotValid) return !hub.isValid();
-                if (compareValue == Type.HubEmpty) return (hub.getSize() == 0);
-                if (compareValue == Type.HubNotEmpty) return (hub.getSize() > 0);
-                if (compareValue == Type.AoNull) return (hub.getAO() == null);
-                if (compareValue == Type.AoNotNull) return (hub.getAO() != null);
-            }
-
-            if (!hub.isValid()) return false;
-            
-            Object value = hub.getAO();
-            if (propertyPath != null) {
-                if (value instanceof OAObject) value = ((OAObject)value).getProperty(propertyPath);
-            }
-            
-            if (bUseCompareValue && compareValue != null) {
-                if (compareValue == Type.PropertyNull) return (value == null);
-                if (compareValue == Type.PropertyNotNull) return (value != null);
-            }
-            
-            if (bUseCompareValue) {
-                return OACompare.compare(compareValue, value) == 0;
-            }
-            else {
-                return OAConv.toBoolean(value);
-            }
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof HubProp)) return false;
-            HubProp hp = (HubProp) obj;
-            if (this.hub != hp.hub) return false;
-            if (this.compareValue != null) {
-                if (hp.compareValue == null) return false;
-                if (!this.compareValue.equals(hp.compareValue)) {
-                    if (!this.compareValue.equals(OAConv.convert(this.compareValue.getClass(), hp.compareValue))) return false;
-                }
-            }
-            else if (hp.compareValue != null) return false;
-            
-            if (this.propertyPath != null) {
-                if (hp.propertyPath == null) return false;
-                if (!this.propertyPath.equalsIgnoreCase(hp.propertyPath)) return false;
-            }
-            else if (hp.propertyPath != null) return false;
-            return true;
-        }
-        @Override
-        public int hashCode() {
-            return hub.hashCode();
-        }
-    }
-    
     public HubChangeListener() {
     }    
     public HubChangeListener(Hub hub) {
@@ -135,10 +58,9 @@ public abstract class HubChangeListener {
 
     /**
      * Add an additional hub to base the check on.  
-     * Since there is no propertyName, then it will be based on AoNotNull.
      */
     public HubProp add(Hub hub) {
-        return add(hub, null, Type.AoNotNull);
+        return add(hub, null, Type.HubValid);
     }    
 
     /**
@@ -150,14 +72,16 @@ public abstract class HubChangeListener {
     public HubProp add(Hub hub, String propertyPath) {
         if (propertyPath == null) return add(hub);
         else {
-            return add(hub, propertyPath, true, Type.AlwaysTrue, null, true);
+            return add(hub, propertyPath, true, Type.HubValid, null, true);
         }
     }
-
     
     /**  Checks to see if hub.isValid */
     public HubProp addHubValid(Hub hub) {
         return add(hub, null, true, Type.HubValid, null, true);
+    }
+    public HubProp addHubValid(Hub hub, String propertyPath) {
+        return add(hub, propertyPath, true, Type.HubValid, null, true);
     }
     public HubProp addHubNotValid(Hub hub) {
         return add(hub, null, true, Type.HubNotValid, null, true);
@@ -200,7 +124,6 @@ public abstract class HubChangeListener {
      * Add an addition hub/property to base the check on.
      * @param compareValue can be null, OANullObject.instance, OANotNullObject.instance, OAAnyValueObject.instance, Type.PropertyNull, Type.PropertyNotNull
      *      or any other value.  
-     *      Note: OAAnyValueObject is used so that hub.isValid is the only check that is needed.
      */
     public HubProp add(Hub hub, final String propertyPath, Object compareValue) {
         return add(hub, propertyPath, true, compareValue, null, true);
@@ -239,9 +162,11 @@ public abstract class HubChangeListener {
             }
             @Override
             public void afterPropertyChange(HubEvent e) {
-                String s = e.getPropertyName();
-                if (s != null && s.equalsIgnoreCase(newHubProp.listenToPropertyName)) {
-                    onChange();
+                if (!bAoOnly || e.getObject() == hub.getAO()) {
+                    String s = e.getPropertyName();
+                    if (s != null && s.equalsIgnoreCase(newHubProp.listenToPropertyName)) {
+                        onChange();
+                    }
                 }
             }
             // linked to hub listener
@@ -253,15 +178,15 @@ public abstract class HubChangeListener {
             }
             @Override
             public void afterAdd(HubEvent e) {
-                if (propertyPath == null) onChange();
+                if (!bAoOnly && propertyPath == null) onChange();
             }
             @Override
             public void afterInsert(HubEvent e) {
-                if (propertyPath == null) onChange();
+                if (!bAoOnly && propertyPath == null) onChange();
             }
             @Override
             public void afterRemove(HubEvent e) {
-                if (propertyPath == null) onChange();
+                if (!bAoOnly && propertyPath == null) onChange();
             }
         };
         
@@ -334,5 +259,83 @@ public abstract class HubChangeListener {
         return b;
     }
 
+    public static class HubProp {
+        public Hub<?> hub;
+        public String propertyPath;  // original propertyPath
+        public String listenToPropertyName;  // name used for listener - in case property path has '.' in it, then this will replace with '_' 
+        public HubListener hubListener;
+        public Object compareValue;
+        public boolean bUseCompareValue;
+        public OAFilter filter;
+
+        public HubProp(Hub<?> h, String propertyPath, String listenPropertyName, boolean bUseCompareValue, Object compareValue, OAFilter filter) {
+            this.hub = h;
+            this.propertyPath = propertyPath;
+            this.listenToPropertyName = listenPropertyName;
+            this.bUseCompareValue = bUseCompareValue;
+            this.compareValue = compareValue;
+            this.filter = filter;
+        }
+
+        public boolean getValue() {
+            if (hub == null) return true;
+            
+            if (bUseCompareValue && compareValue != null) {
+                if (compareValue == Type.HubValid) return hub.isValid();
+                if (compareValue == Type.HubNotValid) return !hub.isValid();
+                if (compareValue == Type.HubEmpty) return (hub.getSize() == 0);
+                if (compareValue == Type.HubNotEmpty) return (hub.getSize() > 0);
+                if (compareValue == Type.AoNull) return (hub.getAO() == null);
+                if (compareValue == Type.AoNotNull) return (hub.getAO() != null);
+                if (compareValue == Type.AlwaysTrue) return true;
+                if (compareValue == Type.Unknown) return true;
+            }
+
+            if (!hub.isValid()) return false;
+            
+            Object value = hub.getAO();
+            if (propertyPath != null) {
+                if (value instanceof OAObject) value = ((OAObject)value).getProperty(propertyPath);
+            }
+            
+            if (bUseCompareValue && compareValue != null) {
+                if (compareValue == Type.PropertyNull) return (hub.getAO() != null && value == null);
+                if (compareValue == Type.PropertyNotNull) return (value != null);
+            }
+            
+            if (bUseCompareValue) {
+                return OACompare.compare(compareValue, value) == 0;
+            }
+            else {
+                return OAConv.toBoolean(value);
+            }
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof HubProp)) return false;
+            HubProp hp = (HubProp) obj;
+            if (this.hub != hp.hub) return false;
+            if (this.compareValue != null) {
+                if (hp.compareValue == null) return false;
+                if (!this.compareValue.equals(hp.compareValue)) {
+                    if (!this.compareValue.equals(OAConv.convert(this.compareValue.getClass(), hp.compareValue))) return false;
+                }
+            }
+            else if (hp.compareValue != null) return false;
+            
+            if (this.propertyPath != null) {
+                if (hp.propertyPath == null) return false;
+                if (!this.propertyPath.equalsIgnoreCase(hp.propertyPath)) return false;
+            }
+            else if (hp.propertyPath != null) return false;
+            return true;
+        }
+        @Override
+        public int hashCode() {
+            return hub.hashCode();
+        }
+    }
+    
     protected abstract void onChange();
 }

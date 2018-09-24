@@ -27,6 +27,19 @@ public class VInteger extends OAObject {
         setValue(x);
     }
     
+    public void inc() {
+        setValue(value+1);
+    }
+    public void dec() {
+        setValue(value-1);
+    }
+    public void add(int x) {
+        setValue(value+x);
+    }
+    public void sub(int x) {
+        setValue(value-x);
+    }
+    
     @OAProperty(displayLength = 3)
     public int getValue() {
         return value;

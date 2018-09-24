@@ -20,6 +20,7 @@ import javax.swing.table.*;
 import javax.swing.event.*;
 
 import com.viaoa.object.*;
+import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
@@ -244,7 +245,7 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJfcComp
         if (getController() == null) return null;
         return getController().getLabel();
     }
-    
+
     @Override
     public void setEnabled(boolean b) {
         super.setEnabled(b);
@@ -258,6 +259,12 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJfcComp
         if (lbl != null) lbl.setVisible(b);
     }
 
+    public void setConfirmMessage(String msg) {
+        getController().setConfirmMessage(msg);
+    }
+    public String getConfirmMessage() {
+        return getController().getConfirmMessage();
+    }
 }
 
 class OATextAreaTableCellEditor extends OATableCellEditor {

@@ -47,7 +47,6 @@ public class OAObjectEditQuery {
     private String response;
     private Throwable throwable;
     
-
     /**
      * Type of request being made from caller object.
      * 
@@ -76,6 +75,7 @@ public class OAObjectEditQuery {
         GetConfirmAdd(false),
         GetConfirmRemove(false),
         GetConfirmDelete(false),
+        GetDependentProperties(false),
         
         GetToolTip(false),      // use: toolTip
         RenderLabel(false),     // use: label and update it's props

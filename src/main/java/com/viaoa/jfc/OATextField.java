@@ -16,6 +16,7 @@ import javax.swing.table.*;
 
 import com.viaoa.object.*;
 import com.viaoa.util.OADate;
+import com.viaoa.util.OAString;
 import com.viaoa.util.converter.OAConverterNumber;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
@@ -96,8 +97,8 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
         getController().setLabel(lbl);
     }
     public JLabel getLabel() {
-        TextFieldController tc = getController();
-        return tc == null ? null : getController().getLabel();
+        if (getController() == null) return null;
+        return getController().getLabel();
     }
     
     @Override
@@ -374,7 +375,25 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
             if (msg == null) msg = super.isValid(object, value);
             return msg;
         }
-        
+        @Override
+        public void update(JComponent comp, Object object) {
+            OATextField.this.beforeUpdate();
+            super.update(comp, object);
+            OATextField.this.afterUpdate();
+        }
     }
+    
+    public void beforeUpdate() {
+    }
+    public void afterUpdate() {
+    }
+    
+    public void setConfirmMessage(String msg) {
+        getController().setConfirmMessage(msg);
+    }
+    public String getConfirmMessage() {
+        return getController().getConfirmMessage();
+    }
+
 }
 

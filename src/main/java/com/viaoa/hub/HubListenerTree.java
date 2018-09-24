@@ -802,7 +802,8 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                             }                
                         }
                     }; 
-                    hub.addHubListener(hl, property, bActiveObjectOnly);  // note: property could be another calc-property
+                    hub.addHubListener(hl, property, !bUseAll);  // 20180923
+                    //was: hub.addHubListener(hl, property, bActiveObjectOnly);  // note: property could be another calc-property
 
                     HubListener[] hls;
                     if (node.hmListener == null) {

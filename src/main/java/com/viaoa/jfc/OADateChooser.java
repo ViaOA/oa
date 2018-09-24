@@ -102,6 +102,13 @@ public class OADateChooser extends JPanel implements OAJfcComponent {
         return control;
     }
 
+    public void setConfirmMessage(String msg) {
+        getController().setConfirmMessage(msg);
+    }
+    public String getConfirmMessage() {
+        return getController().getConfirmMessage();
+    }
+    
     
     /**
         Set the date to display.
@@ -452,6 +459,7 @@ public class OADateChooser extends JPanel implements OAJfcComponent {
         if (getController() == null) return null;
         return getController().getLabel();
     }
+
     @Override
     public void setEnabled(boolean b) {
         super.setEnabled(b);

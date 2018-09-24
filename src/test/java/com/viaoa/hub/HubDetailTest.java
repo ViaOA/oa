@@ -403,7 +403,9 @@ public class HubDetailTest extends HifiveUnitTest {
         assertNotEquals(HubDetailDelegate.getDataMaster(hubLocation1), HubDetailDelegate.getDataMaster(hubLocation2));
         reset();
     }
-        
+
+    
+    
 }
 
 

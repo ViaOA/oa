@@ -1354,6 +1354,14 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         else ss = null;
         HubEventDelegate.addHubListener(this, hl, property, ss);
     }
+    public void addHubListener(HubListener<TYPE> hl, String property, String dependentPropertyPath, boolean bActiveObjectOnly) {
+        String[] ss;
+        if (dependentPropertyPath != null && dependentPropertyPath.length() > 0) {
+            ss = new String[] {dependentPropertyPath};
+        }
+        else ss = null;
+        HubEventDelegate.addHubListener(this, hl, property, ss, bActiveObjectOnly);
+    }
     public void addHubListener(HubListener<TYPE> hl, String property, String[] dependentPropertyPaths, boolean bActiveObjectOnly) {
         HubEventDelegate.addHubListener(this, hl, property, dependentPropertyPaths, bActiveObjectOnly);
     }
@@ -2040,6 +2048,9 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
         return HubDelegate.isValid(this);
     }
 
+    /**
+     * @return path that this hub is linked to.
+     */
     public String getLinkPath() {
         return HubLinkDelegate.getLinkHubPath(this);
     }

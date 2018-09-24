@@ -407,13 +407,19 @@ public class TextFieldController extends OAJfcController implements FocusListene
         }
         
         try {
-            Object convertedValue = getConvertedValue(text, null);
-            
-            if (convertedValue == null && text.length() > 0) {
-                JOptionPane.showMessageDialog(SwingUtilities.getRoot(textField), 
-                        "Invalid Entry \""+text+"\"", 
-                        "Invalid Entry", JOptionPane.ERROR_MESSAGE);
-                return;
+
+            Object convertedValue;
+            if (OAString.isEmpty(text) && endPropertyClass != null && endPropertyClass.isPrimitive()) {
+                convertedValue = null;
+            }
+            else {
+                convertedValue = getConvertedValue(text, null);
+                if (convertedValue == null && text.length() > 0) {
+                    JOptionPane.showMessageDialog(SwingUtilities.getRoot(textField), 
+                            "Invalid Entry \""+text+"\"", 
+                            "Invalid Entry", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
             }
             
             String msg = isValid(activeObject, convertedValue);

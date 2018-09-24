@@ -56,7 +56,15 @@ public class Site extends OAObject {
         this();
         setId(id);
     }
-     
+
+
+    @OACalculatedProperty(properties = {P_AbbrevName, P_Name})
+    public String getDisplayName() {
+        String s = OAString.notNull(getAbbrevName());
+        s = OAString.concat(s, getName());
+        return s;
+    }
+    
     @OAProperty(isUnique = true, displayLength = 5, isProcessed = true)
     @OAId()
     @OAColumn(sqlType = java.sql.Types.INTEGER)

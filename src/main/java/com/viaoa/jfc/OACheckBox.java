@@ -56,6 +56,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
     }
     
     
+    
     /**
         Create CheckBox that is bound to a property for the active object in a Hub.
         @param cols is width of list using character width size.
@@ -154,7 +155,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
     public int getXORValue() {
         return control.getXORValue();
     }
-
+    
 
     // ----- OATableComponent Interface methods -----------------------
     public Hub getHub() {

@@ -53,6 +53,10 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         control = new OACustomComboBoxController(hub, propertyPath, bTypeEditProperty);
         initialize();
     }
+    public OACustomComboBox(Hub hub, String propertyPath, boolean bTypeEditProperty, Hub hubDirect, String directProperty) {
+        control = new OACustomComboBoxController(hub, propertyPath, bTypeEditProperty);
+        initialize();
+    }
 
     /**
         Create a ComboBox that is bound to a property for the active object in a Hub.
@@ -541,6 +545,9 @@ focusComp = this;
 
     
     class OACustomComboBoxController extends CustomComboBoxController {
+        public OACustomComboBoxController(Hub hub, String propertyPath, boolean bTypeEditProperty, Hub hubDirect, String directProperty) {
+            super(hub, OACustomComboBox.this, propertyPath, bTypeEditProperty, hubDirect, directProperty);
+        }
         public OACustomComboBoxController(Hub hub, String propertyPath, boolean bTypeEditProperty) {
             super(hub, OACustomComboBox.this, propertyPath, bTypeEditProperty);
         }
@@ -557,6 +564,12 @@ focusComp = this;
         protected boolean isVisible(boolean bIsCurrentlyVisible) {
             bIsCurrentlyVisible = super.isVisible(bIsCurrentlyVisible);
             return OACustomComboBox.this.isVisible(bIsCurrentlyVisible);
+        }
+        @Override
+        public void update(JComponent comp, Object object) {
+            OACustomComboBox.this.beforeUpdate();
+            super.update(comp, object);
+            OACustomComboBox.this.afterUpdate();
         }
     }
 
@@ -598,6 +611,7 @@ focusComp = this;
         if (getController() == null) return null;
         return getController().getLabel();
     }
+
     
     @Override
     public void setEnabled(boolean b) {
@@ -612,6 +626,17 @@ focusComp = this;
         if (lbl != null) lbl.setVisible(b);
     }
 
+    public void setConfirmMessage(String msg) {
+        getController().setConfirmMessage(msg);
+    }
+    public String getConfirmMessage() {
+        return getController().getConfirmMessage();
+    }
+
+    public void beforeUpdate() {
+    }
+    public void afterUpdate() {
+    }
 }
 
 

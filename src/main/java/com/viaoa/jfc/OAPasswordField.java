@@ -17,6 +17,7 @@ import javax.swing.border.*;
 import javax.swing.table.*;
 
 import com.viaoa.object.*;
+import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
@@ -240,6 +241,7 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
         if (getController() == null) return null;
         return getController().getLabel();
     }
+    
     @Override
     public void setEnabled(boolean b) {
         super.setEnabled(b);
@@ -251,6 +253,13 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
         super.setVisible(b);
         JLabel lbl = getLabel();
         if (lbl != null) lbl.setVisible(b);
+    }
+
+    public void setConfirmMessage(String msg) {
+        getController().setConfirmMessage(msg);
+    }
+    public String getConfirmMessage() {
+        return getController().getConfirmMessage();
     }
 }
 

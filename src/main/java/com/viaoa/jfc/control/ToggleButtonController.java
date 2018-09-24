@@ -214,8 +214,16 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
     
     // HUB Events
     public @Override void afterChangeActiveObject() {
-        if (bFlag) return;
-        bFlag = true;
+        try {
+            if (bFlag) return;
+            _afterChangeActiveObject();
+            bFlag = true;
+        }
+        finally {
+            bFlag = false;
+        }
+    }
+    protected void _afterChangeActiveObject() {
         boolean b = false;
 
         Object oaObject = hub.getActiveObject();
@@ -246,8 +254,6 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         if (button.isSelected() != b) {
             button.setSelected(b);
         }
-        bFlag = false;
-        update();
     }
     
     /**
@@ -265,9 +271,18 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
     }
     
     private volatile boolean bFlag;
+    
     public void itemStateChanged(ItemEvent evt) {
-        if (bFlag) return;
-        bFlag = true;
+        try {
+            if (bFlag) return;
+            bFlag = true;
+            _itemStateChanged(evt);
+        }
+        finally {
+            bFlag = false;
+        }
+    }    
+    protected void _itemStateChanged(ItemEvent evt) {
         Object value;
 
         if ( (hubSelect != null) || hub != null) {
@@ -278,7 +293,6 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
                 if (type == ItemEvent.SELECTED) value = valueOn;
                 else value = valueOff;
                 if (value instanceof OANullObject) {
-                    bFlag = false;
                     return;
                 }
                 
@@ -302,7 +316,6 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
                         }
 
                         if (OACompare.compare(prev, value) == 0) {
-                            bFlag = false;
                             return;
                         }
                         
@@ -320,6 +333,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
+                                    bFlag = true;
                                     afterChangeActiveObject();
                                     bFlag = false;
                                 }
@@ -337,7 +351,6 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
                             OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, obj, endPropertyName, prev, value));
                         }
 
-                        bFlag = false;
                         Object objx = hub.getActiveObject();
                         if (obj == objx) { // 20130919, object could have been removed
                             afterChangeActiveObject();  // check to make sure value "took"
@@ -378,14 +391,5 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         return this.xorValue;
     }
 
-    @Override
-    public void update() {
-        if (button == null) return;
-        
-        Object obj = null;
-        if (getHub() != null) obj = getHub().getAO();
-        super.update();
-        super.update(button, obj);
-    }
 }
 

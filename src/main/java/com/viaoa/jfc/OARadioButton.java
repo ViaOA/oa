@@ -330,6 +330,18 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
             if (msg == null) msg = super.isValid(object, value);
             return msg;
         }
+        
+        @Override
+        public void update(JComponent comp, Object object) {
+            OARadioButton.this.beforeUpdate();
+            super.update(comp, object);
+            OARadioButton.this.afterUpdate();
+        }
+    }
+
+    public void beforeUpdate() {
+    }
+    public void afterUpdate() {
     }
 
 

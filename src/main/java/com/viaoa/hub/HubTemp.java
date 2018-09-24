@@ -66,6 +66,19 @@ public class HubTemp {
         }
         return ht.hub;
     }
+    
+    public static int getCount(Object hubObject) {
+        if (hubObject == null) return 0;
+        
+        Hashtable hash = getHash(hubObject.getClass());
+        synchronized (hash) {
+            WeakReference ref = (WeakReference) hash.get(hubObject);
+            if (ref == null) return 0;
+            HubTemp ht = (HubTemp) ref.get();
+            return ht.cnt;
+        }
+    }
+    
 
     public static synchronized void deleteHub(Object hubObject) {
         if (hubObject == null) return;

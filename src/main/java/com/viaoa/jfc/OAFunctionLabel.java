@@ -25,6 +25,11 @@ import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
 
+/**
+ * Uses OAFunction to update a label.
+ * @author vvia
+ *
+ */
 public class OAFunctionLabel extends JLabel implements OATableComponent, OAJfcComponent {
     private OAFunctionLabelController control;
     private OATable table;
