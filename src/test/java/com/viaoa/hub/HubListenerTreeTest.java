@@ -451,8 +451,9 @@ public class HubListenerTreeTest extends OAUnitTest {
         emp.setFirstName("xx");
         
         assertEquals(1, ai.get());
-        
     }    
+
+    
     
     public static void main(String[] args) throws Exception {
         HubListenerTreeTest test = new HubListenerTreeTest();

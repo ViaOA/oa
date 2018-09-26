@@ -146,7 +146,7 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
         control.getEnabledChangeListener().add(hub);
     }
     public void addEnabledCheck(Hub hub, String propPath) {
-        control.getEnabledChangeListener().add(hub, propPath);
+        control.getEnabledChangeListener().addPropertyNotNull(hub, propPath);
     }
     public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
         control.getEnabledChangeListener().add(hub, propPath, compareValue);
@@ -158,7 +158,7 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
         control.getVisibleChangeListener().add(hub);
     }
     public void addVisibleCheck(Hub hub, String propPath) {
-        control.getVisibleChangeListener().add(hub, propPath);
+        control.getVisibleChangeListener().addPropertyNotNull(hub, propPath);
     }
     public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
         control.getVisibleChangeListener().add(hub, propPath, compareValue);
@@ -182,18 +182,6 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
     public JLabel getLabel() {
         if (getController() == null) return null;
         return getController().getLabel();
-    }
-    @Override
-    public void setEnabled(boolean b) {
-        super.setEnabled(b);
-        JLabel lbl = getLabel();
-        if (lbl != null) lbl.setEnabled(b);
-    }
-    @Override
-    public void setVisible(boolean b) {
-        super.setVisible(b);
-        JLabel lbl = getLabel();
-        if (lbl != null) lbl.setVisible(b);
     }
 
 }

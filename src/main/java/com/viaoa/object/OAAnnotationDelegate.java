@@ -83,6 +83,10 @@ public class OAAnnotationDelegate {
                 oi.setUserEnabledValue(eq.userEnabledValue());
                 oi.setUserVisibleProperty(eq.userVisibleProperty());
                 oi.setUserVisibleValue(eq.userVisibleValue());
+                oi.setEnabledDependentProperties(eq.enabledDependentProperties());
+                oi.setVisibleDependentProperties(eq.visibleDependentProperties());
+                oi.setUserEnabledDependentProperties(eq.userEnabledDependentProperties());
+                oi.setUserVisibleDependentProperties(eq.userVisibleDependentProperties());
             }
         }
         // prop ids
@@ -205,6 +209,10 @@ public class OAAnnotationDelegate {
                 pi.setUserEnabledValue(eq.userEnabledValue());
                 pi.setUserVisibleProperty(eq.userVisibleProperty());
                 pi.setUserVisibleValue(eq.userVisibleValue());
+                pi.setEnabledDependentProperties(eq.enabledDependentProperties());
+                pi.setVisibleDependentProperties(eq.visibleDependentProperties());
+                pi.setUserEnabledDependentProperties(eq.userEnabledDependentProperties());
+                pi.setUserVisibleDependentProperties(eq.userVisibleDependentProperties());
             }
         }
       
@@ -245,6 +253,10 @@ public class OAAnnotationDelegate {
                 ci.setUserEnabledValue(eq.userEnabledValue());
                 ci.setUserVisibleProperty(eq.userVisibleProperty());
                 ci.setUserVisibleValue(eq.userVisibleValue());
+                ci.setEnabledDependentProperties(eq.enabledDependentProperties());
+                ci.setVisibleDependentProperties(eq.visibleDependentProperties());
+                ci.setUserEnabledDependentProperties(eq.userEnabledDependentProperties());
+                ci.setUserVisibleDependentProperties(eq.userVisibleDependentProperties());
             }
             ci.setEditQueryMethod(m);
         }
@@ -289,6 +301,10 @@ public class OAAnnotationDelegate {
                 li.setUserEnabledValue(eq.userEnabledValue());
                 li.setUserVisibleProperty(eq.userVisibleProperty());
                 li.setUserVisibleValue(eq.userVisibleValue());
+                li.setEnabledDependentProperties(eq.enabledDependentProperties());
+                li.setVisibleDependentProperties(eq.visibleDependentProperties());
+                li.setUserEnabledDependentProperties(eq.userEnabledDependentProperties());
+                li.setUserVisibleDependentProperties(eq.userVisibleDependentProperties());
             }
         }
         // Manys
@@ -363,6 +379,10 @@ public class OAAnnotationDelegate {
                 li.setUserEnabledValue(eq.userEnabledValue());
                 li.setUserVisibleProperty(eq.userVisibleProperty());
                 li.setUserVisibleValue(eq.userVisibleValue());
+                li.setEnabledDependentProperties(eq.enabledDependentProperties());
+                li.setVisibleDependentProperties(eq.visibleDependentProperties());
+                li.setUserEnabledDependentProperties(eq.userEnabledDependentProperties());
+                li.setUserVisibleDependentProperties(eq.userVisibleDependentProperties());
             }
         }
 
@@ -392,6 +412,10 @@ public class OAAnnotationDelegate {
                 mi.setUserEnabledValue(eq.userEnabledValue());
                 mi.setUserVisibleProperty(eq.userVisibleProperty());
                 mi.setUserVisibleValue(eq.userVisibleValue());
+                mi.setEnabledDependentProperties(eq.enabledDependentProperties());
+                mi.setVisibleDependentProperties(eq.visibleDependentProperties());
+                mi.setUserEnabledDependentProperties(eq.userEnabledDependentProperties());
+                mi.setUserVisibleDependentProperties(eq.userVisibleDependentProperties());
             }
         }
         
@@ -496,6 +520,10 @@ public class OAAnnotationDelegate {
                         pi.setUserVisibleProperty(s);
                         pi.setUserVisibleValue(eq.userVisibleValue());
                     }
+                    pi.setEnabledDependentProperties(eq.enabledDependentProperties());
+                    pi.setVisibleDependentProperties(eq.visibleDependentProperties());
+                    pi.setUserEnabledDependentProperties(eq.userEnabledDependentProperties());
+                    pi.setUserVisibleDependentProperties(eq.userVisibleDependentProperties());
                 }
             }
             else {
@@ -522,6 +550,10 @@ public class OAAnnotationDelegate {
                             oi.setUserVisibleProperty(s);
                             oi.setUserVisibleValue(eq.userVisibleValue());
                         }
+                        oi.setEnabledDependentProperties(eq.enabledDependentProperties());
+                        oi.setVisibleDependentProperties(eq.visibleDependentProperties());
+                        oi.setUserEnabledDependentProperties(eq.userEnabledDependentProperties());
+                        oi.setUserVisibleDependentProperties(eq.userVisibleDependentProperties());
                     }
                 }
                 else {
@@ -549,6 +581,10 @@ public class OAAnnotationDelegate {
                                 li.setUserVisibleProperty(s);
                                 li.setUserVisibleValue(eq.userVisibleValue());
                             }
+                            li.setEnabledDependentProperties(eq.enabledDependentProperties());
+                            li.setVisibleDependentProperties(eq.visibleDependentProperties());
+                            li.setUserEnabledDependentProperties(eq.userEnabledDependentProperties());
+                            li.setUserVisibleDependentProperties(eq.userVisibleDependentProperties());
                         }
                     }
                     else {
@@ -575,6 +611,10 @@ public class OAAnnotationDelegate {
                                     mi.setUserVisibleProperty(s);
                                     mi.setUserVisibleValue(eq.userVisibleValue());
                                 }
+                                mi.setEnabledDependentProperties(eq.enabledDependentProperties());
+                                mi.setVisibleDependentProperties(eq.visibleDependentProperties());
+                                mi.setUserEnabledDependentProperties(eq.userEnabledDependentProperties());
+                                mi.setUserVisibleDependentProperties(eq.userVisibleDependentProperties());
                             }
                         }
                         else {
@@ -931,6 +971,4 @@ public class OAAnnotationDelegate {
         }
         return s;
     }
-
-    
 }

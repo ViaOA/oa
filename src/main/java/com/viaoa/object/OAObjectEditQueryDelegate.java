@@ -96,11 +96,17 @@ public class OAObjectEditQueryDelegate {
         callEditQuery(obj, propertyName, em);
         return em.getToolTip();
     }
-    public static void RenderLabel(OAObject obj, String propertyName, JLabel label) {
+    public static void renderLabel(OAObject obj, String propertyName, JLabel label) {
         OAObjectEditQuery em = new OAObjectEditQuery(Type.RenderLabel);
         em.setName(propertyName);
         em.setLabel(label);
         callEditQuery(obj, null, em);
+        callEditQuery(obj, propertyName, em);
+    }
+    public static void updateLabel(OAObject obj, String propertyName, JLabel label) {
+        OAObjectEditQuery em = new OAObjectEditQuery(Type.UpdateLabel);
+        em.setName(propertyName);
+        em.setLabel(label);
         callEditQuery(obj, propertyName, em);
     }
 

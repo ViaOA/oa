@@ -106,6 +106,14 @@ public class Environment extends OAObject {
         setId(id);
     }
      
+    @OACalculatedProperty(properties = {P_AbbrevName, P_Name})
+    public String getDisplayedName() {
+        String s = OAString.notNull(getAbbrevName());
+        s = OAString.concat(s, getName());
+        return s;
+    }
+    
+    
     @OAProperty(isUnique = true, displayLength = 5, isProcessed = true)
     @OAId()
     @OAColumn(sqlType = java.sql.Types.INTEGER)

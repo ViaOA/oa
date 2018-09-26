@@ -72,7 +72,7 @@ public abstract class HubChangeListener {
     public HubProp add(Hub hub, String propertyPath) {
         if (propertyPath == null) return add(hub);
         else {
-            return add(hub, propertyPath, true, Type.HubValid, null, true);
+            return add(hub, propertyPath, true, Type.AlwaysTrue, null, true);
         }
     }
     

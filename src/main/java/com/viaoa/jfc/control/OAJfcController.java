@@ -23,6 +23,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.text.JTextComponent;
 
 import com.viaoa.annotation.OAEditQuery;
+import com.viaoa.auth.OAAuthDelegate;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.hub.HubChangeListener.HubProp;
@@ -316,6 +317,9 @@ public class OAJfcController extends HubListenerAdapter {
             b = oi.getVisibleValue();
             if (OAString.isNotEmpty(s)) getVisibleChangeListener().add(hub, ppPrefix+s, b);
             
+            // dependent properties
+            addDependentProps(hub, ppPrefix, oi.getEnabledDependentProperties(), oi.getVisibleDependentProperties(), oi.getUserEnabledDependentProperties(), oi.getUserVisibleDependentProperties());
+            
             Method m = oi.getEditQueryMethod(prop);
             if (m != null) {
                 oaq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
@@ -326,6 +330,9 @@ public class OAJfcController extends HubListenerAdapter {
                     s = oaq.visibleProperty();
                     b = oaq.visibleValue();
                     if (OAString.isNotEmpty(s)) getVisibleChangeListener().add(hub, ppPrefix+s, b);
+
+                    // dependent properties
+                    addDependentProps(hub, ppPrefix, oaq.enabledDependentProperties(), oaq.visibleDependentProperties(), oaq.userEnabledDependentProperties(), oaq.userVisibleDependentProperties());
                 }
             }        
             ppPrefix += prop + ".";
@@ -374,6 +381,31 @@ public class OAJfcController extends HubListenerAdapter {
         update();
     }
 
+    protected void addDependentProps(Hub hub, String prefix,  String[] enabledDependentProperties, String[] visibleDependentProperties, String[] userEnabledDependentProperties, String[] userVisibleDependentProperties) {
+        if (enabledDependentProperties != null) {
+            for (String s : enabledDependentProperties) {
+                getEnabledChangeListener().add(hub, prefix+s);
+            }
+        }
+        if (visibleDependentProperties != null) {
+            for (String s : visibleDependentProperties) {
+                getVisibleChangeListener().add(hub, prefix+s);
+            }
+        }
+        
+        hub = OAAuthDelegate.getCurrentUserHub(OAJfcController.class, true);
+        if (userEnabledDependentProperties != null) {
+            for (String s : userEnabledDependentProperties) {
+                getEnabledChangeListener().add(hub, s);
+            }
+        }
+        if (userVisibleDependentProperties != null) {
+            for (String s : userVisibleDependentProperties) {
+                getVisibleChangeListener().add(hub, s);
+            }
+        }
+    }
+    
     protected void setupEditQueryListeners(Hub hx, String propx) {
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(hx.getObjectClass());
 
@@ -385,6 +417,9 @@ public class OAJfcController extends HubListenerAdapter {
         b = oi.getVisibleValue();
         if (OAString.isNotEmpty(s)) getVisibleChangeListener().add(hx, s, b);
 
+        // dependent props
+        addDependentProps(hx, "", oi.getEnabledDependentProperties(), oi.getVisibleDependentProperties(), oi.getUserEnabledDependentProperties(), oi.getUserVisibleDependentProperties());
+        
         Method m = oi.getEditQueryMethod(propx);
         if (m != null) {
             oaq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
@@ -395,6 +430,7 @@ public class OAJfcController extends HubListenerAdapter {
                 s = oaq.visibleProperty();
                 b = oaq.visibleValue();
                 if (OAString.isNotEmpty(s)) getVisibleChangeListener().add(hx, s, b);
+                addDependentProps(hx, "", oaq.enabledDependentProperties(), oaq.visibleDependentProperties(), oaq.userEnabledDependentProperties(), oaq.userVisibleDependentProperties());
             }
         }        
 
@@ -412,6 +448,8 @@ public class OAJfcController extends HubListenerAdapter {
             b = oi.getVisibleValue();
             if (OAString.isNotEmpty(s)) getVisibleChangeListener().add(hx, s, b);
 
+            addDependentProps(hx, "", oi.getEnabledDependentProperties(), oi.getVisibleDependentProperties(), oi.getUserEnabledDependentProperties(), oi.getUserVisibleDependentProperties());
+            
             m = oi.getEditQueryMethod(propx);
             if (m != null) {
                 oaq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
@@ -422,6 +460,7 @@ public class OAJfcController extends HubListenerAdapter {
                     s = oaq.visibleProperty();
                     b = oaq.visibleValue();
                     if (OAString.isNotEmpty(s)) getVisibleChangeListener().add(hx, s, b);
+                    addDependentProps(hx, "", oaq.enabledDependentProperties(), oaq.visibleDependentProperties(), oaq.userEnabledDependentProperties(), oaq.userVisibleDependentProperties());
                 }
             }        
         }
@@ -1080,6 +1119,9 @@ public class OAJfcController extends HubListenerAdapter {
         };
         return changeListener;
     }
+    public HubProp addEnabledCheck(Hub hub, String pp) {
+        return getEnabledChangeListener().add(hub, pp);
+    }
     public HubProp addEnabledCheck(Hub hub, String pp, Object value) {
         return getEnabledChangeListener().add(hub, pp, value);
     }
@@ -1117,7 +1159,6 @@ public class OAJfcController extends HubListenerAdapter {
     }
     
     
-   
     /**
      *  Called to have component update itself.  
      */
@@ -1127,11 +1168,20 @@ public class OAJfcController extends HubListenerAdapter {
         if (hub != null) obj = hub.getAO();
         else obj = null;
         update(component, obj);
-        
+        updateLabel(component, obj);
         updateEnabled();        
         updateVisible();        
     }
 
+    public void updateLabel(final JComponent comp, Object object) {
+        JLabel lbl = getLabel();
+        if (lbl != null) {
+            OAObject oaobj = null;
+            if (object instanceof OAObject) oaobj = (OAObject) object;
+            OAObjectEditQueryDelegate.updateLabel(oaobj, directPropertyName, lbl);
+        }
+    }
+    
     
     protected String toolTipTextTemplate;
     protected String lastToolTipText;
@@ -1173,8 +1223,6 @@ public class OAJfcController extends HubListenerAdapter {
         comp.setToolTipText(tt);
         if (label != null) label.setToolTipText(tt);
         lastToolTipText = tt;
-
-        
         
         if (comp instanceof JLabel) {
             try {
@@ -1184,7 +1232,7 @@ public class OAJfcController extends HubListenerAdapter {
                     if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
                         objx = oaPropertyPath.getLastLinkValue(objx);
                     }
-                    OAObjectEditQueryDelegate.RenderLabel((OAObject)objx, endPropertyName, (JLabel)  comp);
+                    OAObjectEditQueryDelegate.renderLabel((OAObject)objx, endPropertyName, (JLabel)  comp);
                 }
             }
             catch (Exception e) {
@@ -1267,13 +1315,17 @@ public class OAJfcController extends HubListenerAdapter {
             }
         }
         if (comp.isEnabled() != bEnabled) {
-            if (!(comp instanceof OALabel)) comp.setEnabled(bEnabled);
+            if (!(comp instanceof OALabel)) {
+                comp.setEnabled(bEnabled);
+            }
         }
         if (comp instanceof OAJfcComponent) {
             OAJfcController jc = ((OAJfcComponent) comp).getController();
             if (jc != null) {
                 JLabel lbl = jc.getLabel();
-                if (lbl != null && lbl.isEnabled() != bEnabledOrig) lbl.setEnabled(bEnabledOrig);
+                if (lbl != null && lbl.isEnabled() != bEnabledOrig) {
+                    lbl.setEnabled(bEnabledOrig);
+                }
             }
         }
         return bEnabledOrig;
@@ -1293,26 +1345,7 @@ public class OAJfcController extends HubListenerAdapter {
         if (comp == null) return false;
         boolean bVisible = true;
 
-        if (hubDirect != null) {
-            bVisible = hubDirect.isValid();
-            if (bVisible) {
-                Object objx = hubDirect.getAO();
-                if (objx instanceof OAObject){
-                    bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject)objx, directPropertyName);
-                }
-            }
-        }
-        else if (hubLink != null) {
-            bVisible = hubLink.isValid();
-            if (bVisible) {
-                Object objx = hubLink.getAO();
-                if (objx instanceof OAObject){
-                    bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject)objx, linkPropertyName);
-                }
-            }
-        }
-        
-        if (bVisible && hub != null && (object instanceof OAObject)) {
+        if (hub != null && (object instanceof OAObject)) {
             if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
                 String prop = "";
                 int i = 0;
@@ -1554,5 +1587,7 @@ public class OAJfcController extends HubListenerAdapter {
         update();  
     }
 
+    
+    
 }
 

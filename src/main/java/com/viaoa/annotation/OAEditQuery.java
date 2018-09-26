@@ -29,9 +29,13 @@ public @interface OAEditQuery {
     boolean enabledValue() default true;
     String visibleProperty() default "";
     boolean visibleValue() default true;
-
+    String[] enabledDependentProperties() default {};
+    String[] visibleDependentProperties() default {};
+    
     String userEnabledProperty() default "";
     boolean userEnabledValue() default true;
     String userVisibleProperty() default "";
     boolean userVisibleValue() default true;
+    String[] userEnabledDependentProperties() default {};
+    String[] userVisibleDependentProperties() default {};
 }

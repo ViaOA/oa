@@ -101,19 +101,6 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
         return getController().getLabel();
     }
     
-    @Override
-    public void setEnabled(boolean b) {
-        super.setEnabled(b);
-        JLabel lbl = getLabel();
-        if (lbl != null) lbl.setEnabled(b);
-    }
-    @Override
-    public void setVisible(boolean b) {
-        super.setVisible(b);
-        JLabel lbl = getLabel();
-        if (lbl != null) lbl.setVisible(b);
-    }
-    
     /**
         Format used to display this property.  Used to format Date, Times and Numbers.
         @see OADate
@@ -227,7 +214,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
         control.getEnabledChangeListener().add(hub);
     }
     public void addEnabledCheck(Hub hub, String propPath) {
-        control.getEnabledChangeListener().add(hub, propPath);
+        control.getEnabledChangeListener().addPropertyNotNull(hub, propPath);
     }
     public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
         control.getEnabledChangeListener().add(hub, propPath, compareValue);
@@ -239,7 +226,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
         control.getVisibleChangeListener().add(hub);
     }
     public void addVisibleCheck(Hub hub, String propPath) {
-        control.getVisibleChangeListener().add(hub, propPath);
+        control.getVisibleChangeListener().addPropertyNotNull(hub, propPath);
     }
     public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
         control.getVisibleChangeListener().add(hub, propPath, compareValue);

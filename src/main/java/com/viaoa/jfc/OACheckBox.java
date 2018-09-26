@@ -392,7 +392,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
         control.getEnabledChangeListener().add(hub);
     }
     public void addEnabledCheck(Hub hub, String propPath) {
-        control.getEnabledChangeListener().add(hub, propPath);
+        control.getEnabledChangeListener().addPropertyNotNull(hub, propPath);
     }
     public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
         control.getEnabledChangeListener().add(hub, propPath, compareValue);
@@ -404,7 +404,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
         control.getVisibleChangeListener().add(hub);
     }
     public void addVisibleCheck(Hub hub, String propPath) {
-        control.getVisibleChangeListener().add(hub, propPath);
+        control.getVisibleChangeListener().addPropertyNotNull(hub, propPath);
     }
     public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
         control.getVisibleChangeListener().add(hub, propPath, compareValue);

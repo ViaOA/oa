@@ -957,6 +957,36 @@ public class OAObjectInfo { //implements java.io.Serializable {
         return this.bPreSelect;
     }
 
+    private String[] enabledDependentProperties;
+    private String[] visibleDependentProperties;
+    private String[] userEnabledDependentProperties;
+    private String[] userVisibleDependentProperties;
+    public void setEnabledDependentProperties(String[] ss) {
+        this.enabledDependentProperties = ss;
+    }
+    public String[] getEnabledDependentProperties() {
+        return this.enabledDependentProperties;
+    }
+    public void setVisibleDependentProperties(String[] ss) {
+        this.visibleDependentProperties = ss;
+    }
+    public String[] getVisibleDependentProperties() {
+        return this.visibleDependentProperties;
+    }
+    public void setUserEnabledDependentProperties(String[] ss) {
+        this.userEnabledDependentProperties = ss;
+    }
+    public String[] getUserEnabledDependentProperties() {
+        return this.userEnabledDependentProperties;
+    }
+    public void setUserVisibleDependentProperties(String[] ss) {
+        this.userVisibleDependentProperties = ss;
+    }
+    public String[] getUserVisibleDependentProperties() {
+        return this.userVisibleDependentProperties;
+    }
+    
+    
     private String enabledProperty;
     private boolean enabledValue;
     private String visibleProperty;
@@ -991,6 +1021,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
     private boolean userEnabledValue;
     private String userVisibleProperty;
     private boolean userVisibleValue;
+    
     public String getUserEnabledProperty() {
         return userEnabledProperty;
     }

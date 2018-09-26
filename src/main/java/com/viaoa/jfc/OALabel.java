@@ -16,12 +16,15 @@ import java.awt.event.ActionListener;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.table.*;
 
 import com.viaoa.object.*;
 import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
+import com.viaoa.jfc.image.ColorIcon;
 import com.viaoa.jfc.table.*;
 
 public class OALabel extends JLabel implements OATableComponent, OAJfcComponent {
@@ -330,8 +333,9 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     public void addEnabledCheck(Hub hub) {
         control.getEnabledChangeListener().add(hub);
     }
+    
     public void addEnabledCheck(Hub hub, String propPath) {
-        control.getEnabledChangeListener().add(hub, propPath);
+        control.getEnabledChangeListener().addPropertyNotNull(hub, propPath);
     }
     public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
         control.getEnabledChangeListener().add(hub, propPath, compareValue);
@@ -342,8 +346,9 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     public void addVisibleCheck(Hub hub) {
         control.getVisibleChangeListener().add(hub);
     }
+    
     public void addVisibleCheck(Hub hub, String propPath) {
-        control.getVisibleChangeListener().add(hub, propPath);
+        control.getVisibleChangeListener().addPropertyNotNull(hub, propPath);
     }
     public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
         control.getVisibleChangeListener().add(hub, propPath, compareValue);
@@ -438,4 +443,97 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         timer.setInitialDelay(250);
         timer.start();
     }
+    
+    
+    //** ===========================
+    //      Static Helper methods
+    
+    public static void useRedBorder(JLabel lbl) {
+        if (lbl == null) return;
+        lbl.setBorder(OATable.BORDER_Red);
+    }
+    public static void useYellowBorder(JLabel lbl) {
+        if (lbl == null) return;
+        lbl.setBorder(OATable.BORDER_Yellow);
+    }
+    public static void useColorBorder(JLabel lbl, Color color) {
+        if (lbl == null) return;
+        if (color == null) lbl.setBorder(null);
+        lbl.setBorder(new CompoundBorder(new LineBorder(Color.white, 1), new LineBorder(color)));
+    }
+    public static void useNoBorder(JLabel lbl) {
+        if (lbl == null) return;
+        lbl.setBorder(null);
+    }
+
+    public static void useDitto(JLabel lbl) {
+        if (lbl == null) return;
+        useGrayText(lbl);
+        lbl.setText("\"\"");
+        alignCenter(lbl);
+    }
+    public static void alignCenter(JLabel lbl) {
+        if (lbl == null) return;
+        lbl.setHorizontalAlignment(JLabel.CENTER);
+    }
+    public static void alignLeft(JLabel lbl) {
+        if (lbl == null) return;
+        lbl.setHorizontalAlignment(JLabel.LEFT);
+    }
+    public static void alignRight(JLabel lbl) {
+        if (lbl == null) return;
+        lbl.setHorizontalAlignment(JLabel.RIGHT);
+    }
+    
+    public static void useTableSelectedBorder(JLabel lbl) {
+        if (lbl == null) return;
+        lbl.setBorder(new CompoundBorder(new LineBorder(Color.white, 1), UIManager.getBorder("Table.focusCellHighlightBorder")));         
+    }
+    public static void useGrayText(JLabel lbl) {
+        if (lbl == null) return;
+        lbl.setForeground(Color.GRAY);
+    }
+
+    public static void useColorIcon(JLabel lbl, Color color1) {
+        useColorIcon(lbl, color1, null);
+    }
+    public static void useColorIcon(JLabel lbl, Color color1, Color color2) {
+        if (lbl == null) return;
+        if (color1 == null) color1 = Color.WHITE;
+
+        LabelColorIcon myColorIcon = new LabelColorIcon(color1, color2);
+        lbl.setIcon(myColorIcon);        
+    }
+    
+    static class LabelColorIcon implements Icon {
+        Color color, color2;        
+        public LabelColorIcon(Color c) {
+            this.color = c;
+        }
+        public LabelColorIcon(Color c, Color c2) {
+            this.color = c;
+            this.color2 = c2;
+        }
+        public int getIconHeight() {
+            return 17;
+        }
+        public int getIconWidth() {
+            return 12;
+        }
+
+        public void paintIcon(Component comp,Graphics g,int x,int y) {
+            Color c = color==null?Color.white:color;
+            g.setColor(c);
+            g.fillRect(x+1,y+3,12,12);
+            if (color2 != null) {
+                Polygon p = new Polygon();
+                p.addPoint(13, 3);
+                p.addPoint(1, 15);
+                p.addPoint(13, 15);
+                g.setColor(color2);
+                g.fillPolygon(p);
+            }
+        }
+    }
+    
 }

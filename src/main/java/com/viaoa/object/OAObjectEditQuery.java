@@ -79,7 +79,8 @@ public class OAObjectEditQuery {
         
         GetToolTip(false),      // use: toolTip
         RenderLabel(false),     // use: label and update it's props
-        GetFormat(false);        // use: format
+        UpdateLabel(false),      // use: label and update it's props
+        GetFormat(false);       // use: format
         
         public boolean checkOwner, checkEnabledFirst;
         Type(boolean checkOwner) {

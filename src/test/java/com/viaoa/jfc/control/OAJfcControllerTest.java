@@ -13,6 +13,7 @@ import com.viaoa.util.OADate;
 import test.hifive.model.oa.*;
 import test.hifive.model.oa.Company;
 import test.theice.tsac.model.oa.*;
+import test.theice.tsam.model.oa.propertypath.SitePP;
 
 public class OAJfcControllerTest extends OAUnitTest {
 
@@ -413,6 +414,15 @@ public class OAJfcControllerTest extends OAUnitTest {
         
         hubSite.getAt(0).setAbbrevName("x");
         assertEquals(3, vint.value);
+        
+        hubSite.getAt(0).setAbbrevName("z");
+        assertEquals(4, vint.value);
+
+        hubSite.getAt(0).setAbbrevName("z");
+        assertEquals(4, vint.value);
+        
+        hubSite.getAt(1).setAbbrevName("A");
+        assertEquals(4, vint.value);
         
         // make sure listeners are removed         
         jc.close();

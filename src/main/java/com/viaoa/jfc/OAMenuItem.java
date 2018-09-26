@@ -699,9 +699,5 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
         return control.getDisplayComponent();
     }
 
-    @Override
-    public void setEnabled(boolean b) {
-        super.setEnabled(b);
-    }
     
 }

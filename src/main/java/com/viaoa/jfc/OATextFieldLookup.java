@@ -127,15 +127,6 @@ public class OATextFieldLookup extends OATextField {
     }
 
     
-    /**
-        Used to manually enable/disable.
-    
-    public void setEnabled(boolean b) {
-        // overwritten to find out if it is being manually enabled
-        super.setEnabled(b);
-        if (control != null) control.setEnabled(b);
-    }
-    */
     public void performSelect() {
         ((Hub2TextFieldLookup)control).performSelect();
     }
