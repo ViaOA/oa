@@ -1561,7 +1561,7 @@ if (newValue != null && newValue.startsWith("FIRSTNAME")) {
     
     @OAOne(
         isCalculated = true, 
-        dependentProperties = {Employee.P_Location+"."+Location.P_Program} 
+        calcDependentProperties = {Employee.P_Location+"."+Location.P_Program} 
     )
     public Program getProgram() {
         OAHierFinder<Employee> hf = new OAHierFinder<Employee>(Location.P_Program, OAString.cpp(Employee.P_Location), false);

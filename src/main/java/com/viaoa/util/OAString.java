@@ -2725,6 +2725,82 @@ public class OAString {
         }
         return toText;
     }
+
+    
+    
+    public static String hilite(String line, String search) {
+        return hilite(line, search, "<b style='background:yellow'>", "</b>", true);
+    }
+
+    public static String hiliteIgnoreCase(String line, String search, String beginTag, String endTag) {
+        return hilite(line,search,beginTag, endTag,true);
+    }
+    public static String hilite(String line, String search, String beginTag, String endTag) {
+        return hilite(line,search,beginTag, endTag,false);
+    }
+    public static String hilite(String line, String search, String beginTag, String endTag, boolean bIgnoreCase) {
+        if (line == null || search == null) return line;
+
+        int xs = search.length();
+        if (xs == 0) return line;
+        if (bIgnoreCase) search = search.toLowerCase();
+        
+        int xl = line.length();
+        StringBuffer sb = null;  // dont allocate until first match is found
+        char c=0, origChar=0;
+        for (int i=0,j=0; ;i++) {
+ 
+            if (i < xl) {
+                origChar = c = line.charAt(i);
+                if (bIgnoreCase) c = Character.toLowerCase(c);
+                if (c == search.charAt(j)) {
+                    j++;
+                    if (j == xs) {
+                        if (sb == null) {
+                            sb = new StringBuffer(xl + (xl/10));
+                            int e = (i - j) + 1;
+                            if (e > 0) sb.append(line.substring(0,e));
+                        }
+                        sb.append(beginTag);
+/*                    
+Search="Vi"
+i=6
+i: 0123456789
+   VinceViNce   
+j:      12
+*/   
+                        int b = (i-j)+1;
+                        sb.append(line.substring(b,b+j));
+                        sb.append(endTag);
+                        j = 0;   
+                    }
+                    continue;
+                }
+            }
+            if (j > 0) {
+                if (sb != null) {
+                    // go back to previously matched chars
+                    int b = i-j;
+/*                    
+Search="Vix"
+i=7
+i: 0123456789
+   VinceViNce   
+j:      12
+*/   
+                    sb.append(line.substring(b,b+j));
+                }
+                j = 0;
+            }
+            if (i >= xl) break;
+            if (sb != null) sb.append(origChar);
+        }
+        if (sb == null) return line;
+        return new String(sb);
+    }
+    
+    
+    
     
     
     public static void main(String[] args) {

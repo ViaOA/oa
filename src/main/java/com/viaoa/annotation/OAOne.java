@@ -72,7 +72,7 @@ public @interface OAOne {
     
     boolean isImportMatch() default false;
     
-    String[] dependentProperties() default {};
+    String[] calcDependentProperties() default {};
 }
 
 /*  OALinkInfo

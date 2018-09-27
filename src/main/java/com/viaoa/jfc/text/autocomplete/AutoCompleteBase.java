@@ -398,7 +398,13 @@ public abstract class AutoCompleteBase {
                     catch (Exception e) {
                     }
                 }
-                dim = updateSelectionList(textComp.getText(), offset);
+                try {
+                    dim = updateSelectionList(textComp.getText(), offset);
+                }
+                catch (Exception e) {
+                    System.out.println("Error in AutoCompleteBase, calling updateSelectionList, ex="+e);
+                    e.printStackTrace();
+                }
                 return null;
             }
 

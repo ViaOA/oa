@@ -172,7 +172,7 @@ public class OAAnnotationVerifier {
             bs[pos] = true;
             
             // compare properties
-            String[] ss1 = ci.getProperties();
+            String[] ss1 = ci.getDependentProperties();
             String[] ss2 = annotation.properties();
             Arrays.sort(ss1);
             Arrays.sort(ss2);
@@ -903,8 +903,8 @@ if (true) return true;
             p("calcProperty name dont match");
             return false;
         }
-        String[] p1 = ci.getProperties();
-        String[] p2 = ci2.getProperties();
+        String[] p1 = ci.getDependentProperties();
+        String[] p2 = ci2.getDependentProperties();
         if (p1 == null || p2 == null) {
             if (p1 != p2) {
                 p("calc properties dont match");

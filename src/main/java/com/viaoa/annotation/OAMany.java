@@ -75,7 +75,7 @@ public @interface OAMany {
     String sortProperty() default "";
     boolean sortAsc() default true;
 
-    String[] dependentProperties() default {};
+    String[] calcDependentProperties() default {};
 
     String mergerPropertyPath() default "";
     

@@ -79,6 +79,17 @@ public class OAObjectInfo { //implements java.io.Serializable {
     protected boolean bLookup;
     private Method editQueryMethod;
     
+    private String[] viewDependentProperties;
+    private String[] userDependentProperties;
+    
+    private String enabledProperty;
+    private boolean enabledValue;
+    private String visibleProperty;
+    private boolean visibleValue;
+    private String userEnabledProperty;
+    private boolean userEnabledValue;
+    private String userVisibleProperty;
+    private boolean userVisibleValue;
     
     public OAObjectInfo() {
         this(new String[] { });
@@ -632,7 +643,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
             String[] calcProps = null;
             for (OACalcInfo ci : getCalcInfos()) {
                 if (ci.getName().equalsIgnoreCase(listenProperty)) {
-                    calcProps = ci.getProperties();
+                    calcProps = ci.getDependentProperties();
                     break;
                 }
             }    
@@ -957,40 +968,20 @@ public class OAObjectInfo { //implements java.io.Serializable {
         return this.bPreSelect;
     }
 
-    private String[] enabledDependentProperties;
-    private String[] visibleDependentProperties;
-    private String[] userEnabledDependentProperties;
-    private String[] userVisibleDependentProperties;
-    public void setEnabledDependentProperties(String[] ss) {
-        this.enabledDependentProperties = ss;
+    public void setViewDependentProperties(String[] ss) {
+        this.viewDependentProperties = ss;
     }
-    public String[] getEnabledDependentProperties() {
-        return this.enabledDependentProperties;
+    public String[] getViewDependentProperties() {
+        return this.viewDependentProperties;
     }
-    public void setVisibleDependentProperties(String[] ss) {
-        this.visibleDependentProperties = ss;
+    public void setUserDependentProperties(String[] ss) {
+        this.userDependentProperties = ss;
     }
-    public String[] getVisibleDependentProperties() {
-        return this.visibleDependentProperties;
-    }
-    public void setUserEnabledDependentProperties(String[] ss) {
-        this.userEnabledDependentProperties = ss;
-    }
-    public String[] getUserEnabledDependentProperties() {
-        return this.userEnabledDependentProperties;
-    }
-    public void setUserVisibleDependentProperties(String[] ss) {
-        this.userVisibleDependentProperties = ss;
-    }
-    public String[] getUserVisibleDependentProperties() {
-        return this.userVisibleDependentProperties;
+    public String[] getUserDependentProperties() {
+        return this.userDependentProperties;
     }
     
     
-    private String enabledProperty;
-    private boolean enabledValue;
-    private String visibleProperty;
-    private boolean visibleValue;
     public String getEnabledProperty() {
         return enabledProperty;
     }
@@ -1017,11 +1008,6 @@ public class OAObjectInfo { //implements java.io.Serializable {
         visibleValue = b;
     }
 
-    private String userEnabledProperty;
-    private boolean userEnabledValue;
-    private String userVisibleProperty;
-    private boolean userVisibleValue;
-    
     public String getUserEnabledProperty() {
         return userEnabledProperty;
     }

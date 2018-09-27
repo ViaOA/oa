@@ -116,7 +116,7 @@ public class OAHierFinder<F extends OAObject> {
                     if (li == null) b = false;
                     else {
                         if (li.getCalculated()) {
-                            if (li.getDependentProperties() != null) {
+                            if (li.getCalcDependentProperties() != null) {
                                 b = false;
                             }
                         }

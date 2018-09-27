@@ -23,12 +23,12 @@ public class AutoCompleteTextFieldController extends OAJfcController {
     private final JTextField txt;
     
     public AutoCompleteTextFieldController(Hub hub, JTextField txt, String propertyPath) {
-        super(hub, propertyPath, txt, HubChangeListener.Type.HubValid);
+        super(hub, propertyPath, txt, HubChangeListener.Type.HubNotEmpty);
         this.txt = txt;
     }
 
     public AutoCompleteTextFieldController(Hub hub, JTextField txt) { 
-        super(hub, txt, HubChangeListener.Type.HubValid);
+        super(hub, txt, HubChangeListener.Type.HubNotEmpty);
         this.txt = txt;
     }
 

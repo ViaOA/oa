@@ -1141,7 +1141,7 @@ public class OAHTMLTextPaneController extends OATextController {
     >>   COMMAND: InsertField
     *****************************/    
         protected KeyStroke getInsertFieldKeyStroke() {
-            return null; // KeyStroke.getKeyStroke(KeyEvent.VK_F7, InputEvent.CTRL_MASK, false);
+            return KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK, false);
         }
         private Action actionInsertField;
         protected Action getInsertFieldAction() {
@@ -1152,16 +1152,26 @@ public class OAHTMLTextPaneController extends OATextController {
                     }
                 };
                 String cmd = "InsertField";
-                // htmlEditor.getInputMap(JComponent.WHEN_FOCUSED).put(getEditImageKeyStroke(), cmd);
-                // htmlEditor.getActionMap().put(cmd, actionEditImage);
+                
+                htmlEditor.getInputMap(JComponent.WHEN_FOCUSED).put(getInsertFieldKeyStroke(), cmd);
+                htmlEditor.getActionMap().put(cmd, actionInsertField);
             }
             return actionInsertField;
         }
         protected JMenuItem createInsertFieldMenuItem() {
-            JMenuItem miInsertField = new JMenuItem("Insert field ...");
+            JMenuItem miInsertField = new JMenuItem("Insert field ...") {
+                @Override
+                public void setEnabled(boolean b) {
+                    // TODO Auto-generated method stub
+                    super.setEnabled(b);
+                }
+                
+            };
             miInsertField.setToolTipText("Insert a Field to use for dynamic data/mail merges");
             miInsertField.setIcon(new ImageIcon(getImageURL("field.gif")));
             miInsertField.addActionListener(getInsertFieldAction());
+            KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK, false);
+            miInsertField.setAccelerator(ks);
             return miInsertField;
         }
         private JMenuItem miInsertField, pmiInsertField;
@@ -2655,11 +2665,8 @@ public class OAHTMLTextPaneController extends OATextController {
     }    
     
     
-    
-    
-    
     private InsertFieldDialog dlgInsertField;
-    protected InsertFieldDialog getInsertFieldDialog() {
+    public InsertFieldDialog getInsertFieldDialog() {
         if (dlgInsertField == null) {
             dlgInsertField = new InsertFieldDialog(SwingUtilities.windowForComponent(editor), getObjectDefs(), getCustomFields(), getCustomCommands());
         }
@@ -2709,6 +2716,9 @@ public class OAHTMLTextPaneController extends OATextController {
     
     // 20130223
     public void onInsertField() {
+        
+        if (!getInsertFieldButton().isEnabled()) return;
+        
         getObjectDefs().clear();
 
         HTMLTextPaneController cx = getBindController();
@@ -2759,7 +2769,7 @@ public class OAHTMLTextPaneController extends OATextController {
             field = cmd;
         }
         else {
-            field = "<%="+field+"%>";
+            if (OAString.isNotEmpty(field)) field = "<%="+field+"%>";
         }
         
         if (!OAString.isEmpty(field)) {

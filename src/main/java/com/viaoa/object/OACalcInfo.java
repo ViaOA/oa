@@ -55,7 +55,7 @@ public class OACalcInfo implements java.io.Serializable {
     private static Logger LOG = Logger.getLogger(OACalcInfo.class.getName());
     
     String name;
-    String[] properties;  // dependent properties
+    String[] dependentProperties;  // dependent properties
     private OACalculatedProperty oaCalculatedProperty;
     private Class classType;
 
@@ -76,11 +76,11 @@ public class OACalcInfo implements java.io.Serializable {
      */
     public OACalcInfo(String name, String[] props) {
         this.name = name;
-        properties = props;
+        dependentProperties = props;
     }
     public OACalcInfo(String name, String[] props, boolean bIsForHub) {
         this.name = name;
-        properties = props;
+        dependentProperties = props;
         this.bIsForHub = bIsForHub;
     }
 
@@ -96,11 +96,11 @@ public class OACalcInfo implements java.io.Serializable {
         return name;
     }
     /** get property paths of all dependent properties */
-    public String[] getProperties() {
-        return properties;
+    public String[] getDependentProperties() {
+        return dependentProperties;
     }
-    public void setPropeties(String[] props) {
-        properties = props;
+    public void setDependentProperties(String[] props) {
+        dependentProperties = props;
     }
 
     public boolean getIsForHub() {
@@ -114,35 +114,21 @@ public class OACalcInfo implements java.io.Serializable {
         oaCalculatedProperty = c;
     }
 
-    private String[] enabledDependentProperties;
-    private String[] visibleDependentProperties;
-    private String[] userEnabledDependentProperties;
-    private String[] userVisibleDependentProperties;
-    public void setEnabledDependentProperties(String[] ss) {
-        this.enabledDependentProperties = ss;
+    private String[] viewDependentProperties;
+    public void setViewDependentProperties(String[] ss) {
+        this.viewDependentProperties = ss;
     }
-    public String[] getEnabledDependentProperties() {
-        return this.enabledDependentProperties;
+    public String[] getViewDependentProperties() {
+        return this.viewDependentProperties;
     }
-    public void setVisibleDependentProperties(String[] ss) {
-        this.visibleDependentProperties = ss;
+
+    private String[] userDependentProperties;
+    public void setUserDependentProperties(String[] ss) {
+        this.userDependentProperties = ss;
     }
-    public String[] getVisibleDependentProperties() {
-        return this.visibleDependentProperties;
+    public String[] getUserDependentProperties() {
+        return this.userDependentProperties;
     }
-    public void setUserEnabledDependentProperties(String[] ss) {
-        this.userEnabledDependentProperties = ss;
-    }
-    public String[] getUserEnabledDependentProperties() {
-        return this.userEnabledDependentProperties;
-    }
-    public void setUserVisibleDependentProperties(String[] ss) {
-        this.userVisibleDependentProperties = ss;
-    }
-    public String[] getUserVisibleDependentProperties() {
-        return this.userVisibleDependentProperties;
-    }
-    
     
     private String enabledProperty;
     private boolean enabledValue;

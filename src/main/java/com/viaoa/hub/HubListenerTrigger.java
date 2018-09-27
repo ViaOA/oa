@@ -125,7 +125,7 @@ public class HubListenerTrigger<T> {
         String[] calcProps = null;
         for (OACalcInfo ci : oi.getCalcInfos()) {
             if (ci.getName().equalsIgnoreCase(propertyName)) {
-                calcProps = ci.getProperties();
+                calcProps = ci.getDependentProperties();
                 break;
             }
         }   
@@ -287,7 +287,7 @@ public class HubListenerTrigger<T> {
                 for (OACalcInfo ci : oi.getCalcInfos()) {
                     if (ci.getName().equalsIgnoreCase(props[0])) {
                         // make recursive
-                        String[] ps = ci.getProperties();
+                        String[] ps = ci.getDependentProperties();
                         if (ps == null) break;
                         for (String p : ps) {
                             if (_addDependentListener(triggerListener, cnter+1, listenerInfo, propertyName, p)) bWasAdded = true;;

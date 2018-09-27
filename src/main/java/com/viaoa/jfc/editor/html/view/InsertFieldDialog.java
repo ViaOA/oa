@@ -32,7 +32,7 @@ public class InsertFieldDialog extends JDialog {
     protected boolean bCancelled;
     private Hub<ObjectDef> hub;
     private OATextField txt;
-    private OATreeComboBox cbo;
+    private OATreeComboBox cboTree;
     private OAComboBox cboCustomFields;
     private Hub<String> hubCustomFields;
     private OAComboBox cboCustomCommands;
@@ -75,6 +75,8 @@ public class InsertFieldDialog extends JDialog {
         return bCancelled;
     }
 
+
+    final JPanel panCombo = new JPanel(new BorderLayout(0,0));
     
     protected JPanel getPanel() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -88,7 +90,9 @@ public class InsertFieldDialog extends JDialog {
         
         pan.add(new JLabel("Data Field:"), gc);
         gc.fill = gc.HORIZONTAL;
-        pan.add(getComboBox(), gc);
+        
+        panCombo.add(getComboBox(), BorderLayout.CENTER);
+        pan.add(panCombo, gc);
         gc.fill = gc.NONE;
         gc.gridwidth = gc.REMAINDER;
         pan.add(new JLabel(""), gc);
@@ -210,18 +214,25 @@ public class InsertFieldDialog extends JDialog {
                 @Override
                 public void propertyPathCreated(String propertyPath) {
                     getTextField().setText(propertyPath);
-                    cbo.hidePopup();
+                    cboTree.hidePopup();
                 }
             };
         }
         return tree;
     }
-    public JComboBox getComboBox() {
-        if (cbo == null) {
-            cbo = new OATreeComboBox(getPropertyPathTree(), hub, "name");
-            cbo.setEditor(getTextField());
+    public OATreeComboBox getComboBox() {
+        if (cboTree == null) {
+            cboTree = new OATreeComboBox(getPropertyPathTree(), hub, "name");
+            cboTree.setEditor(getTextField());
         }
-        return cbo;
+        return cboTree;
+    }
+    public void setComboBox(OATreeComboBox cbo) {
+        cboTree = cbo;
+        if (cbo != null) {
+            panCombo.removeAll();
+            panCombo.add(cbo, BorderLayout.CENTER);
+        }
     }
     
     public static void main(String[] args) {

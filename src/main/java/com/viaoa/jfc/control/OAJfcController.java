@@ -149,13 +149,13 @@ public class OAJfcController extends HubListenerAdapter {
     }
     
     public OAJfcController(Hub hub, JComponent comp, boolean bEnableIfAO) {
-        this(hub, null, null, comp, bEnableIfAO ? HubChangeListener.Type.AoNotNull : HubChangeListener.Type.HubValid, null, null);
+        this(hub, null, null, comp, (bEnableIfAO ? HubChangeListener.Type.AoNotNull : HubChangeListener.Type.HubValid), null, null);
     }
     public OAJfcController(JComponent comp, Hub hub, boolean bEnableIfAO) {
-        this(hub, null, null, comp, bEnableIfAO ? HubChangeListener.Type.AoNotNull : HubChangeListener.Type.HubValid, null, null);
+        this(hub, null, null, comp, (bEnableIfAO ? HubChangeListener.Type.AoNotNull : HubChangeListener.Type.HubValid), null, null);
     }
     public OAJfcController(JComponent comp, Hub hub, String prop, boolean bEnableIfAO) {
-        this(hub, null, prop, comp, bEnableIfAO ? HubChangeListener.Type.AoNotNull : HubChangeListener.Type.HubValid, null, null);
+        this(hub, null, prop, comp, (bEnableIfAO ? HubChangeListener.Type.AoNotNull : HubChangeListener.Type.HubValid), null, null);
     }
     
     public OAJfcController(Hub hub, JComponent comp) {
@@ -275,12 +275,13 @@ public class OAJfcController extends HubListenerAdapter {
         }
         else {
             hubListenerPropertyName = propertyPath; 
-            hub.addHubListener(this, hubListenerPropertyName);
+            if (OAString.isNotEmpty(hubListenerPropertyName)) hub.addHubListener(this, hubListenerPropertyName, true);
+            else hub.addHubListener(this);
         }
         
         if (changeListenerType == null) changeListenerType = HubChangeListener.Type.HubValid;
   
-        if (changeListenerType != HubChangeListener.Type.HubValid) {
+        if (changeListenerType != HubChangeListener.Type.HubValid) { // else: this class already is listening to hub
             changeListenerEnabledHubPropLast = getEnabledChangeListener().add(hub, changeListenerType);
         }
         
@@ -318,7 +319,7 @@ public class OAJfcController extends HubListenerAdapter {
             if (OAString.isNotEmpty(s)) getVisibleChangeListener().add(hub, ppPrefix+s, b);
             
             // dependent properties
-            addDependentProps(hub, ppPrefix, oi.getEnabledDependentProperties(), oi.getVisibleDependentProperties(), oi.getUserEnabledDependentProperties(), oi.getUserVisibleDependentProperties());
+            addDependentProps(hub, ppPrefix, oi.getViewDependentProperties(), oi.getUserDependentProperties());
             
             Method m = oi.getEditQueryMethod(prop);
             if (m != null) {
@@ -332,7 +333,7 @@ public class OAJfcController extends HubListenerAdapter {
                     if (OAString.isNotEmpty(s)) getVisibleChangeListener().add(hub, ppPrefix+s, b);
 
                     // dependent properties
-                    addDependentProps(hub, ppPrefix, oaq.enabledDependentProperties(), oaq.visibleDependentProperties(), oaq.userEnabledDependentProperties(), oaq.userVisibleDependentProperties());
+                    addDependentProps(hub, ppPrefix, oaq.viewDependentProperties(), oaq.userDependentProperties());
                 }
             }        
             ppPrefix += prop + ".";
@@ -381,27 +382,16 @@ public class OAJfcController extends HubListenerAdapter {
         update();
     }
 
-    protected void addDependentProps(Hub hub, String prefix,  String[] enabledDependentProperties, String[] visibleDependentProperties, String[] userEnabledDependentProperties, String[] userVisibleDependentProperties) {
-        if (enabledDependentProperties != null) {
-            for (String s : enabledDependentProperties) {
-                getEnabledChangeListener().add(hub, prefix+s);
+    protected void addDependentProps(Hub hub, String prefix,  String[] dependentProperties, String[] userDependentProperties) {
+        if (dependentProperties != null) {
+            for (String s : dependentProperties) {
+                getChangeListener().add(hub, prefix+s);
             }
         }
-        if (visibleDependentProperties != null) {
-            for (String s : visibleDependentProperties) {
-                getVisibleChangeListener().add(hub, prefix+s);
-            }
-        }
-        
         hub = OAAuthDelegate.getCurrentUserHub(OAJfcController.class, true);
-        if (userEnabledDependentProperties != null) {
-            for (String s : userEnabledDependentProperties) {
-                getEnabledChangeListener().add(hub, s);
-            }
-        }
-        if (userVisibleDependentProperties != null) {
-            for (String s : userVisibleDependentProperties) {
-                getVisibleChangeListener().add(hub, s);
+        if (userDependentProperties != null) {
+            for (String s : userDependentProperties) {
+                getChangeListener().add(hub, s);
             }
         }
     }
@@ -418,7 +408,7 @@ public class OAJfcController extends HubListenerAdapter {
         if (OAString.isNotEmpty(s)) getVisibleChangeListener().add(hx, s, b);
 
         // dependent props
-        addDependentProps(hx, "", oi.getEnabledDependentProperties(), oi.getVisibleDependentProperties(), oi.getUserEnabledDependentProperties(), oi.getUserVisibleDependentProperties());
+        addDependentProps(hx, "", oi.getViewDependentProperties(), oi.getUserDependentProperties());
         
         Method m = oi.getEditQueryMethod(propx);
         if (m != null) {
@@ -430,7 +420,7 @@ public class OAJfcController extends HubListenerAdapter {
                 s = oaq.visibleProperty();
                 b = oaq.visibleValue();
                 if (OAString.isNotEmpty(s)) getVisibleChangeListener().add(hx, s, b);
-                addDependentProps(hx, "", oaq.enabledDependentProperties(), oaq.visibleDependentProperties(), oaq.userEnabledDependentProperties(), oaq.userVisibleDependentProperties());
+                addDependentProps(hx, "", oaq.viewDependentProperties(), oaq.userDependentProperties());
             }
         }        
 
@@ -448,7 +438,7 @@ public class OAJfcController extends HubListenerAdapter {
             b = oi.getVisibleValue();
             if (OAString.isNotEmpty(s)) getVisibleChangeListener().add(hx, s, b);
 
-            addDependentProps(hx, "", oi.getEnabledDependentProperties(), oi.getVisibleDependentProperties(), oi.getUserEnabledDependentProperties(), oi.getUserVisibleDependentProperties());
+            addDependentProps(hx, "", oi.getViewDependentProperties(), oi.getUserDependentProperties());
             
             m = oi.getEditQueryMethod(propx);
             if (m != null) {
@@ -460,7 +450,7 @@ public class OAJfcController extends HubListenerAdapter {
                     s = oaq.visibleProperty();
                     b = oaq.visibleValue();
                     if (OAString.isNotEmpty(s)) getVisibleChangeListener().add(hx, s, b);
-                    addDependentProps(hx, "", oaq.enabledDependentProperties(), oaq.visibleDependentProperties(), oaq.userEnabledDependentProperties(), oaq.userVisibleDependentProperties());
+                    addDependentProps(hx, "", oaq.viewDependentProperties(), oaq.userDependentProperties());
                 }
             }        
         }

@@ -660,13 +660,13 @@ public class HubMerger<F extends OAObject, T extends OAObject> {
             }
             
             // 20160806
-            if (node == null || node.child == null || node.child.liFromParentToChild == null || node.child.liFromParentToChild.getDependentProperties() == null || node.child.liFromParentToChild.getDependentProperties().length == 0) {
+            if (node == null || node.child == null || node.child.liFromParentToChild == null || node.child.liFromParentToChild.getCalcDependentProperties() == null || node.child.liFromParentToChild.getCalcDependentProperties().length == 0) {
                 this.hub.addHubListener(this);
             }
             else {            
                 this.hub.addHubListener(this,
                     node.child.liFromParentToChild.getName(),
-                    node.child.liFromParentToChild.getDependentProperties(),
+                    node.child.liFromParentToChild.getCalcDependentProperties(),
                     true);
             }
                     

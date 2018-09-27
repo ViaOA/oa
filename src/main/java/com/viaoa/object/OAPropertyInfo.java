@@ -168,35 +168,20 @@ public class OAPropertyInfo implements java.io.Serializable {
         this.isCurrency = b;
     }
     
-    private String[] enabledDependentProperties;
-    private String[] visibleDependentProperties;
-    private String[] userEnabledDependentProperties;
-    private String[] userVisibleDependentProperties;
-    public void setEnabledDependentProperties(String[] ss) {
-        this.enabledDependentProperties = ss;
+    private String[] viewDependentProperties;
+    public void setViewDependentProperties(String[] ss) {
+        this.viewDependentProperties = ss;
     }
-    public String[] getEnabledDependentProperties() {
-        return this.enabledDependentProperties;
+    public String[] getViewDependentProperties() {
+        return this.viewDependentProperties;
     }
-    public void setVisibleDependentProperties(String[] ss) {
-        this.visibleDependentProperties = ss;
+    private String[] userDependentProperties;
+    public void setUserDependentProperties(String[] ss) {
+        this.userDependentProperties = ss;
     }
-    public String[] getVisibleDependentProperties() {
-        return this.visibleDependentProperties;
+    public String[] getUserDependentProperties() {
+        return this.userDependentProperties;
     }
-    public void setUserEnabledDependentProperties(String[] ss) {
-        this.userEnabledDependentProperties = ss;
-    }
-    public String[] getUserEnabledDependentProperties() {
-        return this.userEnabledDependentProperties;
-    }
-    public void setUserVisibleDependentProperties(String[] ss) {
-        this.userVisibleDependentProperties = ss;
-    }
-    public String[] getUserVisibleDependentProperties() {
-        return this.userVisibleDependentProperties;
-    }
-    
     
     private String enabledProperty;
     private boolean enabledValue;

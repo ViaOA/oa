@@ -100,7 +100,7 @@ public class OAPropertyPathTree extends OATree {
 
         setAllowDnD(false);
 
-        OATreeNode nodeObject = new OATreeNode(ObjectDef.P_DisplayName, hubObjectDef) {
+        OATreeNode nodeObject = new OATreeNode(ObjectDef.P_Name, hubObjectDef) {
             @Override
             public Component getTreeCellRendererComponent(Component comp, JTree tree, Object value, boolean selected, boolean expanded,
                     boolean leaf, int row, boolean hasFocus) {

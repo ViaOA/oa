@@ -78,7 +78,9 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
                 String s = textComp.getText();
                 String[] ss = getSearchData(s, s.length());
                 if (ss != null && ss.length == 1) {
-                    onValueSelected(0, ss[0]);
+                    String s2 = getTextForSelectedValue(0, ss[0]);
+                    onValueSelected(0, s2); // 20180926
+                    //was: onValueSelected(0, ss[0]);
                     popup.setVisible(false);
                 }
             }
@@ -130,14 +132,15 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
 
         Object obj = list.getSelectedValue();
         if (obj == null) {
-            return false; // nothing selected, use hit [enter]
+            return false; // nothing selected, user hit [enter]
         }
 
         int pos = list.getSelectedIndex();
         String s = getTextForSelectedValue(pos, (String) obj);
         if (s == null) s = "";
 
-        onValueSelected(pos, (String) obj);
+        onValueSelected(pos, s);  // 20180926
+        //was: onValueSelected(pos, (String) obj);
         //was: textComp.setText(s);
         return true;
     }

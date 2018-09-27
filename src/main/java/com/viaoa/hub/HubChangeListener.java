@@ -25,19 +25,24 @@ public abstract class HubChangeListener {
     public boolean DEBUG;
     
     /**
-     * Specific types of comparsions.
+     * Specific types of comparisions.
      */
     public enum Type {
-        Unknown,
-        HubValid,
-        HubNotValid,
-        HubEmpty,
-        HubNotEmpty,
-        AoNull,  // hub.activeObject
-        AoNotNull,
-        AlwaysTrue,
-        PropertyNull,
-        PropertyNotNull
+        Unknown(true),
+        HubValid(true),
+        HubNotValid(true),
+        HubEmpty(false),
+        HubNotEmpty(false),
+        AoNull(true),  // hub.activeObject
+        AoNotNull(true),
+        AlwaysTrue(true),
+        PropertyNull(true),
+        PropertyNotNull(true);
+        
+        public boolean bDefaultToAO;
+        Type(boolean b) {
+            this.bDefaultToAO = b;
+        }
     }
     
     public HubChangeListener() {
@@ -60,7 +65,7 @@ public abstract class HubChangeListener {
      * Add an additional hub to base the check on.  
      */
     public HubProp add(Hub hub) {
-        return add(hub, null, Type.HubValid);
+        return add(hub, null, true, Type.HubValid, null, false);
     }    
 
     /**
@@ -78,45 +83,45 @@ public abstract class HubChangeListener {
     
     /**  Checks to see if hub.isValid */
     public HubProp addHubValid(Hub hub) {
-        return add(hub, null, true, Type.HubValid, null, true);
+        return add(hub, null, true, Type.HubValid);
     }
     public HubProp addHubValid(Hub hub, String propertyPath) {
-        return add(hub, propertyPath, true, Type.HubValid, null, true);
+        return add(hub, propertyPath, true, Type.HubValid);
     }
     public HubProp addHubNotValid(Hub hub) {
-        return add(hub, null, true, Type.HubNotValid, null, true);
+        return add(hub, null, true, Type.HubNotValid);
     }
     /**  Checks to see if hub.size = 0 */
     public HubProp addHubEmpty(Hub hub) {
-        return add(hub, null, true, Type.HubEmpty, null, true);
+        return add(hub, null, true, Type.HubEmpty);
     }
     public HubProp addHubNotEmpty(Hub hub) {
-        return add(hub, null, true, Type.HubNotEmpty, null, true);
+        return add(hub, null, true, Type.HubNotEmpty);
     }
     /**  Checks to see if hub.AO = null */
     public HubProp addAoNull(Hub hub) {
-        return add(hub, null, true, Type.AoNull, null, true);
+        return add(hub, null, true, Type.AoNull);
     }
     public HubProp addAoNotNull(Hub hub) {
-        return add(hub, null, true, Type.AoNotNull, null, true);
+        return add(hub, null, true, Type.AoNotNull);
     }
     
     public HubProp addAlwaysTrue(Hub hub) {
-        return add(hub, null, true, Type.AlwaysTrue, null, true);
+        return add(hub, null, true, Type.AlwaysTrue);
     }
     
     public HubProp addPropertyNull(Hub hub, String prop) {
-        return add(hub, prop, true, Type.PropertyNull, null, true);
+        return add(hub, prop, true, Type.PropertyNull);
     }
     public HubProp addPropertyNotNull(Hub hub, String prop) {
-        return add(hub, prop, true, Type.PropertyNotNull, null, true);
+        return add(hub, prop, true, Type.PropertyNotNull);
     }
     
     public HubProp add(Hub hub, HubChangeListener.Type type) {
-        return add(hub, null, type==null?false:true, type, null, true);
+        return add(hub, null, (type==null?false:true), type, null, (type==null?true:type.bDefaultToAO));
     }
     public HubProp add(Hub hub, String property, HubChangeListener.Type type) {
-        return add(hub, property, type==null?false:true, type, null, true);
+        return add(hub, property, type==null?false:true, type, null, (type==null?true:type.bDefaultToAO));
     }
     
     
@@ -133,6 +138,13 @@ public abstract class HubChangeListener {
         return add(hub, null, true, null, filter, true);
     }
     
+    public HubProp add(Hub hub, final String propertyPath, boolean bUseCompareValue, Object compareValue) {
+        Type type = null;
+        if (bUseCompareValue && compareValue instanceof Type) {
+            type = (Type) compareValue;
+        }
+        return this.add(hub, propertyPath, bUseCompareValue, compareValue, null, (type==null?true:type.bDefaultToAO));
+    }
         
     public HubProp add(Hub hub, final String propertyPath, boolean bUseCompareValue, Object compareValue, OAFilter filter, final boolean bAoOnly) {
         if (hub == null) return null;

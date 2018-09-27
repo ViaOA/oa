@@ -64,11 +64,13 @@ public class OALinkInfo { //implements java.io.Serializable {
     protected boolean bPrivateMethod; // true if the method is not created, or is private
     protected boolean bNotUsed; // 20180615 flag to know that link is only used one way
     private transient Method uniquePropertyGetMethod;
-    private String[] dependentProperties;
+    private String[] calcDependentProperties;
     private String mergerPropertyPath;
     private OAOne oaOne;
     private OAMany oaMany;
     private Method editQueryMethod;
+    private String[] viewDependentProperties;
+    private String[] userDependentProperties;
     
     public OALinkInfo(String name, Class toClass, int type) {
         this(name, toClass, type, false, false, null, false);
@@ -342,12 +344,28 @@ public class OALinkInfo { //implements java.io.Serializable {
     }
 
     /** for calc links */
-    public String[] getDependentProperties() {
-        return dependentProperties;
+    public String[] getCalcDependentProperties() {
+        return calcDependentProperties;
     }
-    public void setDependentPropeties(String[] props) {
-        dependentProperties = props;
+    public void setCalcDependentProperties(String[] props) {
+        calcDependentProperties = props;
     }
+
+    
+    public String[] getViewDependentProperties() {
+        return viewDependentProperties;
+    }
+    public void setViewDependentProperties(String[] props) {
+        viewDependentProperties = props;
+    }
+
+    public String[] getUserDependentProperties() {
+        return userDependentProperties;
+    }
+    public void setUserDependentProperties(String[] props) {
+        userDependentProperties = props;
+    }
+    
     public String getMergerPropertyPath() {
         return mergerPropertyPath;
     }
@@ -389,36 +407,6 @@ public class OALinkInfo { //implements java.io.Serializable {
         return true;
     }
 
-    private String[] enabledDependentProperties;
-    private String[] visibleDependentProperties;
-    private String[] userEnabledDependentProperties;
-    private String[] userVisibleDependentProperties;
-    public void setEnabledDependentProperties(String[] ss) {
-        this.enabledDependentProperties = ss;
-    }
-    public String[] getEnabledDependentProperties() {
-        return this.enabledDependentProperties;
-    }
-    public void setVisibleDependentProperties(String[] ss) {
-        this.visibleDependentProperties = ss;
-    }
-    public String[] getVisibleDependentProperties() {
-        return this.visibleDependentProperties;
-    }
-    public void setUserEnabledDependentProperties(String[] ss) {
-        this.userEnabledDependentProperties = ss;
-    }
-    public String[] getUserEnabledDependentProperties() {
-        return this.userEnabledDependentProperties;
-    }
-    public void setUserVisibleDependentProperties(String[] ss) {
-        this.userVisibleDependentProperties = ss;
-    }
-    public String[] getUserVisibleDependentProperties() {
-        return this.userVisibleDependentProperties;
-    }
-    
-    
     private String enabledProperty;
     private boolean enabledValue;
     private String visibleProperty;

@@ -126,7 +126,7 @@ public class OAAnnotationDelegateTest extends OAUnitTest {
             for (OACalcInfo ci : alCalc) {
                 if (!ci.getName().equalsIgnoreCase(name)) continue;
                 b = true;
-                assertTrue(OAArray.isEqual(props, ci.getProperties()));
+                assertTrue(OAArray.isEqual(props, ci.getDependentProperties()));
             }
             assertTrue(b);
         }

@@ -29,10 +29,10 @@ public class OACalcInfoTest extends OAUnitTest {
 
         String[] ss = new String[] {Server.P_Name, Server.P_HostName, Server.P_IpAddress};
         
-        boolean b = OAArray.isEqual(ci.getProperties(), ss);
+        boolean b = OAArray.isEqual(ci.getDependentProperties(), ss);
         if (!b) {
             Arrays.sort(ss);
-            b = OAArray.isEqual(ci.getProperties(), ss);
+            b = OAArray.isEqual(ci.getDependentProperties(), ss);
         }
         assertTrue(b);
         

@@ -200,6 +200,26 @@ public class OAArray {
         return newArray;
     }
 
+    public static String[] add(String[] array, String[] values) {
+        return add(array, values, true);
+    }
+
+    public static String[] add(String[] array, String[] values, boolean bAllowDups) {
+        if (values == null) return array;
+        for (String s : values) {
+            if (s == null) continue;
+            if (!bAllowDups && array != null) {
+                boolean bFound = false;
+                for (String sx : array) {
+                    if (sx == null) continue;
+                    if (sx.equals(s)) bFound = true;
+                }
+                if (bFound) continue;
+            }
+            array = add(array, s);
+        }
+        return array;
+    }
     public static String[] add(String[] array, String value) {
         int x = (array == null) ? 0 : array.length;
         

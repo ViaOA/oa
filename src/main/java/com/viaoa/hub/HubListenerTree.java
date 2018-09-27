@@ -321,7 +321,7 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
         for (OACalcInfo ci : oi.getCalcInfos()) {
             if (ci.getName().equalsIgnoreCase(property)) {
                 // System.out.println(">>>> "+property);
-                calcProps = ci.getProperties();
+                calcProps = ci.getDependentProperties();
                 property = ci.getName();
                 break;
             }
@@ -330,7 +330,7 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
             for (OALinkInfo li : oi.getLinkInfos()) {
                 if (li.getName().equalsIgnoreCase(property)) {
                     // System.out.println(">>>> "+property);
-                    calcProps = li.getDependentProperties();
+                    calcProps = li.getCalcDependentProperties();
                     property = li.getName();
                     break;
                 }
