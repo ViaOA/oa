@@ -95,6 +95,7 @@ public class OATemplate<F extends OAObject> {
     private TreeNode rootTreeNode;
     private String template;
     private final AtomicInteger aiStopCalled = new AtomicInteger();
+    protected String fromText, toText, hiliteText;
 
     public OATemplate() {
     }
@@ -565,7 +566,8 @@ public class OATemplate<F extends OAObject> {
         boolean bProcessChildren = true;
 
         if (rootNode.errorMsg != null) {
-            sb.append(rootNode.errorMsg);
+            String s = getOutputText(rootNode.errorMsg);
+            sb.append(s);
         }
         if (rootNode.tagType == null) {
             String s = rootNode.arg1;
@@ -573,7 +575,6 @@ public class OATemplate<F extends OAObject> {
                 s = OAString.format(s, rootNode.arg2);
             }
             if (s != null) {
-                s = getOutputText(s);
                 sb.append(s);
             }
         }
@@ -615,6 +616,7 @@ public class OATemplate<F extends OAObject> {
 
                 String s = new String(sb);
                 s = OAString.format(s, rootNode.arg1);
+                s = getOutputText(s);
                 s = OAString.convert(s, " ", "&nbsp;");
                 sb = sbHold;
                 sb.append(s);
@@ -711,6 +713,7 @@ public class OATemplate<F extends OAObject> {
                 }
 
                 s = getValue(obj, prop, width, fmt, props);
+                s = getOutputText(s);
                 sb.append(s);
                 break;
                 
@@ -724,6 +727,7 @@ public class OATemplate<F extends OAObject> {
                     if (!OAString.isEmpty(fmt)) {
                         s = OAString.format(s, fmt);
                     }
+                    s = getOutputText(s);
                     sb.append(s);
                 }
                 break;
@@ -734,6 +738,7 @@ public class OATemplate<F extends OAObject> {
                 Object objx = obj.getProperty(prop);
                 if (!(objx instanceof Hub)) return true;
                 s = OAConv.toString( ((Hub) objx).getSize(), fmt);
+                s = getOutputText(s);
                 sb.append(s);
                 break;
             case Sum:
@@ -751,6 +756,7 @@ public class OATemplate<F extends OAObject> {
                     d += OAConv.toDouble(objx);
                 }
                 s = OAConv.toString(d, fmt);
+                s = getOutputText(s);
                 sb.append(s);
                 break;
             }
@@ -767,8 +773,29 @@ public class OATemplate<F extends OAObject> {
      * Called to be able to convert before adding to output string.
      */
     protected String getOutputText(String s) {
+        if (OAString.isNotEmpty(fromText)) {
+            s = OAString.convert(s, fromText, toText);
+        }
+        if (OAString.isNotEmpty(hiliteText)) {
+            s = OAString.hilite(s, hiliteText);
+        }
         return s;
     }
+    
+    /**
+     * Used by getOutPutText to call OAString.convert(value, from, to)
+     */
+    public void setOutputTextConversion(String fromText, String toText) {
+        this.fromText = fromText;
+        this.toText = toText;
+    }
+    /**
+     * Used by getOutPutText to call OAString.hilite(text)
+     */
+    public void setHiliteOutputText(String text) {
+        this.hiliteText = text;
+    }
+    
     
     /*
      * Called to get the value of a property.

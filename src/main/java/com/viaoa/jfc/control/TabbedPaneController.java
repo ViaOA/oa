@@ -27,6 +27,7 @@ import javax.swing.event.PopupMenuListener;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubChangeListener;
+import com.viaoa.hub.HubChangeListener.HubProp;
 import com.viaoa.jfc.OATable;
 
 /**
@@ -43,12 +44,13 @@ public class TabbedPaneController {
     private JRadioButton radScroll;
     private JRadioButton radWrap;
     private JRadioButton radTop, radLeft, radBottom, radRight;
+    private OAJfcController control;
 
     public TabbedPaneController(Hub hub, JTabbedPane tp) {
         this.hub = hub;
         this.tabbedPane = tp;
         if (tp != null && hub != null) {
-            OAJfcController jc = new OAJfcController(hub, tp, HubChangeListener.Type.AoNotNull);
+            control = OAJfcController.createOnlyAoNotNull(tp, hub);
         }
         if (tp != null) setup();
     }

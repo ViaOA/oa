@@ -27,7 +27,7 @@ public class OAObjectModel {
     
     protected boolean bAllowAdd;
     protected boolean bAllowNew;
-    protected boolean bAllowAutoCreate;
+//    protected boolean bAllowAutoCreate;
 
     protected boolean bAllowSave;
     protected boolean bAllowRemove;
@@ -129,14 +129,14 @@ public class OAObjectModel {
     public void setAllowNew(boolean b) {
         bAllowNew = b;
     }
-
+/**qqqqq remove
     public boolean getAllowAutoCreate() {
         return bAllowAutoCreate;
     }
     public void setAllowAutoCreate(boolean b) {
         bAllowAutoCreate = b;
     }
-    
+*/    
     public boolean getAllowSave() {
         return bAllowSave;
     }

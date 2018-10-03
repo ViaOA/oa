@@ -1299,7 +1299,10 @@ public class OAHTMLTextPane extends JTextPane implements OAPrintable {
      *            OAConv.toBoolean to determine.
      */
     public void setEnabled(Hub hub, String prop) {
-        getController().setEnabled(hub, prop);
+        getController().getBindController().addEnabledCheck(hub, prop);
+    }
+    public void setEnabled(Hub hub, String prop, Object val) {
+        getController().getBindController().addEnabledCheck(hub, prop, val);
     }
 
     protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
@@ -1324,8 +1327,11 @@ public class OAHTMLTextPane extends JTextPane implements OAPrintable {
      *            if null, then only checks hub.AO, otherwise will use
      *            OAConv.toBoolean to determine.
      */
-    public void setVisible(Hub hub, String prop) {
-        getController().setVisible(hub, prop);
+    public void addVisibleCheck(Hub hub, String prop) {
+        getController().getBindController().addVisibleCheck(hub, prop);
+    }
+    public void addVisibleCheck(Hub hub, String prop, Object val) {
+        getController().getBindController().addVisibleCheck(hub, prop, val);
     }
 
     protected boolean isVisible(boolean bIsCurrentlyVisible) {

@@ -525,37 +525,33 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
     /**
      * Other Hub/Property used to determine if component is enabled.
      */
-    public void setEnabled(Hub hub) {
+    public void addEnabledCheck(Hub hub) {
         control.getEnabledChangeListener().add(hub);
     }
-
-    public void setEnabled(Hub hub, String prop) {
+    public void addEnabledCheck(Hub hub, String prop) {
         control.getEnabledChangeListener().add(hub, prop);
     }
-
-    public void setEnabled(Hub hub, String prop, Object compareValue) {
+    public void addEnabledCheck(Hub hub, String prop, Object compareValue) {
         control.getEnabledChangeListener().add(hub, prop, compareValue);
-    }
-
-    protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
-        return bIsCurrentlyEnabled;
     }
 
     /**
      * Other Hub/Property used to determine if component is visible.
      */
-    public void setVisible(Hub hub) {
+    public void addVisibleCheck(Hub hub) {
         control.getVisibleChangeListener().add(hub);
     }
-
-    public void setVisible(Hub hub, String prop) {
+    public void addVisibleCheck(Hub hub, String prop) {
         control.getVisibleChangeListener().add(hub, prop);
     }
-
-    public void setVisible(Hub hub, String prop, Object compareValue) {
+    public void addVisibleCheck(Hub hub, String prop, Object compareValue) {
         control.getVisibleChangeListener().add(hub, prop, compareValue);
     }
 
+    
+    protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+        return bIsCurrentlyEnabled;
+    }
     protected boolean isVisible(boolean bIsCurrentlyVisible) {
         return bIsCurrentlyVisible;
     }

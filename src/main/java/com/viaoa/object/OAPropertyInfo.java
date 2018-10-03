@@ -39,6 +39,7 @@ public class OAPropertyInfo implements java.io.Serializable {
     private Hub<String> hubNameValue;
     private boolean isCurrency;
     private Method editQueryMethod;
+    private boolean isProcessed;
 
     private OAProperty oaProperty;    
     
@@ -63,6 +64,12 @@ public class OAPropertyInfo implements java.io.Serializable {
     }
     public void setUnique(boolean bUnique) {
         this.unique = bUnique;
+    }
+    public boolean getProcessed() {
+        return isProcessed;
+    }
+    public void setProcessed(boolean b) {
+        this.unique = isProcessed;
     }
 	public int getMaxLength() {
 		return maxLength;

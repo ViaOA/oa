@@ -87,9 +87,11 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
         return null;
     }
 
+/*    
     public String getEndPropertyName() {
         return control.getEndPropertyName();
     }
+*/    
     public String getPropertyPath() {
         return control.getPropertyPath();
     }

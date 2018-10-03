@@ -76,6 +76,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
     protected volatile boolean bSetLinkToOwner;
     protected OALinkInfo liLinkToOwner;  // set by OAObjectInfoDelegate.getLinkToOwner
     
+    protected boolean bProcessed;
     protected boolean bLookup;
     private Method editQueryMethod;
     
@@ -968,6 +969,14 @@ public class OAObjectInfo { //implements java.io.Serializable {
         return this.bPreSelect;
     }
 
+    
+    public void setProcessed(boolean b) {
+        this.bProcessed = b;
+    }
+    public boolean getProcessed() {
+        return bProcessed;
+    }
+    
     public void setViewDependentProperties(String[] ss) {
         this.viewDependentProperties = ss;
     }

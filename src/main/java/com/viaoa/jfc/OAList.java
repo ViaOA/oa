@@ -361,11 +361,12 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         if (control == null) return null;
         return control.getPropertyPath();
     }
+/*    
     public String getEndPropertyName() {
         if (control == null) return null;
         return control.getEndPropertyName();
     }
-
+*/
 
     /** 
         Seperate Hub that can contain selected objects. 

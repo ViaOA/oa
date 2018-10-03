@@ -243,21 +243,9 @@ public class OAConsole extends OATable implements FocusListener, MouseListener {
         Dimension d = super.getPreferredSize();
         return d;
     }
-    
-//qqqqqqqqq toDo:    
-    public void setVisible(Hub hub) {
-    }    
-    public void setVisible(Hub hub, String prop) {
-    }    
-    public void setVisible(Hub hub, String prop, Object compareValue) {
-    }    
+
     protected boolean isVisible(boolean bIsCurrentlyVisible) {
         return bIsCurrentlyVisible;
-    }
-
-    public void setEnabled(Hub hub, String prop) {
-    }
-    public void setEnabled(Hub hub, String prop, Object compareValue) {
     }
     protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
         return bIsCurrentlyEnabled;

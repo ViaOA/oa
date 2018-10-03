@@ -65,6 +65,19 @@ public class OACalcInfo implements java.io.Serializable {
     boolean bIsForHub;  
     private Method editQueryMethod;
 
+    private String[] viewDependentProperties;
+    private String[] userDependentProperties;
+
+    private String enabledProperty;
+    private boolean enabledValue;
+    private String visibleProperty;
+    private boolean visibleValue;
+
+    private String userEnabledProperty;
+    private boolean userEnabledValue;
+    private String userVisibleProperty;
+    private boolean userVisibleValue;
+    
     /** 
      Create new Calculated Property.  
      * <pre>
@@ -114,7 +127,6 @@ public class OACalcInfo implements java.io.Serializable {
         oaCalculatedProperty = c;
     }
 
-    private String[] viewDependentProperties;
     public void setViewDependentProperties(String[] ss) {
         this.viewDependentProperties = ss;
     }
@@ -122,7 +134,6 @@ public class OACalcInfo implements java.io.Serializable {
         return this.viewDependentProperties;
     }
 
-    private String[] userDependentProperties;
     public void setUserDependentProperties(String[] ss) {
         this.userDependentProperties = ss;
     }
@@ -130,10 +141,6 @@ public class OACalcInfo implements java.io.Serializable {
         return this.userDependentProperties;
     }
     
-    private String enabledProperty;
-    private boolean enabledValue;
-    private String visibleProperty;
-    private boolean visibleValue;
     public String getEnabledProperty() {
         return enabledProperty;
     }
@@ -159,10 +166,6 @@ public class OACalcInfo implements java.io.Serializable {
         visibleValue = b;
     }
 
-    private String userEnabledProperty;
-    private boolean userEnabledValue;
-    private String userVisibleProperty;
-    private boolean userVisibleValue;
     public String getUserEnabledProperty() {
         return userEnabledProperty;
     }

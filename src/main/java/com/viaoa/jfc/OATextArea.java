@@ -133,10 +133,12 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJfcComp
         if (control == null) return null;
         return control.getPropertyPath();
     }
+/*    
     public String getEndPropertyName() {
         if (control == null) return null;
         return control.getEndPropertyName();
     }
+*/    
     public String getTableHeading() { //zzzzz
         return heading;   
     }

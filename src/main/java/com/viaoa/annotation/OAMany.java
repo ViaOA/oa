@@ -80,6 +80,9 @@ public @interface OAMany {
     String mergerPropertyPath() default "";
     
     boolean couldBeLarge() default false;
+    
+    /** flag to know if this is processed and will require User.editProcessed=true for it to be changed. */
+    boolean isProcessed() default false;
 }
 
 /*  OALinkInfo

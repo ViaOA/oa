@@ -55,6 +55,9 @@ public @interface OAClass {
 
     // property path from a root class to this class.
     String[] rootTreePropertyPaths() default {};
+
+    /** flag to know if this is processed and will require User.editProcessed=true for it to be changed. */
+    boolean isProcessed() default false;
 }
 
 

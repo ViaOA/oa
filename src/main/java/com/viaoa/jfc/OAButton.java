@@ -916,8 +916,9 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     public boolean getPasswordProtected() {
         return control.getPasswordProtected();
     }
+/*qqqqqqq    
     public String getEndPropertyName() {
         return control.getEndPropertyName();
     }
-
+*/
 }

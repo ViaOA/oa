@@ -381,6 +381,11 @@ public class ComboBoxController extends OAJfcController implements FocusListener
         if (s == null || s.length() == 0) s = " "; // if length == 0 then Jlist
                                                    // wont show any
 
+        if (value instanceof OAObject) {
+            String sx = getTemplateText((OAObject) value);
+            if (OAString.isNotEmpty(sx)) s = sx;
+        }
+        
         if (renderer instanceof JLabel) {
             JLabel lbl = (JLabel) renderer;
 
@@ -420,4 +425,27 @@ public class ComboBoxController extends OAJfcController implements FocusListener
         }
     }
 
+    private OATemplate templateDisplay;
+    protected String getTemplateText(OAObject objx) {
+        String text = null;
+        if (OAString.isNotEmpty(getDisplayTemplate())) {
+            if (templateDisplay == null) templateDisplay = new OATemplate<>(getDisplayTemplate());
+            if (objx instanceof OAObject) {
+                text = templateDisplay.process(objx);
+            }
+        }
+        return text;
+    }
+    
+    /** HTML used to form label.text */
+    protected String displayTemplate;
+
+    public void setDisplayTemplate(String s) {
+        this.displayTemplate = s;
+        templateDisplay = null;
+    }
+    public String getDisplayTemplate() {
+        return displayTemplate;
+    }
+    
 }

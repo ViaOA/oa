@@ -29,6 +29,9 @@ public class LabelController extends OAJfcController {
     protected JLabel label;
     protected boolean bIsPassword;
     protected OASiblingHelper siblingHelper;
+
+    /** HTML used to form label.text */
+    protected String displayTemplate;
     
     /**
         Bind a label to a property for the active object in a Hub.
@@ -121,6 +124,7 @@ public class LabelController extends OAJfcController {
         super.update();
     }
     
+    private OATemplate templateDisplay;
     protected void _update() {
         if (label == null) return;
 
@@ -134,8 +138,26 @@ public class LabelController extends OAJfcController {
             if (text == null) text = " ";
         }
         if (text.length() == 0) text = " "; // so that default size is not 0,0
+
+        if (OAString.isNotEmpty(getDisplayTemplate())) {
+            if (templateDisplay == null) templateDisplay = new OATemplate<>(getDisplayTemplate());
+            Object objx = getHub().getAO();
+            if (objx instanceof OAObject) {
+                text = templateDisplay.process((OAObject) objx);
+            }
+        }
         
         if (bIsPassword) text = "*****";
         label.setText(text);
     }
+    
+    public void setDisplayTemplate(String s) {
+        this.displayTemplate = s;
+        templateDisplay = null;
+    }
+    public String getDisplayTemplate() {
+        return displayTemplate;
+    }
+
+    
 }

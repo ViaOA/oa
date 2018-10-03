@@ -126,7 +126,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
         document = new OAPlainDocument() {
             public void handleError(int errorType) {
             	super.handleError(errorType);
-            	if (!TextFieldController.this.textField.hasFocus()) return;
+            	// if (!TextFieldController.this.textField.hasFocus()) return;
             	String msg = "";
             	switch (errorType) {
             	case OAPlainDocument.ERROR_MAX_LENGTH:
@@ -135,7 +135,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
             		msg = "Maximum input exceeded, currently set to " + max;
 
             		if (textField instanceof OATextField) {
-            		    msg += " for " + ((OATextField)textField).getEndPropertyName();
+            		    msg += " for " + TextFieldController.this.getEndPropertyName();
             		    Hub h = ((OATextField)textField).getHub();
             		    if (h != null) msg += ", in "+OAString.getDisplayName(h.getObjectClass().getSimpleName());
             		}
@@ -147,6 +147,9 @@ public class TextFieldController extends OAJfcController implements FocusListene
             	if (!OAString.isEmpty(msg)) LOG.warning(msg);
                 if (textField != null && textField.hasFocus()) {
                     JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(TextFieldController.this.textField), msg, "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    System.out.println("TextFieldController error: "+msg);
                 }
             }
             @Override

@@ -72,6 +72,7 @@ public class OAAnnotationDelegate {
                 String[] pps = oaclass.rootTreePropertyPaths();
                 oi.setRootTreePropertyPaths(pps);
                 oi.setLookup(oaclass.isLookup());
+                oi.setProcessed(oaclass.isProcessed());
             }
             OAEditQuery eq = (OAEditQuery) clazz.getAnnotation(OAEditQuery.class);
             if (eq != null) {
@@ -155,6 +156,7 @@ public class OAAnnotationDelegate {
             pi.setDecimalPlaces(oaprop.decimalPlaces());
             pi.setId(m.getAnnotation(OAId.class) != null);
             pi.setUnique(oaprop.isUnique());
+            pi.setProcessed(oaprop.isProcessed());
             pi.setClassType(m.getReturnType());
 
             OAColumn oacol = (OAColumn) m.getAnnotation(OAColumn.class);
@@ -282,6 +284,7 @@ public class OAAnnotationDelegate {
             li.setAutoCreateNew(annotation.autoCreateNew());
             li.setMustBeEmptyForDelete(annotation.mustBeEmptyForDelete());
             li.setCalculated(annotation.isCalculated());
+            li.setProcessed(annotation.isProcessed());
             //li.setRecursive(annotation.recursive());
             li.setOAOne(annotation);
 
@@ -329,6 +332,7 @@ public class OAAnnotationDelegate {
             li.setRecursive(annotation.recursive());
             li.setCacheSize(annotation.cacheSize());
             li.setCouldBeLarge(annotation.couldBeLarge());
+            li.setProcessed(annotation.isProcessed());
 
             s = annotation.matchHub();
             if (s != null && s.length() == 0) s = null;

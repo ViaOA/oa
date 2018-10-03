@@ -13,6 +13,7 @@ package com.viaoa.jfc.control;
 import java.awt.*;
 import javax.swing.*;
 import com.viaoa.hub.*;
+import com.viaoa.util.OAString;
 
 /**
  * Controller OAAutoComplete.
@@ -44,32 +45,29 @@ public class AutoCompleteTextFieldController extends OAJfcController {
     @Override
     public void update() {
         try {
-            // _update();  // dont update txtField.text
+            _update(); 
         }
         finally {
         }
         super.update();
     }
     
-    @Override
-    public void update(JComponent comp, Object object) {
-        // TODO Auto-generated method stub
-        super.update(comp, object);
-    }
-    
     protected void _update() {
         if (txt == null) return;
 
-        Object obj = hub.getAO();
         String text = null;
-        if (obj != null || bIsHubCalc) {
-            text = getValueAsString(obj, getFormat());
+        if (!OAString.isEmpty(getPropertyPath())) {
+            Object obj = hub.getAO();
+            if (obj != null || bIsHubCalc) {
+                text = getValueAsString(obj, getFormat());
+            }
+            if (text == null) {
+                text = getNullDescription();
+                if (text == null) text = "";
+            }
+            txt.setText(text);
         }
-        if (text == null) {
-            text = getNullDescription();
-            if (text == null) text = "";
-        }
-        txt.setText(text);
+        
     }
     
 }

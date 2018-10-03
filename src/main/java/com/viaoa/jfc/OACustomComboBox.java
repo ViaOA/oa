@@ -34,44 +34,45 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
 
 
     public OACustomComboBox() {
-        this((Hub)null, (String) null, 7, false);
+        this((Hub)null, (String) null, 7);
     }
     
     /**
         Create a ComboBox that is bound to a property for the active object in a Hub.
         @param columns is width of list using character width size.
     */
-    public OACustomComboBox(Hub hub, String propertyPath, int columns, boolean bTypeEditProperty) {
-        this(hub, propertyPath, bTypeEditProperty);
+    public OACustomComboBox(Hub hub, String propertyPath, int columns) {
+        this(hub, propertyPath);
         setColumns(columns);
     }
 
     /**
         Create a ComboBox that is bound to a property for the active object in a Hub.
     */
-    public OACustomComboBox(Hub hub, String propertyPath, boolean bTypeEditProperty) {
-        control = new OACustomComboBoxController(hub, propertyPath, bTypeEditProperty);
+    public OACustomComboBox(Hub hub, String propertyPath) {
+        control = new OACustomComboBoxController(hub, propertyPath);
         initialize();
     }
-    public OACustomComboBox(Hub hub, String propertyPath, boolean bTypeEditProperty, Hub hubDirect, String directProperty) {
-        control = new OACustomComboBoxController(hub, propertyPath, bTypeEditProperty, hubDirect, directProperty);
+    
+    public OACustomComboBox(Hub hub, String propertyPath, Hub hubDirect, String directProperty) {
+        control = new OACustomComboBoxController(hub, propertyPath, hubDirect, directProperty);
         initialize();
     }
-
+    
     /**
         Create a ComboBox that is bound to a property for the active object in a Hub.
         @param columns is width of list using character width size.
     */
-    public OACustomComboBox(Object obj, String propertyPath, int columns, boolean bTypeEditProperty) {
-        this(obj, propertyPath, bTypeEditProperty);
+    public OACustomComboBox(Object obj, String propertyPath, int columns) {
+        this(obj, propertyPath);
         setColumns(columns);
     }
 
     /**
         Create a ComboBox that is bound to a property for an object.
     */
-    public OACustomComboBox(Object obj, String propertyPath, boolean bTypeEditProperty) {
-        control = new OACustomComboBoxController(obj, propertyPath, bTypeEditProperty);
+    public OACustomComboBox(Object obj, String propertyPath) {
+        control = new OACustomComboBoxController(obj, propertyPath);
         initialize();
     }
 
@@ -320,10 +321,11 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     public String getPropertyPath() {
         return control.getPropertyPath();
     }
+/*    
     public String getEndPropertyName() {
         return control.getEndPropertyName();
     }
-
+*/
     /**
         Column heading when used as a column in an OATable.
     */
@@ -545,14 +547,14 @@ focusComp = this;
 
     
     class OACustomComboBoxController extends CustomComboBoxController {
-        public OACustomComboBoxController(Hub hub, String propertyPath, boolean bTypeEditProperty, Hub hubDirect, String directProperty) {
-            super(hub, OACustomComboBox.this, propertyPath, bTypeEditProperty, hubDirect, directProperty);
+        public OACustomComboBoxController(Hub hub, String propertyPath, Hub hubDirect, String directProperty) {
+            super(hub, OACustomComboBox.this, propertyPath, hubDirect, directProperty);
         }
-        public OACustomComboBoxController(Hub hub, String propertyPath, boolean bTypeEditProperty) {
-            super(hub, OACustomComboBox.this, propertyPath, bTypeEditProperty);
+        public OACustomComboBoxController(Hub hub, String propertyPath) {
+            super(hub, OACustomComboBox.this, propertyPath);
         }
-        public OACustomComboBoxController(Object obj, String propertyPath, boolean bTypeEditProperty) {
-            super(obj, OACustomComboBox.this, propertyPath, bTypeEditProperty);
+        public OACustomComboBoxController(Object obj, String propertyPath) {
+            super(obj, OACustomComboBox.this, propertyPath);
         }
         
         @Override

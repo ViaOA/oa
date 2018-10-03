@@ -207,10 +207,12 @@ public class OAFunctionLabel extends JLabel implements OATableComponent, OAJfcCo
         if (control == null) return null;
         return control.getPropertyPath();
     }
+/*    
     public String getEndPropertyName() {
         if (control == null) return null;
         return control.getEndPropertyName();
     }
+*/    
     
     /**
         Column heading when this component is used as a column in an OATable.

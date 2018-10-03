@@ -412,9 +412,11 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
     public String getPropertyPath() {
         return control.getPropertyPath();
     }
+/*    
     public String getEndPropertyName() {
         return control.getEndPropertyName();
     }
+*/    
 
     /**
         Column heading when this component is used as a column in an OATable.
@@ -630,6 +632,13 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
     }
 
 
+    /** HTML used to form label.text */
+    public void setDisplayTemplate(String s) {
+        this.control.setDisplayTemplate(s);
+    }
+    public String getDisplayTemplate() {
+        return this.control.getDisplayTemplate();
+    }
 
     class OAComboBoxController extends ComboBoxController {
         public OAComboBoxController(Hub hub, String propertyPath) {

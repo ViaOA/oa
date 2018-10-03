@@ -46,7 +46,7 @@ public class OATableComboBox extends OACustomComboBox {
         @param displayProperty property path to display
     */
     public OATableComboBox(OATable table, Hub hub, String displayProperty) {
-        super(hub, displayProperty, false);
+        super(hub, displayProperty, hub.getLinkHub(), hub.getLinkPath());
     	control.bDisplayPropertyOnly = true;
         setComboTable(table);
         table.updateUI();
@@ -57,7 +57,7 @@ public class OATableComboBox extends OACustomComboBox {
         @param displayProperty property path to display
     */
     public OATableComboBox(Hub hub, String displayProperty) {
-        super(hub, displayProperty, false);
+        super(hub, displayProperty);
     	control.bDisplayPropertyOnly = true;
     }
 

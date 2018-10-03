@@ -81,6 +81,7 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         Width of label, based on average width of the font's character.
     */
     public void setColumns(int x) {
+        super.setColumns(x);
         control.setColumns(x);
         invalidate();
         if (table != null) {
@@ -170,11 +171,12 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         if (control == null) return null;
         return control.getPropertyPath();
     }
+/**qqqqq    
     public String getEndPropertyName() {
         if (control == null) return null;
         return control.getEndPropertyName();
     }
-    
+*/    
     /**
         Column heading when this component is used as a column in an OATable.
     */

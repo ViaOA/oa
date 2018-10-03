@@ -5,65 +5,68 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
+import com.viaoa.util.OAConv;
+import com.viaoa.util.OAString;
 
 /**
  * System wide service for getting the current User object.
  * @author vvia
  */
 public class OAAuthDelegate {
+    private static final ConcurrentHashMap<Object, Hub<? extends OAObject>> hmUserHub = new ConcurrentHashMap<>();
+    private static final Object NullContext = new Object();
+    
+    private static String allowEditProcessedPropertyPath = "EditProcessed"; 
+    
 
-    private static final ArrayList<OAAuthLookupInterface> al = new ArrayList<>();
-    private static final ConcurrentHashMap<Object, Hub<OAObject>> hmUserHub = new ConcurrentHashMap<>(); 
-    
-    
-    public static OAObject getCurrentUser() {
-        OAObject obj = null;
-        for (OAAuthLookupInterface ali : al) {
-            obj = ali.getCurrentUser();
-            if (obj != null) break;
-        }
-        return obj;
+    /**
+     * Property path used to find the user property for allowing users to edit objects/properties/etc that are annotatied as processed.
+     * Defaults to "EditProcessed"
+     */
+    public static void setAllowEditProcessedPropertyPath(String pp) {
+        OAAuthDelegate.allowEditProcessedPropertyPath = pp;
+    }
+    public static String getAllowEditProcessedPropertyPath() {
+        return OAAuthDelegate.allowEditProcessedPropertyPath;
+    }
+    public static boolean canUserEditProcessed(OAObject user) {
+        if (user == null) return false;
+        if (OAString.isEmpty(allowEditProcessedPropertyPath)) return false;
+        Object val = user.getProperty(OAAuthDelegate.allowEditProcessedPropertyPath);
+        boolean b = OAConv.toBoolean(val);
+        return b;
     }
     
     
-    /**
-     * Add a new provider, and also update hmUserHub
-     */
-    public static void add(OAAuthLookupInterface ali) {
-        if (ali != null && !al.contains(ali)) al.add(ali);
-        OAObject user = getCurrentUser();
-        
-        for (Object key : hmUserHub.keySet()) {
-            Hub hub = hmUserHub.get(key);
-            if (hub == null) continue;
-            if (hub.size() == 0 || !hub.contains(user)) {
-                hub.add(user);
-            }
-            hub.setAO(user);
-        }
+    public static void addUserHub(Object context, Hub<? extends OAObject> hub) {
+        if (hub == null) return;
+        if (context == null) context = NullContext;
+        hmUserHub.put(context, hub);
     }
-    
-    /**
-     * Holds a Hub<User> with AO=user, that can be shared using a key.
-     * @param key ex: OAJfcController.class
-     * @param bAutoCreate
-     * @return
-     */
-    public static Hub<OAObject> getCurrentUserHub(Object key, boolean bAutoCreate) {
-        if (key == null) return null;
-        Hub<OAObject> hub = hmUserHub.get(key);
-        if (hub == null && bAutoCreate) {
-            hub = new Hub<OAObject>(OAObject.class);
-            hmUserHub.put(key, hub);
+    public static void removeUserHub(Object context) {
+        if (context == null) context = NullContext;
+        hmUserHub.remove(context);
+    }
+
+    public static Hub<? extends OAObject> getUserHub() {
+        return getUserHub(null);
+    }
+    public static Hub<? extends OAObject> getUserHub(Object context) {
+        if (context == null) {
+            //todo: qqqqqq look in threadLocal            
         }
+        if (context == null) context = NullContext;
+        return hmUserHub.get(context); 
+    }
+
+    
+    public static OAObject getUser() {
+        return getUser(null);
+    }
+    public static OAObject getUser(Object context) {
+        Hub<? extends OAObject> hub = getUserHub(context);
         if (hub == null) return null;
-        OAObject user = getCurrentUser();
-        if (hub.size() == 0 || !hub.contains(user)) {
-            hub.add(user);
-        }
-        hub.setAO(user);
-        return hub;
+        return hub.getAO();
     }
-    
-    
+
 }

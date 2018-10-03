@@ -184,11 +184,17 @@ public class OAHTMLTextPaneController extends OATextController {
      * @param hub 
      * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
      */
-    public void setEnabled(Hub hub, String prop) {
+    public void addEnabledCheck(Hub hub, String prop) {
         if (hub2HtmlText == null) {
             throw new RuntimeException("must call bind before calling setEnabled");
         }
         hub2HtmlText.getEnabledChangeListener().add(hub, prop);
+    }
+    public void addEnabledCheck(Hub hub, String prop, Object val) {
+        if (hub2HtmlText == null) {
+            throw new RuntimeException("must call bind before calling setEnabled");
+        }
+        hub2HtmlText.getEnabledChangeListener().add(hub, prop, val);
     }
     protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
         return bIsCurrentlyEnabled;
@@ -198,11 +204,17 @@ public class OAHTMLTextPaneController extends OATextController {
      * @param hub 
      * @param prop if null, then only checks hub.AO, otherwise will use OAConv.toBoolean to determine.
      */
-    public void setVisible(Hub hub, String prop) {
+    public void addVisibleCheck(Hub hub, String prop) {
         if (hub2HtmlText == null) {
             throw new RuntimeException("must call bind before calling setVisible");
         }
         hub2HtmlText.getVisibleChangeListener().add(hub, prop);
+    }    
+    public void addVisibleCheck(Hub hub, String prop, Object val) {
+        if (hub2HtmlText == null) {
+            throw new RuntimeException("must call bind before calling setVisible");
+        }
+        hub2HtmlText.getVisibleChangeListener().add(hub, prop, val);
     }    
     protected boolean isVisible(boolean bIsCurrentlyVisible) {
         return bIsCurrentlyVisible;

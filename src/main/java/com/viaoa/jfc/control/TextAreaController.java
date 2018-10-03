@@ -90,7 +90,7 @@ public class TextAreaController extends OAJfcController implements FocusListener
                     if (max <= 0) max = getPropertyInfoMaxColumns();
                     msg = "Maximum input exceeded, currently set to " + max;
                     if (textArea instanceof OATextArea) {
-                        msg += " for " + ((OATextArea)textArea).getEndPropertyName();
+                        msg += " for " + TextAreaController.this.getEndPropertyName();
                         Hub h = ((OATextArea)textArea).getHub();
                         if (h != null) msg += ", in "+OAString.getDisplayName(h.getObjectClass().getSimpleName());
                     }

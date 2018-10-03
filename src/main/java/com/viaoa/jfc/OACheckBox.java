@@ -207,10 +207,11 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
     public String getPropertyPath() {
         return control.getPropertyPath();
     }
+/*    
     public String getEndPropertyName() {
         return control.getEndPropertyName();
     }
-
+*/
     
     /**
         Column heading when this component is used as a column in an OATable.

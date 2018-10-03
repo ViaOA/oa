@@ -10,6 +10,7 @@
 */
 package com.viaoa.hub;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -601,8 +602,11 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                                         else {
                                             Object aObj = root.hub.getAO(); 
                                             if (aObj != null) {
-                                                for (String s : newTreeNode.getCalcPropertyNames()) {
-                                                    HubEventDelegate.fireCalcPropertyChange(root.hub, aObj, s);
+                                                Object[] rootObjects = nodeThis.getRootValues(e.getHub().getMasterObject());
+                                                if (rootObjects != null && OAArray.containsExact(rootObjects, aObj)) {
+                                                    for (String s : newTreeNode.getCalcPropertyNames()) {
+                                                        HubEventDelegate.fireCalcPropertyChange(root.hub, aObj, s);
+                                                    }
                                                 }
                                             }
                                         }
@@ -631,8 +635,11 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                                         else {
                                             Object aObj = root.hub.getAO(); 
                                             if (aObj != null) {
-                                                for (String s : newTreeNode.getCalcPropertyNames()) {
-                                                    HubEventDelegate.fireCalcPropertyChange(root.hub, aObj, s);
+                                                Object[] rootObjects = newTreeNode.parent.getRootValues(e.getObject());
+                                                if (rootObjects != null && OAArray.containsExact(rootObjects, aObj)) {
+                                                    for (String s : newTreeNode.getCalcPropertyNames()) {
+                                                        HubEventDelegate.fireCalcPropertyChange(root.hub, aObj, s);
+                                                    }
                                                 }
                                             }
                                         }
@@ -707,7 +714,13 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                                         onEvent(nodeThis.getRootValues(e.getObject()));
                                     }
                                     else {
-                                        onEvent(new Object[] {root.hub.getAO()});
+                                        Object aObj = root.hub.getAO();
+                                        if (aObj != null) {
+                                            Object[] rootObjects = nodeThis.getRootValues(e.getObject());
+                                            if (rootObjects != null && OAArray.containsExact(rootObjects, aObj)) {
+                                                onEvent(new Object[] {aObj});
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -736,7 +749,13 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                                         onEvent(nodeThis.getRootValues(e.getObject()));
                                     }
                                     else {
-                                        onEvent(new Object[] {root.hub.getAO()});
+                                        Object aObj = root.hub.getAO();
+                                        if (aObj != null) {
+                                            Object[] rootObjects = nodeThis.getRootValues(e.getObject());
+                                            if (rootObjects != null && OAArray.containsExact(rootObjects, aObj)) {
+                                                onEvent(new Object[] {aObj});
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -775,7 +794,7 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                 // Add a hub listener to end of propertyPath
                 
                 if (hubClass == null) {
-                    //LOG.finer("creating dependent prop hubListner, dependProp="+property);
+                    //LOG.finer("creating dependent prop hubListener, dependProp="+property);
                     final String propx = property;
                     final HubListenerTreeNode nodeThis = node;
                     HubListener hl = new HubListenerAdapter() {
@@ -784,7 +803,6 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                             String prop = e.getPropertyName();
                             if (prop == null) return;
                             if (prop.equalsIgnoreCase(propx)) {
-                                
                                 if (bUseAll) {
                                     Object[] rootObjects = nodeThis.getRootValues(e.getObject());
                                     if (rootObjects != null) {
@@ -796,7 +814,10 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                                 else {
                                     Object aObj = root.hub.getAO();
                                     if (aObj != null) {
-                                        HubEventDelegate.fireCalcPropertyChange(root.hub, aObj, origPropertyName);
+                                        Object[] rootObjects = nodeThis.getRootValues(e.getObject());
+                                        if (rootObjects != null && OAArray.containsExact(rootObjects, aObj)) {
+                                            HubEventDelegate.fireCalcPropertyChange(root.hub, aObj, origPropertyName);
+                                        }
                                     }
                                 }
                             }                

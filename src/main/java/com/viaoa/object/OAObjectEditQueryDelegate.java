@@ -1,6 +1,7 @@
 package com.viaoa.object;
 
 import java.lang.reflect.Method;
+import java.util.logging.Logger;
 
 import javax.swing.JLabel;
 import com.viaoa.auth.OAAuthDelegate;
@@ -32,7 +33,8 @@ import com.viaoa.util.OAString;
  * @author vvia
  */
 public class OAObjectEditQueryDelegate {
-
+    private static Logger LOG = Logger.getLogger(OAObjectEditQueryDelegate.class.getName());
+    
     public static boolean getAllowVisible(OAObject obj, String name) {
         return getAllowVisibleEditQuery(obj, name).getAllowed();
     }
@@ -278,6 +280,28 @@ public class OAObjectEditQueryDelegate {
         processEditQuery(editQuery, oaObj, property, null, newValue);
         return editQuery;
     }
+
+    
+    protected static void processEditQuery(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue) {
+        _processEditQuery(editQuery, oaObj, propertyName, oldValue, newValue);
+        
+        if (DEMO_AllowAllToPass) {
+            editQuery.setThrowable(null);
+            editQuery.setAllowed(true);
+        }
+        
+    }
+    private static boolean DEMO_AllowAllToPass;
+    public static void demoAllowAllToPass(boolean b) {
+        String msg = "WARNING: OAObjectEditQueryDelegate.demoAllowAllToPass="+b;
+        if (b) msg += " - all OAObjectEditQuery will be allowed";
+        LOG.warning(msg);
+        for (int i=0; i<20; i++) {
+            System.out.println(msg);
+            if (!b) break;
+        }
+        OAObjectEditQueryDelegate.DEMO_AllowAllToPass = b;
+    }
     
     
     /** 
@@ -288,7 +312,7 @@ public class OAObjectEditQueryDelegate {
      *      OAObjetEventDelegate.fireBeforePropertyChange
      *      Hub add/remove/removeAll 
      */
-    protected static void processEditQuery(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue) {
+    protected static void _processEditQuery(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue) {
         if (oaObj == null) return;
         
         // first call owners (recursive)
@@ -304,6 +328,9 @@ public class OAObjectEditQueryDelegate {
                 callOwnerObjects(editQueryX, oaObj, propertyName);
                 // set this query to default value from owner property's enabled value
                 editQuery.setAllowed(editQueryX.getAllowed());
+                if (OAString.isEmpty(editQuery.getResponse())) {
+                    editQuery.setResponse(editQueryX.getResponse());
+                }
             }
         }
 
@@ -318,17 +345,26 @@ public class OAObjectEditQueryDelegate {
                 Object valx = OAObjectReflectDelegate.getProperty(oaObj, sx);
                 boolean b = (bx == OAConv.toBoolean(valx));
                 editQuery.setAllowed(b);
+                if (!b && OAString.isEmpty(editQuery.getResponse())) {
+                    String s = "Not enabled, "+oaObj.getClass().getSimpleName()+"."+sx+" is not "+bx;
+                    editQuery.setResponse(s);
+                }
             }
             
             sx = oi.getUserEnabledProperty();
             if (OAString.isNotEmpty(sx)) {
                 bx = oi.getUserEnabledValue();
-                OAObject user = OAAuthDelegate.getCurrentUser();
+                OAObject user = OAAuthDelegate.getUser();
                 boolean b;
                 if (user == null) b = false;
                 else {
                     Object valx = OAObjectReflectDelegate.getProperty(user, sx);
                     b = (bx == OAConv.toBoolean(valx));
+                }
+                if (!b && OAString.isEmpty(editQuery.getResponse())) {
+                    String s = user == null ? "User" : user.getClass().getSimpleName();
+                    s = "Not enabled, "+s+"."+sx+" is not "+bx;
+                    editQuery.setResponse(s);
                 }
                 editQuery.setAllowed(b);
             }
@@ -345,7 +381,7 @@ public class OAObjectEditQueryDelegate {
             sx = oi.getUserVisibleProperty();
             if (OAString.isNotEmpty(sx)) {
                 bx = oi.getUserVisibleValue();
-                OAObject user = OAAuthDelegate.getCurrentUser();
+                OAObject user = OAAuthDelegate.getUser();
                 boolean b;
                 if (user == null) b = false;
                 else {
@@ -362,6 +398,9 @@ public class OAObjectEditQueryDelegate {
             editQueryX.setAllowed(editQuery.getAllowed());
             callEditQuery(oaObj, null, editQueryX);
             editQuery.setAllowed(editQueryX.getAllowed());
+            if (OAString.isEmpty(editQuery.getResponse())) {
+                editQuery.setResponse(editQueryX.getResponse());
+            }
         }
         callEditQuery(oaObj, null, editQuery);
         
@@ -402,6 +441,10 @@ public class OAObjectEditQueryDelegate {
                 Object valx = OAObjectReflectDelegate.getProperty(oaObj, sx);
                 boolean b = (bx == OAConv.toBoolean(valx));
                 editQuery.setAllowed(b);
+                if (!b && OAString.isEmpty(editQuery.getResponse())) {
+                    String s = "Not enabled, "+oaObj.getClass().getSimpleName()+"."+sx+" is not "+bx;
+                    editQuery.setResponse(s);
+                }
             }
             
             sx = null;
@@ -433,14 +476,19 @@ public class OAObjectEditQueryDelegate {
                 }
             }
             if (OAString.isNotEmpty(sx)) {
-                OAObject user = OAAuthDelegate.getCurrentUser();
+                OAObject user = OAAuthDelegate.getUser();
                 boolean b;
                 if (user == null) b = false;
                 else {
                     Object valx = OAObjectReflectDelegate.getProperty(user, sx);
                     b = (bx == OAConv.toBoolean(valx));
                 }
-                if (!bAlreadySet || !b) editQuery.setAllowed(b);  
+                if (!bAlreadySet || !b) editQuery.setAllowed(b);
+                if (!b && OAString.isEmpty(editQuery.getResponse())) {
+                    String s = user == null ? "User" : user.getClass().getSimpleName();
+                    s = "Not enabled, "+s+"."+sx+" is not "+bx;
+                    editQuery.setResponse(s);
+                }
             }
         }
         else if (editQuery.getType() == Type.AllowVisible) {
@@ -509,7 +557,7 @@ public class OAObjectEditQueryDelegate {
                 }
             }
             if (OAString.isNotEmpty(sx)) {
-                OAObject user = OAAuthDelegate.getCurrentUser();
+                OAObject user = OAAuthDelegate.getUser();
                 boolean b;
                 if (user == null) b = false;
                 else {
@@ -526,6 +574,7 @@ public class OAObjectEditQueryDelegate {
             editQueryX.setAllowed(editQuery.getAllowed());
             callEditQuery(oaObj, propertyName, editQueryX);
             editQuery.setAllowed(editQueryX.getAllowed());
+            if (OAString.isEmpty(editQuery.getResponse())) editQuery.setResponse(editQueryX.getResponse());
         }
         callEditQuery(oaObj, propertyName, editQuery);
         
@@ -571,8 +620,13 @@ public class OAObjectEditQueryDelegate {
             if (OAString.isNotEmpty(pp)) {
                 bAlreadySet = true;
                 Object valx = OAObjectReflectDelegate.getProperty(oaObj, pp);
-                boolean bx = OAConv.toBoolean(valx); 
-                editQuery.setAllowed((bx == b));
+                boolean bx = OAConv.toBoolean(valx);
+                bx = (bx == b);
+                editQuery.setAllowed(bx);
+                if (!bx && OAString.isEmpty(editQuery.getResponse())) {
+                    String s = "Not enabled, "+oaObj.getClass().getSimpleName()+"."+pp+" is not "+b;
+                    editQuery.setResponse(s);
+                }
             }
             pp = li.getUserEnabledProperty();
             b = li.getUserEnabledValue();
@@ -581,13 +635,18 @@ public class OAObjectEditQueryDelegate {
                 b = oi.getUserEnabledValue();
             }
             if (OAString.isNotEmpty(pp)) {
-                OAObject user = OAAuthDelegate.getCurrentUser();
+                OAObject user = OAAuthDelegate.getUser();
                 if (user == null) b = false;
                 else {
                     Object valx = OAObjectReflectDelegate.getProperty(user, pp);
                     b = (b == OAConv.toBoolean(valx));
                 }
                 if (!bAlreadySet || !b) editQuery.setAllowed(b);
+                if (!b && OAString.isEmpty(editQuery.getResponse())) {
+                    String s = user == null ? "User" : user.getClass().getSimpleName();
+                    s = "Not enabled, "+s+"."+pp+" is not "+li.getUserEnabledValue();
+                    editQuery.setResponse(s);
+                }
             }
         }
         else if (editQuery.getType() == Type.AllowVisible) {
@@ -611,7 +670,7 @@ public class OAObjectEditQueryDelegate {
                 b = oi.getUserVisibleValue();
             }
             if (OAString.isNotEmpty(pp)) {
-                OAObject user = OAAuthDelegate.getCurrentUser();
+                OAObject user = OAAuthDelegate.getUser();
                 if (user == null) b = false;
                 else {
                     Object valx = OAObjectReflectDelegate.getProperty(user, pp);

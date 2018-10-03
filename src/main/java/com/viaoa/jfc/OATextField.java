@@ -157,9 +157,11 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
     public String getPropertyPath() {
         return control.getPropertyPath();
     }
+/*qqqqqqqqqqqq    
     public String getEndPropertyName() {
         return control.getEndPropertyName();
     }
+*/    
     public String getTableHeading() { //zzzzz
         return heading;
     }

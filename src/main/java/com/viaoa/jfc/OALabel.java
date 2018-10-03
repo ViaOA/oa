@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.*;
@@ -23,6 +24,7 @@ import javax.swing.table.*;
 import com.viaoa.object.*;
 import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
+import com.viaoa.jfc.border.CustomLineBorder;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.image.ColorIcon;
 import com.viaoa.jfc.table.*;
@@ -76,6 +78,16 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
 
     @Override
     public void initialize() {
+        Hub h = getHub();
+        if (h == null) return;
+        OAObjectInfo oi = h.getOAObjectInfo();
+        String prop = control.getPropertyPath();
+        OACalcInfo ci = oi.getCalcInfo(prop);
+        if (ci == null) return;
+        
+        Border border = this.getBorder();
+        border = new CompoundBorder(new CustomLineBorder(0, 2, 0, 0, Color.LIGHT_GRAY), border); 
+        setBorder(border);
     }
     
     public OALabelController getController() {
@@ -280,11 +292,12 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         if (control == null) return null;
         return control.getPropertyPath();
     }
+/*    
     public String getEndPropertyName() {
         if (control == null) return null;
         return control.getEndPropertyName();
     }
-    
+*/    
     /**
         Column heading when this component is used as a column in an OATable.
     */
@@ -534,6 +547,14 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
                 g.fillPolygon(p);
             }
         }
+    }
+
+    /** HTML used to form label.text */
+    public void setDisplayTemplate(String s) {
+        this.control.setDisplayTemplate(s);
+    }
+    public String getDisplayTemplate() {
+        return this.control.getDisplayTemplate();
     }
     
 }

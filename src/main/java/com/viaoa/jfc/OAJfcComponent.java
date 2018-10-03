@@ -24,5 +24,5 @@ public interface OAJfcComponent {
     default public String getToolTipText(Object object, int row, String defaultValue) {
         return defaultValue;
     }
-    
+
 }

@@ -60,6 +60,7 @@ public class OALinkInfo { //implements java.io.Serializable {
     protected transient int cacheSize;
     private OALinkInfo revLinkInfo;
     protected boolean bCalculated;
+    protected boolean bProcessed;
     protected boolean bServerSideCalc;
     protected boolean bPrivateMethod; // true if the method is not created, or is private
     protected boolean bNotUsed; // 20180615 flag to know that link is only used one way
@@ -167,6 +168,12 @@ public class OALinkInfo { //implements java.io.Serializable {
     }
     public boolean getCalculated() {
         return bCalculated;
+    }
+    public void setProcessed(boolean b) {
+        this.bProcessed = b;
+    }
+    public boolean getProcessed() {
+        return bProcessed;
     }
     
     public boolean getUsed() {
