@@ -50,7 +50,7 @@ public class TabbedPaneController {
         this.hub = hub;
         this.tabbedPane = tp;
         if (tp != null && hub != null) {
-            control = OAJfcController.createOnlyAoNotNull(tp, hub);
+            control = OAJfcControllerFactory.createOnlyAoNotNull(tp, hub);
         }
         if (tp != null) setup();
     }

@@ -138,7 +138,8 @@ public class CustomComboBoxController extends OAJfcController {
 	}
  
     public Component getRenderer(Component renderer, JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
-        String s;
+        boolean bDone = false;
+        String s = null;
         if (value == null || value instanceof OANullObject) s = "   ";
         else if (value instanceof OANullObject) {
         	s = nullDescription;
@@ -147,11 +148,20 @@ public class CustomComboBoxController extends OAJfcController {
         	s = (String) value;
         }
         else {
-            Object obj = getValue(value);
-            // was: Object obj = OAReflect.getPropertyValue(value, getGetMethods());
-            s = OAConv.toString(obj, getFormat());
-            if (s.length() == 0) s = " ";  // if length == 0 then Jlist wont show any
+            // 20181004
+            if (renderer instanceof JLabel) {
+                update((JComponent) renderer, value, false);
+                bDone = true;
+            }
+            else {
+                Object obj = getValue(value);
+                // was: Object obj = OAReflect.getPropertyValue(value, getGetMethods());
+                s = OAConv.toString(obj, getFormat());
+                if (s.length() == 0) s = " ";  // if length == 0 then Jlist wont show any
+            }
         }
+
+        
         if (renderer instanceof JLabel) {
             JLabel lbl = (JLabel) renderer;
 
@@ -160,8 +170,7 @@ public class CustomComboBoxController extends OAJfcController {
                 lbl.setForeground(list.getForeground());
             }
 
-            lbl.setText(s);
-            update(lbl, value);
+            if (!bDone) lbl.setText(s); 
 
             if (isSelected) {
                 lbl.setBackground(list.getSelectionBackground());

@@ -322,7 +322,7 @@ public abstract class HTMLTextPaneController extends OAJfcController implements 
         }
    
         super.update();
-        super.update(editor, activeObject);
+        super.update(editor, activeObject, true);
     }
     
     private void _update(String text) {

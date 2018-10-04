@@ -332,9 +332,9 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
         }
         
         @Override
-        public void update(JComponent comp, Object object) {
+        public void update(JComponent comp, Object object, boolean bIncudeToolTip) {
             OARadioButton.this.beforeUpdate();
-            super.update(comp, object);
+            super.update(comp, object, bIncudeToolTip);
             OARadioButton.this.afterUpdate();
         }
     }

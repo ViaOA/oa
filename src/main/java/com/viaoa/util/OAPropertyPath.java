@@ -181,6 +181,12 @@ public class OAPropertyPath<F> {
     public Object getLastLinkValue(F fromObject) {
         return getValue(null, fromObject, true);
     }
+
+    public String getLastPropertyName() {
+        String[] ss = getProperties();
+        if (ss == null || ss.length == 0) return null;
+        return ss[ss.length-1];
+    }
     
     
     /**

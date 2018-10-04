@@ -396,6 +396,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     temp.setProperty("returnMessage", returnMessage);  // used by <%=$returnMessage%>
                     completedMessage = temp.process((OAObject) obj);
                     bUsedCompletedMsg = true;
+                    if (completedMessage != null && completedMessage.indexOf('<') >=0 && completedMessage.toLowerCase().indexOf("<html>") < 0) completedMessage = "<html>" + completedMessage; 
                 }
             }            
             displayMessage = completedMessage;

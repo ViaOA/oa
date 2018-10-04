@@ -15,6 +15,7 @@ import java.awt.LayoutManager;
 import javax.swing.*;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.OAJfcController;
+import com.viaoa.jfc.control.OAJfcControllerFactory;
 
 /**
  *
@@ -34,7 +35,7 @@ public class OAPanel extends JPanel implements OAJfcComponent {
     }
 
     protected void setup() {
-        control = OAJfcController.createAoNotNull(this, hub);
+        control = OAJfcControllerFactory.createAoNotNull(this, hub);
     }
     
     public void setLabel(JLabel lbl) {

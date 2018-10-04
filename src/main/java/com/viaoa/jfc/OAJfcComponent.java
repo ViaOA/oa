@@ -21,8 +21,14 @@ public interface OAJfcComponent {
     default public void customizeRenderer(JLabel lbl, Object object, Object value, boolean isSelected, boolean hasFocus, int row, boolean wasChanged, boolean wasMouseOver) {
     }
 
+    default public void setToolTipTextTemplate(String s) {
+        getController().setToolTipTextTemplate(s);
+    }
+    default public String getToolTipTextTemplate() {
+        return getController().getToolTipTextTemplate();
+    }
+
     default public String getToolTipText(Object object, int row, String defaultValue) {
         return defaultValue;
     }
-
 }

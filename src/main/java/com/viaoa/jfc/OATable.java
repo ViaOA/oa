@@ -92,24 +92,6 @@ import com.viaoa.util.*;
 public class OATable extends JTable implements DragGestureListener, DropTargetListener {
     private static Logger LOG = Logger.getLogger(OATable.class.getName());
 
-    
-    @Override
-    public void setEnabled(boolean enabled) {
-if (enabled == false) {
-    int xx = 4;
-    xx++;//qqqqqqqqqqqq
-}
-//        super.setEnabled(enabled);
-    }
-    @Override
-    public void setVisible(boolean aFlag) {
-        if (!aFlag) {
-            int xx = 4;
-            xx++;//qqqqqqqqqqqq
-        }
-        super.setVisible(aFlag);
-    }
-    
     protected int prefCols = 1, prefRows = 5;
     protected Hub hub;
     protected Hub hubFilterMaster;
@@ -306,20 +288,50 @@ if (enabled == false) {
     private String getToolTipText1(int row, int col, String defaultValue) {
         OATableColumn[] tcs = getAllTableColumns();
         
+        OATableColumn tc = null;
+        final Object obj = getObjectAt(row, col);
+
         if (col >= 0 && col < tcs.length) {
-            OATableColumn tc = (OATableColumn) tcs[col];
+            tc = (OATableColumn) tcs[col];
             
             if (tc != null) {
-                defaultValue = tc.getToolTipText();
+                String s = tc.getToolTipText();
+                if (OAString.isNotEmpty(s)) defaultValue = s;
+                
+                OATableComponent tcomp = tc.getOATableComponent();
+                if (tcomp != null) {
+                    if (tcomp instanceof OAJfcComponent) {
+                        // call jfc controller, which also calls editquery
+                        defaultValue = ((OAJfcComponent) tcomp).getController().getToolTipText(obj, defaultValue);
+                        // call component
+                        defaultValue = ((OAJfcComponent) tcomp).getToolTipText(obj, row, defaultValue);
+                    }
+                }
+                // call table column
                 defaultValue = tc.getTableToolTipText(this, row, col, defaultValue);
+                // call tc customizer
                 OATableColumnCustomizer tcc = tc.getCustomizer();
                 if (tcc != null) {
-                    Object obj = getObjectAt(row, col);
                     defaultValue = tcc.getToolTipText(obj, row, defaultValue);
                 }
-            }        
+            }
         }
+        // call table
         defaultValue = getToolTipText(row, col, defaultValue);
+        
+        if (tc != null && defaultValue != null && defaultValue.indexOf("<%=") >= 0) {
+            if (tc.templateToolTip == null || tc.templateToolTip.getTemplate().equals(defaultValue)) {
+                tc.templateToolTip = new OATemplate<>(defaultValue);
+            }
+            if (obj instanceof OAObject) {
+                defaultValue = tc.templateToolTip.process((OAObject) obj);
+            }
+            else {
+                defaultValue = "";
+            }
+        }
+        if (defaultValue != null && defaultValue.indexOf('<') >=0 && defaultValue.toLowerCase().indexOf("<html>") < 0) defaultValue = "<html>" + defaultValue; 
+
         if (!OAString.isEmpty(OAString.trim(defaultValue))) {
             if (cntTT++ % 2 == 0) defaultValue += " "; // so that it is changed and will show by mouse
         }
@@ -562,7 +574,8 @@ if (enabled == false) {
         if (hubViewable != null) getViewableHub();
     }
     
-    // 20180620
+    // 20180620 created
+    // 20181004 get object used by component (at col) 
     public Object getObjectAt(int row, int col) {
         Hub h = getHub();
         if (h == null) return null;
@@ -572,11 +585,12 @@ if (enabled == false) {
         OATableColumn[] tcs = getAllTableColumns();
         if (col >= 0 && col < tcs.length) {
             OATableColumn tc = (OATableColumn) tcs[col];
-            obj = tc.getObject(obj);
+//qqqqqqqqqqqq 20181004            
+            obj = tc.getObjectForTableObject(obj);
         }
         return obj;
     }
-    
+
    
     // hub used for viewable rows, so that column props (and dependent props) are only set up to work with portion of hub, instead of the full real hub 
     protected Hub hubViewable;
@@ -990,7 +1004,6 @@ if (enabled == false) {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component comp = null;
             try {
-                // 201512225
                 hasFocus = hasFocus && row >= 0 && hub.getPos() == row;
                 comp = _getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
@@ -2480,6 +2493,9 @@ if (enabled == false) {
     public String getConfirmMessage() {
         return confirmMessage;
     }
+    
+    // not used
+    /*
     protected boolean confirm(int newRow) {
         String confirmMessage = getConfirmMessage();
         String confirmTitle = "Confirm";
@@ -2489,12 +2505,9 @@ if (enabled == false) {
         }
         if (obj instanceof OAObject) {
             String s = HubLinkDelegate.getLinkToProperty(hub);
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
-/*            
-            OAObjectEditQuery em = OAObjectEditQueryDelegate.getOnConfirm((OAObject)obj, s, hub.getAt(newRow), confirmMessage, confirmTitle);
+            OAObjectEditQuery em = OAObjectEditQueryDelegate.getConfirmAddEditQuery((OAObject)obj, s, hub.getAt(newRow), confirmMessage, confirmTitle);
             confirmMessage = em.getConfirmMessage();
             confirmTitle = em.getConfirmTitle();
-*/            
         }
         
         boolean result = true;
@@ -2505,7 +2518,7 @@ if (enabled == false) {
         }
         return result;
     }
-    
+    */
     
     protected boolean bEnableUndo=true;
     public void setEnableUndo(boolean b) {
@@ -2517,7 +2530,7 @@ if (enabled == false) {
     private final AtomicInteger aiRow = new AtomicInteger();
     protected void setHubPos(int row) {
         if (hub == null || hub.getPos() == row) return;
-        if (!confirm(row)) row = hub.getPos();
+       // if (!confirm(row)) row = hub.getPos();
         boolean b = getEnableUndo() && hub != null && hub.getLinkHub() != null;
         if (b) {
             OAUndoableEdit ue = OAUndoableEdit.createUndoablePropertyChange(
@@ -3058,9 +3071,16 @@ if (enabled == false) {
         }
         
         if (tc != null && tc.getOATableComponent() instanceof JComponent) {
-            s = ((JComponent) tc.getOATableComponent()).getToolTipText();
+            OATableComponent tcomp = tc.getOATableComponent();
+            if (tcomp instanceof OAJfcComponent) {
+                OAJfcComponent jc = (OAJfcComponent) tcomp;
+                jc.getController().getToolTipText(null, s);
+            }
+
             String s2 = tc.getToolTipText();
             if (OAString.isNotEmpty(s2)) s = s2;
+            
+            
             if (tc.getCustomizer() != null) {
                 s = tc.getCustomizer().getToolTipText(null, -1, s);
             }
@@ -3626,8 +3646,13 @@ if (enabled == false) {
         }
         else tc = null;
         
-        // 1of4: is done, defaults are set
-
+        // 1of4: have component update itself
+        // 20181004   
+        final Object objx = getObjectAt(row, column);
+        if (oacomp instanceof OAJfcComponent) {
+            ((OAJfcComponent) oacomp).getController().update(lbl, objx, false);
+        }
+        
         // 2of4: allow component to customize
         if (oacomp != null) {
             oacomp.customizeTableRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
@@ -3645,6 +3670,7 @@ if (enabled == false) {
         // 4of4: allow App to customize
         customizeRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
 
+        
         if (lbl == lblDummy && comp != null) {
             Color c = lblDummy.getBackground();
             if (!Color.cyan.equals(c)) comp.setBackground(c);

@@ -365,9 +365,9 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
             return msg;
         }
         @Override
-        public void update(JComponent comp, Object object) {
+        public void update(JComponent comp, Object object, boolean bIncudeToolTip) {
             OATextField.this.beforeUpdate();
-            super.update(comp, object);
+            super.update(comp, object, bIncudeToolTip);
             OATextField.this.afterUpdate();
         }
     }
@@ -384,5 +384,12 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
         return getController().getConfirmMessage();
     }
 
+    /** HTML used to form label.text */
+    public void setDisplayTemplate(String s) {
+        this.control.setDisplayTemplate(s);
+    }
+    public String getDisplayTemplate() {
+        return this.control.getDisplayTemplate();
+    }
 }
 

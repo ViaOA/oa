@@ -568,9 +568,9 @@ focusComp = this;
             return OACustomComboBox.this.isVisible(bIsCurrentlyVisible);
         }
         @Override
-        public void update(JComponent comp, Object object) {
+        public void update(JComponent comp, Object object, boolean bIncudeToolTip) {
             OACustomComboBox.this.beforeUpdate();
-            super.update(comp, object);
+            super.update(comp, object, bIncudeToolTip);
             OACustomComboBox.this.afterUpdate();
         }
     }

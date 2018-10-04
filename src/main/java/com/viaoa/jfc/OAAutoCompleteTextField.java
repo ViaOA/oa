@@ -1,4 +1,4 @@
-/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
+/*  Copyright 1999-2018 Vince Via vvia@viaoa.com
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -299,5 +299,16 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
     }
 
+    /** HTML used to form label.text */
+    public void setDisplayTemplate(String s) {
+        this.control.setDisplayTemplate(s);
+    }
+    public String getDisplayTemplate() {
+        return this.control.getDisplayTemplate();
+    }
 
+    @Override
+    public void setToolTipText(String text) {
+        super.setToolTipText(text);
+    }
 }

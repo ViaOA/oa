@@ -470,23 +470,29 @@ public class ListController extends OAJfcController implements ListSelectionList
         Custom renderer component used to display each row in List.
     */
     public Component getRenderer(Component renderer, JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
-        String s;
+        boolean bDone = false;
+        
+        String s = null;
         if (value instanceof String) s = (String) value; // JList will send "setPrototypeCellValue" for measuring
         else if (value == null) s = "";
         else {
-            s = getValueAsString(value, getFormat());
-            //was: s = OAReflect.getPropertyValueAsString( value, getGetMethods() );
+            // 20181004
+            if (renderer instanceof JLabel) {
+                update((JComponent) renderer, value, true);
+                bDone = true;
+            }
+            //was: s = getValueAsString(value, getFormat());
         }
+        if (!bDone) s = getDisplayText(value, s);
+        
         if (renderer instanceof JLabel) {
             JLabel lbl = (JLabel) renderer;
+            if (!bDone) lbl.setText(s);
 
             if (!isSelected) {
                 lbl.setBackground(list.getBackground());
                 lbl.setForeground(list.getForeground());
             }
-
-            lbl.setText(s);
-            update(lbl, value);
 
             if (isSelected) {
                 lbl.setBackground(list.getSelectionBackground());
@@ -501,7 +507,7 @@ public class ListController extends OAJfcController implements ListSelectionList
                 rad.setSelected(false);
             }
             rad.setText(s);
-        	update(rad, value);
+        	update(rad, value, false);
             if (isSelected) {
                 rad.setBackground(list.getSelectionBackground());
                 rad.setForeground(list.getSelectionForeground());

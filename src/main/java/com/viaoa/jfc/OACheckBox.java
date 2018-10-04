@@ -308,7 +308,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
         }
         
         chkRenderer.setText(null);
-        control.update(chkRenderer, obj);
+        control.update(chkRenderer, obj, false);
         
         chkRenderer.setSelected(tf);
 
@@ -474,5 +474,13 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
         return getController().getLabel();
     }
     */
+
+    /** HTML used to form label.text */
+    public void setDisplayTemplate(String s) {
+        this.control.setDisplayTemplate(s);
+    }
+    public String getDisplayTemplate() {
+        return this.control.getDisplayTemplate();
+    }
 }
 

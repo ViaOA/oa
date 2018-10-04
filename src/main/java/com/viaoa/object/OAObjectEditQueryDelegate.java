@@ -281,6 +281,17 @@ public class OAObjectEditQueryDelegate {
         return editQuery;
     }
 
+    public static OAObjectEditQuery getConfirmAddEditQuery(final OAObject oaObj, String property, Object newValue, String confirmMessage, String confirmTitle) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.GetConfirmAdd);
+        editQuery.setValue(newValue);
+        editQuery.setName(property);
+        editQuery.setConfirmMessage(confirmMessage);
+        editQuery.setConfirmTitle(confirmTitle);
+        
+        processEditQuery(editQuery, oaObj, property, null, newValue);
+        return editQuery;
+    }
+    
     
     protected static void processEditQuery(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue) {
         _processEditQuery(editQuery, oaObj, propertyName, oldValue, newValue);

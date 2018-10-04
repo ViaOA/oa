@@ -105,7 +105,6 @@ public class OAJfcController extends HubListenerAdapter {
     protected String imagePropertyPath;
 
     protected String toolTipTextPropertyPath;
-    
     protected String nullDescription = "";
 
     // display collumn width
@@ -128,42 +127,26 @@ public class OAJfcController extends HubListenerAdapter {
     private HubChangeListener changeListenerVisible;
     private final boolean bAddOtherChecks;
 
+
+    /** HTML used for displaying in some components (label, combo, list, autocomplete), and used for table cell rendering */
+    protected String displayTemplate;
+    private OATemplate templateDisplay;
+
+    protected String toolTipTextTemplate;
     private OATemplate templateToolTipText;
-
-    // factory methods 
-    public static OAJfcController createHubValid(JComponent comp, Hub hub) {
-        OAJfcController jc = new OAJfcController(comp, hub, HubChangeListener.Type.HubValid);
-        return jc;
-    }
-    public static OAJfcController createHubValid(JComponent comp, Hub hub, String prop) {
-        OAJfcController jc = new OAJfcController(comp, hub, prop, HubChangeListener.Type.HubValid);
-        return jc;
-    }
-    public static OAJfcController createAoNotNull(JComponent comp, Hub hub) {
-        OAJfcController jc = new OAJfcController(comp, hub, HubChangeListener.Type.AoNotNull);
-        return jc;
-    }
-    public static OAJfcController createAoNotNull(JComponent comp, Hub hub, String prop) {
-        OAJfcController jc = new OAJfcController(comp, hub, prop, HubChangeListener.Type.AoNotNull);
-        return jc;
-    }
-    public static OAJfcController createHubNotEmpty(JComponent comp, Hub hub) {
-        OAJfcController jc = new OAJfcController(comp, hub, HubChangeListener.Type.HubNotEmpty);
-        return jc;
-    }
-
-    public static OAJfcController createOnlyHubNotEmpty(JComponent comp, Hub hub) {
-        OAJfcController jc = new OAJfcController(hub, null, null, comp, HubChangeListener.Type.HubNotEmpty, null, null, false);
-        return jc;
-    }
-    public static OAJfcController createOnlyAoNotNull(JComponent comp, Hub hub) {
-        OAJfcController jc = new OAJfcController(hub, null, null, comp, HubChangeListener.Type.AoNotNull, null, null, false);
-        return jc;
-    }
     
     
     public OAJfcController(JComponent comp) {
         this(null, null, null, comp, null, null, null);
+    }
+    public OAJfcController(Hub hub, JComponent comp) {
+        this(hub, comp, true);
+    }
+    public OAJfcController(JComponent comp, Hub hub) {
+        this(hub, comp, true);
+    }
+    public OAJfcController(JComponent comp, Hub hub, String prop) {
+        this(comp, hub, prop, true);
     }
     
     public OAJfcController(Hub hub, JComponent comp, boolean bEnableIfAO) {
@@ -176,19 +159,7 @@ public class OAJfcController extends HubListenerAdapter {
         this(hub, null, prop, comp, (bEnableIfAO ? HubChangeListener.Type.AoNotNull : HubChangeListener.Type.HubValid), null, null);
     }
     
-    public OAJfcController(Hub hub, JComponent comp) {
-        this(hub, comp, true);
-    }
-    public OAJfcController(JComponent comp, Hub hub) {
-        this(hub, comp, true);
-    }
-    public OAJfcController(JComponent comp, Hub hub, String prop) {
-        this(comp, hub, prop, true);
-    }
     
-    /**
-        Bind a component to a Hub.
-    */  
     public OAJfcController(Hub hub, JComponent comp, HubChangeListener.Type type) {
         this(hub, null, null, comp, type, null, null);
     }
@@ -196,9 +167,6 @@ public class OAJfcController extends HubListenerAdapter {
         this(hub, null, null, comp, type, null, null);
     }
     
-    /**
-        Bind a component to a property path in the active object of a Hub.
-    */  
     public OAJfcController(Hub hub, String property, JComponent comp, HubChangeListener.Type type) {
         this(hub, null, property, comp, type, null, null);
     }
@@ -209,9 +177,6 @@ public class OAJfcController extends HubListenerAdapter {
         this(hub, null, property, comp, type, hubDirect, directProperty);
     }
 
-    /**
-        Bind a component to an Object.
-    */  
     public OAJfcController(Object object, JComponent comp, HubChangeListener.Type type) {
         this(null, object, null, comp, type, null, null);
     }
@@ -748,6 +713,7 @@ public class OAJfcController extends HubListenerAdapter {
                 OATemplate temp = new OATemplate(confirmMessage);
                 temp.setProperty("newValue", newValue); // used by <%=$newValue%>
                 confirmMessage = temp.process((OAObject) obj);
+                if (confirmMessage != null && confirmMessage.indexOf('<') >=0 && confirmMessage.toLowerCase().indexOf("<html>") < 0) confirmMessage = "<html>" + confirmMessage; 
             }
             
             int x = JOptionPane.showOptionDialog(OAJFCUtil.getWindow(component), confirmMessage, confirmTitle, 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
@@ -990,31 +956,6 @@ public class OAJfcController extends HubListenerAdapter {
         return toolTipTextPropertyPath;
     }
     
-
-    public String getToolTipText(Object obj, String ttDefault) {
-        obj = getRealObject(obj);
-        if (obj instanceof OAObject) {
-            if (OAString.isNotEmpty(toolTipTextPropertyPath)) {
-                ttDefault = ((OAObject) obj).getPropertyAsString(toolTipTextPropertyPath);
-            }
-            
-            Object objx = obj;
-            String prop;
-            if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
-                objx = oaPropertyPath.getLastLinkValue(objx);
-            }
-            ttDefault = OAObjectEditQueryDelegate.getToolTip((OAObject) objx, endPropertyName, ttDefault);
-        }        
-        if (ttDefault != null && ttDefault.indexOf("<%=") >= 0 && obj instanceof OAObject) {
-            if (templateToolTipText == null || !ttDefault.equals(templateToolTipText.getTemplate())) {
-                templateToolTipText = new OATemplate(ttDefault);
-            }
-            ttDefault = templateToolTipText.process((OAObject) obj);
-        }
-        return ttDefault;
-    }
-    
-    
     /**
         Root directory path where images are stored.
     */
@@ -1172,6 +1113,10 @@ public class OAJfcController extends HubListenerAdapter {
     public HubProp addEnabledCheck(Hub hub, String property, HubChangeListener.Type type) {
         return getEnabledChangeListener().add(hub, property, type);
     }
+    public HubProp addEnabledCheck(Hub hub, HubChangeListener.Type type) {
+        return getEnabledChangeListener().add(hub, type);
+    }
+    
     
     public HubChangeListener getEnabledChangeListener() {
         if (changeListenerEnabled != null) return changeListenerEnabled;
@@ -1214,7 +1159,7 @@ public class OAJfcController extends HubListenerAdapter {
         Object obj;
         if (hub != null) obj = hub.getAO();
         else obj = null;
-        update(component, obj);
+        update(component, obj, true);
         updateLabel(component, obj);
         updateEnabled();        
         updateVisible();        
@@ -1230,20 +1175,23 @@ public class OAJfcController extends HubListenerAdapter {
     }
     
     
-    protected String toolTipTextTemplate;
-    protected String lastToolTipText;
-    
     /**
      * @param comp can be used for this.component, or another, ex: an OAList renderer (label)
      */
-    public void update(final JComponent comp, Object object) {
+    public void update(final JComponent comp, Object object, boolean bIncudeToolTip) {
         if (comp == null) return;
         object = getRealObject(object);
         Font font = getFont(object);
         if (font != null) comp.setFont(font);
 
+        JLabel lblThis;
         if (comp instanceof JLabel) {
-            ((JLabel)comp).setIcon(getIcon(object));
+            lblThis = (JLabel) comp;
+        }
+        else lblThis = null;
+        
+        if (lblThis != null) {
+            lblThis.setIcon(getIcon(object));
         }
         Color c = getBackgroundColor(object);
         if (c != null) comp.setBackground(c);
@@ -1251,31 +1199,34 @@ public class OAJfcController extends HubListenerAdapter {
         
         if (c != null) comp.setForeground(c);
 
-        
         // tooltip
-        String tt = comp.getToolTipText();
-        
-        if (!OAString.isEqual(tt, lastToolTipText, false)) {
-            toolTipTextTemplate = null;
+        if (bIncudeToolTip) {
+            String tt = comp.getToolTipText();
+            tt = getToolTipText(object, tt);
+            comp.setToolTipText(tt);
+            if (label != null) label.setToolTipText(tt);
         }
-        else if (OAString.isNotEmpty(toolTipTextTemplate)) {
-            tt = toolTipTextTemplate;
-        }
-        if (tt != null && tt.indexOf("<%=") >= 0) {
-            toolTipTextTemplate = tt;
-        }
-        else toolTipTextTemplate = null;
         
-        tt = getToolTipText(object, tt);
-        comp.setToolTipText(tt);
-        if (label != null) label.setToolTipText(tt);
-        lastToolTipText = tt;
-        
-        if (comp instanceof JLabel) {
+        if (lblThis != null && (getPropertyPath() != null || object instanceof String)) {
+            String text;
+            OATemplate temp = getTemplateForDisplay();
+            if (temp != null && (object instanceof OAObject)) {
+                text = templateDisplay.process((OAObject) object);
+                if (text != null && text.indexOf('<') >=0 && text.toLowerCase().indexOf("<html>") < 0) text = "<html>" + text; 
+            }
+            else {
+                Object obj = getValue(object);
+                text = OAConv.toString(obj, getFormat());
+            }
+            if (text == null) {
+                String s = getFormat();
+                if (OAString.isNotEmpty(s)) text = OAConv.toString(null, s);
+            }
+            lblThis.setText(text);
+            
             try {
                 if (object instanceof OAObject) {
                     Object objx = object;
-                    String prop;
                     if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
                         objx = oaPropertyPath.getLastLinkValue(objx);
                     }
@@ -1283,13 +1234,13 @@ public class OAJfcController extends HubListenerAdapter {
                 }
             }
             catch (Exception e) {
+                System.out.println("OAJfcController.update exception: "+e);
             }
-        }
 
-        if (component instanceof OAJfcComponent && comp instanceof JLabel) {
-            JLabel lbl = (JLabel) comp;
-            int pos = getHub().getPos(object);
-            ((OAJfcComponent) component).customizeRenderer(lbl, object, object, false, false, pos, false, false);
+            if (lblThis instanceof OAJfcComponent) {
+                int pos = getHub().getPos(object);
+                ((OAJfcComponent) lblThis).customizeRenderer(lblThis, object, object, false, false, pos, false, false);
+            }
         }
     }
 
@@ -1545,8 +1496,9 @@ public class OAJfcController extends HubListenerAdapter {
         if (table instanceof OATable) {
             h = ((OATable) table).getHub();
         }
+        
         obj = h.elementAt(row);
-        update(label, obj);
+        update(label, obj, false);
 
         if (isSelected || hasFocus) {
             label.setForeground( UIManager.getColor("Table.selectionForeground") );
@@ -1559,6 +1511,7 @@ public class OAJfcController extends HubListenerAdapter {
             label.setBorder( borderFocus );
         }
         else label.setBorder(null);
+        
         return label;
     }
     
@@ -1636,6 +1589,94 @@ public class OAJfcController extends HubListenerAdapter {
     protected void afterChangeActiveObject() {
         update();  
     }
+
+    public void setDisplayTemplate(String s) {
+        this.displayTemplate = s;
+        templateDisplay = null;
+    }
+    public String getDisplayTemplate() {
+        return displayTemplate;
+    }
+    public OATemplate getTemplateForDisplay() {
+        if (OAString.isNotEmpty(getDisplayTemplate())) {
+            if (templateDisplay == null) templateDisplay = new OATemplate<>(getDisplayTemplate());
+        }
+        return templateDisplay;
+    }
+
+    /**
+     * Used to display values, uses display template if defined.
+     */
+    public String getDisplayText(Object obj, String defaultText) {
+        obj = getRealObject(obj);
+        if (!(obj instanceof OAObject)) return defaultText;
     
+        String s = getDisplayTemplate();
+        if (OAString.isEmpty(s)) return defaultText;
+        
+        defaultText = getTemplateForDisplay().process((OAObject) obj);
+        if (defaultText != null && defaultText.indexOf('<') >=0 && defaultText.toLowerCase().indexOf("<html>") < 0) defaultText = "<html>" + defaultText;
+    
+        return defaultText;
+    }
+
+
+    public void setToolTipTextTemplate(String s) {
+        this.toolTipTextTemplate = s;
+        templateToolTipText = null;
+    }
+    public String getToolTipTextTemplate() {
+        return toolTipTextTemplate;
+    }
+    public OATemplate getTemplateForToolTipText() {
+        if (OAString.isNotEmpty(getToolTipTextTemplate())) {
+            if (templateToolTipText == null) templateToolTipText = new OATemplate<>(getToolTipTextTemplate());
+        }
+        return templateToolTipText;
+    }
+
+
+    public String getToolTipText(Object obj, String ttDefault) {
+        obj = getRealObject(obj);
+
+        Component comp = getComponent();
+        if (OAString.isEmpty(ttDefault) && comp instanceof JComponent) {
+            String s = ((JComponent) comp).getToolTipText();
+            if (OAString.isNotEmpty(s)) ttDefault = s;
+        }
+        
+        if (obj instanceof OAObject) {
+            if (OAString.isNotEmpty(toolTipTextPropertyPath)) {
+                ttDefault = ((OAObject) obj).getPropertyAsString(toolTipTextPropertyPath);
+            }
+            
+            String s = getToolTipTextTemplate();
+            if (OAString.isNotEmpty(s)) ttDefault = s;
+            
+            Object objx = obj;
+            String prop;
+            if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
+                objx = oaPropertyPath.getLastLinkValue(objx);
+            }
+            ttDefault = OAObjectEditQueryDelegate.getToolTip((OAObject) objx, endPropertyName, ttDefault);
+        }
+        else {
+            if (OAString.isNotEmpty(toolTipTextPropertyPath) || OAString.isNotEmpty(getToolTipTextTemplate())) {
+                ttDefault = null;
+            }
+        }
+
+        if (ttDefault != null && ttDefault.indexOf("<%=") >= 0 && obj instanceof OAObject) {
+            if (templateToolTipText == null || !ttDefault.equals(templateToolTipText.getTemplate())) {
+                templateToolTipText = new OATemplate(ttDefault);
+            }
+            ttDefault = templateToolTipText.process((OAObject) obj);
+        }
+        
+        if (ttDefault != null && ttDefault.indexOf('<') >=0 && ttDefault.toLowerCase().indexOf("<html>") < 0) ttDefault = "<html>" + ttDefault;
+
+        return ttDefault;
+    }
+
 }
 

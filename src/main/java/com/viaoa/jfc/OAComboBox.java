@@ -592,8 +592,8 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
             else {
                 s = OAConv.toString(value);
             }
-            control.update(renderer, obj);
-            renderer.setText(s);
+            control.update(renderer, obj, false);
+            // renderer.setText(s);  // 20181004 commented out, control.update handles it now
             renderer.setEnabled(true);
         }
 

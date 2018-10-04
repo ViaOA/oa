@@ -884,9 +884,11 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         @Override
         public Component getRenderer(Component renderer, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             renderer = super.getRenderer(renderer, list, value, index, isSelected, cellHasFocus);
+            /*20181004 was:
             String tt = component.getToolTipText();
             tt = OAList.this.getToolTipText(value, tt);
             if (tt != null) ((JComponent)renderer).setToolTipText(tt);
+            */
             Component comp = OAList.this.getRenderer(renderer, list, value, index, isSelected, cellHasFocus);
             if (renderer instanceof JLabel) {
                 OAList.this.customizeRenderer((JLabel)renderer, list, value, index, isSelected, cellHasFocus);

@@ -352,7 +352,8 @@ public class ComboBoxController extends OAJfcController implements FocusListener
 
     /** called by MyListCellRenderer.getListCellRendererComponent */
     protected Component getRenderer(Component renderer, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        String s;
+        boolean bDone = false;
+        String s = null;
 
         if (index < 0 && value instanceof OANullObject) {
             // 20120711 see if it needs to show the selected value (if it is not
@@ -369,22 +370,24 @@ public class ComboBoxController extends OAJfcController implements FocusListener
             s = (String) value;
         }
         else {
-            Object obj = getValue(value);
-            // Object obj = OAReflect.getPropertyValue(value, getGetMethods());
-            s = OAConv.toString(obj, getFormat());
-            if (s == null) {
-                s = getFormat();
-                s = OAConv.toString(obj, s);
+            // 20181004
+            if (renderer instanceof JLabel) {
+                update((JComponent) renderer, value, false);
+                bDone = true;
+            }
+            else {
+                Object obj = getValue(value);
+                // Object obj = OAReflect.getPropertyValue(value, getGetMethods());
+                s = OAConv.toString(obj, getFormat());
+                if (s == null) {
+                    s = getFormat();
+                    s = OAConv.toString(obj, s);
+                }
             }
         }
 
-        if (s == null || s.length() == 0) s = " "; // if length == 0 then Jlist
-                                                   // wont show any
+        if (s == null || s.length() == 0) s = " "; // if length == 0 then Jlist, wont show any
 
-        if (value instanceof OAObject) {
-            String sx = getTemplateText((OAObject) value);
-            if (OAString.isNotEmpty(sx)) s = sx;
-        }
         
         if (renderer instanceof JLabel) {
             JLabel lbl = (JLabel) renderer;
@@ -394,10 +397,8 @@ public class ComboBoxController extends OAJfcController implements FocusListener
                 lbl.setForeground(list.getForeground());
             }
 
-            lbl.setText(s);
+            if (!bDone) lbl.setText(s);  
             
-            if (index >= 0) update(lbl, value);
-
             if (isSelected) {
                 lbl.setBackground(list.getSelectionBackground());
                 lbl.setForeground(list.getSelectionForeground());
@@ -424,28 +425,4 @@ public class ComboBoxController extends OAJfcController implements FocusListener
             return comp;
         }
     }
-
-    private OATemplate templateDisplay;
-    protected String getTemplateText(OAObject objx) {
-        String text = null;
-        if (OAString.isNotEmpty(getDisplayTemplate())) {
-            if (templateDisplay == null) templateDisplay = new OATemplate<>(getDisplayTemplate());
-            if (objx instanceof OAObject) {
-                text = templateDisplay.process(objx);
-            }
-        }
-        return text;
-    }
-    
-    /** HTML used to form label.text */
-    protected String displayTemplate;
-
-    public void setDisplayTemplate(String s) {
-        this.displayTemplate = s;
-        templateDisplay = null;
-    }
-    public String getDisplayTemplate() {
-        return displayTemplate;
-    }
-    
 }

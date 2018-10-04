@@ -248,6 +248,14 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
     public String getConfirmMessage() {
         return getController().getConfirmMessage();
     }
+
+    /** HTML used to form label.text */
+    public void setDisplayTemplate(String s) {
+        this.control.setDisplayTemplate(s);
+    }
+    public String getDisplayTemplate() {
+        return this.control.getDisplayTemplate();
+    }
 }
 
 

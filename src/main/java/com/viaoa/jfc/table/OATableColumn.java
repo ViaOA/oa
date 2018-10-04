@@ -52,7 +52,7 @@ public class OATableColumn {
     public int currentWidth; // 2006/12/28
     boolean allowSorting=true;
     protected OATableColumnCustomizer columnCustomizer;
-
+    public OATemplate templateToolTip;
     
     public boolean getAllowSorting() {
         return allowSorting;
@@ -202,8 +202,10 @@ public class OATableColumn {
 
     /** 20180620
      * get the last OAObject in the property path, for case where a column uses a property path instead of just a property.
+     * 20181004
+     * changed to get object from table.hub in the component.hub 
      */
-    public Object getObject(Object obj) {
+    public Object getObjectForTableObject(Object obj) {
         if (obj == null) return null;
         Method[] ms;
         if (methodsIntValue != null) ms = methodsIntValue;
@@ -211,8 +213,10 @@ public class OATableColumn {
         
         if (ms == null || ms.length < 2) return obj;
         
+        Class clazz = oaComp.getHub().getObjectClass();
         int x = ms.length;
         for (int i=0; i<(x-1); i++) {
+            if (obj.getClass().equals(clazz)) break;
             obj = OAReflect.getPropertyValue(obj, ms[i]);
             if (obj == null) break;
         }
@@ -249,14 +253,14 @@ public class OATableColumn {
             bLinkOnPos = HubLinkDelegate.getLinkedOnPos(oaComp.getHub(), true);
             path = origPath;
             if (!bIsAlreadyExpanded) {
+                String s = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, oaComp.getHub());
                 if (!bLinkOnPos) {
-                    String s = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, oaComp.getHub());
-                    if (s != null) { 
-                        path = s + "." + path;
+                    if (s != null) {
+                        if (path == null) path = s;
+                        else path = s + "." + path;
                     }
                 }
                 else {
-                    String s = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, oaComp.getHub());
                     if (s == null) s = "";
                     else s += ".";
                     pathIntValue = s + HubLinkDelegate.getLinkToProperty(oaComp.getHub());
