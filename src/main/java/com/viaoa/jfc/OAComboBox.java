@@ -391,6 +391,13 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         control.setMaximumColumns(x);
         invalidate();
     }
+    public int getMaximumColumns() {
+        return control.getMaximumColumns();            
+    }
+    public void setMaxColumns(int x) {
+        control.setMaximumColumns(x);
+        invalidate();
+    }
     public int getMaxColumns() {
         return control.getMaximumColumns();            
     }

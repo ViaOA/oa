@@ -100,6 +100,13 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     public boolean isPassword() {
         return getController().isPassword();
     }
+
+    @Override
+    public void setText(String text) {
+//        if (OAString.isEmpty(text)) text = " "; // so that label ui wont be collapse
+        super.setText(text);
+    }
+    
     
     /** 
         Format used to display this property.  Used to format Date, Times and Numbers.
@@ -214,6 +221,13 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         control.setMaximumColumns(x);
         invalidate();
     }
+    public int getMaximumColumns() {
+        return control.getMaximumColumns();
+    }
+    public void setMaxColumns(int x) {
+        control.setMaximumColumns(x);
+        invalidate();
+    }
     public int getMaxColumns() {
         return control.getMaximumColumns();
     }
@@ -222,6 +236,13 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         invalidate();
     }
     public int getMiniColumns() {
+        return control.getMinimumColumns();
+    }
+    public void setMinimumColumns(int x) {
+        control.setMinimumColumns(x);
+        invalidate();
+    }
+    public int getMinimumColumns() {
         return control.getMinimumColumns();
     }
 
@@ -238,6 +259,11 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
             int inx = ins == null ? 0 : ins.left + ins.right;
             d.width = OATable.getCharWidth(this,getFont(),cols)+inx+2;
         }
+        
+        if (d.height < 15) {
+            d.height = 18;
+        }
+        
         return d;
     }
     
@@ -271,6 +297,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         // dont size under pref size
         Dimension dx = getPreferredSize();
         d.width = Math.max(d.width, dx.width);
+        d.height = Math.max(d.height, dx.height);
 
         return d;
     }
@@ -278,9 +305,14 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     public Dimension getMinimumSize() {
         Dimension d = super.getMinimumSize();
         if (isMinimumSizeSet()) return d;
+        
+        Dimension dx = getPreferredSize();
+        d.height = Math.max(dx.height, d.height);
+        
         int cols = getMiniColumns();
         if (cols < 1) return d;
         d.width = OATable.getCharWidth(this, getFont(), cols+1);
+
         return d;
     }
         

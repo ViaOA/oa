@@ -1814,6 +1814,9 @@ public class OAString {
     public static String getRandomString(int min, int max) {
         return getRandomString(min, max, true, true, false);
     }    
+    public static String getRandomString(int normal, int min, int max) {
+        return getRandomString(normal, min, max, true, true, false);
+    }    
     
     /**
      * Returns a string that has random generated characters
@@ -1826,10 +1829,37 @@ public class OAString {
     public static String createRandomString(int min, int max, boolean bUseDigits, boolean bUseAlpha, boolean bCapFirstChar) {
         return getRandomString(min, max, bUseDigits, bUseAlpha, bCapFirstChar);
     }
+    
     public static String getRandomString(int min, int max, boolean bUseDigits, boolean bUseAlpha, boolean bCapFirstChar) {
+        return getRandomString(0, min, max, bUseDigits, bUseAlpha, bCapFirstChar);
+    }
+    public static String getRandomString(int normal, int min, int max, boolean bUseDigits, boolean bUseAlpha, boolean bCapFirstChar) {
 		String result = "";
+
+		// adjust min/max based on normal
+		if (normal > 0) {
+		    if (normal > min) {
+                int diff = (normal - min);
+		        if (Math.random() < .75) {
+		            diff = (int) (diff * .30);
+		        }
+                min = (int) (normal - (Math.random() * diff));
+		    }
+		    else min = normal;
+
+            if (normal < max) {
+                int diff = (max - normal);
+                if (Math.random() < .9) {
+                    diff = (int) (diff * .20);
+                }
+                max = (int) (normal + (Math.random() * diff));
+            }
+            else max = normal;
+		}
+		
 		int x = min;
-		if (min < max)  x += (int) (Math.random() * (max-min));
+		if (min < max) x += (int) (Math.random() * (max-min));
+		
 		
 		for (int i=0; i<x; i++) {
 			char ch;
@@ -1865,6 +1895,53 @@ public class OAString {
 		return result;
 	}
 
+    public static final String LoremLipsum = 
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec eros pretium, dignissim est sit amet, malesuada augue. Sed pharetra ex ut nulla feugiat laoreet. Nunc finibus malesuada est, et fermentum lorem iaculis eget. Aenean pharetra augue ac elit gravida consectetur. Praesent dapibus sem quis tellus condimentum, eget finibus massa maximus. Quisque tempor a felis in consectetur. Donec a rutrum neque. Nam viverra eros ut arcu interdum facilisis.  " + 
+        "Etiam ultricies nisl id lacus vulputate mattis. Nulla condimentum et metus vitae vestibulum. Aliquam ac risus eros. Vestibulum dignissim bibendum sapien, quis feugiat sapien lacinia nec. Mauris id justo pharetra, tincidunt est vel, varius libero. Ut efficitur nulla nec malesuada efficitur. Nulla luctus purus eu metus feugiat, eu semper metus viverra. Aliquam erat volutpat. Vivamus mollis turpis augue, eget maximus lorem convallis vel. Nam sed arcu vitae diam tempus malesuada id non nisl. Phasellus scelerisque nunc ut dapibus interdum.  " + 
+        "Donec ornare elementum laoreet. Sed diam mauris, eleifend quis lacinia at, egestas eu tellus. Sed neque augue, vestibulum ut arcu non, accumsan aliquet enim. Aliquam fringilla neque a enim pellentesque hendrerit. Sed ac semper arcu, vitae porta purus. Curabitur sit amet faucibus augue. Praesent accumsan elit ut sem dictum vulputate. Praesent sed tempus mauris, ut ultrices dolor. Nunc congue, tortor sed lacinia pulvinar, mauris mi molestie lorem, at rutrum lorem est euismod magna. Suspendisse sagittis mauris in interdum gravida. Phasellus a ante hendrerit, pulvinar urna eget, scelerisque massa."; 
+    
+    public static String getDummyText(final int normal, int min, int max) {
+        // adjust min/max based on normal
+        if (normal > 0) {
+            if (normal > min) {
+                int diff = (normal - min);
+                if (Math.random() < .75) {
+                    diff = (int) (diff * .30);
+                }
+                min = (int) (normal - (Math.random() * diff));
+            }
+            else min = normal;
+
+            if (normal < max) {
+                int diff = (max - normal);
+                if (Math.random() < .9) {
+                    diff = (int) (diff * .20);
+                }
+                max = (int) (normal + (Math.random() * diff));
+            }
+            else max = normal;
+        }
+        int sampleSize = min;
+        if (min < max) sampleSize += (int) (Math.random() * (max-min));
+        
+        String result = "";
+        final int maxLipsum = LoremLipsum.length();
+        
+        for ( ; sampleSize > maxLipsum; sampleSize -= maxLipsum) {
+            result += LoremLipsum;
+            result += "  ";
+        }
+        
+        int beginPos = maxLipsum - sampleSize;
+        beginPos = (int) (Math.random() * beginPos);
+        for ( ;beginPos > 0 && LoremLipsum.charAt(beginPos) != ' '; beginPos--);
+        if (beginPos > 0) beginPos++;
+        
+        result += LoremLipsum.substring(beginPos, beginPos+sampleSize);
+        return result;
+    }    
+    
+    
     /**
      * Short name for createPropertyPath
      * @see #createPropertyPath(String...)
@@ -2803,7 +2880,7 @@ j:      12
     
     
     
-    public static void main(String[] args) {
+    public static void main2(String[] args) {
         String s = OAString.fmt("CustomerName", "8L.");
         
         s = OAString.fmt("CustomerName", "28L.");
@@ -2814,5 +2891,17 @@ j:      12
         System.out.println(s+" ==> "+s2);
     }
 
+    public static void main(String[] args) {
+        int x = LoremLipsum.length();
+        String s;
+        for (int i=0; i<5000; i++) {
+            int x1 = (int) (Math.random() * (x*3));
+            int x2 = (int) (Math.random() * x1);
+            int x3 = x1 + ((int) (Math.random() * x*2));
+            s = getDummyText(x1, x2, x3);
+            System.out.printf("%d) %d,%d,%d=%d => %s \n", i, x1,x2,x3, s.length(), OAString.format(s, "120l."));
+            
+        }
+    }
     
 }

@@ -1,6 +1,9 @@
 package com.viaoa.jfc;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -9,6 +12,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.border.LineBorder;
 
 
@@ -54,6 +58,44 @@ public class OAResizePanel extends JPanel {
     }
     
     private void setup(JComponent comp, int percentage, boolean bBoth) {
+        
+        // 20181004
+        if (comp instanceof JScrollPane) {
+            JScrollPane jsp = (JScrollPane) comp;
+            Component compx = ((JScrollPane) comp).getViewport().getView();
+            if (compx instanceof OAList) {
+                final OAList list = (OAList) compx;
+                
+                JPanel panx = new JPanel(new BorderLayout()) {
+                    @Override
+                    public Dimension getPreferredSize() {
+                        Dimension d = super.getPreferredSize();
+                        int x = list.getColumns();
+                        if (x > 0) d.width = OATable.getCharWidth(this, getFont(), x);
+                        return d;
+                    }
+                    @Override
+                    public Dimension getMaximumSize() {
+                        Dimension d = super.getMaximumSize();
+                        int x = list.getMaximumColumns();
+                        if (x > 0) d.width = OATable.getCharWidth(this, getFont(), x);
+                        return d;
+                    }
+                    @Override
+                    public Dimension getMinimumSize() {
+                        Dimension d = super.getMinimumSize();
+                        int x = list.getMinimumColumns();
+                        if (x > 0) d.width = OATable.getCharWidth(this, getFont(), x);
+                        return d;
+                    }
+                };
+                
+                panx.add(comp, BorderLayout.CENTER);
+                comp = panx;
+            }
+        }
+        
+        
         GridBagLayout gb = new GridBagLayout();
         setLayout(gb);
         setBorder(null);

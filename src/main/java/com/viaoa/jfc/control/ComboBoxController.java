@@ -372,7 +372,7 @@ public class ComboBoxController extends OAJfcController implements FocusListener
         else {
             // 20181004
             if (renderer instanceof JLabel) {
-                update((JComponent) renderer, value, false);
+                update((JComponent) renderer, value, true);
                 bDone = true;
             }
             else {

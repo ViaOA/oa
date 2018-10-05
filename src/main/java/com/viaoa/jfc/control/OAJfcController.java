@@ -1201,10 +1201,12 @@ public class OAJfcController extends HubListenerAdapter {
 
         // tooltip
         if (bIncudeToolTip) {
-            String tt = comp.getToolTipText();
+            String tt = component.getToolTipText();
+            //was: String tt = comp.getToolTipText();
             tt = getToolTipText(object, tt);
-            comp.setToolTipText(tt);
-            if (label != null) label.setToolTipText(tt);
+            component.setToolTipText(tt);
+            //was: comp.setToolTipText(tt);
+            if (comp == component && label != null) label.setToolTipText(tt);
         }
         
         if (lblThis != null && (getPropertyPath() != null || object instanceof String)) {

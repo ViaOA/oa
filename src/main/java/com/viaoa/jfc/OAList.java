@@ -884,7 +884,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         @Override
         public Component getRenderer(Component renderer, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             renderer = super.getRenderer(renderer, list, value, index, isSelected, cellHasFocus);
-            /*20181004 was:
+            /*20181004 was: now done by oajfccontroller
             String tt = component.getToolTipText();
             tt = OAList.this.getToolTipText(value, tt);
             if (tt != null) ((JComponent)renderer).setToolTipText(tt);
@@ -904,5 +904,44 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         if (getController() == null) return null;
         return getController().getLabel();
     }
+
+
+    public void setMaximumColumns(int x) {
+        control.setMaximumColumns(x);
+        invalidate();
+    }
+    public int getMaximumColumns() {
+        return control.getMaximumColumns();
+    }
+    public void setMaxColumns(int x) {
+        control.setMaximumColumns(x);
+        invalidate();
+    }
+    public int getMaxColumns() {
+        return control.getMaximumColumns();
+    }
+    public void setMiniColumns(int x) {
+        control.setMinimumColumns(x);
+        invalidate();
+    }
+    public int getMiniColumns() {
+        return control.getMinimumColumns();
+    }
+    public void setMinimumColumns(int x) {
+        control.setMinimumColumns(x);
+        invalidate();
+    }
+    public int getMinimumColumns() {
+        return control.getMinimumColumns();
+    }
+
+    /** HTML used to form label.text */
+    public void setDisplayTemplate(String s) {
+        this.control.setDisplayTemplate(s);
+    }
+    public String getDisplayTemplate() {
+        return this.control.getDisplayTemplate();
+    }
+    
 }
 
