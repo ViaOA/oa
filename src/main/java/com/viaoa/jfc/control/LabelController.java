@@ -26,7 +26,7 @@ import com.viaoa.jfc.*;
  *
  */
 public class LabelController extends OAJfcController {
-    protected JLabel label;
+    protected JLabel thisLabel;
     protected boolean bIsPassword;
     protected OASiblingHelper siblingHelper;
 
@@ -75,10 +75,10 @@ public class LabelController extends OAJfcController {
         Bind a label.
     */
     protected void init(JLabel lab) {
-        label = lab;
+        thisLabel = lab;
 		// if (label != null) label.setFont(label.getFont().deriveFont(Font.BOLD));
-        if (label != null) {
-        	label.setBorder(new CompoundBorder(new LineBorder(Color.lightGray, 1), new EmptyBorder(0,2,0,2)));
+        if (thisLabel != null) {
+            thisLabel.setBorder(new CompoundBorder(new LineBorder(Color.lightGray, 1), new EmptyBorder(0,2,0,2)));
         }
         
         OALinkInfo[] lis = oaPropertyPath.getLinkInfos();
@@ -97,9 +97,9 @@ public class LabelController extends OAJfcController {
     */
     public @Override void afterPropertyChange() {
     	update();
-    	if (!(label instanceof OALabel)) return; 
+    	if (!(thisLabel instanceof OALabel)) return; 
         // label could be in a table
-        OATable t = ((OALabel)label).getTable();
+        OATable t = ((OALabel)thisLabel).getTable();
         if (t != null) {
             t.repaint();
         }
@@ -114,16 +114,16 @@ public class LabelController extends OAJfcController {
     public void update() {
         boolean bx = (siblingHelper != null) && OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
         try {
+            super.update();
             _update();
         }
         finally {
             if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
         }
-        super.update();
     }
     
     protected void _update() {
-        if (label == null) return;
+        if (thisLabel == null) return;
 
         /*was:  20181004
         Object obj = hub.getAO();
@@ -146,10 +146,12 @@ public class LabelController extends OAJfcController {
             }
         }
         if (bIsPassword) text = "*****";
-        label.setText(text);
+        thisLabel.setText(text);
         */
         
-        if (bIsPassword) label.setText("******");
+        if (bIsPassword) {
+            if (OAString.isNotEmpty(thisLabel.getText())) thisLabel.setText("******");
+        }
     }
     
 }

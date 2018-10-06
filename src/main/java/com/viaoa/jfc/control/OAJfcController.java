@@ -1211,37 +1211,42 @@ public class OAJfcController extends HubListenerAdapter {
         
         if (lblThis != null && (getPropertyPath() != null || object instanceof String)) {
             String text;
-            OATemplate temp = getTemplateForDisplay();
-            if (temp != null && (object instanceof OAObject)) {
-                text = templateDisplay.process((OAObject) object);
-                if (text != null && text.indexOf('<') >=0 && text.toLowerCase().indexOf("<html>") < 0) text = "<html>" + text; 
-            }
+            if (object == null) text = "";
             else {
-                Object obj = getValue(object);
-                text = OAConv.toString(obj, getFormat());
-            }
-            if (text == null) {
-                String s = getFormat();
-                if (OAString.isNotEmpty(s)) text = OAConv.toString(null, s);
-            }
-            lblThis.setText(text);
-            
-            try {
-                if (object instanceof OAObject) {
-                    Object objx = object;
-                    if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
-                        objx = oaPropertyPath.getLastLinkValue(objx);
-                    }
-                    OAObjectEditQueryDelegate.renderLabel((OAObject)objx, endPropertyName, (JLabel)  comp);
+                OATemplate temp = getTemplateForDisplay();
+                if (temp != null && (object instanceof OAObject)) {
+                    text = templateDisplay.process((OAObject) object);
+                    if (text != null && text.indexOf('<') >=0 && text.toLowerCase().indexOf("<html>") < 0) text = "<html>" + text; 
+                }
+                else {
+                    Object obj = getValue(object);
+                    text = OAConv.toString(obj, getFormat());
+                }
+                if (text == null) {
+                    String s = getFormat();
+                    if (OAString.isNotEmpty(s)) text = OAConv.toString(null, s);
                 }
             }
-            catch (Exception e) {
-                System.out.println("OAJfcController.update exception: "+e);
-            }
+            lblThis.setText(text);
 
-            if (lblThis instanceof OAJfcComponent) {
-                int pos = getHub().getPos(object);
-                ((OAJfcComponent) lblThis).customizeRenderer(lblThis, object, object, false, false, pos, false, false);
+            if (object != null) {
+                try {
+                    if (object instanceof OAObject) {
+                        Object objx = object;
+                        if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
+                            objx = oaPropertyPath.getLastLinkValue(objx);
+                        }
+                        OAObjectEditQueryDelegate.renderLabel((OAObject)objx, endPropertyName, (JLabel)  comp);
+                    }
+                }
+                catch (Exception e) {
+                    System.out.println("OAJfcController.update exception: "+e);
+                }
+    
+                if (lblThis instanceof OAJfcComponent) {
+                    int pos = getHub().getPos(object);
+                    ((OAJfcComponent) lblThis).customizeRenderer(lblThis, object, object, false, false, pos, false, false);
+                }
             }
         }
     }

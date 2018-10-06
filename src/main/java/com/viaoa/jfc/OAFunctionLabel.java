@@ -314,7 +314,7 @@ public class OAFunctionLabel extends JLabel implements OATableComponent, OAJfcCo
         
         @Override
         protected void _update() {
-            if (label == null) return;
+            if (thisLabel == null) return;
             String val;
             if (hub == null) val = "";
             else if (!hub.isValid()) val = "";
@@ -322,7 +322,7 @@ public class OAFunctionLabel extends JLabel implements OATableComponent, OAJfcCo
                 double sum = OAFunction.sum(hub, ppFunc);
                 val = OAConv.toString(sum, getFormat());
             }
-            label.setText(val);
+            thisLabel.setText(val);
         }
     }
     

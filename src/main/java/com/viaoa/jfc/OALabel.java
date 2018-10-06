@@ -66,7 +66,6 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     public OALabel(OAObject hubObject, String propertyPath, int cols) {
         control = new OALabelController(hubObject, propertyPath);
         setColumns(cols);
-        // setText(" ");  //<-- this screws preferredSize if before setColumns()
         initialize();
     }
 
@@ -101,12 +100,6 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         return getController().isPassword();
     }
 
-    @Override
-    public void setText(String text) {
-//        if (OAString.isEmpty(text)) text = " "; // so that label ui wont be collapse
-        super.setText(text);
-    }
-    
     
     /** 
         Format used to display this property.  Used to format Date, Times and Numbers.
