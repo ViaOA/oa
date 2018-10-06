@@ -102,7 +102,8 @@ public class OAResizePanel extends JPanel {
         
         GridBagConstraints gcx = new GridBagConstraints();
         gcx.insets = new Insets(0,0,0,0);
-        gcx.anchor = GridBagConstraints.NORTHWEST;
+        gcx.anchor = GridBagConstraints.WEST;  // 20181006
+        //was: gcx.anchor = GridBagConstraints.NORTHWEST;
         
         if (bBoth) gcx.fill = gcx.BOTH;
         else gcx.fill = gcx.HORIZONTAL;

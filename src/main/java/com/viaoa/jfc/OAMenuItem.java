@@ -695,5 +695,17 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
         return control.getDisplayComponent();
     }
 
+    public void setDisplayTemplate(String s) {
+        this.control.setDisplayTemplate(s);
+    }
+    public String getDisplayTemplate() {
+        return this.control.getDisplayTemplate();
+    }
+    public void setToolTipTextTemplate(String s) {
+        this.control.setToolTipTextTemplate(s);
+    }
+    public String getToolTipTextTemplate() {
+        return this.control.getToolTipTextTemplate();
+    }
     
 }

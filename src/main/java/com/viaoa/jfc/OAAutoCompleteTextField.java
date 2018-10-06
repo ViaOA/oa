@@ -20,13 +20,15 @@ import javax.swing.table.*;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
-import com.viaoa.util.OAString;
 
 public class OAAutoCompleteTextField extends JTextField implements OATableComponent, OAJfcComponent {
     private AutoCompleteTextFieldController control;
     private OATable table;
     private String heading = "";
-
+    
+    /**
+     * Textfield that allows for finding object in hub.
+     */
     public OAAutoCompleteTextField(Hub hub, String propertyPath, int cols) {
         control = new AutoCompleteTextFieldController(hub, this, propertyPath);
         setColumns(cols);
@@ -53,7 +55,14 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         return control.getHub();
     }
 
-
+    public void setMaxResults(int x) {
+        control.setMaxResults(x); 
+    }
+    public int getMaxResults() {
+        return control.getMaxResults();
+    }
+    
+    
     public void setTable(OATable table) {
         this.table = table;
         if (table != null) table.resetColumn(this);
@@ -299,16 +308,25 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
     }
 
-    /** HTML used to form label.text */
     public void setDisplayTemplate(String s) {
         this.control.setDisplayTemplate(s);
     }
     public String getDisplayTemplate() {
         return this.control.getDisplayTemplate();
     }
-
-    @Override
-    public void setToolTipText(String text) {
-        super.setToolTipText(text);
+    public void setToolTipTextTemplate(String s) {
+        this.control.setToolTipTextTemplate(s);
     }
+    public String getToolTipTextTemplate() {
+        return this.control.getToolTipTextTemplate();
+    }
+
+    public void setSearchTemplate(String s) {
+        this.control.setSearchTemplate(s);
+    }
+    public String getSearchTemplate() {
+        return this.control.getSearchTemplate();
+    }
+
+    
 }

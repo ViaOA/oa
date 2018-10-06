@@ -339,5 +339,17 @@ public class OAFunctionLabel extends JLabel implements OATableComponent, OAJfcCo
         customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
     }
 
+    public void setDisplayTemplate(String s) {
+        this.control.setDisplayTemplate(s);
+    }
+    public String getDisplayTemplate() {
+        return this.control.getDisplayTemplate();
+    }
+    public void setToolTipTextTemplate(String s) {
+        this.control.setToolTipTextTemplate(s);
+    }
+    public String getToolTipTextTemplate() {
+        return this.control.getToolTipTextTemplate();
+    }
 
 }

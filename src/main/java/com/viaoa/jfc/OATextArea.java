@@ -254,6 +254,14 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJfcComp
     public String getConfirmMessage() {
         return getController().getConfirmMessage();
     }
+
+    public void setToolTipTextTemplate(String s) {
+        this.control.setToolTipTextTemplate(s);
+    }
+    public String getToolTipTextTemplate() {
+        return this.control.getToolTipTextTemplate();
+    }
+
 }
 
 class OATextAreaTableCellEditor extends OATableCellEditor {

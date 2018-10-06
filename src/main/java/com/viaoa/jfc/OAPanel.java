@@ -51,4 +51,12 @@ public class OAPanel extends JPanel implements OAJfcComponent {
     @Override
     public void initialize() {
     }
+
+    public void setToolTipTextTemplate(String s) {
+        this.control.setToolTipTextTemplate(s);
+    }
+    public String getToolTipTextTemplate() {
+        return this.control.getToolTipTextTemplate();
+    }
+
 }

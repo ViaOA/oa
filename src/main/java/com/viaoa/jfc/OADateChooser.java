@@ -460,6 +460,18 @@ public class OADateChooser extends JPanel implements OAJfcComponent {
         return getController().getLabel();
     }
 
+    public void setDisplayTemplate(String s) {
+        this.control.setDisplayTemplate(s);
+    }
+    public String getDisplayTemplate() {
+        return this.control.getDisplayTemplate();
+    }
+    public void setToolTipTextTemplate(String s) {
+        this.control.setToolTipTextTemplate(s);
+    }
+    public String getToolTipTextTemplate() {
+        return this.control.getToolTipTextTemplate();
+    }
     
     public static void main(String[] argv) {
         JFrame f = new JFrame();
