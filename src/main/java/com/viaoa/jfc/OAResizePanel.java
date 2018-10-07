@@ -7,12 +7,16 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Window;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.Scrollable;
+import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 
 
@@ -70,26 +74,26 @@ public class OAResizePanel extends JPanel {
                     @Override
                     public Dimension getPreferredSize() {
                         Dimension d = super.getPreferredSize();
-                        int x = list.getColumns();
-                        if (x > 0) d.width = OATable.getCharWidth(this, getFont(), x);
+                        Dimension dx =  list.getPreferredSize();
+                        d.width = dx.width;
                         return d;
                     }
                     @Override
                     public Dimension getMaximumSize() {
                         Dimension d = super.getMaximumSize();
-                        int x = list.getMaximumColumns();
-                        if (x > 0) d.width = OATable.getCharWidth(this, getFont(), x);
+                        Dimension dx =  list.getMaximumSize();
+                        d.width = dx.width;
                         return d;
                     }
                     @Override
                     public Dimension getMinimumSize() {
                         Dimension d = super.getMinimumSize();
-                        int x = list.getMinimumColumns();
-                        if (x > 0) d.width = OATable.getCharWidth(this, getFont(), x);
+                        Dimension dx =  list.getMinimumSize();
+                        d.width = dx.width;
                         return d;
                     }
                 };
-                
+                if (DEBUG) panx.setBorder(new LineBorder(Color.GREEN, 4));
                 panx.add(comp, BorderLayout.CENTER);
                 comp = panx;
             }
@@ -151,4 +155,48 @@ public class OAResizePanel extends JPanel {
         this(comp, comp2, 50, false);
     }
 
+    /**
+     * Used when Window.pack is called so that preferred size is used.
+     * 
+     */
+    public static void setPacking(Window window) {
+        windowPack = window;
+    }
+    private static Window windowPack;
+    
+    // JScrollPane will only go down in size to preferred size.
+    //   this will allow it to be 3/4 between preferred and minimum
+    private boolean bFoundWindow;
+    private boolean bHasScrollPane; 
+    
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension d = super.getPreferredSize();
+        if (windowPack != null) {
+            return d;
+        }
+        
+        if (!bFoundWindow) {
+            Component comp = this.getParent();
+            for ( ; comp != null; comp = comp.getParent()) {
+                if (comp instanceof JScrollPane) {
+                    bHasScrollPane = true;
+                }
+                if (comp instanceof Window) {
+                    bFoundWindow = true;
+                }                
+            }
+        }
+        
+        if (bHasScrollPane) {
+            Dimension dx = super.getMinimumSize();
+            int x = d.width - dx.width;
+            if (x > 0) {
+                x = (int) (x * .60);
+                d.width = dx.width + x;
+            }
+        }
+        return d;
+    }
+    
 }

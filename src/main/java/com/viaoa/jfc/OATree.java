@@ -690,7 +690,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
             }
             else {
             	if (HubAddRemoveDelegate.canAdd(dragToHub, dragObject)) {  // 2008/04/18
-                    int x = JOptionPane.showOptionDialog(OAJFCUtil.getWindow(OATree.this), "Ok to move?", "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
+                    int x = JOptionPane.showOptionDialog(OAJfcUtil.getWindow(OATree.this), "Ok to move?", "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
                     if (x != 0) return;
             	    
 	            	if (HubRootDelegate.getRootHub(dragHub) != null && dragHub.getAO() == dragObject) {  // 2008/04/18

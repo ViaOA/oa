@@ -100,12 +100,49 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         Dimension d = super.getPreferredSize();
         if (d == null || d.width == 0) {
             d = new Dimension(
-                    OATable.getCharWidth(this, getFont(), columns), 
-                    OATable.getCharHeight(this, getFont()) * getVisibleRows() 
+                    OATable.getCharWidth(columns), 
+                    OATable.getCharHeight() * getVisibleRows() 
             );
         }
         return d;
     }
+    
+    public Dimension getMaximumSize() {
+        Dimension d = super.getMaximumSize();
+        if (isMaximumSizeSet()) return d;
+        int cols = getMaxColumns();
+        if (cols < 1) cols = control.getPropertyInfoMaxColumns(); 
+        
+        if (cols < getColumns())  {
+            cols = getColumns() * 2; 
+        }
+
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
+        
+        d.width = OATable.getCharWidth(cols) + inx;
+
+        return d;
+    }
+    
+    public Dimension getMinimumSize() {
+        Dimension d = super.getMinimumSize();
+        if (isMinimumSizeSet()) return d;
+        int cols = getMiniColumns();
+        
+        if (cols > getColumns())  {
+            cols = (getColumns() / 4);
+        }
+        cols = Math.max(0, cols);
+
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
+        
+        d.width = OATable.getCharWidth(cols) + inx;
+
+        return d;
+    }
+    
     
     boolean bRemoved;
     

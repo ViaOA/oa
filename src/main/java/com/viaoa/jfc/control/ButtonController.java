@@ -302,7 +302,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
     public boolean default_confirmActionPerformed() {
         if (OAString.isEmpty(confirmMessage) && compConfirm == null) return true;
         if (compConfirm == null) {
-            int x = JOptionPane.showOptionDialog(OAJFCUtil.getWindow(button), confirmMessage, "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
+            int x = JOptionPane.showOptionDialog(OAJfcUtil.getWindow(button), confirmMessage, "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
             return (x == 0);
         }
         getConfirmDialog().setVisible(true);
@@ -410,7 +410,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
         if (!OAString.isEmpty(displayMessage) && OAString.isEmpty(getConsoleProperty()) && compDisplay == null) {
             String s = OAString.lineBreak(displayMessage, 85, "\n", 20);
             JOptionPane.showMessageDialog(
-                OAJFCUtil.getWindow(button), 
+                OAJfcUtil.getWindow(button), 
                 s, "Command completed", 
                 JOptionPane.INFORMATION_MESSAGE);
         }
@@ -484,7 +484,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
 
             String s = OAString.lineBreak(msg, 85, "\n", 20);
             JOptionPane.showMessageDialog(
-                OAJFCUtil.getWindow(button), 
+                OAJfcUtil.getWindow(button), 
                 s, "Command failed", 
                 JOptionPane.ERROR_MESSAGE);
         }
@@ -492,7 +492,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
     
 
     protected boolean runActionPerformed() throws Exception {
-        Window window = OAJFCUtil.getWindow(button);
+        Window window = OAJfcUtil.getWindow(button);
         boolean b = false;
         try {
             if (window != null) {
@@ -546,7 +546,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
             return bResult;
         }
 
-        final Window window = OAJFCUtil.getWindow(button);
+        final Window window = OAJfcUtil.getWindow(button);
         if (dlgWait == null) {
             dlgWait = new OAWaitDialog(window, true);  // allowCancel, was false
         }
@@ -771,6 +771,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     String msg = null;
                     try {
                         ((OAObject) ho).save();
+                        update(); // 20181006
                     }
                     catch (Exception e) {
                         msg = "Error while saving\n" + e;
@@ -779,7 +780,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
                         JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(button), msg, "Error", JOptionPane.ERROR_MESSAGE,null);
                         break;
                     }
-                    
                 }
                 if (mhub != null) {
                     Object[] objs = mhub.toArray();

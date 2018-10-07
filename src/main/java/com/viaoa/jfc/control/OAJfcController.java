@@ -716,7 +716,7 @@ public class OAJfcController extends HubListenerAdapter {
                 if (confirmMessage != null && confirmMessage.indexOf('<') >=0 && confirmMessage.toLowerCase().indexOf("<html>") < 0) confirmMessage = "<html>" + confirmMessage; 
             }
             
-            int x = JOptionPane.showOptionDialog(OAJFCUtil.getWindow(component), confirmMessage, confirmTitle, 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
+            int x = JOptionPane.showOptionDialog(OAJfcUtil.getWindow(component), confirmMessage, confirmTitle, 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
             result = (x == 0);
         }
         return result;

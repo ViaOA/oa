@@ -849,7 +849,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 }
             }
 
-            int x = JOptionPane.showOptionDialog(OAJFCUtil.getWindow(OATable.this), "Ok to move?", "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
+            int x = JOptionPane.showOptionDialog(OAJfcUtil.getWindow(OATable.this), "Ok to move?", "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
             if (x != 0) return;
             
             if (ttc != null) {
@@ -1800,6 +1800,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         return (averageCharWidth * columns);
     }
 
+    public static int getCharHeight() {
+        if (averageCharHeight != 0) return averageCharHeight;
+        JTextField txt = new JTextField();
+        Font font = txt.getFont();
+        return getCharHeight(txt, font);
+    }
+    
     public static int getCharHeight(Component comp, Font font) {
         if (averageCharHeight == 0 || (font != null && font.getSize() != lastFontSize)) {
             lastFontSize = font.getSize();

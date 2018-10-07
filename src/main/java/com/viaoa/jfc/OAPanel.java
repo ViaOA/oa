@@ -10,7 +10,9 @@
 */
 package com.viaoa.jfc;
 
+import java.awt.Dimension;
 import java.awt.LayoutManager;
+import java.awt.Rectangle;
 
 import javax.swing.*;
 import com.viaoa.hub.*;
@@ -32,6 +34,9 @@ public class OAPanel extends JPanel implements OAJfcComponent {
     public OAPanel(Hub h) {
         this.hub = h;
         setup();
+    }
+    public OAPanel(LayoutManager lm) {
+        super(lm);
     }
 
     protected void setup() {
@@ -59,4 +64,73 @@ public class OAPanel extends JPanel implements OAJfcComponent {
         return this.control.getToolTipTextTemplate();
     }
 
+    
+    // 20181006 TESTING:  use minimum size if there are any OAResizePanels
+/*  > I ended up adjusting OAResizePanel getPreferredSize when an resizable component (using OAResizePanel) is inside of a JScrollPane
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension d = super.getPreferredSize();
+        Dimension dx = super.getMinimumSize();
+
+        
+        
+        return dx;
+    }
+*/    
+    
+    
+//testing    
+    /* 20181006 added scrollable support.
+     * JScrollPane will set size of internal components no less then preferred size.
+     * This will allow it to go down to minimumsize
+     */
+    
+/**     
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        Dimension d = this.getPreferredSize();
+        return d;
+    }
+    @Override
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        if (orientation == SwingConstants.VERTICAL) {
+            return OATable.getCharHeight();
+        }
+        return OATable.getCharWidth(5);
+    }
+    @Override
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        if (orientation == SwingConstants.VERTICAL) {
+            return OATable.getCharHeight() * 10;
+        }
+        return OATable.getCharWidth(5);
+    }
+int xx;    
+    private boolean bTrackWidth=true;
+    
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+System.out.println("xxxxxxxxxxxxxxxx "+(++xx));        
+        Dimension d = this.getSize();
+
+        Dimension dMin = this.getMinimumSize();
+        if (d.width < (dMin.width+10)) {
+            bTrackWidth = false; // need scrollbar
+System.out.println("YES");            
+        }
+        else {
+            if (!bTrackWidth) {
+                if (d.width > dMin.width+10) {
+                    bTrackWidth = true; // dont need scrollbar
+System.out.println("NO");            
+                }
+            }
+        }
+        return bTrackWidth;
+    }
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+        return false;
+    }
+*/
 }

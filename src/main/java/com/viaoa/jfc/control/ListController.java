@@ -290,12 +290,13 @@ public class ListController extends OAJfcController implements ListSelectionList
             }
             else {
                 int row = list.getSelectionModel().getMinSelectionIndex(); // dont use e.first or e.last
-                if (row != -1) {
+                // 20181006
+                //was: if (row != -1) {
                     if (getHub().getLinkHub() != null) { // 20140501 dont need undoable if not linked
                         OAUndoManager.add(OAUndoableEdit.createUndoableChangeAO(undoDescription, getHub(), getHub().getAO(), getHub().elementAt(row)));
                     }
                     getHub().setActiveObject(row);
-                }
+                //was: }
             }            
         }
         finally {

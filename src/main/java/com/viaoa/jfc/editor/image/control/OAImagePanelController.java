@@ -23,7 +23,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 
 import com.viaoa.jfc.OAButton;
-import com.viaoa.jfc.OAJFCUtil;
+import com.viaoa.jfc.OAJfcUtil;
 import com.viaoa.jfc.OAMultiButtonSplitButton;
 import com.viaoa.jfc.editor.image.view.*;
 import com.viaoa.jfc.editor.image.OAImagePanel;
@@ -252,11 +252,11 @@ public class OAImagePanelController {
     protected void onOpen() {
         JFileChooser fc = getImageFileChooserController().getOpenImageFileChooser();
         
-        int x = fc.showOpenDialog(OAJFCUtil.getWindow(panImage));
+        int x = fc.showOpenDialog(OAJfcUtil.getWindow(panImage));
         if (x != JFileChooser.APPROVE_OPTION) return;
         File file = fc.getSelectedFile();
         if (file.length() > (4 * 1024 * 1000)) {
-            JOptionPane.showMessageDialog(OAJFCUtil.getWindow(panImage), "Image file over 4mb, please use smaller size", "Open image", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(OAJfcUtil.getWindow(panImage), "Image file over 4mb, please use smaller size", "Open image", JOptionPane.WARNING_MESSAGE);
         }
         String fileName = file.getPath();
         try {
@@ -266,7 +266,7 @@ public class OAImagePanelController {
             setImage(fileName, bi);
         }
         catch (Exception e) {
-            JOptionPane.showMessageDialog(OAJFCUtil.getWindow(panImage), "Error reading file \"" + fileName+"\"\nError: " + e.getMessage(), "Open image", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(OAJfcUtil.getWindow(panImage), "Error reading file \"" + fileName+"\"\nError: " + e.getMessage(), "Open image", JOptionPane.WARNING_MESSAGE);
         }
     }
     protected void onDelete() {
@@ -299,7 +299,7 @@ public class OAImagePanelController {
             fos.close();
         }
         catch (Exception e) {
-            JOptionPane.showMessageDialog(OAJFCUtil.getWindow(panImage), "Error saving file \"" + file.getName()+"\"\nError: " + e.getMessage(), "Save image", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(OAJfcUtil.getWindow(panImage), "Error saving file \"" + file.getName()+"\"\nError: " + e.getMessage(), "Save image", JOptionPane.WARNING_MESSAGE);
         }
     }
     
@@ -308,7 +308,7 @@ public class OAImagePanelController {
     protected void onSaveAs() {
         if (panImage == null || panImage.getImage() == null) return;
         JFileChooser fc = getImageFileChooserController().getSaveAsImageFileChooser();
-        int x = fc.showSaveDialog(OAJFCUtil.getWindow(panImage));
+        int x = fc.showSaveDialog(OAJfcUtil.getWindow(panImage));
         if (x != JFileChooser.APPROVE_OPTION) return;
         File file = fc.getSelectedFile();
         String fileName = file.getPath();
@@ -328,7 +328,7 @@ public class OAImagePanelController {
             setFile(file);
         }
         catch (Exception e) {
-            JOptionPane.showMessageDialog(OAJFCUtil.getWindow(panImage), "Error saving file \"" + fileName+"\"\nError: " + e.getMessage(), "Save image", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(OAJfcUtil.getWindow(panImage), "Error saving file \"" + fileName+"\"\nError: " + e.getMessage(), "Save image", JOptionPane.WARNING_MESSAGE);
         }
     }
     protected void onTwain() {
