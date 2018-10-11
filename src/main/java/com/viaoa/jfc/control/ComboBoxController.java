@@ -27,7 +27,7 @@ public class ComboBoxController extends OAJfcController implements FocusListener
     JList list;
 
     public ComboBoxController(Hub hub, JComboBox cb, String propertyPath) {
-        super(hub, propertyPath, cb, HubChangeListener.Type.HubValid, (hub==null?null:hub.getLinkHub()), (hub==null?null:hub.getLinkPath())); // this will add hub listener
+        super(hub, propertyPath, cb, HubChangeListener.Type.HubValid, true); 
         create(cb);
     }
 
@@ -234,7 +234,7 @@ public class ComboBoxController extends OAJfcController implements FocusListener
                             JOptionPane.ERROR_MESSAGE);
                 }
                 else {
-                    if (!confirm(activeObject, obj)) return;
+                    if (!confirmPropertyChange(activeObject, obj)) return;
                     boolean b = getEnableUndo() && hub != null && hub.getLinkHub() != null;
                     try {
                         if (b) {

@@ -61,11 +61,21 @@ public class OAObjectEditQueryTest extends OAUnitTest {
         b = emp.getEmployeeAwards().canAdd();
         assertFalse(b);
 
+        b = emp.getAddresses().canAdd();
+        assertFalse(b);
+        
         b = emp.getAddresses().canAdd(new Address());
-        assertTrue(b);
+        assertFalse(b);
         b = emp.getAddresses().canRemove();
-        assertTrue(b);
-        emp.getAddresses().add(new Address());
+        assertFalse(b);
+        
+        try {
+            emp.getAddresses().add(new Address());
+            fail("emp.getAddresses.add should not be allowed");
+        }
+        catch (Exception e) {
+        }
+        
         
         b = emp.getEmployeeAwards().canAdd();
         assertFalse(b);
@@ -78,11 +88,11 @@ public class OAObjectEditQueryTest extends OAUnitTest {
         
         assertFalse(emp.isEnabled(Employee.P_LastName));
         
-        assertTrue(emp.isEnabled(Employee.P_Addresses));
+        assertFalse(emp.isEnabled(Employee.P_Addresses));
         b = OAObjectEditQueryDelegate.getAllowEnabled(emp, Employee.P_Addresses);
-        assertTrue(b);
+        assertFalse(b);
         b = OAObjectEditQueryDelegate.getAllowAdd(emp.getAddresses());
-        assertTrue(b);
+        assertFalse(b);
         
         try {
             emp.setLastName("test");

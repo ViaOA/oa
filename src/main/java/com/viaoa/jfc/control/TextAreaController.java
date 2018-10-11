@@ -215,7 +215,7 @@ public class TextAreaController extends OAJfcController implements FocusListener
                         "Invalid Entry", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            if (!confirm(activeObject, convertedValue)) return;
+            if (!confirmPropertyChange(activeObject, convertedValue)) return;
             
             prevText = text;
             Object prevValue = getValue(activeObject);

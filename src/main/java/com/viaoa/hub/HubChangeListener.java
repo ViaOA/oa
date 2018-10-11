@@ -36,6 +36,7 @@ public abstract class HubChangeListener {
         AoNull(true),  // hub.activeObject
         AoNotNull(true),
         AlwaysTrue(true),
+        AlwaysFalse(true),
         PropertyNull(true),
         PropertyNotNull(true);
         
@@ -108,6 +109,9 @@ public abstract class HubChangeListener {
     
     public HubProp addAlwaysTrue(Hub hub) {
         return add(hub, null, true, Type.AlwaysTrue);
+    }
+    public HubProp addAlwaysFalse(Hub hub) {
+        return add(hub, null, true, Type.AlwaysFalse);
     }
     
     public HubProp addPropertyNull(Hub hub, String prop) {
@@ -300,6 +304,7 @@ public abstract class HubChangeListener {
                 if (compareValue == Type.AoNull) return (hub.getAO() == null);
                 if (compareValue == Type.AoNotNull) return (hub.getAO() != null);
                 if (compareValue == Type.AlwaysTrue) return true;
+                if (compareValue == Type.AlwaysFalse) return false;
                 if (compareValue == Type.Unknown) return true;
             }
 

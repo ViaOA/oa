@@ -72,10 +72,12 @@ public class OAObjectEditQuery {
         VerifyDelete(true, true),        // use: value to get deleted object, allowDelete, throwable - set allowDelete=false, or throwable!=null to cancel
         
         GetConfirmPropertyChange(false),
+        /* todo:
         GetConfirmAdd(false),
         GetConfirmRemove(false),
         GetConfirmDelete(false),
         GetDependentProperties(false),
+        */
         
         GetToolTip(false),      // use: toolTip
         RenderLabel(false),     // use: label and update it's props

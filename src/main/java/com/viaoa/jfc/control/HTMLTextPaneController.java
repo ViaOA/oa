@@ -230,7 +230,7 @@ public abstract class HTMLTextPaneController extends OAJfcController implements 
                                 "Invalid Entry", JOptionPane.ERROR_MESSAGE);
                         return false;
                     }
-                    if (!confirm(activeObject, newText)) return false;
+                    if (!confirmPropertyChange(activeObject, newText)) return false;
                 }
 
                 bChange = true;

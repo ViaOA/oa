@@ -32,17 +32,13 @@ public class CustomComboBoxController extends OAJfcController {
     JComboBox comboBox;
     public boolean bDisplayPropertyOnly; // 2007/05/25 used by OATreeComboBox so that setSelectedItem() does not try to update property
     
-    public CustomComboBoxController(Hub hub, JComboBox cb, String propertyPath, Hub hubDirect, String directProperty) {
-        super(hub, propertyPath, cb, (hubDirect==null?HubChangeListener.Type.AoNotNull:HubChangeListener.Type.HubValid), hubDirect, directProperty); 
-        create(cb);
-    }
-    public CustomComboBoxController(Hub hub, JComboBox cb, String propertyPath) {
-        super(hub, propertyPath, cb, HubChangeListener.Type.AoNotNull);
+    public CustomComboBoxController(Hub hub, JComboBox cb, String propertyPath, boolean bDirectlySetsAO) {
+        super(hub, propertyPath, cb, (bDirectlySetsAO ? HubChangeListener.Type.HubValid : HubChangeListener.Type.AoNotNull), bDirectlySetsAO);
         create(cb);
     }
 
-    public CustomComboBoxController(Object obj, JComboBox cb, String propertyPath) {
-        super(obj, propertyPath, cb, HubChangeListener.Type.AoNotNull);
+    public CustomComboBoxController(Object obj, JComboBox cb, String propertyPath, boolean bDirectlySetsAO) {
+        super(obj, propertyPath, cb, HubChangeListener.Type.AoNotNull, bDirectlySetsAO, true);
         create(cb);
     }
 

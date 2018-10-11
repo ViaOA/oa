@@ -41,8 +41,20 @@ public class OAPropertyInfo implements java.io.Serializable {
     private Method editQueryMethod;
     private boolean isProcessed;
 
-    private OAProperty oaProperty;    
+    private String enabledProperty;
+    private boolean enabledValue;
+    private String visibleProperty;
+    private boolean visibleValue;
+
+    private String userEnabledProperty;
+    private boolean userEnabledValue;
+    private String userVisibleProperty;
+    private boolean userVisibleValue;
+
+    private String[] userDependentProperties;
+    private String[] viewDependentProperties;
     
+    private OAProperty oaProperty;    
 	
 	public OAPropertyInfo() {
 	}
@@ -69,7 +81,7 @@ public class OAPropertyInfo implements java.io.Serializable {
         return isProcessed;
     }
     public void setProcessed(boolean b) {
-        this.unique = isProcessed;
+        this.isProcessed = isProcessed;
     }
 	public int getMaxLength() {
 		return maxLength;
@@ -175,14 +187,12 @@ public class OAPropertyInfo implements java.io.Serializable {
         this.isCurrency = b;
     }
     
-    private String[] viewDependentProperties;
     public void setViewDependentProperties(String[] ss) {
         this.viewDependentProperties = ss;
     }
     public String[] getViewDependentProperties() {
         return this.viewDependentProperties;
     }
-    private String[] userDependentProperties;
     public void setUserDependentProperties(String[] ss) {
         this.userDependentProperties = ss;
     }
@@ -190,10 +200,6 @@ public class OAPropertyInfo implements java.io.Serializable {
         return this.userDependentProperties;
     }
     
-    private String enabledProperty;
-    private boolean enabledValue;
-    private String visibleProperty;
-    private boolean visibleValue;
     public String getEnabledProperty() {
         return enabledProperty;
     }
@@ -220,10 +226,6 @@ public class OAPropertyInfo implements java.io.Serializable {
         visibleValue = b;
     }
 
-    private String userEnabledProperty;
-    private boolean userEnabledValue;
-    private String userVisibleProperty;
-    private boolean userVisibleValue;
     public String getUserEnabledProperty() {
         return userEnabledProperty;
     }

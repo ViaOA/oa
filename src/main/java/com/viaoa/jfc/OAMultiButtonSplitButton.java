@@ -13,10 +13,14 @@ package com.viaoa.jfc;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
@@ -172,6 +176,9 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         buttons = (JButton[]) OAArray.add(JButton.class, buttons, cmd);
 
         panHidden.add(cmd);
+
+        
+        boolean bMainButton = (!bAllowChangeMasterButton & buttons.length == 1);
         
         boolean bAdd = true;
         if (bDefault || bFirst) {
@@ -195,6 +202,37 @@ public class OAMultiButtonSplitButton extends OASplitButton {
                 popup.setVisible(false);
             }
         });
+
+        
+        if (bMainButton) {
+            cmd.addComponentListener(new ComponentListener() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                }
+                @Override
+                public void componentMoved(ComponentEvent e) {
+                }
+                
+                boolean bManualHide;
+                @Override
+                public void componentShown(ComponentEvent e) {
+                    setSelected(cmd);
+                    if (bManualHide) OAMultiButtonSplitButton.this.setVisible(true);
+                }
+                @Override
+                public void componentHidden(ComponentEvent e) {
+                    bManualHide = false;
+                    for (JButton jb : buttons) {
+                        if (jb.isVisible()) {
+                            setSelected(jb);
+                            return;
+                        }
+                    }
+                    bManualHide = true;
+                    OAMultiButtonSplitButton.this.setVisible(false);
+                }
+            });
+        }
     }
 
     public void setSelected(JButton cmd) {
@@ -234,13 +272,19 @@ public class OAMultiButtonSplitButton extends OASplitButton {
     }
     
     
+    
+    
+    
+    static JButton bx;
     public static void main(String[] args) {
         final JFrame frm = new JFrame();
         frm.setLayout(new FlowLayout());
         frm.setDefaultCloseOperation(frm.EXIT_ON_CLOSE);
 
-        OAMultiButtonSplitButton cmd = new OAMultiButtonSplitButton();
-        cmd.setText("This is the button text");
+        OAMultiButtonSplitButton multiButton = new OAMultiButtonSplitButton();
+        multiButton.setAllowChangeMasterButton(false);
+
+        multiButton.setText("This is the button text");
         
         JButton but = new JButton("hey1");
         but.addActionListener(new ActionListener() {
@@ -249,26 +293,31 @@ public class OAMultiButtonSplitButton extends OASplitButton {
                 System.out.println("1");
             }
         });
-        cmd.addButton(but, true);
+        multiButton.addButton(but, true);
+        bx = but;
 
         but = new JButton("another drop down button");
         but.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("2");
+                bx.setVisible(!bx.isVisible());
             }
         });
-        cmd.addButton(but, false);
+        multiButton.addButton(but, false);
         
-        
-        cmd.addActionListener(new ActionListener() {
+        multiButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
             }
         });
 
-        frm.add(cmd);
+        frm.add(multiButton);
 
         frm.pack();
+        
+//but.setVisible(false);
+        
+        
         Dimension d = frm.getSize();
         d.width *= 2;
         d.height *= 2;

@@ -132,6 +132,11 @@ public class OAAnnotationDelegate {
         }
         oi.setPropertyIds(ss);
         
+if (clazz.getName().equals("test.theice.tsam.model.oa.Server")) {
+    //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+    int xx = 4;
+    xx++;
+}
 
         // properties
         for (Method m : methods) {

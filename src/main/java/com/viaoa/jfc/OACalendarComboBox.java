@@ -55,11 +55,16 @@ public class OACalendarComboBox extends OADateComboBox {
     
     
     public OACalendarComboBox(final Hub<? extends OAObject> hubCalendar, final String datePropertyName, int columns) {
+        // uses a temp hub
         super(new Hub(CalendarDate.class), CalendarDate.PROPERTY_Date, columns);
         
         linkInfo = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(hubCalendar);
         if (linkInfo == null) throw new RuntimeException("must have a master hub to use calendar combo");
         if (linkInfo.getType() != linkInfo.ONE) throw new RuntimeException("can only be used with link.type=ONE");
+
+        // need to include the real hub
+        getController().getEnabledChangeListener().addAoNotNull(hubCalendar);
+        getController().addExtendedChecking(hubCalendar, datePropertyName);
         
         this.hubMain = hubCalendar.getMasterHub();
         this.linkName = linkInfo.getName();

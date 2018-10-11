@@ -40,7 +40,7 @@ public class OAPanel extends JPanel implements OAJfcComponent {
     }
 
     protected void setup() {
-        control = OAJfcControllerFactory.createAoNotNull(this, hub);
+        control = OAJfcControllerFactory.createAoNotNull(hub, this);
     }
     
     public void setLabel(JLabel lbl) {

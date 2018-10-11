@@ -11,6 +11,7 @@
 package com.viaoa.object;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
@@ -19,6 +20,7 @@ import com.viaoa.remote.multiplexer.OARemoteThread;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubEvent;
 import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.transaction.OATransaction;
 import com.viaoa.util.OAArray;
@@ -47,14 +49,13 @@ public class OAThreadLocalDelegate {
     private static final AtomicInteger TotalTransaction = new AtomicInteger();
     private static final AtomicInteger TotalCaptureUndoablePropertyChanges = new AtomicInteger();
     private static final AtomicInteger TotalHubMergerChanging = new AtomicInteger();
-    private static final AtomicInteger TotalIsSendingEvent = new AtomicInteger(); // used to manage calcPropertyChanges while another event(s) is being processed
 //    private static final AtomicInteger TotalGetDetailHub = new AtomicInteger();
     private static final AtomicInteger TotalSiblingHelper = new AtomicInteger();
     private static final AtomicInteger TotalRemoteMultiplexerClient = new AtomicInteger();
     private static final AtomicInteger TotalNotifyWaitingObject = new AtomicInteger();
-    private static final AtomicInteger TotalRecursiveTriggerCount = new AtomicInteger();
     
     private static AtomicInteger TotalHubListenerTreeCount = new AtomicInteger();
+    private static final AtomicInteger TotalHubEvent = new AtomicInteger();
     
 
     public static final HashMap<Object, OAThreadLocal[]> hmLock = new HashMap<Object, OAThreadLocal[]>(53, .75f);
@@ -92,10 +93,6 @@ public class OAThreadLocalDelegate {
             msTransaction = throttleLOG("TotalTransaction ="+x, msTransaction);
         }
 	}
-	
-
-	
-	
 	public static OATransaction getTransaction() {
 	    if (TotalTransaction.get() == 0) return null; 
         OAThreadLocal ti = getThreadLocal(false);
@@ -144,12 +141,6 @@ public class OAThreadLocalDelegate {
 		}
         if (x > 50 || x < 0 || x2 > 50 || x2 < 0) {
             msLoadingObject = throttleLOG("TotalIsLoading="+x2+", ti="+x, msLoadingObject);
-/**qqqqqqqqqqqqq
-Exception ex = new Exception("TotalIsLoading="+x2+", ti="+x);
-ex.printStackTrace();
-int xx=4;
-xx++;
-qqqqqqqqqqqqqqqq*/
         }
         return bPreviousValue;
 	}
@@ -181,7 +172,12 @@ qqqqqqqqqqqqqqqq*/
 
 		if (old == 0 || mode == 0) {  // dont update total if it has already been called for this ti
 			if (mode == 0) {
-				if (OAThreadLocalDelegate.TotalObjectCacheAddMode.get() > 0) OAThreadLocalDelegate.TotalObjectCacheAddMode.decrementAndGet();
+				if (OAThreadLocalDelegate.TotalObjectCacheAddMode.get() > 0) {
+				    int x = OAThreadLocalDelegate.TotalObjectCacheAddMode.decrementAndGet();
+	                if (x < 0) {
+	                    msObjectCacheAddMode = throttleLOG("TotalObjectCacheAddMode ="+x, msObjectCacheAddMode);
+	                }
+				}
 			}
 			else {
 			    int x = OAThreadLocalDelegate.TotalObjectCacheAddMode.incrementAndGet();
@@ -289,7 +285,7 @@ qqqqqqqqqqqqqqqq*/
 	
 	// Deleting -----------------------
     
-    private final static Vector vecDeleting = new Vector(10);
+    private final static ConcurrentHashMap hmDeleting = new ConcurrentHashMap<>();
 	/**
 	 * Is this thread currently deleting.
 	 */
@@ -304,7 +300,7 @@ qqqqqqqqqqqqqqqq*/
 	 */
 	public static boolean isDeleting(Object obj) {
 		if (obj == null) return false;
-	    return vecDeleting.contains(obj);
+	    return hmDeleting.contains(obj);
 	}
 
 	/**
@@ -317,7 +313,7 @@ qqqqqqqqqqqqqqqq*/
             return false;
         }
         
-        if (!vecDeleting.contains(obj)) return false;
+        if (!hmDeleting.contains(obj)) return false;
         
         boolean b = isDeleting(OAThreadLocalDelegate.getThreadLocal(false), obj);
         // LOG.finest(""+b);
@@ -339,12 +335,12 @@ qqqqqqqqqqqqqqqq*/
         if (obj == null) return;
 
 		if (b) {
-		    vecDeleting.add(obj);
-	        if (vecDeleting.size() > 25) {
-	            msDeleting = throttleLOG("TotalDeleting ="+vecDeleting.size(), msDeleting);
+		    hmDeleting.put(obj, obj);
+	        if (hmDeleting.size() > 25) {
+	            msDeleting = throttleLOG("TotalDeleting ="+hmDeleting.size(), msDeleting);
 	        }
 		}
-        else vecDeleting.remove(obj);
+        else hmDeleting.remove(obj);
 
 		setDeleting(OAThreadLocalDelegate.getThreadLocal(b), obj, b);
 	}
@@ -362,7 +358,9 @@ qqqqqqqqqqqqqqqq*/
 					ti.deleting[x] = obj;
 					break;
 				}
-				if (ti.deleting[i] == obj) return;
+				if (ti.deleting[i] == obj) {
+				    return;
+				}
 				if (ti.deleting[i] == null) {
 					ti.deleting[i] = obj;
 					break;
@@ -829,84 +827,6 @@ static volatile int unlockCnt;
     }
 
     
-    // TotalIsSendingEvent  20120104
-    public static boolean isSendingEvent() {
-        boolean b; 
-        if (OAThreadLocalDelegate.TotalIsSendingEvent.get() == 0) {
-            b = false;
-        }
-        else {
-            b = isSendingEvent(OAThreadLocalDelegate.getThreadLocal(false));
-        }
-        return b;
-    }
-    protected static boolean isSendingEvent(OAThreadLocal ti) {
-        if (ti == null) return false;
-        return ti.sendingEvent > 0;
-    }
-    public static void setSendingEvent(boolean b) {
-        setSendingEvent(OAThreadLocalDelegate.getThreadLocal(b), b);
-    }
-    private static boolean bSendingEventReset = false;
-    private static long msSendingEvent;
-    protected static void setSendingEvent(OAThreadLocal ti, boolean b) {
-        if (ti == null) return;
-        int x;
-        if (b) {
-            ti.sendingEvent++;
-            x = OAThreadLocalDelegate.TotalIsSendingEvent.getAndIncrement();
-        }
-        else {
-            ti.sendingEvent--;
-            if (ti.sendingEvent == 0) {
-                ti.calcPropertyEvents = null;
-            }
-            x = OAThreadLocalDelegate.TotalIsSendingEvent.decrementAndGet();
-        }
-        if (x > 100 || x < 0 || bSendingEventReset) {
-            msSendingEvent = throttleLOG("TotalIsSendingEvent="+x, msSendingEvent);
-            if (x == 0) bSendingEventReset = false;
-            else bSendingEventReset = true;
-        }
-    }
-
-    public static boolean hasSentCalcPropertyChange(Hub thisHub, OAObject thisObj, String propertyName) {
-        if (thisHub == null || propertyName == null || thisObj == null) return false;
-        if (!isSendingEvent()) return false;
-        
-        Hub hubMain = thisHub;
-        for ( ; hubMain.getSharedHub() != null ; ) {
-            hubMain = hubMain.getSharedHub();
-        }
-        
-        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
-        
-        if (tl.calcPropertyEvents == null) {
-            tl.calcPropertyEvents = new Tuple3[1];
-            tl.calcPropertyEvents[0] = new Tuple3(hubMain, thisObj, propertyName);
-            return false;
-        }
-        for (Tuple3<Hub, OAObject, String> tup : tl.calcPropertyEvents) {
-            if (tup.a == hubMain && tup.b == thisObj) {
-                if (propertyName.equalsIgnoreCase(tup.c)) return true;
-            }
-        }
-        int x = tl.calcPropertyEvents.length;
-        Tuple3<Hub, OAObject, String>[] temp = new Tuple3[x+1];
-        System.arraycopy(tl.calcPropertyEvents, 0, temp, 0, x);
-        temp[x] = new Tuple3<Hub, OAObject, String>(hubMain, thisObj, propertyName);
-        tl.calcPropertyEvents = temp;
-        
-        /*
-        if (x % 100 == 0) {
-            LOG.warning("tl.calcPropertyEvents.size = "+tl.calcPropertyEvents.length);
-        }
-        */
-        
-        return false;
-    }
-
-    
     // 20180704
     public static boolean addSiblingHelper(OASiblingHelper sh) {
         if (sh == null) return false;
@@ -942,9 +862,8 @@ static volatile int unlockCnt;
         if (ti.alSiblingHelper == null) ti.alSiblingHelper = new ArrayList<>();
         else if (ti.alSiblingHelper.contains(sh)) return false;
 
-        TotalSiblingHelper.incrementAndGet();
+        int x = TotalSiblingHelper.incrementAndGet();
         ti.alSiblingHelper.add(sh);
-        int x = TotalSiblingHelper.get();
         if (x > 20 || x < 0 || ti.alSiblingHelper.size() > 10) {
             msSiblingHelper = throttleLOG("TotalSiblingHelper.add, tot="+x+", this.size="+ti.alSiblingHelper.size()+", thread="+Thread.currentThread(), msSiblingHelper);
         }
@@ -952,104 +871,31 @@ static volatile int unlockCnt;
     }
     protected static void removeSiblingHelper(OAThreadLocal ti, OASiblingHelper sh) {
         if (ti == null || sh == null) return;
-        TotalSiblingHelper.decrementAndGet();
+        int x = TotalSiblingHelper.decrementAndGet();
 
         if (ti.alSiblingHelper == null) return;
         ti.alSiblingHelper.remove(sh);
         
-        int x = TotalSiblingHelper.get();
         if (x > 20 || x < 0 || ti.alSiblingHelper.size() > 10) {
             msSiblingHelper = throttleLOG("TotalSiblingHelper.remove, tot="+x+", this.size="+ti.alSiblingHelper.size()+", thread="+Thread.currentThread(), msSiblingHelper);
         }
     }
     
-
-    
-/** 20180704 was, replaced by siblingHelp    
-    public static Hub getGetDetailHub() {
-        Hub h; 
-        if (OAThreadLocalDelegate.TotalGetDetailHub.get() == 0) {
-            h = null;
-        }
-        else {
-            h = getGetDetailHub(OAThreadLocalDelegate.getThreadLocal(false));
-        }
-        return h;
-    }
-    protected static Hub getGetDetailHub(OAThreadLocal ti) {
-        if (ti == null) return null;
-        return ti.getDetailHub;
-    }
-    
-    public static String getGetDetailPropertyPath() {
-        String s; 
-        if (OAThreadLocalDelegate.TotalGetDetailHub.get() == 0) {
-            s = null;
-        }
-        else {
-            s = getGetDetailPropertyPath(OAThreadLocalDelegate.getThreadLocal(false));
-        }
-        return s;
-    }
-    protected static String getGetDetailPropertyPath(OAThreadLocal ti) {
-        if (ti == null) return null;
-        return ti.getDetailPropertyPath;
-    }
-    
-    public static void setGetDetailHub(Hub h) {
-        setGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h, null);
-    }
-    public static void setGetDetailHub(Hub h, String pp) {
-        setGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h, pp);
-    }
-    public static void resetGetDetailHub(Hub h) {
-        resetGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h, null);
-    }
-    public static void resetGetDetailHub(Hub h, String pp) {
-        resetGetDetailHub(OAThreadLocalDelegate.getThreadLocal(true), h, pp);
-    }
-
-    private static long msGetDetailHub;
-    protected static void setGetDetailHub(OAThreadLocal ti, Hub hub, String pp) {
-        if (ti == null) return;
-        Hub hubx = ti.getDetailHub;
-        ti.getDetailHub = hub;
-        ti.getDetailPropertyPath = pp;
-        int x = OAThreadLocalDelegate.TotalGetDetailHub.getAndIncrement();
-        if (x > 50 || x < 0) {
-            msGetDetailHub = throttleLOG("TotalGetDetailHub="+x, msGetDetailHub);
-        }
-    }
-    // used to set back to a previous (or null) value
-    protected static void resetGetDetailHub(OAThreadLocal ti, Hub hub, String pp) {
-        if (ti == null) return;
-        ti.getDetailHub = hub;
-        ti.getDetailPropertyPath = pp;
-        int x = OAThreadLocalDelegate.TotalGetDetailHub.decrementAndGet();
-        if (x > 25 || x < 0) {
-            msGetDetailHub = throttleLOG("TotalGetDetailHub="+x, msGetDetailHub);
-        }
-    }
-*/
-    
-    // 20151111
     private static long msThrottleStackTrace;
     public static long throttleLOG(String msg, long msLast) {
         long ms = System.currentTimeMillis();
         if (ms > msLast + 5000) {
             LOG.warning(msg);
-            
-/*qqqqqqq            
+            /*qqqqqqq            
             if (ms > msThrottleStackTrace + 30000) {
                 if (msThrottleStackTrace != 0) LOG.warning("ThreadLocalDelegate.stackTraces\n"+getAllStackTraces());
                 msThrottleStackTrace = ms;
             }
-*/            
+            */            
         }
         else ms = msLast;
         return ms;
     }
-    
     
     public static String getAllStackTraces() {
         String result = "";
@@ -1157,13 +1003,7 @@ static volatile int unlockCnt;
 
     // recursiveTriggerCount -----------------------
     public static int getRecursiveTriggerCount() {
-        int x; 
-        if (OAThreadLocalDelegate.TotalRecursiveTriggerCount.get() == 0) {
-            x = 0;
-        }
-        else {
-            x = getRecursiveTriggerCount(getThreadLocal(false));
-        }
+        int x = getRecursiveTriggerCount(getThreadLocal(false));
         return x;
     }
     protected static int getRecursiveTriggerCount(OAThreadLocal ti) {
@@ -1229,5 +1069,102 @@ static volatile int unlockCnt;
     public static void incrOASyncEventCount() {
         getThreadLocal(true).oaSyncEventCount++;            
     }
+
+    
+    // HubEvent  ---------------
+    private static long msHubEvent;
+    public static HubEvent getCurrentHubEvent() {
+        if (OAThreadLocalDelegate.TotalHubEvent.get() == 0) {
+            return null;
+        }
+        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(false);
+        if (tl == null) return null;
+        if (tl.alHubEvent == null) return null;
+        int x = tl.alHubEvent.size();
+        if (x == 0) return null;
+        return tl.alHubEvent.get(x-1);
+    }
+
+    public static void addHubEvent(HubEvent  he) {
+        if (he == null) return;
+        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
+        if (tl.alHubEvent == null) tl.alHubEvent = new ArrayList<>();
+        if (!tl.alHubEvent.contains(he)) tl.alHubEvent.add(he);
+        
+        TotalHubEvent.incrementAndGet();
+        int x = tl.alHubEvent.size();
+        if (x > 25 || TotalHubEvent.get() > 250) {
+            msHubEvent = throttleLOG("TotalHubEvent this="+x+", all="+TotalHubEvent.get(), msHubEvent);
+        }
+    }
+    public static void removeHubEvent(HubEvent he) {
+        if (OAThreadLocalDelegate.TotalHubEvent.get() == 0) return;
+        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(false);
+        if (tl == null) return;
+        if (tl.alHubEvent == null) return;
+        tl.alHubEvent.remove(he);
+
+        if (tl.alHubEvent.size() == 0) {
+            tl.calcPropertyEvents = null;;
+        }
+        
+        TotalHubEvent.decrementAndGet();
+        int x = tl.alHubEvent.size();
+        if (x > 25 || TotalHubEvent.get() > 250 || TotalHubEvent.get() < 0) {
+            msHubEvent = throttleLOG("TotalHubEvent this="+x+", all="+TotalHubEvent.get(), msHubEvent);
+        }
+    }
+
+    public static boolean isSendingEvent() {
+        boolean b; 
+        if (OAThreadLocalDelegate.TotalHubEvent.get() == 0) {
+            b = false;
+        }
+        else {
+            b = isSendingEvent(OAThreadLocalDelegate.getThreadLocal(false));
+        }
+        return b;
+    }
+    protected static boolean isSendingEvent(OAThreadLocal ti) {
+        if (ti == null) return false;
+        return ti.alHubEvent != null && ti.alHubEvent.size() > 0;
+    }
+    
+    public static boolean hasSentCalcPropertyChange(Hub thisHub, OAObject thisObj, String propertyName) {
+        if (thisHub == null || propertyName == null || thisObj == null) return false;
+        if (!isSendingEvent()) return false;
+        
+        Hub hubMain = thisHub;
+        for ( ; hubMain.getSharedHub() != null ; ) {
+            hubMain = hubMain.getSharedHub();
+        }
+        
+        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);
+        
+        if (tl.calcPropertyEvents == null) {
+            tl.calcPropertyEvents = new Tuple3[1];
+            tl.calcPropertyEvents[0] = new Tuple3(hubMain, thisObj, propertyName);
+            return false;
+        }
+        for (Tuple3<Hub, OAObject, String> tup : tl.calcPropertyEvents) {
+            if (tup.a == hubMain && tup.b == thisObj) {
+                if (propertyName.equalsIgnoreCase(tup.c)) return true;
+            }
+        }
+        int x = tl.calcPropertyEvents.length;
+        Tuple3<Hub, OAObject, String>[] temp = new Tuple3[x+1];
+        System.arraycopy(tl.calcPropertyEvents, 0, temp, 0, x);
+        temp[x] = new Tuple3<Hub, OAObject, String>(hubMain, thisObj, propertyName);
+        tl.calcPropertyEvents = temp;
+        
+        /*
+        if (x % 100 == 0) {
+            LOG.warning("tl.calcPropertyEvents.size = "+tl.calcPropertyEvents.length);
+        }
+        */
+        return false;
+    }
+
+    
 }
 

@@ -53,11 +53,22 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     public static ButtonCommand NEW_MANUAL = ButtonCommand.NewManual;
     public static ButtonCommand ADD_MANUAL = ButtonCommand.AddManual;
     public static ButtonCommand CLEARAO = ButtonCommand.ClearAO;
+    public static ButtonCommand GOTO = ButtonCommand.GoTo;
     
     public enum ButtonCommand {
-        Other, Up, Down, Save, Cancel, First, Last, 
-        Next, Previous, Delete, Remove, New, Insert, Add, Cut, Copy, Paste,
-        NewManual, AddManual, ClearAO
+        Other(false), Up(true), Down(true), Save(false), Cancel(false), First(true), Last(true), 
+        Next(true), Previous(true), Delete(true), Remove(true), New(true), Insert(true), Add(true), 
+        Cut(false), Copy(false), Paste(false),
+        NewManual(true), AddManual(true), ClearAO(true), GoTo(false);
+        
+        private boolean bSetsAO;
+        
+        ButtonCommand(boolean bSetsAO) {
+            this.bSetsAO = bSetsAO;
+        }
+        public boolean getSetsAO() {
+            return bSetsAO;
+        }
     }
     
     public static ButtonEnabledMode ALWAYS = ButtonEnabledMode.Always;
@@ -111,9 +122,25 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         
         if (command == null) command = ButtonCommand.Other;
         
-        if (enabledMode == null) enabledMode = getDefaultEnabledMode(hub, command);
+        if (enabledMode == null) {
+            enabledMode = getDefaultEnabledMode(hub, command);
+        }
         
-        control = new OAButtonController(hub, enabledMode, command);
+        if (command == ButtonCommand.GoTo) {
+            control = new OAButtonController(hub, enabledMode, command, HubChangeListener.Type.AoNotNull, false, true) {
+                @Override
+                protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+                    if (!bIsCurrentlyEnabled) {
+                        bIsCurrentlyEnabled = (hub.getAO() != null);
+                    }
+                    return bIsCurrentlyEnabled;
+                }
+            };
+            
+        }
+        else {
+            control = new OAButtonController(hub, enabledMode, command);
+        }
 
         if (command == SAVE) {
             control.getEnabledChangeListener().add(getHub(), OAObjectDelegate.WORD_Changed, true);
@@ -125,6 +152,7 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     public static ButtonEnabledMode getDefaultEnabledMode(Hub hub, ButtonCommand command) {
         ButtonEnabledMode enabledMode = ButtonEnabledMode.HubIsValid;
         switch (command) {
+        case GoTo:
         case Other:
             if (hub != null) {
                 enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
@@ -184,6 +212,9 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     }
     public OAButton(Hub hub, String text, ButtonCommand command) {
         this(hub, text, null, null, command);
+    }
+    public OAButton(Hub hub, String text, ButtonCommand command, Icon icon) {
+        this(hub, text, icon, null, command);
     }
     public OAButton(Hub hub, ButtonCommand command, String text) {
         this(hub, text, null, null, command);
@@ -816,6 +847,14 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     
     
     class OAButtonController extends ButtonController {
+        public OAButtonController(Hub hub, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command, HubChangeListener.Type type, boolean bDirectlySetsAO, boolean bIncludeExtendedChecks) {
+            super(hub, OAButton.this, enabledMode, command, 
+                type, 
+                bDirectlySetsAO,
+                bIncludeExtendedChecks
+            );
+        }
+        
         public OAButtonController(Hub hub, ButtonEnabledMode enabledMode, ButtonCommand command) {
             super(hub, OAButton.this, enabledMode, command);
         }

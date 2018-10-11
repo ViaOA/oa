@@ -170,7 +170,7 @@ public class FormattedTextFieldController extends OAJfcController implements Foc
                     "Invalid Entry", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            if (!confirm(activeObject, convertedValue)) return;
+            if (!confirmPropertyChange(activeObject, convertedValue)) return;
 
             prevText = text;
             Object prevValue = getValue(activeObject);

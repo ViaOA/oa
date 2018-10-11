@@ -31,9 +31,6 @@ import com.viaoa.util.*;
 public class OAColorComboBox extends OACustomComboBox {
     private static final long serialVersionUID = 1L;
 
-    public OAColorComboBox() {
-    }
-    
     /**
         Create a ColorComboBox that is bound to a property for the active object in a Hub.
         @param hub is Hub that used to display and edit color property in active object
@@ -41,7 +38,7 @@ public class OAColorComboBox extends OACustomComboBox {
         @param columns is width to use, using average character width
     */
     public OAColorComboBox(Hub hub, String propertyPath, int columns) {
-        super(hub, propertyPath, columns);
+        super(hub, propertyPath, columns, false);
         setupRenderer();
         initialize();
     }
@@ -52,7 +49,7 @@ public class OAColorComboBox extends OACustomComboBox {
         @param propertyPath is color property to display/edit
     */
     public OAColorComboBox(Hub hub, String propertyPath) {
-        super(hub, propertyPath);
+        super(hub, propertyPath, false);
         setupRenderer();
         initialize();
     }
@@ -64,7 +61,7 @@ public class OAColorComboBox extends OACustomComboBox {
         @param columns is width to use, using average character width
     */
     public OAColorComboBox(Object obj, String propertyPath, int columns) {
-        super(obj, propertyPath, columns);
+        super(obj, propertyPath, columns, false);
         setupRenderer();
         initialize();
     }
@@ -75,7 +72,7 @@ public class OAColorComboBox extends OACustomComboBox {
         @param propertyPath is color property to display/edit
     */
     public OAColorComboBox(Object obj, String propertyPath) {
-        super(obj, propertyPath);
+        super(obj, propertyPath, false);
         setupRenderer();
         initialize();
     }

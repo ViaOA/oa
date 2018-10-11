@@ -327,7 +327,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
                                 "Invalid Entry", JOptionPane.ERROR_MESSAGE);
                             bValid = false;
                         }
-                        else if (!confirm(obj, value)) bValid = false;
+                        else if (!confirmPropertyChange(obj, value)) bValid = false;
                         // else if (!confirm()) bValid = false;
                         if (!bValid) {
                             SwingUtilities.invokeLater(new Runnable() {

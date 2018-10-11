@@ -1,5 +1,23 @@
 
 
+String.format
+    https://docs.oracle.com/javase/1.5.0/docs/api/java/util/Formatter.html
+
+    %[argument_index$][flags][width][.precision]conversion
+        > width is the minimum number of characters to be written to the output
+        > precision for %s is max
+             
+
+    String.format("%.5s", "this is a test")  => "this "
+        > ".5" is max length
+        
+    String.format("%5.15s", "test")  => " this"
+        > "20" will min len
+        
+    
+        
+
+
 color = String.format("#%02x%02x%02x", 116, 151, 238);
 
 color = String.format("#%02x%02x%02x", program.getPrimaryColor().getRed(), program.getPrimaryColor().getGreen(), program.getPrimaryColor().getBlue());

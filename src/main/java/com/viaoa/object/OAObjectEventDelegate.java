@@ -166,7 +166,7 @@ public class OAObjectEventDelegate {
                     // 20180629
                     OAObject obj = OAObjectUniqueDelegate.getUnique(oaObj.getClass(), propertyName, newObj, false);
                     if (obj != null &&  obj != oaObj) {
-                        throw new RuntimeException("property is unique, and value already assigned to another object.");
+                        throw new RuntimeException("property is unique, and value already assigned to another object. Class="+oaObj.getClass().getSimpleName()+", property="+propertyName+", value="+newObj);
                     }
 
                     /*was:
@@ -425,7 +425,13 @@ public class OAObjectEventDelegate {
         if (!bIsLoading) {
             if (oi.getHasTriggers()) {
                 HubEvent hubEvent = new HubEvent(oaObj, propertyName, oldObj, newObj);
-                oi.onChange(oaObj, propertyName, hubEvent);
+                try {
+                    OAThreadLocalDelegate.addHubEvent(hubEvent);
+                    oi.onChange(oaObj, propertyName, hubEvent);
+                }
+                finally {
+                    OAThreadLocalDelegate.removeHubEvent(hubEvent);
+                }
             }
         }
     	

@@ -179,11 +179,11 @@ public class HubChangeListenerTest extends OAUnitTest {
         assertFalse(hcl.getValue());
         
         hubEmp.getAt(0).setLastName("xx");
-        assertEquals(7, vint.value);
+        assertEquals(6, vint.value);
         assertFalse(hcl.getValue());
 
         hubEmp.clear();
-        assertEquals(8, vint.value);
+        assertEquals(7, vint.value);
         assertTrue(hcl.getValue());
         
         hls = HubEventDelegate.getAllListeners(hubEmp);
@@ -216,11 +216,11 @@ public class HubChangeListenerTest extends OAUnitTest {
         assertTrue(hcl.getValue());
         
         hubEmp.getAt(0).setLastName("xx");
-        assertEquals(7, vint.value);
+        assertEquals(6, vint.value);
         assertTrue(hcl.getValue());
 
         hubEmp.clear();
-        assertEquals(8, vint.value);
+        assertEquals(7, vint.value);
         assertFalse(hcl.getValue());
         
         hls = HubEventDelegate.getAllListeners(hubEmp);

@@ -53,10 +53,10 @@ public class OATreeComboBox extends OACustomComboBox {
     private MyTreePopup myTreePopup;
 
     /**
-    */
     public OATreeComboBox() {
     	control.bDisplayPropertyOnly = true;
     }
+    */
 
     
     /**
@@ -64,7 +64,7 @@ public class OATreeComboBox extends OACustomComboBox {
         @param displayProperty property path to display
     */
     public OATreeComboBox(OATree tree, Hub hub, String displayProperty) {
-        super(hub, displayProperty);
+        super(hub, displayProperty, false);
     	control.bDisplayPropertyOnly = true;
         setTree(tree);
         tree.updateUI();
@@ -87,12 +87,12 @@ public class OATreeComboBox extends OACustomComboBox {
         @param displayProperty property path to display
     */
     public OATreeComboBox(Hub hub, String displayProperty) {
-        super(hub, displayProperty);
+        super(hub, displayProperty, false);
     	control.bDisplayPropertyOnly = true;
     }
 
-    public OATreeComboBox(Hub hub, String displayProperty, Hub hubDirect, String displayPropertyDirect) {
-        super(hub, displayProperty, hubDirect, displayPropertyDirect);
+    public OATreeComboBox(Hub hub, String displayProperty, boolean bDirectlySetsAO) {
+        super(hub, displayProperty, bDirectlySetsAO);
         control.bDisplayPropertyOnly = true;
     }
 

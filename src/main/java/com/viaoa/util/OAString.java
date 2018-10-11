@@ -2892,6 +2892,10 @@ j:      12
     }
 
     public static void main(String[] args) {
+        
+        String sx = String.format("%.5s", "this is a test");
+        sx = String.format("%5.15s", "test");
+        
         int x = LoremLipsum.length();
         String s;
         for (int i=0; i<5000; i++) {

@@ -48,38 +48,34 @@ public class HubEventDelegate {
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub,obj, pos);
 	        try {
-	            OAThreadLocalDelegate.setSendingEvent(true);
+	            OAThreadLocalDelegate.addHubEvent(hubEvent);
 	            for (int i=0; i<x; i++) {
 	                hls[i].beforeRemove(hubEvent);
 	            }
 	        }
 	        finally {
-	            OAThreadLocalDelegate.setSendingEvent(false);
+	            OAThreadLocalDelegate.removeHubEvent(hubEvent);
 	        }
 	    }
-	    
 	}
 	
 	public static void fireAfterRemoveEvent(Hub thisHub, final Object obj, int pos) {
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
-        HubEvent hubEvent = null;
 	    if (x > 0) {
-	        hubEvent = new HubEvent(thisHub,obj,pos);
-	        final HubEvent evt = hubEvent; 
-	        
+	        final HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
             if (OARemoteThreadDelegate.shouldEventsBeQueued()) {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            OAThreadLocalDelegate.setSendingEvent(true);
+                            OAThreadLocalDelegate.addHubEvent(hubEvent);
                             for (int i=0; i<x; i++) { 
-                                hl[i].afterRemove(evt);
+                                hl[i].afterRemove(hubEvent);
                             }
                         }
                         finally {
-                            OAThreadLocalDelegate.setSendingEvent(false);
+                            OAThreadLocalDelegate.removeHubEvent(hubEvent);
                         }
                     }
                 };
@@ -87,13 +83,13 @@ public class HubEventDelegate {
             }
             else {
     	        try {
-        	        OAThreadLocalDelegate.setSendingEvent(true);
+                    OAThreadLocalDelegate.addHubEvent(hubEvent);
         	        for (int i=0; i<x; i++) { 
         	        	hl[i].afterRemove(hubEvent);
         	        }
     	        }
     	        finally {
-    	            OAThreadLocalDelegate.setSendingEvent(false);
+                    OAThreadLocalDelegate.removeHubEvent(hubEvent);
     	        }
             }
 	    }
@@ -109,14 +105,19 @@ public class HubEventDelegate {
                 if (s != null) {
         	        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
         	        if (oi.getHasTriggers()) {
-                        if (hubEvent == null) hubEvent = new HubEvent(thisHub,obj,pos);
-            	        oi.onChange(thisHub.getMasterObject(), s, hubEvent);
+        	            final HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
+                        try {
+                            OAThreadLocalDelegate.addHubEvent(hubEvent);
+                            oi.onChange(thisHub.getMasterObject(), s, hubEvent);
+                        }
+                        finally {
+                            OAThreadLocalDelegate.removeHubEvent(hubEvent);
+                        }
         	        }
                 }
     	    }
         }
 	}
-
 	public static void fireBeforeRemoveAllEvent(Hub thisHub) {
         // verify with editQuery
         if (!OARemoteThreadDelegate.isRemoteThread()) {
@@ -133,38 +134,48 @@ public class HubEventDelegate {
 	    if (x > 0) {
             HubEvent hubEvent = new HubEvent(thisHub);
             try {
-                OAThreadLocalDelegate.setSendingEvent(true);
+                OAThreadLocalDelegate.addHubEvent(hubEvent);
                 for (int i=0; i<x; i++) {
                     hls[i].beforeRemoveAll(hubEvent);
                 }
             }
             finally {
-                OAThreadLocalDelegate.setSendingEvent(false);
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
             }
 	    }
 	}
 	public static void fireAfterRemoveAllEvent(Hub thisHub) {
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
-        HubEvent hubEvent = null;
 	    if (x > 0) {
-            hubEvent = new HubEvent(thisHub);
-            final HubEvent evt = hubEvent;
+            final HubEvent hubEvent = new HubEvent(thisHub);
             if (OARemoteThreadDelegate.shouldEventsBeQueued()) {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
-                        for (int i=0; i<x; i++) { 
-                            hl[i].afterRemoveAll(evt);
+                        try {
+                            OAThreadLocalDelegate.addHubEvent(hubEvent);
+                            for (int i=0; i<x; i++) { 
+                                hl[i].afterRemoveAll(hubEvent);
+                            }
+                        }
+                        finally {
+                            OAThreadLocalDelegate.removeHubEvent(hubEvent);
                         }
                     }
                 };
                 OARemoteThreadDelegate.queueEvent(r);
             }
             else {
-    	        for (int i=0; i<x; i++) { 
-    	        	hl[i].afterRemoveAll(hubEvent);
-    	        }
+                try {
+                    OAThreadLocalDelegate.addHubEvent(hubEvent);
+        	        for (int i=0; i<x; i++) { 
+        	        	hl[i].afterRemoveAll(hubEvent);
+        	        }
+                }
+                finally {
+                    OAThreadLocalDelegate.removeHubEvent(hubEvent);
+                }
             }
 	    }
         //fireMasterObjectChangeEvent(thisHub, true);
@@ -176,8 +187,14 @@ public class HubEventDelegate {
             if (s != null) {
                 OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
                 if (oi.getHasTriggers()) {
-                    if (hubEvent == null) hubEvent = new HubEvent(thisHub);
-                    oi.onChange(thisHub.getMasterObject(), s, hubEvent);
+                    final HubEvent hubEvent = new HubEvent(thisHub);
+                    try {
+                        OAThreadLocalDelegate.addHubEvent(hubEvent);
+                        oi.onChange(thisHub.getMasterObject(), s, hubEvent);
+                    }
+                    finally {
+                        OAThreadLocalDelegate.removeHubEvent(hubEvent);
+                    }
                 }
             }
         }
@@ -198,15 +215,15 @@ public class HubEventDelegate {
 	    HubListener[] hls = getAllListeners(thisHub);
 	    int x = hls.length;
 	    if (x > 0) {
-	        HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
+	        HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
 	        try {
-	            OAThreadLocalDelegate.setSendingEvent(true);
+                OAThreadLocalDelegate.addHubEvent(hubEvent);
     	        for (int i=0; i<x; i++) {
     	        	hls[i].beforeAdd(hubEvent);
     	        }
 	        }
 	        finally {
-	            OAThreadLocalDelegate.setSendingEvent(false);
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
 	        }
 	    }
 	}
@@ -215,23 +232,20 @@ public class HubEventDelegate {
 	    
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
-        HubEvent hubEvent = null;
 	    if (x > 0) {
-            hubEvent = new HubEvent(thisHub,obj,pos);
-            final HubEvent evt = hubEvent;
-            
+            final HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
             if (OARemoteThreadDelegate.shouldEventsBeQueued()) {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            OAThreadLocalDelegate.setSendingEvent(true);
+                            OAThreadLocalDelegate.addHubEvent(hubEvent);
                             for (int i=0; i<x; i++) { 
-                                hl[i].afterAdd(evt);
+                                hl[i].afterAdd(hubEvent);
                             }
                         }
                         finally {
-                            OAThreadLocalDelegate.setSendingEvent(false);
+                            OAThreadLocalDelegate.removeHubEvent(hubEvent);
                         }
                     }
                 };
@@ -239,13 +253,13 @@ public class HubEventDelegate {
             }
             else {
     	        try {
-        	        OAThreadLocalDelegate.setSendingEvent(true);
+                    OAThreadLocalDelegate.addHubEvent(hubEvent);
         	        for (int i=0; i<x; i++) { 
         	        	hl[i].afterAdd(hubEvent);
         	        }
     	        }
     	        finally {
-    	            OAThreadLocalDelegate.setSendingEvent(false);
+                    OAThreadLocalDelegate.removeHubEvent(hubEvent);
     	        }
             }
 	    }
@@ -261,8 +275,14 @@ public class HubEventDelegate {
                 if (s != null) {
                     OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
                     if (oi.getHasTriggers()) {
-                        if (hubEvent == null) hubEvent = new HubEvent(thisHub,obj,pos);
-                        oi.onChange(thisHub.getMasterObject(), s, hubEvent);
+                        HubEvent hubEvent = new HubEvent(thisHub,obj,pos);
+                        OAThreadLocalDelegate.addHubEvent(hubEvent);
+                        try {
+                            oi.onChange(thisHub.getMasterObject(), s, hubEvent);
+                        }
+                        finally {
+                            OAThreadLocalDelegate.removeHubEvent(hubEvent);
+                        }
                     }
                 }
             }
@@ -286,13 +306,13 @@ public class HubEventDelegate {
 	    if (x > 0) {
             HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
 	        try {
-                OAThreadLocalDelegate.setSendingEvent(true);
+                OAThreadLocalDelegate.addHubEvent(hubEvent);
                 for (int i=0; i<x; i++) {
                     hls[i].beforeInsert(hubEvent);
                 }
 	        }
 	        finally {
-	            OAThreadLocalDelegate.setSendingEvent(false);
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
 	        }
 	    }
 	}
@@ -301,22 +321,20 @@ public class HubEventDelegate {
 
 	    final HubListener[] hl = getAllListeners(thisHub);
 	    final int x = hl.length;
-        HubEvent hubEvent = null;
 	    if (x > 0) {
-            hubEvent = new HubEvent(thisHub, obj, pos);
+            final HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
             if (OARemoteThreadDelegate.shouldEventsBeQueued()) {
-                final HubEvent evt = hubEvent;
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            OAThreadLocalDelegate.setSendingEvent(true);
+                            OAThreadLocalDelegate.addHubEvent(hubEvent);
                             for (int i=0; i<x; i++) { 
-                                hl[i].afterInsert(evt);
+                                hl[i].afterInsert(hubEvent);
                             }
                         }
                         finally {
-                            OAThreadLocalDelegate.setSendingEvent(false);
+                            OAThreadLocalDelegate.removeHubEvent(hubEvent);
                         }
                     }
                 };
@@ -324,13 +342,13 @@ public class HubEventDelegate {
             }
             else {
                 try {
-                    OAThreadLocalDelegate.setSendingEvent(true);
+                    OAThreadLocalDelegate.addHubEvent(hubEvent);
                     for (int i=0; i<x; i++) { 
                         hl[i].afterInsert(hubEvent);
                     }
                 }
                 finally {
-                    OAThreadLocalDelegate.setSendingEvent(false);
+                    OAThreadLocalDelegate.removeHubEvent(hubEvent);
                 }
             }
 	    }
@@ -346,8 +364,14 @@ public class HubEventDelegate {
                 if (s != null) {
                     OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(objx.getClass());
                     if (oi.getHasTriggers()) {
-                        if (hubEvent != null) hubEvent = new HubEvent(thisHub, obj, pos);
-                        oi.onChange(thisHub.getMasterObject(), s, hubEvent);
+                        HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
+                        try {
+                            OAThreadLocalDelegate.addHubEvent(hubEvent);
+                            oi.onChange(thisHub.getMasterObject(), s, hubEvent);
+                        }
+                        finally {
+                            OAThreadLocalDelegate.removeHubEvent(hubEvent);
+                        }
                     }
                 }
             }
@@ -359,6 +383,7 @@ public class HubEventDelegate {
 	    if (x > 0) {
 	        Exception exception = null;
 	        HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
+            OAThreadLocalDelegate.addHubEvent(hubEvent);
 	        for (int i=0; i<x; i++) {
 	            try {
 	                hl[i].afterChangeActiveObject(hubEvent);
@@ -367,6 +392,7 @@ public class HubEventDelegate {
                     if (e != null) exception = e;
                 }
 	        }
+            OAThreadLocalDelegate.removeHubEvent(hubEvent);
 	        if (exception != null) {
 	            throw new RuntimeException("Exception while calling fireAfterChangeActiveObjectEvent", exception);
 	        }
@@ -377,9 +403,15 @@ public class HubEventDelegate {
 	    int x = hl.length;
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub);
-	        for (int i=0; i<x; i++) { 
-	        	hl[i].beforeSelect(hubEvent);
-	        }
+            OAThreadLocalDelegate.addHubEvent(hubEvent);
+            try {
+    	        for (int i=0; i<x; i++) { 
+    	        	hl[i].beforeSelect(hubEvent);
+    	        }
+            }
+            finally {
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
+            }
 	    }
 	}
 	public static void fireAfterSortEvent(Hub thisHub) {
@@ -387,9 +419,15 @@ public class HubEventDelegate {
 	    int x = hl.length;
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub);
-	        for (int i=0; i<x; i++) { 
-	        	hl[i].afterSort(hubEvent);
-	        }
+            OAThreadLocalDelegate.addHubEvent(hubEvent);
+            try {
+    	        for (int i=0; i<x; i++) { 
+    	        	hl[i].afterSort(hubEvent);
+    	        }
+            }
+            finally {
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
+            }
 	    }
         //fireMasterObjectChangeEvent(thisHub, false);
 	}
@@ -400,13 +438,13 @@ public class HubEventDelegate {
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub, obj);
             try {
-                OAThreadLocalDelegate.setSendingEvent(true);
+                OAThreadLocalDelegate.addHubEvent(hubEvent);
                 for (int i=0; i<x; i++) {
                     hls[i].beforeDelete(hubEvent);
                 }
             }
             finally {
-                OAThreadLocalDelegate.setSendingEvent(false);
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
             }
 	    }
 	}
@@ -420,17 +458,29 @@ public class HubEventDelegate {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
-                        for (int i=0; i<x; i++) { 
-                            hl[i].afterDelete(hubEvent);
+                        try {
+                            OAThreadLocalDelegate.addHubEvent(hubEvent);
+                            for (int i=0; i<x; i++) { 
+                                hl[i].afterDelete(hubEvent);
+                            }
+                        }
+                        finally {
+                            OAThreadLocalDelegate.removeHubEvent(hubEvent);
                         }
                     }
                 };
                 OARemoteThreadDelegate.queueEvent(r);
             }
             else {
-    	        for (int i=0; i<x; i++) { 
-    	        	hl[i].afterDelete(hubEvent);
-    	        }
+                try {
+                    OAThreadLocalDelegate.addHubEvent(hubEvent);
+        	        for (int i=0; i<x; i++) { 
+        	        	hl[i].afterDelete(hubEvent);
+        	        }
+                }
+                finally {
+                    OAThreadLocalDelegate.removeHubEvent(hubEvent);
+                }
             }
 	    }
         //fireMasterObjectChangeEvent(thisHub, false);
@@ -440,8 +490,14 @@ public class HubEventDelegate {
         int x = hl.length;
         if (x > 0) {
             HubEvent hubEvent = new HubEvent(thisHub, obj);
-            for (int i=0; i<x; i++) { 
-                hl[i].beforeSave(hubEvent);
+            try {
+                OAThreadLocalDelegate.addHubEvent(hubEvent);
+                for (int i=0; i<x; i++) { 
+                    hl[i].beforeSave(hubEvent);
+                }
+            }
+            finally {
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
             }
         }
     }
@@ -450,9 +506,15 @@ public class HubEventDelegate {
 	    int x = hl.length;
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub, obj);
-	        for (int i=0; i<x; i++) { 
-	        	hl[i].afterSave(hubEvent);
-	        }
+            OAThreadLocalDelegate.addHubEvent(hubEvent);
+            try {
+    	        for (int i=0; i<x; i++) { 
+    	        	hl[i].afterSave(hubEvent);
+    	        }
+            }
+            finally {
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
+            }
 	    }
 	}
 	public static void fireBeforeMoveEvent(Hub thisHub, int fromPos, int toPos) {
@@ -461,13 +523,13 @@ public class HubEventDelegate {
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub, fromPos, toPos);
 	        try { 
-	            OAThreadLocalDelegate.setSendingEvent(true);
+                OAThreadLocalDelegate.addHubEvent(hubEvent);
     	        for (int i=0; i<x; i++) { 
     	        	hl[i].beforeMove(hubEvent);
     	        }
 	        }
 	        finally {
-	            OAThreadLocalDelegate.setSendingEvent(false);
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
 	        }
 	    }
 	}
@@ -477,13 +539,13 @@ public class HubEventDelegate {
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub, fromPos, toPos);
 	        try {
-	            OAThreadLocalDelegate.setSendingEvent(true);
+                OAThreadLocalDelegate.addHubEvent(hubEvent);
     	        for (int i=0; i<x; i++) { 
     	        	hl[i].afterMove(hubEvent);
     	        }
 	        }
 	        finally {
-	            OAThreadLocalDelegate.setSendingEvent(false);
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
 	        }
 	    }
         //fireMasterObjectChangeEvent(thisHub, false);
@@ -511,8 +573,14 @@ public class HubEventDelegate {
 	    int x = hl.length;
 	    if (x > 0) {
 	        HubEvent hubEvent = new HubEvent(thisHub, object, propertyName, null, null);
-	        for (int i=0; i<x; i++) {
-	            hl[i].afterPropertyChange(hubEvent);
+	        try {
+                OAThreadLocalDelegate.addHubEvent(hubEvent);
+    	        for (int i=0; i<x; i++) {
+    	            hl[i].afterPropertyChange(hubEvent);
+    	        }
+	        }
+	        finally {
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
 	        }
 	    }
 	}
@@ -530,13 +598,13 @@ public class HubEventDelegate {
         if (x > 0) {
             HubEvent hubEvent = new HubEvent(thisHub,oaObj,propertyName,oldValue,newValue);
             try {
-                OAThreadLocalDelegate.setSendingEvent(true);
+                OAThreadLocalDelegate.addHubEvent(hubEvent);
                 for (int i=0; i<x; i++) {
                     hls[i].beforePropertyChange(hubEvent);
                 }
             }
             finally {
-                OAThreadLocalDelegate.setSendingEvent(false);
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
             }
         }
 	}
@@ -576,13 +644,13 @@ public class HubEventDelegate {
                     @Override
                     public void run() {
                         try {
-                            OAThreadLocalDelegate.setSendingEvent(true);
+                            OAThreadLocalDelegate.addHubEvent(hubEvent);
                             for (int i=0; i<x; i++) {
                                 hl[i].afterPropertyChange(hubEvent);
                             }
                         }
                         finally {
-                            OAThreadLocalDelegate.setSendingEvent(false);
+                            OAThreadLocalDelegate.removeHubEvent(hubEvent);
                         }
                     }
                 };
@@ -590,13 +658,13 @@ public class HubEventDelegate {
 	        }
 	        else {
     	        try {
-    	            OAThreadLocalDelegate.setSendingEvent(true);
+                    OAThreadLocalDelegate.addHubEvent(hubEvent);
         	        for (int i=0; i<x; i++) {
         	            hl[i].afterPropertyChange(hubEvent);
         	        }
     	        }
     	        finally {
-    	            OAThreadLocalDelegate.setSendingEvent(false);
+                    OAThreadLocalDelegate.removeHubEvent(hubEvent);
     	        }
 	        }
 	    }
@@ -647,11 +715,25 @@ public class HubEventDelegate {
 	    int x = hl.length;
 	    if (x > 0) {
 		    HubEvent hubEvent = new HubEvent(thisHub,null);
-	        for (int i=0; i<x; i++) {
-	            hl[i].onNewList(hubEvent);
-	        }
-            for (int i=0; i<x; i++) {
-                hl[i].afterNewList(hubEvent);
+		    try {
+                OAThreadLocalDelegate.addHubEvent(hubEvent);
+    	        for (int i=0; i<x; i++) {
+    	            hl[i].onNewList(hubEvent);
+    	        }
+		    }
+		    finally {
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
+		    }
+
+            hubEvent = new HubEvent(thisHub,null);
+            try {
+                OAThreadLocalDelegate.addHubEvent(hubEvent);
+    		    for (int i=0; i<x; i++) {
+                    hl[i].afterNewList(hubEvent);
+                }
+            }
+            finally {
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
             }
 	    }
 	    // 20160118 use this instead of newListCount
@@ -924,8 +1006,14 @@ public class HubEventDelegate {
         int i;
         if (x > 0) {
             HubEvent hubEvent = new HubEvent(thisHub, oaObj);
-            for (i=0; i<x; i++) {
-                hl[i].afterLoad(hubEvent);
+            try {
+                OAThreadLocalDelegate.addHubEvent(hubEvent);
+                for (i=0; i<x; i++) {
+                    hl[i].afterLoad(hubEvent);
+                }
+            }
+            finally {
+                OAThreadLocalDelegate.removeHubEvent(hubEvent);
             }
         }
     }

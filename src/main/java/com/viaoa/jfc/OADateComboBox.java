@@ -89,8 +89,7 @@ public class OADateComboBox extends OACustomComboBox {
         @param columns is width to use, using average character width
     */
     public OADateComboBox(Hub hub, String propertyPath, int columns) {
-        super(hub,propertyPath, columns);
-        initialize();
+        super(hub, propertyPath, columns, false);
     }
 
     /**
@@ -99,8 +98,7 @@ public class OADateComboBox extends OACustomComboBox {
         @param propertyPath is date property to display/edit
     */
     public OADateComboBox(Hub hub, String propertyPath) {
-        super(hub, propertyPath);
-        initialize();
+        super(hub, propertyPath, false);
     }
 
     /**
@@ -110,8 +108,7 @@ public class OADateComboBox extends OACustomComboBox {
         @param columns is width to use, using average character width
     */
     public OADateComboBox(Object obj, String propertyPath, int columns) {
-        super(obj,propertyPath, columns);
-        initialize();
+        super(obj, propertyPath, columns, false);
     }
 
     /**
@@ -120,14 +117,8 @@ public class OADateComboBox extends OACustomComboBox {
         @param propertyPath is date property to display/edit
     */
     public OADateComboBox(Object obj, String propertyPath) {
-        super(obj, propertyPath);
-        initialize();
+        super(obj, propertyPath, false);
     }
-
-    @Override
-    public void initialize() {
-    }
-
 
     /**
         Returns the date that is currently selected.

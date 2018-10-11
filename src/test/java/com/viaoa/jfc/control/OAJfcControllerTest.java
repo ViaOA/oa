@@ -13,7 +13,6 @@ import com.viaoa.util.OADate;
 import test.hifive.model.oa.*;
 import test.hifive.model.oa.Company;
 import test.theice.tsac.model.oa.*;
-import test.theice.tsam.model.oa.propertypath.SitePP;
 
 public class OAJfcControllerTest extends OAUnitTest {
 
@@ -29,7 +28,7 @@ public class OAJfcControllerTest extends OAUnitTest {
         HubListener[] hls = HubEventDelegate.getAllListeners(hub);
         assertTrue(hls != null && hls.length == 0);
         
-        OAJfcController jc = new OAJfcController(hub, null, Employee.P_LastName, lbl, HubChangeListener.Type.AoNotNull, hubDirect, directPropertyName);
+        OAJfcController jc = new OAJfcController(hub, Employee.P_LastName, lbl, HubChangeListener.Type.AoNotNull, false);
 
         hls = HubEventDelegate.getAllListeners(hub);
         assertTrue(hls != null && hls.length == 3);
@@ -67,7 +66,7 @@ public class OAJfcControllerTest extends OAUnitTest {
 
         Hub hubEa = hub.getDetailHub(Employee.P_EmployeeAwards);
         
-        OAJfcController jc = new OAJfcController(hubEa, null, "Employee.lastName", lbl, HubChangeListener.Type.AoNotNull, hubDirect, directPropertyName);
+        OAJfcController jc = new OAJfcController(hubEa, "Employee.lastName", lbl, HubChangeListener.Type.AoNotNull, false);
 
         Employee emp = new Employee();
         assertEquals(0, hubEa.getSize());
@@ -119,18 +118,17 @@ public class OAJfcControllerTest extends OAUnitTest {
         assertTrue(hls == null || hls.length == 0);
         
         hubEt.setLinkHub(hub, Employee.P_EmployeeType);
-        assertTrue(hubEt.getAO()==null);
+        assertNull(hubEt.getAO());
         
         hls = HubEventDelegate.getAllListeners(hub);
-        assertTrue(hls.length == 1);
+        assertEquals(1, hls.length);
         hls = HubEventDelegate.getAllListeners(hubEt);
-        assertTrue(hls.length == 0);
+        assertEquals(0, hls.length);
         
-        //qqqqqq need another test that uses hubDirect, where propName is a pp
-        OAJfcController jc = new OAJfcController(hubEt, null, "name", lbl, HubChangeListener.Type.AoNotNull, hubDirect, directPropertyName);
+        OAJfcController jc = new OAJfcController(hubEt, "name", lbl, HubChangeListener.Type.AoNotNull, false);
 
         hls = HubEventDelegate.getAllListeners(hub);
-        assertTrue(hls.length == 4);
+        assertEquals(2, hls.length);
         hls = HubEventDelegate.getAllListeners(hubEt);
         assertTrue(hls.length == 2);
 
@@ -151,7 +149,7 @@ public class OAJfcControllerTest extends OAUnitTest {
         
         emp.setInactiveDate(new OADate());
         assertFalse(emp.isEnabled());
-        assertFalse(lbl.isEnabled());
+        assertTrue(lbl.isEnabled()); 
 
         et = hubEt.getAt(1);
         try {
@@ -195,7 +193,7 @@ public class OAJfcControllerTest extends OAUnitTest {
         assertEquals(0, vint.value);
         
         //qqqqqq need another test that uses hubDirect, where propName is a pp
-        OAJfcController jc = new OAJfcController(hubLoc, null, "program.company.name", lbl, HubChangeListener.Type.AoNotNull, hubDirect, directPropertyName) {
+        OAJfcController jc = new OAJfcController(hubLoc, "program.company.name", lbl, HubChangeListener.Type.AoNotNull, false) {
             @Override
             public void update() {
                 vint.inc();
@@ -223,9 +221,9 @@ public class OAJfcControllerTest extends OAUnitTest {
         assertEquals(loc, hubLoc.getAO());
 
         HubListener[] hls = HubEventDelegate.getAllListeners(hub);
-        assertTrue(hls.length == 4);
+        assertEquals(2, hls.length);
         hls = HubEventDelegate.getAllListeners(hubLoc);
-        assertTrue(hls.length == 4);
+        assertEquals(4, hls.length);
         
         comp.setName("xx");
         assertEquals(3, vint.value);
@@ -262,23 +260,23 @@ public class OAJfcControllerTest extends OAUnitTest {
         final VInteger vint = new VInteger();
         assertEquals(0, vint.value);
         
-        OAJfcController jc = new OAJfcController(hubLoc, null, "program.company.name", lbl, HubChangeListener.Type.AoNotNull, hubEmp, Employee.P_Location) {
+        OAJfcController jc = new OAJfcController(hubLoc, "program.company.name", lbl, HubChangeListener.Type.HubValid, true) {
             @Override
             public void update() {
                 vint.inc();
                 super.update();
             }
         };
-        assertEquals(2, vint.value);
+        assertEquals(1, vint.value);
 
         hubLoc.setPos(0);
-        assertEquals(3, vint.value);
+        assertEquals(2, vint.value);
         
         hubEmp.setPos(0);
-        assertEquals(4, vint.value);
+        assertEquals(2, vint.value);
         
         hubEmp.getAO().setInactiveDate(new OADate());
-        assertFalse(lbl.isEnabled());
+        assertTrue(lbl.isEnabled());
         
         
         jc.close();
@@ -301,7 +299,7 @@ public class OAJfcControllerTest extends OAUnitTest {
         final VInteger vint = new VInteger();
         assertEquals(0, vint.value);
         
-        OAJfcController jc = new OAJfcController(hubLoc, null, "name", lbl, HubChangeListener.Type.HubValid, hubEmp, Employee.P_Location) {
+        OAJfcController jc = new OAJfcController(hubLoc, "name", lbl, HubChangeListener.Type.HubValid, true) {
             @Override
             public void update() {
                 vint.inc();
@@ -319,6 +317,39 @@ public class OAJfcControllerTest extends OAUnitTest {
         hubEmp.setPos(-1);
         b = jc.updateEnabled(lbl, hubLoc.getAO());
         assertFalse(b);
+        
+        hubEmp.setPos(0);
+        b = jc.updateEnabled(lbl, hubLoc.getAO());
+        assertTrue(b);
+        
+        hubEmp.getAt(0).setInactiveDate(new OADate());
+        b = jc.updateEnabled(lbl, hubLoc.getAO());
+        assertFalse(b);
+        b = lbl.isEnabled();
+        assertFalse(b);
+        
+        hubEmp.getAt(0).setInactiveDate(null);
+        b = jc.updateEnabled(lbl, hubLoc.getAO());
+        assertTrue(b);
+        b = lbl.isEnabled();
+        assertTrue(b);
+
+        hubLoc.setPos(0);
+        b = jc.updateEnabled(lbl, hubLoc.getAO());
+        assertTrue(b);
+        b = lbl.isEnabled();
+        assertTrue(b);
+        assertNotNull(hubLoc.getAO());
+        
+
+        hubEmp.getAt(0).setInactiveDate(null);
+        b = jc.updateEnabled(lbl, hubLoc.getAO());
+        assertTrue(b);
+        b = lbl.isEnabled();
+        assertTrue(b);
+        assertNotNull(hubLoc.getAO());
+        assertNotNull(hubEmp.getAO());
+        
         
         jc.close();
         HubListener[] hls = HubEventDelegate.getAllListeners(hubEmp);

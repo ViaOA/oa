@@ -329,8 +329,8 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
     public void bind(Hub hub, String propertyPath) {
         this.bind(hub, propertyPath, true);
     }
-    public void bind(Hub hub, String propertyPath, boolean useLinkHub) {
-        control.bind(hub, propertyPath, useLinkHub);
+    public void bind(Hub hub, String propertyPath, boolean bDirectlySetsAO) {
+        control.bind(hub, propertyPath, bDirectlySetsAO);
     }
 
 

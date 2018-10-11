@@ -38,7 +38,7 @@ public class AutoCompleteTextFieldController extends OAJfcController {
     
     
     public AutoCompleteTextFieldController(Hub hub, JTextField txt, String propertyPath) {
-        super(hub, propertyPath, txt, HubChangeListener.Type.HubNotEmpty);
+        super(hub, propertyPath, txt, HubChangeListener.Type.HubNotEmpty, true);
         this.txt = txt;
         init();
     }

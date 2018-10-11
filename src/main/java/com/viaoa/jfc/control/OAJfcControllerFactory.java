@@ -13,33 +13,37 @@ public class OAJfcControllerFactory {
 
 
     
-    public static OAJfcController createHubValid(JComponent comp, Hub hub) {
-        OAJfcController jc = new OAJfcController(comp, hub, HubChangeListener.Type.HubValid);
+    
+    public static OAJfcController createHubValid(Hub hub, JComponent comp) {
+        OAJfcController jc = new OAJfcController(hub, comp, HubChangeListener.Type.HubValid);
         return jc;
     }
-    public static OAJfcController createHubValid(JComponent comp, Hub hub, String prop) {
-        OAJfcController jc = new OAJfcController(comp, hub, prop, HubChangeListener.Type.HubValid);
+    public static OAJfcController createHubValid(Hub hub, String prop, JComponent comp) {
+        OAJfcController jc = new OAJfcController(hub, prop, comp, HubChangeListener.Type.HubValid);
         return jc;
     }
-    public static OAJfcController createAoNotNull(JComponent comp, Hub hub) {
-        OAJfcController jc = new OAJfcController(comp, hub, HubChangeListener.Type.AoNotNull);
+    public static OAJfcController createAoNotNull(Hub hub, JComponent comp) {
+        OAJfcController jc = new OAJfcController(hub, comp, HubChangeListener.Type.AoNotNull);
         return jc;
     }
-    public static OAJfcController createAoNotNull(JComponent comp, Hub hub, String prop) {
-        OAJfcController jc = new OAJfcController(comp, hub, prop, HubChangeListener.Type.AoNotNull);
+    public static OAJfcController createAoNotNull(Hub hub, String prop, JComponent comp) {
+        OAJfcController jc = new OAJfcController(hub, prop, comp, HubChangeListener.Type.AoNotNull);
         return jc;
     }
-    public static OAJfcController createHubNotEmpty(JComponent comp, Hub hub) {
-        OAJfcController jc = new OAJfcController(comp, hub, HubChangeListener.Type.HubNotEmpty);
+    public static OAJfcController createHubNotEmpty(Hub hub, JComponent comp) {
+        OAJfcController jc = new OAJfcController(hub, comp, HubChangeListener.Type.HubNotEmpty);
         return jc;
     }
 
-    public static OAJfcController createOnlyHubNotEmpty(JComponent comp, Hub hub) {
-        OAJfcController jc = new OAJfcController(hub, null, null, comp, HubChangeListener.Type.HubNotEmpty, null, null, false);
+    
+    // dont include extended checks
+    
+    public static OAJfcController createOnlyHubNotEmpty(Hub hub, JComponent comp) {
+        OAJfcController jc = new OAJfcController(hub, null, null, comp, HubChangeListener.Type.HubNotEmpty, false, false);
         return jc;
     }
-    public static OAJfcController createOnlyAoNotNull(JComponent comp, Hub hub) {
-        OAJfcController jc = new OAJfcController(hub, null, null, comp, HubChangeListener.Type.AoNotNull, null, null, false);
+    public static OAJfcController createOnlyAoNotNull(Hub hub, JComponent comp) {
+        OAJfcController jc = new OAJfcController(hub, null, null, comp, HubChangeListener.Type.AoNotNull, false, false);
         return jc;
     }
 

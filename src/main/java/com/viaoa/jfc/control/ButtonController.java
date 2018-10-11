@@ -39,6 +39,7 @@ import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 import com.viaoa.util.*;
 import com.viaoa.jfc.*;
+import com.viaoa.jfc.OAButton.ButtonCommand;
 import com.viaoa.jfc.OAButton.ButtonEnabledMode;
 import com.viaoa.jfc.dialog.OAConfirmDialog;
 import com.viaoa.jfc.dialog.OAPasswordDialog;
@@ -88,7 +89,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
     private boolean bUseSwingWorker;
     public String processingTitle, processingMessage;
 
-    
+    /*qqqqqq    
     public static ButtonController createHubValid(AbstractButton button, Hub hub) {
         ButtonController bc = new ButtonController(hub, button, OAButton.ButtonEnabledMode.ActiveObjectNotNull, null);
         return bc;
@@ -105,6 +106,22 @@ public class ButtonController extends OAJfcController implements ActionListener 
         ButtonController bc = new ButtonController(hub, button, OAButton.ButtonEnabledMode.Always, null);
         return bc;
     }
+    */    
+    
+
+// 20181010    
+//qqqqqqqqqqqq NEW: to match OAJfcController    
+// (Hub hub, Object object, String propertyPath, JComponent comp, HubChangeListener.Type type, final boolean bDirectlySetsAO, final boolean bIncludeExtendedChecks)    
+    
+    public ButtonController(Hub hub, AbstractButton button, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command, HubChangeListener.Type type, boolean bDirectlySetsAO, boolean bIncludeExtendedChecks) {
+        super(hub, null, null, button, 
+            type, 
+            bDirectlySetsAO,
+            bIncludeExtendedChecks
+        );
+        create(button, enabledMode, command);
+    }
+    
     
     
     /**
@@ -112,10 +129,26 @@ public class ButtonController extends OAJfcController implements ActionListener 
         <p>
     */
     public ButtonController(Hub hub, AbstractButton button, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command) {
-        super(hub, button, enabledMode.getHubChangeListenerType() );
+        super(hub, null, null, button, 
+            enabledMode.getHubChangeListenerType(), 
+            (command != null ? command.getSetsAO() : false),
+            true
+            //was:  (((enabledMode == ButtonEnabledMode.ActiveObjectNotNull) && (command == ButtonCommand.Other)) ? false : true)
+        );
+        
+        
+//        super(hub, null, button, enabledMode.getHubChangeListenerType(), (command != null ? command.getSetsAO() : false));
+        
+//new OAJfcController(hub, null, null, comp, HubChangeListener.Type.AoNotNull, false, false);
+        
+        
+//was:        super(hub, button, enabledMode.getHubChangeListenerType() );
+        
         create(button, enabledMode, command);
     }
 
+    
+    
     /**
         Used to bind an AbstractButton to a Hub.
         <p>
@@ -171,6 +204,11 @@ public class ButtonController extends OAJfcController implements ActionListener 
         this.updateObject = null;
         this.updateProperty = property;
         this.updateValue = newValue;
+        
+        // 20181009
+        addEnabledCheck(getHub(), HubChangeListener.Type.AoNotNull);
+        addExtendedChecking(getHub(), property);
+        
         update();
     }
 

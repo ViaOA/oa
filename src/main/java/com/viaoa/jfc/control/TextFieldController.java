@@ -432,7 +432,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
                     "Invalid Entry", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            if (!confirm(activeObject, convertedValue)) return;
+            if (!confirmPropertyChange(activeObject, convertedValue)) return;
 
             prevText = text;
             Object prevValue = getValue(activeObject);

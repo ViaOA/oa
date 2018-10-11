@@ -11,8 +11,10 @@
 package com.viaoa.object;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubMerger;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
 import com.viaoa.transaction.OATransaction;
@@ -108,6 +110,8 @@ public class OAThreadLocal {
     // 20180704
     public ArrayList<OASiblingHelper> alSiblingHelper;
     public int cntGetSiblingCalled;
-    
+
+    // current HubEvent that is being processed
+    public ArrayList<HubEvent> alHubEvent;
 }
 

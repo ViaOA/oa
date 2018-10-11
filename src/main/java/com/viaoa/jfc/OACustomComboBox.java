@@ -32,50 +32,37 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     private boolean bAllowClear;
     public boolean bSetting;
 
-
-    public OACustomComboBox() {
-        this((Hub)null, (String) null, 7);
-    }
     
     /**
         Create a ComboBox that is bound to a property for the active object in a Hub.
         @param columns is width of list using character width size.
     */
-    public OACustomComboBox(Hub hub, String propertyPath, int columns) {
-        this(hub, propertyPath);
+    public OACustomComboBox(Hub hub, String propertyPath, boolean bDirectlySetsAO) {
+        control = new OACustomComboBoxController(hub, propertyPath, bDirectlySetsAO);
+        initialize();
+    }
+    public OACustomComboBox(Hub hub, String propertyPath, int columns, boolean bDirectlySetsAO) {
+        control = new OACustomComboBoxController(hub, propertyPath, bDirectlySetsAO);
         setColumns(columns);
+        initialize();
     }
 
-    /**
-        Create a ComboBox that is bound to a property for the active object in a Hub.
-    */
-    public OACustomComboBox(Hub hub, String propertyPath) {
-        control = new OACustomComboBoxController(hub, propertyPath);
-        initialize();
-    }
-    
-    public OACustomComboBox(Hub hub, String propertyPath, Hub hubDirect, String directProperty) {
-        control = new OACustomComboBoxController(hub, propertyPath, hubDirect, directProperty);
-        initialize();
-    }
     
     /**
         Create a ComboBox that is bound to a property for the active object in a Hub.
         @param columns is width of list using character width size.
     */
-    public OACustomComboBox(Object obj, String propertyPath, int columns) {
-        this(obj, propertyPath);
+    public OACustomComboBox(Object obj, String propertyPath, boolean bDirectlySetsAO) {
+        control = new OACustomComboBoxController(obj, propertyPath, bDirectlySetsAO);
+        initialize();
+    }
+    public OACustomComboBox(Object obj, String propertyPath, int columns, boolean bDirectlySetsAO) {
+        this(obj, propertyPath, bDirectlySetsAO);
         setColumns(columns);
     }
 
-    /**
-        Create a ComboBox that is bound to a property for an object.
-    */
-    public OACustomComboBox(Object obj, String propertyPath) {
-        control = new OACustomComboBoxController(obj, propertyPath);
-        initialize();
-    }
 
+    
     @Override
     public void initialize() {
     }
@@ -547,14 +534,11 @@ focusComp = this;
 
     
     class OACustomComboBoxController extends CustomComboBoxController {
-        public OACustomComboBoxController(Hub hub, String propertyPath, Hub hubDirect, String directProperty) {
-            super(hub, OACustomComboBox.this, propertyPath, hubDirect, directProperty);
+        public OACustomComboBoxController(Hub hub, String propertyPath, boolean bDirectlySetsAO) {
+            super(hub, OACustomComboBox.this, propertyPath, bDirectlySetsAO);
         }
-        public OACustomComboBoxController(Hub hub, String propertyPath) {
-            super(hub, OACustomComboBox.this, propertyPath);
-        }
-        public OACustomComboBoxController(Object obj, String propertyPath) {
-            super(obj, OACustomComboBox.this, propertyPath);
+        public OACustomComboBoxController(Object obj, String propertyPath, boolean bDirectlySetsAO) {
+            super(obj, OACustomComboBox.this, propertyPath, bDirectlySetsAO);
         }
         
         @Override

@@ -105,6 +105,10 @@ public class OAAnnotationDelegateTest extends OAUnitTest {
             assertNotNull(pi);
         
             assertEquals(pi.getMaxLength(), oaprop.maxLength());
+if (pi.getUnique() != oaprop.isUnique()) {
+    int xx = 4;
+    xx++;//qqqqqqqqqqqqqqqqqqqqqqqqq
+}
             assertEquals(pi.getUnique(), oaprop.isUnique());
             
             assertEquals(pi.getClassType(), m.getReturnType());
