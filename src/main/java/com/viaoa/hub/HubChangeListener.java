@@ -124,10 +124,23 @@ public abstract class HubChangeListener {
         return add(hub, prop, true, Type.PropertyNotNull);
     }
 
+    /** add a rule to check the return value for an EditQuery isEnabled */
     public HubProp addEditQueryEnabled(Hub hub, String prop) {
+        OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, hub.getObjectClass(), prop, null, this, true);
         return add(hub, prop, true, Type.EditQueryEnabled);
     }
+    public HubProp addEditQueryEnabled(Hub hub, Class cz, String prop, String ppPrefix) {
+        OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, cz, prop, ppPrefix, this, true);
+        return add(hub, prop, true, Type.EditQueryEnabled);
+    }
+
+    /** add a rule to check the return value for an EditQuery isVisible */
     public HubProp addEditQueryVisible(Hub hub, String prop) {
+        OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, hub.getObjectClass(), prop, null, this, false);
+        return add(hub, prop, true, Type.EditQueryVisible);
+    }
+    public HubProp addEditQueryVisible(Hub hub, Class cz, String prop, String ppPrefix) {
+        OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, cz, prop, ppPrefix, this, false);
         return add(hub, prop, true, Type.EditQueryVisible);
     }
     
@@ -180,7 +193,9 @@ public abstract class HubChangeListener {
         
         // see if there is a listener with same hub - and one without a propertyName used
         for (HubProp hp : hubProps) {
-            if (hp.equals(newHubProp)) return null;
+            if (hp.equals(newHubProp)) {
+                return null;
+            }
         }
 
         newHubProp.hubListener = new HubListenerAdapter() {
@@ -286,6 +301,20 @@ public abstract class HubChangeListener {
         return b;
     }
 
+    public HubProp getFalseValue() {
+        boolean b = true;
+        for (HubProp hp : hubProps) {
+            if (hp.filter != null) {
+                if (hp.hub == null) b = hp.filter.isUsed(null);
+                else b = hp.filter.isUsed(hp.hub.getAO());
+            }
+            else b = hp.getValue();
+            if (!b) return hp;
+        }
+        return null;
+    }
+    
+    
     public static class HubProp {
         public Hub<?> hub;
         public String propertyPath;  // original propertyPath

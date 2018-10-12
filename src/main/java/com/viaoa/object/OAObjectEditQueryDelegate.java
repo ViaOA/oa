@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import javax.swing.JLabel;
 import com.viaoa.auth.OAAuthDelegate;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubChangeListener;
 import com.viaoa.hub.HubDetailDelegate;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubEventDelegate;
@@ -835,7 +836,7 @@ public class OAObjectEditQueryDelegate {
    
     
     /**
-     * Used by OAObjectModel objects to allow model object to be updated after it is created.
+     * Used by OAObjectModel objects to allow model object to be updated after it is created by calling EditQuery method.
      * @param clazz, ex: from SalesOrderModel, SalesOrder.class
      * @param property  ex:  "SalesOrderItems"
      * @param model ex: SalesOrderItemModel
@@ -856,4 +857,108 @@ public class OAObjectEditQueryDelegate {
             }
         }
     }
+    
+    
+
+/*qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq  
+ * 
+
+   qqqqqqqqq>> add master ifppPrefix is empty qqqqqqqqqqqqqqqqqqq
+   
+    // check to see if MasterHub needs to be added to changeListener, so that it can be listened to.
+        Hub hx = hub.getMasterHub();
+        if (hx != null) {
+            OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterObjectToDetail(hub);
+            if (li.getOwner()) {
+                String propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+                addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, "", changeListenerVisible, true);
+            }
+        }
+*/
+
+    /**
+     * Used by HubChangedListener.addEdit/VisibleQueryEnabled, etc to listen to dependencies found for an EditQuery.
+     */
+    public static void addEditQueryChangeListeners(final Hub hub, final Class cz, final String prop, final String ppPrefix, final HubChangeListener changeListener, final boolean bEnabled) {
+        OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(cz);
+        String s;
+        
+        if (bEnabled) s = oi.getEnabledProperty();
+        else s = oi.getVisibleProperty(); 
+        if (OAString.isNotEmpty(s)) changeListener.add(hub, ppPrefix+s);
+
+        // dependent properties
+        addDependentProps(hub, ppPrefix, bEnabled?null:oi.getViewDependentProperties(), bEnabled?oi.getUserDependentProperties():null, (bEnabled && oi.getProcessed()), changeListener);
+        
+        final Hub hubUser = OAAuthDelegate.getUserHub();
+        if (bEnabled) s = oi.getUserEnabledProperty();
+        else s = oi.getUserVisibleProperty();
+        if (OAString.isNotEmpty(s)) changeListener.add(hubUser, ppPrefix+s);
+        
+        if (OAString.isEmpty(prop)) return;
+        
+        OAPropertyInfo pi = oi.getPropertyInfo(prop);
+        if (pi != null) {
+            if (bEnabled) s = pi.getEnabledProperty();
+            else s = pi.getVisibleProperty();
+            if (OAString.isNotEmpty(s)) changeListener.add(hub, ppPrefix+s);
+            addDependentProps(hub, ppPrefix, pi.getViewDependentProperties(), pi.getUserDependentProperties(), (bEnabled && pi.getProcessed()), changeListener);
+            
+            if (bEnabled) s = pi.getUserEnabledProperty();
+            else s = pi.getUserVisibleProperty();
+            if (OAString.isNotEmpty(s)) changeListener.add(hubUser, s);
+        }
+        else {
+            OALinkInfo li = oi.getLinkInfo(prop);
+            if (li != null) {
+                if (bEnabled) s = li.getEnabledProperty();
+                else s = li.getVisibleProperty();
+                if (OAString.isNotEmpty(s)) changeListener.add(hub, ppPrefix+s);
+                addDependentProps(hub, ppPrefix, li.getViewDependentProperties(), li.getUserDependentProperties(), (bEnabled && li.getProcessed()), changeListener);
+
+                if (bEnabled) s = li.getUserEnabledProperty();
+                else s = li.getUserVisibleProperty();
+                if (OAString.isNotEmpty(s)) changeListener.add(hubUser, s);
+            }
+            else {
+                OAMethodInfo mi = oi.getMethodInfo(prop);
+                if (mi != null) {
+                    if (bEnabled) s = mi.getEnabledProperty();
+                    else s = mi.getVisibleProperty(); 
+                    if (OAString.isNotEmpty(s)) changeListener.add(hub, ppPrefix+s);
+                    addDependentProps(hub, ppPrefix, mi.getViewDependentProperties(), mi.getUserDependentProperties(), false, changeListener);
+                    
+                    if (bEnabled) s = mi.getUserEnabledProperty();
+                    else s = mi.getUserVisibleProperty();
+                    if (OAString.isNotEmpty(s)) changeListener.add(hubUser, s);
+                }
+            }
+        }
+    }
+    
+    protected static void addDependentProps(Hub hub, String prefix,  String[] viewDependentProperties, String[] userDependentProperties, boolean bProcessed, HubChangeListener changeListener) {
+        if (viewDependentProperties != null) {
+            for (String s : viewDependentProperties) {
+                changeListener.add(hub, prefix+s);
+            }
+        }
+        if (userDependentProperties != null) {
+            Hub hubUser = OAAuthDelegate.getUserHub();
+            if (userDependentProperties.length > 0 && hubUser == null) {
+                changeListener.addAlwaysFalse(hub);
+            }
+            for (String s : userDependentProperties) {
+                changeListener.add(hubUser, s);
+            }
+        }
+        if (bProcessed) {
+            Hub hubUser = OAAuthDelegate.getUserHub();
+            if (hubUser == null) {
+                changeListener.addAlwaysFalse(hub);
+            }
+            changeListener.add(hubUser, OAAuthDelegate.getAllowEditProcessedPropertyPath(), true);
+        }
+    }
+    
+
 }
