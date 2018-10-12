@@ -28,8 +28,9 @@ public class DateChooserController extends OAJfcController implements PropertyCh
     private OADateChooser dateChooser;
     private String prevValue;
 
+    
     public DateChooserController(Hub hub, OADateChooser dc, String propertyPath) {
-        super(hub, propertyPath, dc, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(hub, null, propertyPath, dc, HubChangeListener.Type.AoNotNull, false, true);
         create(dc);
     }
     protected void create(OADateChooser dc) {

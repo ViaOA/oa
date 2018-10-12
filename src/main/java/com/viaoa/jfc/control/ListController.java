@@ -32,17 +32,18 @@ public class ListController extends OAJfcController implements ListSelectionList
     protected boolean bAllowDelete, bAllowInsert, bAllowRemove;
     protected HubListener hubMultiSelectListener;
     
+    
     /**
         Create list that is bound to a property for the active object in a Hub.
     */
     public ListController(Hub hub, JList list, String propertyPath) {
-        super(hub, propertyPath, list, HubChangeListener.Type.HubValid, true); 
+        super(hub, null, propertyPath, list, HubChangeListener.Type.HubValid, true, true); 
         nullDescription = null;
         create(list, 7);
     }
 
     public ListController(Object object, JList list, String propertyPath) {
-        super(object, propertyPath, list, HubChangeListener.Type.HubValid); // this will add hub listener
+        super(null, object, propertyPath, list, HubChangeListener.Type.HubValid, true, true); // this will add hub listener
         nullDescription = null;
         create(list, 7);
     }
@@ -52,7 +53,7 @@ public class ListController extends OAJfcController implements ListSelectionList
         @param visibleRowCount number of rows to visually display.
     */
     public ListController(Hub hub, JList list, String propertyPath, int visibleRowCount) {
-        super(hub, propertyPath, list, HubChangeListener.Type.HubValid, true); // this will add hub listener
+        super(hub, null, propertyPath, list, HubChangeListener.Type.HubValid, true, true); // this will add hub listener
         nullDescription = null;
         create(list, visibleRowCount);
     }

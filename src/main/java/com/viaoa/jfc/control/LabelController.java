@@ -35,7 +35,7 @@ public class LabelController extends OAJfcController {
         Bind a label to a property for the active object in a Hub.
     */
     public LabelController(Hub hub, JLabel lab, String propertyPath) {
-        super(hub, propertyPath, lab, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(hub, null, propertyPath, lab, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         init(lab);
     }
 
@@ -45,12 +45,12 @@ public class LabelController extends OAJfcController {
 
     */
     public LabelController(Hub hub, JLabel lab) { 
-        super(hub, lab, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(hub, null, null, lab, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         init(lab);
     }
 
     protected LabelController(Hub hub, JLabel lab, String propertyPath, HubChangeListener.Type type) { 
-        super(hub, propertyPath, lab, type); // this will add hub listener
+        super(hub, null, propertyPath, lab, type, false, true); // this will add hub listener
         init(lab);
     }
     
@@ -58,7 +58,7 @@ public class LabelController extends OAJfcController {
         Bind a label to a property for an object.
     */
     public LabelController(Object object, JLabel lab, String propertyPath) {
-        super(object, propertyPath, lab, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(null, object, propertyPath, lab, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         init(lab);
     }
 

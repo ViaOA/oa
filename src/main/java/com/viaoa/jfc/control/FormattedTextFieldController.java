@@ -38,12 +38,13 @@ public class FormattedTextFieldController extends OAJfcController implements Foc
     private int dataSourceMax=-2;
     private int max=-1;
 
+    
     /**
         Create TextField that is bound to a property path in a Hub.
         @param propertyPath path from Hub, used to find bound property.
     */
     public FormattedTextFieldController(Hub hub, OAFormattedTextField tf, String propertyPath) {
-        super(hub, propertyPath, tf, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(hub, null, propertyPath, tf, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         create(tf);
     }
 
@@ -52,7 +53,7 @@ public class FormattedTextFieldController extends OAJfcController implements Foc
         @param propertyPath path from Hub, used to find bound property.
     */
     public FormattedTextFieldController(Object object, OAFormattedTextField tf, String propertyPath) {
-        super(object, propertyPath, tf, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(null, object, propertyPath, tf, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         create(tf);
     }
 

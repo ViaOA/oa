@@ -3712,7 +3712,7 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     volatile boolean _bIsRunningValueChanged; // flag set when valueChanged is running
 
     public MyHubAdapter(Hub hub, OATable table) {
-        super(hub, table, HubChangeListener.Type.HubValid);
+        super(hub, null, null, table, HubChangeListener.Type.HubValid, false, false);
         this.table = table;
         table.getSelectionModel().addListSelectionListener(this);
         // getHub().addHubListener(this);

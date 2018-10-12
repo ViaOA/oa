@@ -11,6 +11,7 @@
 package com.viaoa.hub;
 
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectEditQueryDelegate;
 import com.viaoa.util.*;
 
 /**
@@ -38,11 +39,13 @@ public abstract class HubChangeListener {
         AlwaysTrue(true),
         AlwaysFalse(true),
         PropertyNull(true),
-        PropertyNotNull(true);
+        PropertyNotNull(true),
+        EditQueryEnabled(true),
+        EditQueryVisible(true);
         
-        public boolean bDefaultToAO;
+        public boolean bUseAoOnly;  // instead of the full hub
         Type(boolean b) {
-            this.bDefaultToAO = b;
+            this.bUseAoOnly = b;
         }
     }
     
@@ -120,12 +123,20 @@ public abstract class HubChangeListener {
     public HubProp addPropertyNotNull(Hub hub, String prop) {
         return add(hub, prop, true, Type.PropertyNotNull);
     }
+
+    public HubProp addEditQueryEnabled(Hub hub, String prop) {
+        return add(hub, prop, true, Type.EditQueryEnabled);
+    }
+    public HubProp addEditQueryVisible(Hub hub, String prop) {
+        return add(hub, prop, true, Type.EditQueryVisible);
+    }
+    
     
     public HubProp add(Hub hub, HubChangeListener.Type type) {
-        return add(hub, null, (type==null?false:true), type, null, (type==null?true:type.bDefaultToAO));
+        return add(hub, null, (type==null?false:true), type, null, (type==null?true:type.bUseAoOnly));
     }
     public HubProp add(Hub hub, String property, HubChangeListener.Type type) {
-        return add(hub, property, type==null?false:true, type, null, (type==null?true:type.bDefaultToAO));
+        return add(hub, property, type==null?false:true, type, null, (type==null?true:type.bUseAoOnly));
     }
     
     
@@ -147,7 +158,7 @@ public abstract class HubChangeListener {
         if (bUseCompareValue && compareValue instanceof Type) {
             type = (Type) compareValue;
         }
-        return this.add(hub, propertyPath, bUseCompareValue, compareValue, null, (type==null?true:type.bDefaultToAO));
+        return this.add(hub, propertyPath, bUseCompareValue, compareValue, null, (type==null?true:type.bUseAoOnly));
     }
         
     public HubProp add(Hub hub, final String propertyPath, boolean bUseCompareValue, Object compareValue, OAFilter filter, final boolean bAoOnly) {
@@ -311,6 +322,17 @@ public abstract class HubChangeListener {
             if (!hub.isValid()) return false;
             
             Object value = hub.getAO();
+            
+            if (compareValue == Type.EditQueryEnabled) {
+                if (!(value instanceof OAObject)) return false;
+                return OAObjectEditQueryDelegate.getAllowEnabled((OAObject) value, propertyPath);
+            }
+            if (compareValue == Type.EditQueryVisible) {
+                if (!(value instanceof OAObject)) return false;
+                return OAObjectEditQueryDelegate.getAllowVisible((OAObject) value, propertyPath);
+            }
+            
+            
             if (propertyPath != null) {
                 if (value instanceof OAObject) value = ((OAObject)value).getProperty(propertyPath);
             }

@@ -49,7 +49,7 @@ public class TextAreaController extends OAJfcController implements FocusListener
         @param propertyPath path from Hub, used to find bound property.
     */
     public TextAreaController(Hub hub, JTextArea ta, String propertyPath) {
-        super(hub, propertyPath, ta, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(hub, null, propertyPath, ta, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         create(ta);
     }
 
@@ -58,7 +58,7 @@ public class TextAreaController extends OAJfcController implements FocusListener
         @param propertyPath path from Hub, used to find bound property.
     */
     public TextAreaController(Object object, JTextArea ta, String propertyPath) {
-        super(object, propertyPath, ta, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(null, object, propertyPath, ta, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         create(ta);
     }
 

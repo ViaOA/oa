@@ -38,7 +38,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         Bind a button to a property path to the active object for a Hub.
     */
     public ToggleButtonController(AbstractButton button) {
-        super(null, null, button, HubChangeListener.Type.Unknown);
+        super(null, null, null, button, HubChangeListener.Type.Unknown, false, true);
         create(button);
     }
     
@@ -46,7 +46,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         Bind a button to a property path to the active object for a Hub.
     */
     public ToggleButtonController(Hub hub, AbstractButton button, String propertyPath) {
-        super(hub, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(hub, null, propertyPath, button, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         create(button);
     }
 
@@ -56,7 +56,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         @param hubMultiSelect the active object from hub will be added/removed from this Hub.
     */
     public ToggleButtonController(Hub hub, Hub hubMultiSelect, AbstractButton button) {
-        super(hub, "", button, HubChangeListener.Type.AoNotNull);
+        super(hub, null, "", button, HubChangeListener.Type.AoNotNull, false, true);
         setSelectHub(hubMultiSelect);
         create(button);
     }
@@ -66,7 +66,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         Button wil be enabled based on both active object and propertyPath in Hub not being null.
     */
     public ToggleButtonController(Object object, AbstractButton button, String propertyPath) {
-        super(object, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(null, object, propertyPath, button, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         create(button);
     }
 
@@ -76,7 +76,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         @param valueOff value to use for property when button is not selected
     */
     public ToggleButtonController(Object object, AbstractButton button, String propertyPath, Object valueOn, Object valueOff) {
-        super(object, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(null, object, propertyPath, button, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         this.valueOn = valueOn;
         this.valueOff = valueOff;
         create(button);
@@ -87,7 +87,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         @param valueOn value to use for property when button is selected
     */
     public ToggleButtonController(Object object, AbstractButton button, String propertyPath, Object valueOn) {
-        super(object, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(null, object, propertyPath, button, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         this.valueOn = valueOn;
         create(button);
     }
@@ -107,7 +107,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         param valueOn value to use for property when button is selected
     */
     public ToggleButtonController(Hub hub, AbstractButton button, String propertyPath, boolean value) {
-        super(hub, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(hub, null, propertyPath, button, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         this.valueOn = new Boolean(value);
         this.valueOff = OANullObject.instance;
         create(button);
@@ -119,7 +119,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         param valueOn value to use for property when button is selected
     */
     public ToggleButtonController(Hub hub, AbstractButton button, String propertyPath, Object value) {
-        super(hub, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(hub, null, propertyPath, button, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         this.valueOn = value;
         this.valueOff = OANullObject.instance;
         create(button);
@@ -132,7 +132,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         @param valueOff value to use for property when button is not selected
     */
     public ToggleButtonController(Hub hub, AbstractButton button, String propertyPath, Object valueOn, Object valueOff) {
-        super(hub, propertyPath, button, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(hub, null, propertyPath, button, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         this.valueOn = valueOn;
         this.valueOff = valueOff;
         create(button);

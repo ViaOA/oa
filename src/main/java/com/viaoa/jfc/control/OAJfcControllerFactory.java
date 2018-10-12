@@ -12,26 +12,30 @@ import com.viaoa.hub.*;
 public class OAJfcControllerFactory {
 
 
+    public static OAJfcController create(Hub hub, JComponent comp, HubChangeListener.Type type) {
+        OAJfcController jc = new OAJfcController(hub, null, null, comp, type, false, true);
+        return jc;
+    }
     
     
     public static OAJfcController createHubValid(Hub hub, JComponent comp) {
-        OAJfcController jc = new OAJfcController(hub, comp, HubChangeListener.Type.HubValid);
+        OAJfcController jc = new OAJfcController(hub, null, null, comp, HubChangeListener.Type.HubValid, false, true);
         return jc;
     }
     public static OAJfcController createHubValid(Hub hub, String prop, JComponent comp) {
-        OAJfcController jc = new OAJfcController(hub, prop, comp, HubChangeListener.Type.HubValid);
+        OAJfcController jc = new OAJfcController(hub, null, prop, comp, HubChangeListener.Type.HubValid, false, true);
         return jc;
     }
     public static OAJfcController createAoNotNull(Hub hub, JComponent comp) {
-        OAJfcController jc = new OAJfcController(hub, comp, HubChangeListener.Type.AoNotNull);
+        OAJfcController jc = new OAJfcController(hub, null, null, comp, HubChangeListener.Type.AoNotNull, false, true);
         return jc;
     }
     public static OAJfcController createAoNotNull(Hub hub, String prop, JComponent comp) {
-        OAJfcController jc = new OAJfcController(hub, prop, comp, HubChangeListener.Type.AoNotNull);
+        OAJfcController jc = new OAJfcController(hub, null, prop, comp, HubChangeListener.Type.AoNotNull, false, true);
         return jc;
     }
     public static OAJfcController createHubNotEmpty(Hub hub, JComponent comp) {
-        OAJfcController jc = new OAJfcController(hub, comp, HubChangeListener.Type.HubNotEmpty);
+        OAJfcController jc = new OAJfcController(hub, null, null, comp, HubChangeListener.Type.HubNotEmpty, false, true);
         return jc;
     }
 

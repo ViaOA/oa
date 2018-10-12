@@ -27,12 +27,12 @@ public class ComboBoxController extends OAJfcController implements FocusListener
     JList list;
 
     public ComboBoxController(Hub hub, JComboBox cb, String propertyPath) {
-        super(hub, propertyPath, cb, HubChangeListener.Type.HubValid, true); 
+        super(hub, null, propertyPath, cb, HubChangeListener.Type.HubValid, true, true); 
         create(cb);
     }
 
     public ComboBoxController(Object object, JComboBox cb, String propertyPath) {
-        super(object, propertyPath, cb, HubChangeListener.Type.HubValid); // this will add hub listener
+        super(null, object, propertyPath, cb, HubChangeListener.Type.HubValid, true, true); 
         create(cb);
     }
 

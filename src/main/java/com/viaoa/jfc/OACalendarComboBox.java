@@ -64,7 +64,8 @@ public class OACalendarComboBox extends OADateComboBox {
 
         // need to include the real hub
         getController().getEnabledChangeListener().addAoNotNull(hubCalendar);
-        getController().addExtendedChecking(hubCalendar, datePropertyName);
+        getController().addEnabledEditQueryCheck(hubCalendar, datePropertyName);
+        getController().addVisibleEditQueryCheck(hubCalendar, datePropertyName);
         
         this.hubMain = hubCalendar.getMasterHub();
         this.linkName = linkInfo.getName();

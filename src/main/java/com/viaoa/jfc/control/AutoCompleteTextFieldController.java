@@ -36,15 +36,14 @@ public class AutoCompleteTextFieldController extends OAJfcController {
     private AutoCompleteList autoCompleteList;
     private int maxResults = 35;
     
-    
     public AutoCompleteTextFieldController(Hub hub, JTextField txt, String propertyPath) {
-        super(hub, propertyPath, txt, HubChangeListener.Type.HubNotEmpty, true);
+        super(hub, null, propertyPath, txt, HubChangeListener.Type.HubNotEmpty, false, true);
         this.txt = txt;
         init();
     }
 
     public AutoCompleteTextFieldController(Hub hub, JTextField txt) { 
-        super(hub, txt, HubChangeListener.Type.HubNotEmpty);
+        super(hub, null, null, txt, HubChangeListener.Type.HubNotEmpty, false, true);
         this.txt = txt;
         init();
     }

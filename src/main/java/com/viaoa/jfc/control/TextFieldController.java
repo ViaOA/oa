@@ -55,7 +55,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
     protected char conversion;
 
     public TextFieldController(JTextField tf) {
-        super(null, null, tf, HubChangeListener.Type.Unknown); // this will add hub listener
+        super(null, null, null, tf, HubChangeListener.Type.Unknown, false, false); // this will add hub listener
         create(tf);
     }
     
@@ -65,7 +65,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
         @param propertyPath path from Hub, used to find bound property.
     */
     public TextFieldController(Hub hub, JTextField tf, String propertyPath) {
-        super(hub, propertyPath, tf, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(hub, null, propertyPath, tf, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         create(tf);
     }
 
@@ -74,7 +74,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
         @param propertyPath path from Hub, used to find bound property.
     */
     public TextFieldController(Object object, JTextField tf, String propertyPath) {
-        super(object, propertyPath, tf, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(null, object, propertyPath, tf, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         create(tf);
     }
     

@@ -31,14 +31,15 @@ import com.viaoa.jfc.undo.OAUndoableEdit;
 public class CustomComboBoxController extends OAJfcController {
     JComboBox comboBox;
     public boolean bDisplayPropertyOnly; // 2007/05/25 used by OATreeComboBox so that setSelectedItem() does not try to update property
+
     
-    public CustomComboBoxController(Hub hub, JComboBox cb, String propertyPath, boolean bDirectlySetsAO) {
-        super(hub, propertyPath, cb, (bDirectlySetsAO ? HubChangeListener.Type.HubValid : HubChangeListener.Type.AoNotNull), bDirectlySetsAO);
+    public CustomComboBoxController(Hub hub, JComboBox cb, String propertyPath, boolean bUseLinkHub) {
+        super(hub, null, propertyPath, cb, (bUseLinkHub ? HubChangeListener.Type.HubValid : HubChangeListener.Type.AoNotNull), bUseLinkHub, true);
         create(cb);
     }
 
-    public CustomComboBoxController(Object obj, JComboBox cb, String propertyPath, boolean bDirectlySetsAO) {
-        super(obj, propertyPath, cb, HubChangeListener.Type.AoNotNull, bDirectlySetsAO, true);
+    public CustomComboBoxController(Object obj, JComboBox cb, String propertyPath, boolean bUseLinkHub) {
+        super(null, obj, propertyPath, cb, HubChangeListener.Type.AoNotNull, bUseLinkHub, true);
         create(cb);
     }
 

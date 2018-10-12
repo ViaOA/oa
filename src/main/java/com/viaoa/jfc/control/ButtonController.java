@@ -207,7 +207,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
         
         // 20181009
         addEnabledCheck(getHub(), HubChangeListener.Type.AoNotNull);
-        addExtendedChecking(getHub(), property);
+        addEnabledEditQueryCheck(getHub(), property);
+        addVisibleEditQueryCheck(getHub(), property);
         
         update();
     }

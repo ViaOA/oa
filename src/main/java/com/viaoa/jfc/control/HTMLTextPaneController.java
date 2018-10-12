@@ -40,7 +40,7 @@ public abstract class HTMLTextPaneController extends OAJfcController implements 
     private int imageChangeCount;
 
     public HTMLTextPaneController(Hub hub, OAHTMLTextPane tf, String propertyPath) {
-        super(hub, propertyPath, tf, HubChangeListener.Type.AoNotNull); // this will add hub listener
+        super(hub, null, propertyPath, tf, HubChangeListener.Type.AoNotNull, false, true); // this will add hub listener
         create(tf);
     }
 
