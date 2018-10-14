@@ -858,28 +858,12 @@ public class OAObjectEditQueryDelegate {
         }
     }
     
-    
-
-/*qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq  
- * 
-
-   qqqqqqqqq>> add master ifppPrefix is empty qqqqqqqqqqqqqqqqqqq
-   
-    // check to see if MasterHub needs to be added to changeListener, so that it can be listened to.
-        Hub hx = hub.getMasterHub();
-        if (hx != null) {
-            OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterObjectToDetail(hub);
-            if (li.getOwner()) {
-                String propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
-                addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, "", changeListenerVisible, true);
-            }
-        }
-*/
 
     /**
      * Used by HubChangedListener.addEdit/VisibleQueryEnabled, etc to listen to dependencies found for an EditQuery.
      */
-    public static void addEditQueryChangeListeners(final Hub hub, final Class cz, final String prop, final String ppPrefix, final HubChangeListener changeListener, final boolean bEnabled) {
+    public static void addEditQueryChangeListeners(final Hub hub, final Class cz, final String prop, String ppPrefix, final HubChangeListener changeListener, final boolean bEnabled) {
+        if (ppPrefix == null) ppPrefix = "";
         OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(cz);
         String s;
         

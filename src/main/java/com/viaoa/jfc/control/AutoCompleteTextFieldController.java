@@ -37,7 +37,7 @@ public class AutoCompleteTextFieldController extends OAJfcController {
     private int maxResults = 35;
     
     public AutoCompleteTextFieldController(Hub hub, JTextField txt, String propertyPath) {
-        super(hub, null, propertyPath, txt, HubChangeListener.Type.HubNotEmpty, false, true);
+        super(hub, null, propertyPath, txt, HubChangeListener.Type.HubNotEmpty, true, true);
         this.txt = txt;
         init();
     }

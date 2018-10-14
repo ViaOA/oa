@@ -2877,9 +2877,6 @@ j:      12
     }
     
     
-    
-    
-    
     public static void main2(String[] args) {
         String s = OAString.fmt("CustomerName", "8L.");
         

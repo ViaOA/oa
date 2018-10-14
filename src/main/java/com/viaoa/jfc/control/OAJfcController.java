@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.lang.reflect.*;
 import java.awt.*;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import javax.swing.*;
@@ -23,8 +22,6 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.text.JTextComponent;
 
-import com.viaoa.annotation.OAEditQuery;
-import com.viaoa.auth.OAAuthDelegate;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.hub.HubChangeListener.HubProp;
@@ -34,8 +31,6 @@ import com.viaoa.jfc.*;
 import com.viaoa.jfc.table.*;
 import com.viaoa.object.OAObjectEditQuery;
 import com.viaoa.object.OAObjectEditQueryDelegate;
-import com.viaoa.object.OALinkInfo;
-import com.viaoa.object.OAMethodInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
@@ -227,7 +222,6 @@ public class OAJfcController extends HubListenerAdapter {
             bIsHubCalc = false;
             endPropertyClass = String.class;
         }
-
         
         if (!bUseLinkHub) {
             if (bUseEditQuery) {
@@ -235,44 +229,33 @@ public class OAJfcController extends HubListenerAdapter {
                 String ppPrefix = "";
                 int cnt = 0;
                 for (String prop : properties) {
-                    
-                    getEnabledChangeListener().addEditQueryEnabled(hub, cz, prop, ppPrefix);
-                    // OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, cz, prop, ppPrefix, getEnabledChangeListener(), true);
-                    
-                    
-                    OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, cz, prop, ppPrefix, getEnabledChangeListener(), true);
-                    OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, cz, prop, ppPrefix, getVisibleChangeListener(),false);
+                    if (cnt == 0) {
+                        addEnabledEditQueryCheck(hub, prop);
+                        addVisibleEditQueryCheck(hub, prop);
+                    }
+                    else {
+                        OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, cz, prop, ppPrefix, getEnabledChangeListener(), true);
+                        OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, cz, prop, ppPrefix, getVisibleChangeListener(), false);
+                    }
                     ppPrefix += prop + ".";
                     cz = oaPropertyPath.getClasses()[cnt++];
                 }
 
                 if (cnt == 0) {
-                    OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, cz, null, ppPrefix, getEnabledChangeListener(), true);
-                    OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, cz, null, ppPrefix, getVisibleChangeListener(), false);
-                }
-                
-                // check to see if MasterHub needs to be added to changeListener
-                Hub hx = hub.getMasterHub();
-                if (hx != null) {
-                    OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterObjectToDetail(hub);
-                    if (li.getOwner()) {
-                        String propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
-                        OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, "", getEnabledChangeListener(), true);
-                        OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, "", getVisibleChangeListener(), false);
-                    }
+                    addEnabledEditQueryCheck(hub, null);
+                    addVisibleEditQueryCheck(hub, null);
                 }
             }
         }
         else {
             hubLink = hub.getLinkHub();
             linkPropertyName = hub.getLinkPath();
-
             if (hubLink != null) {
                 getEnabledChangeListener().add(hubLink, HubChangeListener.Type.AoNotNull);
-                
                 if (bUseEditQuery) {
                     // check to see if linkToHub needs to be added to changeListener
-                    OAObjectEditQueryDelegate.addEditQueryChecking(hubLink, linkPropertyName, getChangeListener(), getEnabledChangeListener(), getVisibleChangeListener());
+                    addEnabledEditQueryCheck(hubLink, linkPropertyName);
+                    addVisibleEditQueryCheck(hubLink, linkPropertyName);
                 }
             }
         }
@@ -898,10 +881,9 @@ public class OAJfcController extends HubListenerAdapter {
     public HubProp addEnabledCheck(Hub hub, HubChangeListener.Type type) {
         return getEnabledChangeListener().add(hub, type);
     }
-    public HubProp addEnabledEditQueryCheck(Hub hub, String pp) {
-        return getEnabledChangeListener().addEditQueryEnabled(hub, pp);
+    public HubProp addEnabledEditQueryCheck(Hub hub, String propertyName) {
+        return getEnabledChangeListener().addEditQueryEnabled(hub, propertyName);
     }
-    
     
     public HubChangeListener getEnabledChangeListener() {
         if (changeListenerEnabled != null) return changeListenerEnabled;
@@ -934,8 +916,8 @@ public class OAJfcController extends HubListenerAdapter {
     public HubProp addVisibleCheck(Hub hub, String property, HubChangeListener.Type type) {
         return getVisibleChangeListener().add(hub, property, type);
     }
-    public HubProp addVisibleEditQueryCheck(Hub hub, String pp) {
-        return getEnabledChangeListener().addEditQueryVisible(hub, pp);
+    public HubProp addVisibleEditQueryCheck(Hub hub, String propertyName) {
+        return getEnabledChangeListener().addEditQueryVisible(hub, propertyName);
     }
     
     
@@ -1071,47 +1053,7 @@ int cntUpdate;
     }
     public boolean updateEnabled(final JComponent comp, final Object object) {
         if (comp == null) return false;
-        boolean bEnabled = true;
-
-        if (bUseLinkHub && hubLink != null) {
-            bEnabled = hubLink.isValid();
-            if (bEnabled && bUseEditQuery) {
-                Object objx = hubLink.getAO();
-                if (objx == null) {
-                    bEnabled = false;
-                }
-                else if (objx instanceof OAObject) {
-                    bEnabled = OAObjectEditQueryDelegate.getAllowEnabled((OAObject)objx, linkPropertyName);
-                }
-            }
-        }
-
-        if (bEnabled && hub != null && (object instanceof OAObject)) {
-            bEnabled = hub.isValid();
-            if (bUseEditQuery && bEnabled && oaPropertyPath != null && oaPropertyPath.hasLinks()) {
-                String prop = "";
-                int i = 0;
-                Object objx = object;
-                for (Method m : oaPropertyPath.getMethods()) {
-                    try {
-                        if (prop.length() > 0) prop += ".";
-                        prop += oaPropertyPath.getProperties()[i++];
-                        if (objx instanceof OAObject) bEnabled = OAObjectEditQueryDelegate.getAllowEnabled((OAObject)objx, prop);
-                        if (!bEnabled) break;
-                        objx = m.invoke(objx, null);
-                        if (objx == null) break;
-                    }
-                    catch (Exception e) {
-                        throw new RuntimeException("Error getting value for propertyPath, used in jfcController, pp="+oaPropertyPath.getPropertyPath(), e);
-                    }
-                }
-            }
-            else {
-                if (bUseEditQuery) bEnabled = bEnabled && OAObjectEditQueryDelegate.getAllowEnabled((OAObject)object, endPropertyName);
-            }            
-        }
-
-        bEnabled = bEnabled && getEnabledChangeListener().getValue();
+        boolean bEnabled = getEnabledChangeListener().getValue();
         bEnabled = isEnabled(bEnabled);
 
         final boolean bEnabledOrig = bEnabled;
@@ -1170,40 +1112,7 @@ int cntUpdate;
     }
     public boolean updateVisible(final JComponent comp, final Object object) {
         if (comp == null) return false;
-        boolean bVisible = true;
-
-        if (bUseEditQuery) {
-            if (bUseLinkHub && hubLink != null) {
-                Object objx = hubLink.getAO();
-                if (objx instanceof OAObject) {
-                    bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject)objx, linkPropertyName);
-                }
-            }
-            else if (!bUseLinkHub && hub != null && (object instanceof OAObject)) {
-                if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
-                    String prop = "";
-                    int i = 0;
-                    Object objx = object;
-                    for (Method m : oaPropertyPath.getMethods()) {
-                        try {
-                            if (prop.length() > 0) prop += ".";
-                            prop += oaPropertyPath.getProperties()[i++];
-                            if (objx instanceof OAObject) bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject)objx, prop);
-                            if (!bVisible) break;
-                            objx = m.invoke(objx, null);
-                            if (objx == null) break;
-                        }
-                        catch (Exception e) {
-                            throw new RuntimeException("Error getting value for propertyPath, used in jfcController, pp="+oaPropertyPath.getPropertyPath(), e);
-                        }
-                    }
-                }
-                else {
-                    bVisible = OAObjectEditQueryDelegate.getAllowVisible((OAObject)object, endPropertyName);
-                }            
-            }
-        }
-        bVisible = bVisible && getVisibleChangeListener().getValue();
+        boolean bVisible = getVisibleChangeListener().getValue();
         bVisible = isVisible(bVisible);
         
         if (comp.isVisible() != bVisible) {

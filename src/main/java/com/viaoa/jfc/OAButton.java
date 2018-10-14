@@ -28,6 +28,7 @@ import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
+import com.viaoa.hub.HubChangeListener.HubProp;
 
 public class OAButton extends JButton implements OATableComponent, OAJfcComponent {
     public boolean DEBUG;
@@ -779,6 +780,7 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
         control.getEnabledChangeListener().add(hub, propPath, compareValue);
     }
+
     /*
     protected boolean isEnabled(boolean defaultValue) {
         return defaultValue;

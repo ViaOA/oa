@@ -85,7 +85,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         if (ci == null) return;
         
         Border border = this.getBorder();
-        border = new CompoundBorder(new CustomLineBorder(0, 2, 0, 0, Color.LIGHT_GRAY), border); 
+        border = new CompoundBorder(new CustomLineBorder(0, 4, 0, 0, Color.LIGHT_GRAY), border); 
         setBorder(border);
     }
     

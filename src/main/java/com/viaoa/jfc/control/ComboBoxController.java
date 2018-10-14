@@ -217,6 +217,7 @@ public class ComboBoxController extends OAJfcController implements FocusListener
 
         public synchronized void setSelectedItem(Object obj) {
             if (obj instanceof OANullObject) obj = null;
+            final Object objOrig = obj;
             if (!flag && obj != getHub().getActiveObject()) {
                 Hub h = getHub();
                 Object activeObject = null;
@@ -225,7 +226,7 @@ public class ComboBoxController extends OAJfcController implements FocusListener
                     activeObject = hubx.getAO();
                 }
                 if (HubLinkDelegate.getLinkedOnPos(h)) {
-                    obj = h.getPos();
+                    obj = h.getPos(obj);
                 }
 
                 String msg = isValid(activeObject, obj);
@@ -254,7 +255,7 @@ public class ComboBoxController extends OAJfcController implements FocusListener
                             OAUndoManager.add(ue);
                             */
                         }
-                        getHub().setActiveObject(obj);
+                        getHub().setActiveObject(objOrig);
                     }
                     finally {
                         if (b) {

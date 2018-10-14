@@ -10,6 +10,7 @@
 */
 package com.viaoa.hub;
 
+import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectEditQueryDelegate;
 import com.viaoa.util.*;
@@ -127,6 +128,17 @@ public abstract class HubChangeListener {
     /** add a rule to check the return value for an EditQuery isEnabled */
     public HubProp addEditQueryEnabled(Hub hub, String prop) {
         OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, hub.getObjectClass(), prop, null, this, true);
+        
+        // include master
+        Hub hx = hub.getMasterHub();
+        if (hx != null) {
+            OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterObjectToDetail(hub);
+            if (li.getOwner()) {
+                String propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+                OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, null, this, true);
+            }
+        }
+        
         return add(hub, prop, true, Type.EditQueryEnabled);
     }
     public HubProp addEditQueryEnabled(Hub hub, Class cz, String prop, String ppPrefix) {
@@ -141,6 +153,17 @@ public abstract class HubChangeListener {
     }
     public HubProp addEditQueryVisible(Hub hub, Class cz, String prop, String ppPrefix) {
         OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, cz, prop, ppPrefix, this, false);
+
+        // include master
+        Hub hx = hub.getMasterHub();
+        if (hx != null) {
+            OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterObjectToDetail(hub);
+            if (li.getOwner()) {
+                String propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+                OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, null, this, false);
+            }
+        }
+
         return add(hub, prop, true, Type.EditQueryVisible);
     }
     
