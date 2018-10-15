@@ -339,7 +339,6 @@ public class OAObjectEditQueryDelegate {
             callEditQuery(oaObj, null, editQuery);
             bPassed = editQuery.getAllowed();
         }
-        
 
         final OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
         
@@ -507,24 +506,32 @@ public class OAObjectEditQueryDelegate {
                 }
             }
         }
+
+        
+        Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
         
         // call editQuery method for method
         if (editQuery.getType().checkEnabledFirst) {
             OAObjectEditQuery editQueryX = new OAObjectEditQuery(Type.AllowEnabled);
             editQueryX.setAllowed(editQuery.getAllowed());
             callEditQuery(oaObj, propertyName, editQueryX);
+
+            // call hub listeners
+            if (hubs != null) {
+                for (Hub h : hubs) {
+                    if (h == null) continue;
+                    processEditQueryForHubListeners(editQueryX, h, oaObj, propertyName, oldValue, newValue);
+                }
+            }
+            
             bPassed = editQueryX.getAllowed();
             editQuery.setAllowed(bPassed);
             if (OAString.isEmpty(editQuery.getResponse())) editQuery.setResponse(editQueryX.getResponse());
         }
-        if (editQuery.getType() != Type.AllowEnabled) {
-            callEditQuery(oaObj, propertyName, editQuery);
-        }
+        callEditQuery(oaObj, propertyName, editQuery);
         
         // call hub listeners
-        Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
         if (hubs != null) {
-            // check hub.listeners
             for (Hub h : hubs) {
                 if (h == null) continue;
                 processEditQueryForHubListeners(editQuery, h, oaObj, propertyName, oldValue, newValue);

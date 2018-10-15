@@ -357,33 +357,35 @@ public abstract class HubChangeListener {
         }
 
         public boolean getValue() {
-            if (hub == null) return true;
             
+            boolean bValid = hub != null && hub.isValid();
+
             if (bUseCompareValue && compareValue != null) {
-                if (compareValue == Type.HubValid) return hub.isValid();
-                if (compareValue == Type.HubNotValid) return !hub.isValid();
-                if (compareValue == Type.HubEmpty) return (hub.getSize() == 0);
-                if (compareValue == Type.HubNotEmpty) return (hub.getSize() > 0);
-                if (compareValue == Type.AoNull) return (hub.getAO() == null);
-                if (compareValue == Type.AoNotNull) return (hub.getAO() != null);
+                if (compareValue == Type.HubValid) return bValid;
+                if (compareValue == Type.HubNotValid) return !bValid;
+                if (compareValue == Type.HubEmpty) return (bValid && hub.getSize() == 0);
+                if (compareValue == Type.HubNotEmpty) return (bValid && hub.getSize() > 0);
+                if (compareValue == Type.AoNull) return (bValid && hub.getAO() == null);
+                if (compareValue == Type.AoNotNull) return (bValid && hub.getAO() != null);
                 if (compareValue == Type.AlwaysTrue) return true;
                 if (compareValue == Type.AlwaysFalse) return false;
                 if (compareValue == Type.Unknown) return true;
             }
 
-            if (!hub.isValid()) return false;
-            
-            Object value = hub.getAO();
+            Object value = (bValid) ? hub.getAO() : null;
             
             if (compareValue == Type.EditQueryEnabled) {
+                if (!bValid) return false;
                 if (!(value instanceof OAObject)) return false;
                 return OAObjectEditQueryDelegate.getAllowEnabled((OAObject) value, propertyPath);
             }
             if (compareValue == Type.EditQueryVisible) {
-                if (!(value instanceof OAObject)) return false;
+                if (!bValid) return true;
+                if (!(value instanceof OAObject)) return true;
                 return OAObjectEditQueryDelegate.getAllowVisible((OAObject) value, propertyPath);
             }
             
+            if (!bValid) return false;
             
             if (propertyPath != null) {
                 if (value instanceof OAObject) value = ((OAObject)value).getProperty(propertyPath);

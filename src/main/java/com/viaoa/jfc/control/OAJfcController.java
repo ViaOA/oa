@@ -917,7 +917,7 @@ public class OAJfcController extends HubListenerAdapter {
         return getVisibleChangeListener().add(hub, property, type);
     }
     public HubProp addVisibleEditQueryCheck(Hub hub, String propertyName) {
-        return getEnabledChangeListener().addEditQueryVisible(hub, propertyName);
+        return getVisibleChangeListener().addEditQueryVisible(hub, propertyName);
     }
     
     

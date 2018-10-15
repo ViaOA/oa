@@ -128,7 +128,7 @@ public class OAJfcControllerTest extends OAUnitTest {
         OAJfcController jc = new OAJfcController(hubEt, null, "name", lbl, HubChangeListener.Type.AoNotNull, false, true);
 
         hls = HubEventDelegate.getAllListeners(hub);
-        assertEquals(2, hls.length);
+        assertEquals(3, hls.length);
         hls = HubEventDelegate.getAllListeners(hubEt);
         assertEquals(4, hls.length);
 
@@ -208,7 +208,7 @@ public class OAJfcControllerTest extends OAUnitTest {
         assertEquals(1, vint.value);
 
         hls = HubEventDelegate.getAllListeners(hub);
-        assertEquals(2, hls.length);
+        assertEquals(3, hls.length);
         
         Employee emp = new Employee();
         hub.add(emp);
@@ -229,7 +229,7 @@ public class OAJfcControllerTest extends OAUnitTest {
         assertEquals(loc, hubLoc.getAO());
 
         hls = HubEventDelegate.getAllListeners(hub);
-        assertEquals(2, hls.length);
+        assertEquals(3, hls.length);
         hls = HubEventDelegate.getAllListeners(hubLoc);
         assertEquals(6, hls.length);
         
