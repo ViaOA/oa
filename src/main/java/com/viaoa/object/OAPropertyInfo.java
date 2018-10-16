@@ -81,7 +81,7 @@ public class OAPropertyInfo implements java.io.Serializable {
         return isProcessed;
     }
     public void setProcessed(boolean b) {
-        this.isProcessed = isProcessed;
+        this.isProcessed = b;
     }
 	public int getMaxLength() {
 		return maxLength;

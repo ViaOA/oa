@@ -132,7 +132,7 @@ public class OAAnnotationDelegate {
         }
         oi.setPropertyIds(ss);
         
-if (clazz.getName().equals("test.theice.tsam.model.oa.Server")) {
+if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
     //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
     int xx = 4;
     xx++;

@@ -46,7 +46,7 @@ public class OAObjectEditQuery {
 
     private String response;
     private Throwable throwable;
-    
+
     /**
      * Type of request being made from caller object.
      * 

@@ -111,7 +111,18 @@ public class CustomComboBoxController extends OAJfcController {
 	                if (getEnableUndo()) {
 	                    OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange(undoDescription, obj, endPropertyName, prev, value) );
 	                }
-                    setValue(obj, value);
+	                try {
+	                    setValue(obj, value);
+	                }
+	                catch (Exception e) {
+	                    e.printStackTrace();
+	                    String s = "Exception while setting value, " + e.toString();
+	                    JOptionPane.showMessageDialog(
+	                        OAJfcUtil.getWindow(comboBox), 
+	                        s, "Command failed", 
+	                        JOptionPane.ERROR_MESSAGE);
+	                    
+	                }
 	                // was: obj.setProperty(getPropertyName(), value);
 	            }
 	        }

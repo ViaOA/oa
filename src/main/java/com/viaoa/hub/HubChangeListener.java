@@ -221,6 +221,39 @@ public abstract class HubChangeListener {
             }
         }
 
+        
+        if (bUseCompareValue && compareValue == Type.EditQueryEnabled) {
+            for (HubProp hp : hubProps) {
+                if (hp.bUseCompareValue && hp.compareValue == Type.EditQueryEnabled && hub == hp.hub) {
+                    if (OAString.isEmpty(hp.propertyPath)) {
+                        hp.bIgnore = true;
+                    }
+                    else {
+                        if (OAString.isEmpty(propertyPath)) return null;
+                        if (hp.propertyPath.equalsIgnoreCase(propertyPath)) {
+                            hp.bIgnore = true;
+                        }
+                    }
+                }
+            }
+        }
+        if (bUseCompareValue && compareValue == Type.EditQueryVisible) {
+            for (HubProp hp : hubProps) {
+                if (hp.bUseCompareValue && hp.compareValue == Type.EditQueryVisible && hub == hp.hub) {
+                    if (OAString.isEmpty(hp.propertyPath)) {
+                        hp.bIgnore = true;
+                    }
+                    else {
+                        if (OAString.isEmpty(propertyPath)) return null;
+                        if (hp.propertyPath.equalsIgnoreCase(propertyPath)) {
+                            hp.bIgnore = true;
+                        }
+                    }
+                }
+            }
+        }
+            
+
         newHubProp.hubListener = new HubListenerAdapter() {
             public void afterChangeActiveObject(HubEvent e) {
                 onChange();
@@ -314,6 +347,7 @@ public abstract class HubChangeListener {
     public boolean getValue() {
         boolean b = true;
         for (HubProp hp : hubProps) {
+            if (hp.bIgnore) continue;
             if (hp.filter != null) {
                 if (hp.hub == null) b = hp.filter.isUsed(null);
                 else b = hp.filter.isUsed(hp.hub.getAO());
@@ -327,6 +361,7 @@ public abstract class HubChangeListener {
     public HubProp getFalseValue() {
         boolean b = true;
         for (HubProp hp : hubProps) {
+            if (hp.bIgnore) continue;
             if (hp.filter != null) {
                 if (hp.hub == null) b = hp.filter.isUsed(null);
                 else b = hp.filter.isUsed(hp.hub.getAO());
@@ -346,6 +381,7 @@ public abstract class HubChangeListener {
         public Object compareValue;
         public boolean bUseCompareValue;
         public OAFilter filter;
+        public boolean bIgnore; // flag used when another rule overrides this one
 
         public HubProp(Hub<?> h, String propertyPath, String listenPropertyName, boolean bUseCompareValue, Object compareValue, OAFilter filter) {
             this.hub = h;
@@ -409,10 +445,14 @@ public abstract class HubChangeListener {
             if (!(obj instanceof HubProp)) return false;
             HubProp hp = (HubProp) obj;
             if (this.hub != hp.hub) return false;
+            if (this.bUseCompareValue != hp.bUseCompareValue) return false;
+            
             if (this.compareValue != null) {
                 if (hp.compareValue == null) return false;
-                if (!this.compareValue.equals(hp.compareValue)) {
-                    if (!this.compareValue.equals(OAConv.convert(this.compareValue.getClass(), hp.compareValue))) return false;
+                if (this.compareValue != hp.compareValue) {
+                    if (!this.compareValue.equals(hp.compareValue)) {
+                        if (!this.compareValue.equals(OAConv.convert(this.compareValue.getClass(), hp.compareValue))) return false;
+                    }
                 }
             }
             else if (hp.compareValue != null) return false;

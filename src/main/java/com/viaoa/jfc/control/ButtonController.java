@@ -1192,6 +1192,11 @@ public class ButtonController extends OAJfcController implements ActionListener 
     */
     public void setMethodName(String methodName) {
         this.methodName = methodName;
+        
+        // 20181015
+        addEnabledCheck(getHub(), HubChangeListener.Type.AoNotNull);
+        addEnabledEditQueryCheck(getHub(), methodName);
+        addVisibleEditQueryCheck(getHub(), methodName);
     }
 
     /**
