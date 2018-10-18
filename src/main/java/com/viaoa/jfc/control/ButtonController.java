@@ -339,9 +339,75 @@ public class ButtonController extends OAJfcController implements ActionListener 
         return default_confirmActionPerformed();
     }
     public boolean default_confirmActionPerformed() {
-        if (OAString.isEmpty(confirmMessage) && compConfirm == null) return true;
+        OAObject obj = updateObject;
+        if (obj == null && hub != null) obj = (OAObject) hub.getAO();
+
+        String msg = getConfirmMessage();
+        String title = "Confirm";
+        
+        OAObjectEditQuery eq = null;
+                
+        if (obj != null) {
+            switch (command) {
+            case ClearAO:
+                if (obj != null) {
+                    if (hub.getLinkHub() != null) {
+                        eq = OAObjectEditQueryDelegate.getConfirmPropertyChangeEditQuery( (OAObject) hub.getLinkHub().getAO(), hub.getLinkPath(), null, msg, title);
+                    }
+                }
+                break;
+            case Delete:
+                eq = OAObjectEditQueryDelegate.getConfirmDeleteEditQuery(obj, msg, title);
+                // also have remove checked
+            case Remove:
+                OAObjectEditQuery eqHold = eq;
+                eq = OAObjectEditQueryDelegate.getVerifyRemoveEditQuery(getHub(), obj);
+                if (!eq.getAllowed()) {
+                    String s = eq.getResponse();
+                    if (s == null) s = "";
+                    else s = ", " + s;
+                    JOptionPane.showMessageDialog(button, s, "Warning", JOptionPane.WARNING_MESSAGE);
+                    return false;
+                }
+                if (eqHold != null) eq = eqHold;
+                else eq = OAObjectEditQueryDelegate.getConfirmRemoveEditQuery(getHub(), obj, msg, title);
+                break;
+            case Add:
+            case Insert:
+            case New:
+                eq = OAObjectEditQueryDelegate.getVerifyAddEditQuery(getHub(), null);
+                if (!eq.getAllowed()) {
+                    String s = eq.getResponse();
+                    if (s == null) s = "";
+                    else s = ", " + s;
+                    JOptionPane.showMessageDialog(button, s, "Warning", JOptionPane.WARNING_MESSAGE);
+                    return false;
+                }
+                eq = OAObjectEditQueryDelegate.getConfirmAddEditQuery(getHub(), null, msg, title);
+            }            
+        }
+        
+        if (OAString.isNotEmpty(getMethodName())) {
+            eq = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery(obj, getMethodName(), null, updateValue);
+            if (!eq.getAllowed()) {
+                String s = eq.getResponse();
+                if (s == null) s = "";
+                else s = ", " + s;
+                JOptionPane.showMessageDialog(button, s, "Warning", JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
+            eq = OAObjectEditQueryDelegate.getConfirmPropertyChangeEditQuery(obj, getMethodName(), updateValue, msg, title);
+        }
+        
+        if (eq != null) {
+            msg = eq.getConfirmMessage();
+            title = eq.getConfirmTitle();
+        }
+        
+        if (OAString.isEmpty(msg) && compConfirm == null) return true;
+        
         if (compConfirm == null) {
-            int x = JOptionPane.showOptionDialog(OAJfcUtil.getWindow(button), confirmMessage, "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
+            int x = JOptionPane.showOptionDialog(OAJfcUtil.getWindow(button), msg, title, 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
             return (x == 0);
         }
         getConfirmDialog().setVisible(true);
@@ -349,10 +415,80 @@ public class ButtonController extends OAJfcController implements ActionListener 
     }
     
     
+    
+//qqqqqqqqqqqqqqqq    
+    @Override
+    public String isValid(Object obj, Object newValue) {
+        OAObjectEditQuery em = _isValid(obj);
+        String result = null;
+        if (em != null) {
+            if (!em.getAllowed()) {
+                result = em.getResponse();
+                Throwable t = em.getThrowable();
+                if (OAString.isEmpty(result) && t != null) {
+                    for (; t!=null; t=t.getCause()) {
+                        result = t.getMessage();
+                        if (OAString.isNotEmpty(result)) break;
+                    }
+                    if (OAString.isEmpty(result)) result = em.getThrowable().toString();
+                }
+                else result = "invalid value";
+            }
+        }
+        return result;
+    }
+    protected OAObjectEditQuery _isValid(Object obj) {
+        OAObjectEditQuery eq = null;
+   
+        switch (command) {
+        case ClearAO:
+            if (hub.getLinkHub() != null) {
+                eq = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery((OAObject) hub.getLinkHub().getAO(), hub.getLinkPath(), obj, null);
+            }
+            break;
+        case Delete:
+            if (obj instanceof OAObject) {
+                eq = OAObjectEditQueryDelegate.getVerifyDeleteEditQuery((OAObject)obj);
+            }
+            // needs to also check remove
+        case Remove:
+            OAObjectEditQuery eqHold = eq;
+            if (obj instanceof OAObject) {
+                eq = OAObjectEditQueryDelegate.getVerifyRemoveEditQuery(getHub(), (OAObject) obj);
+            }
+            if (eqHold != null) eq = eqHold;
+            break;
+        case Add:
+        case Insert:
+        case New:
+            if (obj instanceof OAObject) {
+                eq = OAObjectEditQueryDelegate.getVerifyAddEditQuery(getHub(), (OAObject) obj);
+            }
+        }            
+        
+        if (OAString.isNotEmpty(getMethodName()) && (obj instanceof OAObject)) {
+            eq = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery((OAObject)obj, getMethodName(), null, updateValue);
+        }
+        return eq;
+    }
+    
+    
     public void actionPerformed(ActionEvent e) {
         default_actionPerformed(e);
     }
     public void default_actionPerformed(ActionEvent e) {
+        
+        if (!beforeActionPerformed()) return;
+        if (button == null || !button.isEnabled()) return;
+        
+        OAObject obj = updateObject;
+        if (obj == null && hub != null) obj = (OAObject) hub.getAO();
+        
+        String s = isValid(obj, null); 
+        if (OAString.isNotEmpty(s)) {
+            JOptionPane.showMessageDialog(button, s, "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         
         OAPasswordDialog dlgPw; 
         if (button instanceof OAButton) {
@@ -366,8 +502,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
             if (dlgPw.wasCancelled()) return;
         }
         
-        if (!beforeActionPerformed()) return;
-        if (button == null || !button.isEnabled()) return;
+        
         if (!confirmActionPerformed()) return;
         
         JFileChooser fc = getSaveFileChooser();
@@ -1349,6 +1484,11 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 break;
             case ClearAO:
                 flag = obj != null;
+                if (oaObj != null) {
+                    if (hub.getLinkHub() != null) {
+                       // flag = OAObjectEditQueryDelegate.getVerifyPropertyChange((OAObject)hub.getLinkHub().getAO(), hub.getLinkPath(), oaObj, null); 
+                    }
+                }
                 break;
             case Delete:
                 //was: flag = (obj != null && hub.getAllowDelete());
@@ -1392,22 +1532,33 @@ public class ButtonController extends OAJfcController implements ActionListener 
             if (flag && !HubDelegate.isValid(hub)) flag = false;
         }
         
+        
         if (flag) {
             OAObjectEditQuery eq;
             switch (command) {
             case Delete:
-                flag = ((OAObject) obj).canDelete();
+                if (oaObj != null) {
+                    flag = OAObjectEditQueryDelegate.getAllowDelete(oaObj); 
+                    flag = flag && oaObj.canDelete();
+                    flag = flag && hub.canRemove(oaObj);
+                }
                 break;
             case Remove:
-                flag = hub.canRemove((OAObject) obj);
+                if (oaObj != null) {
+                    flag = OAObjectEditQueryDelegate.getAllowRemove(hub); 
+                    flag = flag && hub.canRemove(oaObj);
+                }
                 break;
             case Add:
             case Insert:
             case New:
-                flag = hub.canAdd();
+                if (hub != null) {
+                    flag = hub.canAdd();
+                    flag = flag && OAObjectEditQueryDelegate.getAllowAdd(hub); 
+                    flag = flag && hub.canAdd();
+                }
             }            
         }
-        
         return flag;
     }
 

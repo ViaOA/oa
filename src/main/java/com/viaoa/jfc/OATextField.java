@@ -93,6 +93,9 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
         return control;
     }
 
+    public void setLabel(JLabel lbl, boolean bAlwaysMatchEnabled) {
+        getController().setLabel(lbl, bAlwaysMatchEnabled);
+    }
     public void setLabel(JLabel lbl) {
         getController().setLabel(lbl);
     }

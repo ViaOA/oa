@@ -116,6 +116,10 @@ public class OAJfcController extends HubListenerAdapter {
     private int dataSourceMaxColumns = -2;
     
     private JLabel label;
+    // should label always match comp.enabled? Default=false: will not disable label if AO!=null (view only mode)
+    protected boolean bLabelAlwaysMatchesComponentEnabled;
+
+    
     private ColorIcon myColorIcon;
     private MultiIcon myMultiIcon;
 
@@ -447,6 +451,14 @@ public class OAJfcController extends HubListenerAdapter {
         return confirmMessage;
     }
 
+    @Override
+    public void beforePropertyChange(HubEvent e) {
+        // TODO Auto-generated method stub
+        super.beforePropertyChange(e);
+    }
+    
+    
+    
     /**
      * confirm a new change.
      */
@@ -486,6 +498,49 @@ public class OAJfcController extends HubListenerAdapter {
         }
         return result;
     }
+
+//qqqqqqqqqqqq
+    /**
+     * Used to confirm changing AO when hub is link to another hub.
+     */
+    protected boolean confirmHubChangeAO(final Object objNew) {
+        if (!bUseLinkHub || hubLink == null) return true;
+        if (!(objNew instanceof OAObject)) return true;
+        return confirmPropertyChange(hubLink.getAO(), objNew);
+    }
+    
+//qqqqqqqqqqqqqqqq    
+    /**
+     * Used to verify a property change.
+     * @return null if no errors, else error message
+     */
+    protected String isValidHubChangeAO(final Object objNew) {
+        if (!bUseLinkHub || hubLink == null) return null;
+        if (!(objNew instanceof OAObject)) return null;
+        
+        Object obj = hubLink.getAO();
+        if (!(obj instanceof OAObject)) return null;
+        
+        OAObject oaObj = (OAObject) obj;
+        OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery(oaObj, linkPropertyName, null, objNew);
+
+        String result = null;
+        if (!em.getAllowed()) {
+            result = em.getResponse();
+            Throwable t = em.getThrowable();
+            if (OAString.isEmpty(result) && t != null) {
+                for (; t!=null; t=t.getCause()) {
+                    result = t.getMessage();
+                    if (OAString.isNotEmpty(result)) break;
+                }
+                if (OAString.isEmpty(result)) result = em.getThrowable().toString();
+            }
+            else result = "invalid value";
+        }
+        return result;
+    }
+    
+    
     
     /**
      * Converts a value to correct type needed for setMethod
@@ -923,14 +978,14 @@ public class OAJfcController extends HubListenerAdapter {
     
     
     private HubEvent lastUpdateHubEvent;
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq TESTING
-int cntUpdate;    
+//qqq Test
+//int cntUpdate;    
     
     /**
      *  Called to have component update itself.  
      */
     public void update() {
-/*qqqqqqqqqqqqqqqqqqqqqq        
+/*qqq Test        
     System.out.printf((++cntUpdate)+") %s %s %s\n", 
         hub!=null ? hub.getObjectClass().getSimpleName() : "", 
         propertyPath, 
@@ -948,9 +1003,9 @@ int cntUpdate;
         if (hub != null) obj = hub.getAO();
         else obj = null;
         update(component, obj, true);
-        updateLabel(component, obj);
         updateEnabled();        
-        updateVisible();        
+        updateVisible();      
+        updateLabel(component, obj);
     }
 
     public void updateLabel(final JComponent comp, Object object) {
@@ -1080,7 +1135,7 @@ int cntUpdate;
             if (jc != null) {
                 JLabel lbl = jc.getLabel();
                 boolean b = bEnabledOrig;
-                if (!b && ((hubChangeListenerType == null || hubChangeListenerType == HubChangeListener.Type.AoNotNull) || (hubChangeListenerType == HubChangeListener.Type.HubValid))) {
+                if (!b && !bLabelAlwaysMatchesComponentEnabled && ((hubChangeListenerType == null || hubChangeListenerType == HubChangeListener.Type.AoNotNull) || (hubChangeListenerType == HubChangeListener.Type.HubValid))) {
                     Hub h = getHub();
                     if (h != null && h.isValid() && h.getAO() != null) b = true; 
                 }
@@ -1210,12 +1265,17 @@ int cntUpdate;
         return dataSourceMaxColumns;
     }
 
+    
     /**
      * Label that is used with component, so that enabled and visible will be applied.
      */
     public void setLabel(JLabel lbl) {
+        setLabel(lbl, false);
+    }
+    public void setLabel(JLabel lbl, boolean bAlwaysMatchEnabled) {
         this.label = lbl;
         lbl.setLabelFor(component);
+        this.bLabelAlwaysMatchesComponentEnabled = bAlwaysMatchEnabled;
         update();
     }
     public JLabel getLabel() {

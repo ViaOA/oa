@@ -229,13 +229,15 @@ public class ComboBoxController extends OAJfcController implements FocusListener
                     obj = h.getPos(obj);
                 }
 
-                String msg = isValid(activeObject, obj);
+                String msg = isValidHubChangeAO(obj);
                 if (msg != null) {
                     JOptionPane.showMessageDialog(SwingUtilities.getRoot(comboBox), "Invalid selection\n" + msg, "Invalid selection",
                             JOptionPane.ERROR_MESSAGE);
                 }
+                else if (!confirmHubChangeAO(obj)) {
+                    // no-op
+                }
                 else {
-                    if (!confirmPropertyChange(activeObject, obj)) return;
                     boolean b = getEnableUndo() && hub != null && hub.getLinkHub() != null;
                     try {
                         if (b) {

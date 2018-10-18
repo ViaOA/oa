@@ -377,6 +377,7 @@ public class HubEventDelegate {
             }
         }
 	}
+
 	public static void fireAfterChangeActiveObjectEvent(Hub thisHub, Object obj, int pos, boolean bAllShared) {
 	    HubListener[] hl = getAllListeners(thisHub, bAllShared?1:3);
 	    int x = hl.length;

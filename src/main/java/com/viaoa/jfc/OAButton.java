@@ -625,7 +625,7 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         Popup message used to confirm button click before running code.
     */
     public String getConfirmMessage() {
-        return control.getConfirmMessage();
+        return control.getSuperConfirmMessage();
     }
     
     public void setConfirmComponent(JComponent comp) {
@@ -883,10 +883,16 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         public boolean beforeActionPerformed() {
             return OAButton.this.beforeActionPerformed();
         }
+        
         @Override
         public String getConfirmMessage() {
             return OAButton.this.getConfirmMessage();
         }
+        public String getSuperConfirmMessage() {
+            return super.getConfirmMessage();
+        }
+        
+        
         @Override
         public boolean confirmActionPerformed() {
             return OAButton.this.confirmActionPerformed();

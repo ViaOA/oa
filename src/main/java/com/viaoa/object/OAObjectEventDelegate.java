@@ -68,7 +68,7 @@ public class OAObjectEventDelegate {
                 bSkip = bSkip || OAObjectDelegate.WORD_Deleted.equalsIgnoreCase(propertyName);
 	        }
 	        
-	        if (!bSkip) {
+	        if (!bSkip && !bIsLoading) {
 	            OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery(oaObj, propertyName, oldObj, newObj);
     	        if (!em.getAllowed() || em.getThrowable() != null) {
     	            String msg = em.getResponse();

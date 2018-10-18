@@ -282,18 +282,42 @@ public class OAObjectEditQueryDelegate {
         return editQuery;
     }
 
-    /* todo:
-    public static OAObjectEditQuery getConfirmAddEditQuery(final OAObject oaObj, String property, Object newValue, String confirmMessage, String confirmTitle) {
-        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.GetConfirmAdd);
-        editQuery.setValue(newValue);
-        editQuery.setName(property);
+    public static OAObjectEditQuery getConfirmDeleteEditQuery(final OAObject oaObj, String confirmMessage, String confirmTitle) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.GetConfirmDelete);
         editQuery.setConfirmMessage(confirmMessage);
         editQuery.setConfirmTitle(confirmTitle);
         
-        processEditQuery(editQuery, oaObj, property, null, newValue);
+        processEditQuery(editQuery, oaObj, null, null, null);
         return editQuery;
     }
-    */
+    
+    public static OAObjectEditQuery getConfirmRemoveEditQuery(final Hub hub, final OAObject oaObj, String confirmMessage, String confirmTitle) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.GetConfirmRemove);
+        editQuery.setConfirmMessage(confirmMessage);
+        editQuery.setConfirmTitle(confirmTitle);
+        
+        OAObject objMaster = hub.getMasterObject();
+        if (objMaster != null) {
+            String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            editQuery.setName(propertyName);
+            processEditQuery(editQuery, objMaster, propertyName, oaObj, oaObj);
+        }
+        return editQuery;
+    }
+
+    public static OAObjectEditQuery getConfirmAddEditQuery(final Hub hub, final OAObject oaObj, String confirmMessage, String confirmTitle) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.GetConfirmAdd);
+        editQuery.setConfirmMessage(confirmMessage);
+        editQuery.setConfirmTitle(confirmTitle);
+        
+        OAObject objMaster = hub.getMasterObject();
+        if (objMaster != null) {
+            String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            editQuery.setName(propertyName);
+            processEditQuery(editQuery, objMaster, propertyName, oaObj, oaObj);
+        }
+        return editQuery;
+    }
     
     protected static void processEditQuery(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue) {
         _processEditQuery(editQuery, oaObj, propertyName, oldValue, newValue);

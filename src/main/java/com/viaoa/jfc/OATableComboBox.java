@@ -26,6 +26,7 @@ import com.sun.java.swing.plaf.windows.WindowsComboBoxUI;
 
 
 import com.viaoa.hub.*;
+import com.viaoa.jfc.OAButton.ButtonCommand;
 
 /**
     ComboBox with drop down table.
@@ -140,24 +141,24 @@ class MyTablePopup implements ComboPopup, MouseMotionListener, MouseListener, Ke
 
 	//========================================
 	// begin ComboPopup method implementations
-	private boolean bInit;
+	private JPanel panPopup;
     public void show() {
         if (cboTable != null && cboTable.comboTable != null) {
-            if (!bInit) {
-                // hack: this cant be created in the constructor
-                bInit = true;
-                popup.add(new JScrollPane(cboTable.comboTable), BorderLayout.CENTER);
-                popup.add(getButtonCommands(), BorderLayout.SOUTH);
+            if (panPopup == null) {
+                panPopup = new JPanel(new BorderLayout());
+                panPopup.add(new JScrollPane(cboTable.comboTable), BorderLayout.CENTER);
+                panPopup.add(getButtonCommands(), BorderLayout.SOUTH);
+                popup.add(panPopup, BorderLayout.CENTER);
+                cboTable.comboTable.getPreferredSize();
             }
             cboTable.onShow();
+            cboTable.comboTable.calcForPopup();
         }
         
-        Dimension d = popup.getSize();
-        if (d == null || d.height == 0) {
-            d = popup.getPreferredSize();
-            d.height += 18; // does not include the table column heading
-            popup.setPopupSize(d);
-        }
+        Dimension d = panPopup.getPreferredSize();
+        d.height += 18; // does not include the table column heading
+        popup.setPopupSize(d);
+
         Rectangle rec = computePopupBounds(0, comboBox.getSize().height, d.width, d.height);
 
         for (int i=0; i<3; i++) {
@@ -211,6 +212,18 @@ class MyTablePopup implements ComboPopup, MouseMotionListener, MouseListener, Ke
     	panCommands.add(cmd);
 
     	if (cboTable.getAllowClearButton()) {
+    	    cmd = new OAButton(cboTable.comboTable.getHub(), ButtonCommand.ClearAO) {
+    	        @Override
+    	        public void afterActionPerformed() {
+                    super.afterActionPerformed();
+                    cboTable.onClear();
+                    MyTablePopup.this.hide();
+    	        }
+    	    };
+    	    cmd.setText("clear");
+    	    cmd.setIcon(null);
+    	    cmd.setFocusable(false);
+    	    /*was:
 	    	cmd = new JButton("clear");
 	    	cmd.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent e) {
@@ -219,6 +232,7 @@ class MyTablePopup implements ComboPopup, MouseMotionListener, MouseListener, Ke
 	    		}
 	    	});
 	    	OACommand.setup(cmd);
+	    	*/
 	    	// cmd.setToolTipText("remove current selected value and close.");
 	    	panCommands.add(cmd);
     	}

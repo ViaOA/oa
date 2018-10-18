@@ -131,13 +131,13 @@ public class OAAnnotationDelegate {
             }
         }
         oi.setPropertyIds(ss);
-        
+
+/*qqq test        
 if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
-    //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
     int xx = 4;
     xx++;
 }
-
+*/
         // properties
         for (Method m : methods) {
             OAProperty oaprop = (OAProperty) m.getAnnotation(OAProperty.class);

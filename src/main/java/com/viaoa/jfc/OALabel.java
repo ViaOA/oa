@@ -434,6 +434,9 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
     }
 
+    public void setLabel(JLabel lbl, boolean bAlwaysMatchEnabled) {
+        getController().setLabel(lbl, bAlwaysMatchEnabled);
+    }
     public void setLabel(JLabel lbl) {
         getController().setLabel(lbl);
     }

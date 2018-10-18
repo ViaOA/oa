@@ -158,7 +158,7 @@ public class HubAODelegate {
      
         if (thisHub.dataa.activeObject == object && !bForce) return;
         if (thisHub.datau.isUpdatingActiveObject()) return;
-        
+
         // 20180328 check to see if thisHub has masterObject and no masterHub, which is the real hub and should not setAO on it since other "users" could be doing the same
         if (OAObject.getDebugMode()) {
             if (thisHub.datam.getMasterObject() != null && thisHub.getSharedHub() == null) {

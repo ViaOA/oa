@@ -727,6 +727,9 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
     public void onItemSelected(int row) {
     }
     
+    public void setLabel(JLabel lbl, boolean bAlwaysMatchEnabled) {
+        getController().setLabel(lbl, bAlwaysMatchEnabled);
+    }
     public void setLabel(JLabel lbl) {
         getController().setLabel(lbl);
     }

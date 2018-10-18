@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -238,18 +239,16 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * Columns will be resized to be at least the size of the heading text.
      */
     public void resizeColumnsToFitHeading() {
-    
         FontMetrics fm = this.getFontMetrics(getFont());
-        
         for (OATableColumn tc : getAllTableColumns()) {
             int w = tc.tc.getWidth();
             String s = (String) tc.tc.getHeaderValue();
             int w2 = fm.stringWidth(s);
             
-            if (w < w2+8) {
-                tc.tc.setPreferredWidth(w2 + 8);
-                tc.tc.setWidth(w2+8);
-                tc.defaultWidth = w2 + 8;
+            if (w < w2+12) {
+                tc.tc.setPreferredWidth(w2 + 12);
+                tc.tc.setWidth(w2+12);
+                tc.defaultWidth = w2 + 12;
             }
         }
     }
@@ -1260,7 +1259,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     /**
      * Determine preferred size based on number of preferred number of columns and rows.
      */
-    protected void calcPreferredSize() {
+    public void calcPreferredSize() {
         int w = 0;
         int cols = prefCols;
 
@@ -1297,6 +1296,46 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             c.validate();
         }
     }
+    
+    public void calcForPopup() {
+        int w = 0;
+        int cols = prefCols;
+
+        OATableColumn[] tcs = getAllTableColumns();
+
+        int i=0;
+        for (OATableColumn tc : getAllTableColumns()) {
+            if (i++ == cols) break;
+            w += tc.tc.getWidth();
+        }
+
+        w += cols * getIntercellSpacing().width;
+        w += 2;
+        int h = getRowHeight();
+        int rows = getHub().getCurrentSize();
+        if (rows < 5) rows = 5;
+        rows = Math.min(rows, prefRows);
+        h *= rows;
+        if (w < 20) w = 20;
+        if (h < 20) h = 20;
+
+        if (includeScrollBar) w += 18; // scrollbar
+        setPreferredScrollableViewportSize(new Dimension(w, h));
+        
+        // have table resized in layoutManager
+        this.invalidate();
+        Component c = this.getParent();
+        if (c instanceof JViewport) {
+            c = c.getParent();
+            if (c != null && c instanceof JScrollPane) c = c.getParent();
+        }
+        if (c != null && c.getParent() != null) c = c.getParent();
+        if (c != null) {
+            c.invalidate();
+            c.validate();
+        }
+    }
+ 
 
     /**
      * Returns the column position for an OATableComponent.
@@ -1881,13 +1920,18 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         else font = getFont();
 
-        if (width < 0 && comp != null) {
-            if (comp instanceof JTextField) {
-                width = ((JTextField) comp).getColumns();
+        if (width <= 0) {
+            if (comp != null) {
+                if (comp instanceof JTextField) {
+                    width = ((JTextField) comp).getColumns();
+                }
+                else {
+                    width = comp.getPreferredSize().width;
+                    width /= getCharWidth(comp, font, 1);
+                }
             }
             else {
-                width = comp.getPreferredSize().width;
-                width /= getCharWidth(comp, font, 1);
+                width = heading == null ? 3 : heading.length();
             }
         }
         int w = OATable.getCharWidth(this, font, width);
@@ -1918,6 +1962,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
 
         TableColumn tc = new TableColumn(col);
+        
         tc.setPreferredWidth(w);
         tc.setWidth(w);
         tc.setCellEditor(editComp);
@@ -2330,7 +2375,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                     Point pt = e.getPoint();
                     int row = rowAtPoint(pt);
 
-                    hub.setPos(row);
+                    if (!setHubPos(row)) return;
+                    //was: hub.setPos(row);
                     compPopupMenu.show(this, pt.x, pt.y);
                 }
             }
@@ -2535,9 +2581,45 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         return bEnableUndo;
     }
     private final AtomicInteger aiRow = new AtomicInteger();
-    protected void setHubPos(int row) {
-        if (hub == null || hub.getPos() == row) return;
-       // if (!confirm(row)) row = hub.getPos();
+    private final AtomicBoolean abIgnoreHubPos = new AtomicBoolean(); 
+    protected boolean setHubPos(int row) {
+        if (abIgnoreHubPos.get()) return false;
+        if (hub == null || hub.getPos() == row) return true;
+        // if (!confirm(row)) row = hub.getPos();
+        
+        // 20181018 added validation/confirm
+        if (hub.getLinkHub() != null) {
+            Container cont = this.getParent();
+            for (; cont!=null; cont = cont.getParent()) {
+                if (cont instanceof JPopupMenu) {
+                    ((JPopupMenu) cont).setVisible(false);
+                    break;
+                }
+            }
+            
+            String s = hubAdapter.isValidHubChangeAO(hub.getAt(row));
+            boolean b = true;
+            if (OAString.isNotEmpty(s)) {
+                b = false;
+                JOptionPane.showMessageDialog(this, s, "Warning", JOptionPane.WARNING_MESSAGE);
+            }
+            else if (!hubAdapter.confirmHubChangeAO(hub.getAt(row))) {
+                b = false;
+            }
+
+            if (!b) {
+                abIgnoreHubPos.set(true);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        abIgnoreHubPos.set(false);
+                        hubAdapter.afterChangeActiveObject(null);
+                    }
+                });
+                return false;
+            }
+        }
+        
         boolean b = getEnableUndo() && hub != null && hub.getLinkHub() != null;
         if (b) {
             OAUndoableEdit ue = OAUndoableEdit.createUndoablePropertyChange(
@@ -2549,6 +2631,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             OAUndoManager.add(ue);
         }
         _setHubPos(row);
+        return true;
     }
     protected void _setHubPos(final int row) {
         aiRow.set(row);
@@ -2627,7 +2710,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 }
                 
                 // 20171230
-                setHubPos(row);
+                if (!setHubPos(row)) return false;
                 //was: hub.setPos(row);
             }
             finally {
@@ -3712,13 +3795,22 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     volatile boolean _bIsRunningValueChanged; // flag set when valueChanged is running
 
     public MyHubAdapter(Hub hub, OATable table) {
-        super(hub, null, null, table, HubChangeListener.Type.HubValid, false, false);
+        super(hub, null, null, table, HubChangeListener.Type.HubValid, ((hub!=null)?(hub.getLinkHub()!=null):false), false);
         this.table = table;
         table.getSelectionModel().addListSelectionListener(this);
         // getHub().addHubListener(this);
         afterChangeActiveObject(null);
     }
 
+    @Override
+    protected String isValidHubChangeAO(Object objNew) {
+        return super.isValidHubChangeAO(objNew);
+    }
+    @Override
+    protected boolean confirmHubChangeAO(Object objNew) {
+        return super.confirmHubChangeAO(objNew);
+    }
+    
     protected boolean getIgnoreValueChanged() {
         if (table.tableLeft != null) {
             if (table.tableLeft.hubAdapter.aiIgnoreValueChanged.get() > 0) return true;
@@ -3761,6 +3853,7 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
 
                 try {
                     aiIgnoreValueChanged.incrementAndGet();
+                    
                     hub.setPos(pos);
                     if (pos >= 0) {
                         ListSelectionModel lsm = table.getSelectionModel();

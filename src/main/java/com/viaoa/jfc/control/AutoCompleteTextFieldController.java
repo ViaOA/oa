@@ -211,6 +211,15 @@ public class AutoCompleteTextFieldController extends OAJfcController {
             }
             @Override
             protected void onValueSelected(int pos, String value) {
+                String s = isValidHubChangeAO(hub.getAt(pos));
+                if (OAString.isNotEmpty(s)) {
+                    JOptionPane.showMessageDialog(AutoCompleteTextFieldController.this.txt, s, "Warning", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                else if (!confirmHubChangeAO(hub.getAt(pos))) {
+                    return;
+                }
+                
                 if (pos < 0) {
                     getHub().setAO(null);
                 }
