@@ -499,7 +499,6 @@ public class OAJfcController extends HubListenerAdapter {
         return result;
     }
 
-//qqqqqqqqqqqq
     /**
      * Used to confirm changing AO when hub is link to another hub.
      */
@@ -509,7 +508,6 @@ public class OAJfcController extends HubListenerAdapter {
         return confirmPropertyChange(hubLink.getAO(), objNew);
     }
     
-//qqqqqqqqqqqqqqqq    
     /**
      * Used to verify a property change.
      * @return null if no errors, else error message

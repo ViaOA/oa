@@ -36,6 +36,9 @@ public class OAObjectEventDelegate {
     private static Logger LOG = Logger.getLogger(OAObjectEventDelegate.class.getName());
     private static final String WORD_CHANGED = "CHANGED";
     
+    private static long msThrottle;
+    private static int cntError;
+    
     /**
 	    Used to manage property changes.
 	    Sends a "hubPropertyChange()" to all listeners of the Hubs that this object is a member of.  <br>
@@ -67,7 +70,7 @@ public class OAObjectEventDelegate {
                 bSkip = bSkip || OAObjectDelegate.WORD_New.equalsIgnoreCase(propertyName);
                 bSkip = bSkip || OAObjectDelegate.WORD_Deleted.equalsIgnoreCase(propertyName);
 	        }
-	        
+
 	        if (!bSkip && !bIsLoading) {
 	            OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery(oaObj, propertyName, oldObj, newObj);
     	        if (!em.getAllowed() || em.getThrowable() != null) {
@@ -81,7 +84,17 @@ public class OAObjectEventDelegate {
                         else msg = ".  Reason: " + msg;
                         msg = (oaObj.getClass().getSimpleName())+"."+propertyName+" change not allowed, value="+newObj + msg;
                     }
+    	       
+    	            long ms = System.currentTimeMillis();
+    	            ++cntError;
+    	            if (ms > msThrottle + 5000) {
+    	                LOG.warning(cntError+") " + msg);
+    	                msThrottle = ms;
+    	            }
+    	            
+/** 20181018 dont reject, can put this in later after more confidence.  OAJfcController will make call verify to make sure user/UI is using rules.           
     	            throw new RuntimeException(msg, em.getThrowable());
+*/    	            
     	        }
 	        }
 	    }

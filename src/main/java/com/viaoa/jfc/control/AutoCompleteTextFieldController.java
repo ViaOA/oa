@@ -42,6 +42,12 @@ public class AutoCompleteTextFieldController extends OAJfcController {
         init();
     }
 
+    @Override
+    public void onNewList(HubEvent e) {
+        super.onNewList(e);
+        if (txt != null) txt.setText("");
+    }
+    
     public AutoCompleteTextFieldController(Hub hub, JTextField txt) { 
         super(hub, null, null, txt, HubChangeListener.Type.HubNotEmpty, false, true);
         this.txt = txt;

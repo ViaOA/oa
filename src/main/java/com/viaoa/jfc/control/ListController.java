@@ -303,7 +303,7 @@ public class ListController extends OAJfcController implements ListSelectionList
                     b = false;
                 }
                 
-                if (!b) {
+                if (b) {
                     // 20181006
                     //was: if (row != -1) {
                         if (getHub().getLinkHub() != null) { // 20140501 dont need undoable if not linked
