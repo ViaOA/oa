@@ -908,7 +908,7 @@ public class OAObjectEditQueryDelegate {
         final Hub hubUser = OAAuthDelegate.getUserHub();
         if (bEnabled) s = oi.getUserEnabledProperty();
         else s = oi.getUserVisibleProperty();
-        if (OAString.isNotEmpty(s)) changeListener.add(hubUser, ppPrefix+s);
+        if (OAString.isNotEmpty(s)) changeListener.add(hubUser, s);
         
         if (OAString.isEmpty(prop)) return;
         

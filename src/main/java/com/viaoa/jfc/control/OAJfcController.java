@@ -117,7 +117,8 @@ public class OAJfcController extends HubListenerAdapter {
     
     private JLabel label;
     // should label always match comp.enabled? Default=false: will not disable label if AO!=null (view only mode)
-    protected boolean bLabelAlwaysMatchesComponentEnabled;
+    private boolean bLabelAlwaysMatchesComponentEnabled;
+    private Hub hubForLabel; // hub that controls label.enabled
 
     
     private ColorIcon myColorIcon;
@@ -142,7 +143,7 @@ public class OAJfcController extends HubListenerAdapter {
         this.hubObject = object;
         this.propertyPath = propertyPath;
         this.component = comp;
-        this.bUseLinkHub = bUseLinkHub;
+        this.bUseLinkHub = bUseLinkHub && (hub != null) && (hub.getLinkHub() != null);
         this.bUseEditQuery = bUseEditQuery;
         this.hubChangeListenerType = type;
         
@@ -493,12 +494,16 @@ public class OAJfcController extends HubListenerAdapter {
                 if (confirmMessage != null && confirmMessage.indexOf('<') >=0 && confirmMessage.toLowerCase().indexOf("<html>") < 0) confirmMessage = "<html>" + confirmMessage; 
             }
             
-            int x = JOptionPane.showOptionDialog(OAJfcUtil.getWindow(component), confirmMessage, confirmTitle, 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
+            int x = JOptionPane.showOptionDialog(getWindow(), confirmMessage, confirmTitle, 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
             result = (x == 0);
         }
         return result;
     }
 
+    protected Window getWindow() {
+        return OAJfcUtil.getWindow(component);
+    }
+    
     /**
      * Used to confirm changing AO when hub is link to another hub.
      */
@@ -1027,7 +1032,7 @@ public class OAJfcController extends HubListenerAdapter {
         if (font != null) comp.setFont(font);
 
         JLabel lblThis;
-        if (comp instanceof JLabel) {
+        if (comp instanceof JLabel && !(comp instanceof OAFunctionLabel)) {
             lblThis = (JLabel) comp;
         }
         else lblThis = null;
@@ -1137,6 +1142,7 @@ public class OAJfcController extends HubListenerAdapter {
                     Hub h = getHub();
                     if (h != null && h.isValid() && h.getAO() != null) b = true; 
                 }
+                if (!b && hubForLabel != null) b = hubForLabel.isValid() && hubForLabel.getAO() != null;
                 if (lbl != null && lbl.isEnabled() != b) {
                     lbl.setEnabled(b);
                 }
@@ -1268,11 +1274,18 @@ public class OAJfcController extends HubListenerAdapter {
      * Label that is used with component, so that enabled and visible will be applied.
      */
     public void setLabel(JLabel lbl) {
-        setLabel(lbl, false);
+        setLabel(lbl, false, null);
     }
     public void setLabel(JLabel lbl, boolean bAlwaysMatchEnabled) {
+        setLabel(lbl, bAlwaysMatchEnabled, null);
+    }
+    public void setLabel(JLabel lbl, Hub hubForLabel) {
+        setLabel(lbl, false, hubForLabel);
+    }
+    public void setLabel(JLabel lbl, boolean bAlwaysMatchEnabled, Hub hubForLabel) {
         this.label = lbl;
         lbl.setLabelFor(component);
+        this.hubForLabel = hubForLabel;
         this.bLabelAlwaysMatchesComponentEnabled = bAlwaysMatchEnabled;
         update();
     }

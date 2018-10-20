@@ -395,8 +395,6 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         return defaultValue;
     }
 
-    
-
     public class OALabelController extends LabelController {
         public OALabelController(Hub hub) {
             super(hub, OALabel.this);
@@ -437,6 +435,9 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     public void setLabel(JLabel lbl, boolean bAlwaysMatchEnabled) {
         getController().setLabel(lbl, bAlwaysMatchEnabled);
     }
+    public void setLabel(JLabel lbl, Hub hubForLabel) {
+        getController().setLabel(lbl, false, hubForLabel);
+    }
     public void setLabel(JLabel lbl) {
         getController().setLabel(lbl);
     }
@@ -445,7 +446,9 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         return getController().getLabel();
     }
 
-
+    
+    
+    
 /* moved to OAJfcUtil    
     private Color fgColor, bgColor;
     private final AtomicInteger aiBlink = new AtomicInteger();
@@ -487,7 +490,6 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     }
 */    
     
-
     public void setDisplayTemplate(String s) {
         this.control.setDisplayTemplate(s);
     }
@@ -500,5 +502,4 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     public String getToolTipTextTemplate() {
         return this.control.getToolTipTextTemplate();
     }
-    
 }

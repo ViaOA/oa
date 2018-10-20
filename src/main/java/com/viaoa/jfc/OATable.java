@@ -848,6 +848,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 }
             }
 
+            
+            
+            
             int x = JOptionPane.showOptionDialog(OAJfcUtil.getWindow(OATable.this), "Ok to move?", "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
             if (x != 0) return;
             
@@ -1105,7 +1108,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             else if (b && hmRowColumnChanged == null) {
                 hmRowColumnChanged = new ConcurrentHashMap<String, Long>();
 
-                timerShowChanges = new Timer(25, new ActionListener() {
+                timerShowChanges = new Timer(80, new ActionListener() {  // was: 25
                     int emptyCount;
 
                     public void actionPerformed(ActionEvent e) {
@@ -1114,7 +1117,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                             if (tsNow == 0) {
                                 tsNow = System.currentTimeMillis();
                             }
-                            if (tsNow > entry.getValue().longValue() + 500) {
+                            if (tsNow > entry.getValue().longValue() + 1000) {  // was: 500
                                 hmRowColumnChanged.remove(entry.getKey());
                                 if (hmRowColumnValue != null) hmRowColumnValue.remove(entry.getKey());
                             }

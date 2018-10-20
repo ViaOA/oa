@@ -733,6 +733,9 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
     public void setLabel(JLabel lbl) {
         getController().setLabel(lbl);
     }
+    public void setLabel(JLabel lbl, Hub hubForLabel) {
+        getController().setLabel(lbl, false, hubForLabel);
+    }
     public JLabel getLabel() {
         if (getController() == null) return null;
         return getController().getLabel();

@@ -70,8 +70,67 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
         
         if (enabledMode == null) enabledMode = getDefaultEnabledMode(hub, command);
         
-        control = new OAMenuItemController(hub, enabledMode, command) {
-        };
+        if (command == ButtonCommand.GoTo) {
+            control = new OAMenuItemController(hub, enabledMode, command, HubChangeListener.Type.AoNotNull, false, true) {
+                @Override
+                protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+                    if (!bIsCurrentlyEnabled) {
+                        bIsCurrentlyEnabled = (hub.getAO() != null);
+                    }
+                    return bIsCurrentlyEnabled;
+                }
+            };
+            
+        }
+        else if (command == ButtonCommand.HubSearch) {
+            control = new OAMenuItemController(hub, enabledMode, command) {
+                @Override
+                protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+                    if (!bIsCurrentlyEnabled) {
+                        if (hub != null) {
+                            if (hub.getLinkHub() != null) {
+                                Object objx = hub.getLinkHub().getAO();
+                                if (!(objx instanceof OAObject)) return false;
+                                bIsCurrentlyEnabled = (((OAObject) objx).isEnabled(hub.getLinkPath())); 
+                            }
+                            else bIsCurrentlyEnabled = (hub.getSize() > 0);
+                        }
+                    }
+                    return bIsCurrentlyEnabled;
+                }
+            };
+        }
+        else if (command == ButtonCommand.Search) {
+            control = new OAMenuItemController(hub, enabledMode, command) {
+                @Override
+                protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+                    if (hub == null) return bIsCurrentlyEnabled;
+                    Hub hubx = hub.getLinkHub();
+                    String prop = null;
+                    if (hubx != null) prop = hub.getLinkPath();
+                    else {
+                        hubx = hub.getMasterHub();
+                        if (hubx != null) {
+                            prop = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+                        }
+                    }
+                    if (hubx == null || prop == null) return bIsCurrentlyEnabled;
+                    Object objx = hubx.getAO();
+                    if (!(objx instanceof OAObject)) return bIsCurrentlyEnabled;
+                    boolean b = ((OAObject)objx).isEnabled(prop);
+                    return b;
+                }
+                @Override
+                public Object getSearchObject() {
+                    return OAMenuItem.this.getSearchObject();
+                }
+            };
+        }
+        else {
+            control = new OAMenuItemController(hub, enabledMode, command);
+        }
+        
+//was        control = new OAMenuItemController(hub, enabledMode, command);
         
         setup();
         initialize();
@@ -612,6 +671,13 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
     }
 
     class OAMenuItemController extends ButtonController {
+        public OAMenuItemController(Hub hub, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command, HubChangeListener.Type type, boolean bDirectlySetsAO, boolean bIncludeExtendedChecks) {
+            super(hub, OAMenuItem.this, enabledMode, command, 
+                type, 
+                bDirectlySetsAO,
+                bIncludeExtendedChecks
+            );
+        }
         public OAMenuItemController(Hub hub, ButtonEnabledMode enabledMode, ButtonCommand command) {
             super(hub, OAMenuItem.this, enabledMode, command);
         }
@@ -706,6 +772,11 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
     }
     public String getToolTipTextTemplate() {
         return this.control.getToolTipTextTemplate();
+    }
+
+//qqqqqqqqqqqqqqqqqqqqq    
+    public Object getSearchObject() {
+        return null;
     }
     
 }

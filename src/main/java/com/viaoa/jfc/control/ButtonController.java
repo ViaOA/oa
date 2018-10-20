@@ -72,7 +72,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
     protected OAButton.ButtonCommand command;
 
     private boolean bMasterControl = true;
-    private String confirmMessage;
     private String completedMessage;
     private String returnMessage;
     private String consoleProperty;
@@ -131,7 +130,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
     public ButtonController(Hub hub, AbstractButton button, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command) {
         super(hub, null, null, button, 
             enabledMode.getHubChangeListenerType(), 
-            (command != null ? command.getSetsAO() : false),
+            ((command != null && hub != null && hub.getLinkHub() != null) ? command.getSetsAO() : false),
             true
             //was:  (((enabledMode == ButtonEnabledMode.ActiveObjectNotNull) && (command == ButtonCommand.Other)) ? false : true)
         );
@@ -211,13 +210,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
         addVisibleEditQueryCheck(getHub(), property);
         
         update();
-    }
-
-    /**
-        Popup message used to confirm button click before running code.
-    */
-    public void setConfirmMessage(String msg) {
-        confirmMessage = msg;
     }
 
     public void setCompletedMessage(String msg) {
@@ -328,6 +320,9 @@ public class ButtonController extends OAJfcController implements ActionListener 
     }
     
     
+    public Object getSearchObject() {
+        return null;
+    }
     
     public boolean beforeActionPerformed() {
         return true;
@@ -384,6 +379,22 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     return false;
                 }
                 eq = OAObjectEditQueryDelegate.getConfirmAddEditQuery(getHub(), null, msg, title);
+                break;
+            case Search:
+                Hub hubx = hub.getLinkHub();
+                String propx = null;
+                if (hubx != null) propx = hub.getLinkPath();
+                else {
+                    hubx = hub.getMasterHub();
+                    if (hubx != null) {
+                        propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+                    }
+                }
+                if (hubx == null || propx == null) break;
+                Object objx = hubx.getAO();
+                if (!(objx instanceof OAObject)) break;
+                eq = OAObjectEditQueryDelegate.getConfirmPropertyChangeEditQuery( (OAObject) objx, propx, objSearch, msg, title);
+                break;
             }            
         }
         
@@ -464,6 +475,21 @@ public class ButtonController extends OAJfcController implements ActionListener 
             if (obj instanceof OAObject) {
                 eq = OAObjectEditQueryDelegate.getVerifyAddEditQuery(getHub(), (OAObject) obj);
             }
+        case Search:
+            Hub hubx = hub.getLinkHub();
+            String propx = null;
+            if (hubx != null) propx = hub.getLinkPath();
+            else {
+                hubx = hub.getMasterHub();
+                if (hubx != null) {
+                    propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+                }
+            }
+            if (hubx == null || propx == null) return null;
+            Object objx = hubx.getAO();
+            if (!(objx instanceof OAObject)) return null;
+            eq = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery((OAObject) objx, propx, null, obj);
+            break;
         }            
         
         if (OAString.isNotEmpty(getMethodName()) && (obj instanceof OAObject)) {
@@ -473,6 +499,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
     }
     
     
+    private Object objSearch;
     public void actionPerformed(ActionEvent e) {
         default_actionPerformed(e);
     }
@@ -483,6 +510,16 @@ public class ButtonController extends OAJfcController implements ActionListener 
         
         OAObject obj = updateObject;
         if (obj == null && hub != null) obj = (OAObject) hub.getAO();
+        
+
+        if (command != null && command == OAButton.SEARCH) {
+            objSearch = getSearchObject();
+            if (!(objSearch instanceof OAObject)) {
+                objSearch = null;
+                return;
+            }
+            obj = (OAObject) objSearch;
+        }        
         
         String s = isValid(obj, null); 
         if (OAString.isNotEmpty(s)) {
@@ -502,8 +539,10 @@ public class ButtonController extends OAJfcController implements ActionListener 
             if (dlgPw.wasCancelled()) return;
         }
         
-        
-        if (!confirmActionPerformed()) return;
+        if (!confirmActionPerformed()) {
+            objSearch = null;
+            return;
+        }
         
         JFileChooser fc = getSaveFileChooser();
         if (fc != null) {
@@ -529,6 +568,9 @@ public class ButtonController extends OAJfcController implements ActionListener 
         }
         catch (Exception ex) {
             reportActionCompleted(false, ex);
+        }
+        finally {
+            objSearch = null;
         }
     }
     
@@ -1144,6 +1186,22 @@ public class ButtonController extends OAJfcController implements ActionListener 
                         }
                     }
                 }
+                break;
+            case Search:
+                if (objSearch == null) break;
+                Hub hubx = hub.getLinkHub();
+                String propx = null;
+                if (hubx != null) propx = hub.getLinkPath();
+                else {
+                    hubx = hub.getMasterHub();
+                    if (hubx != null) {
+                        propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+                    }
+                }
+                if (hubx == null || propx == null) break;
+                Object objx = hubx.getAO();
+                if (!(objx instanceof OAObject)) break;
+                ((OAObject)objx).setProperty(propx, objSearch);
                 break;
             }
             

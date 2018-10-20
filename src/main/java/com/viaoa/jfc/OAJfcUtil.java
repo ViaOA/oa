@@ -184,63 +184,84 @@ public class OAJfcUtil {
         label.setHorizontalAlignment(JLabel.RIGHT);
     }
 
-    private static ConcurrentHashMap<JComponent, Integer> hmLabelBlink = new ConcurrentHashMap<JComponent, Integer>();
-    public void blink(final JComponent component, final int numberOfTimes) {
-        if (component == null) return;
-        blink(component, component.getBackground(), component.getForeground(), numberOfTimes);
+    private static ConcurrentHashMap<JComponent, Blinker> hmBlinker = new ConcurrentHashMap<JComponent, Blinker>();
+    private static class Blinker {
+        JComponent component;
+        Color colorFg, colorBg;
+        Color colorFgOrig, colorBgOrig;
+        int cnt;
+        int tot;
     }
-    public void blink(final JComponent component, final Color fColor, final Color bColor, final int numberOfTimes) {
+
+    
+    public static void blink(final JComponent component) {
         if (component == null) return;
+        blink(component, OATable.COLOR_Change_Foreground, OATable.COLOR_Change_Background, 1, 1000);
+    }
+    
+    public static void blink(final JComponent component, final int numberOfTimes, int msDelay) {
+        if (component == null) return;
+        blink(component, component.getBackground(), component.getForeground(), numberOfTimes, msDelay);
+    }
+    public static void blink(JComponent component, Color fgColor, Color bgColor, int numberOfTimes, final int msDelay) {
+        if (component == null) return;
+
+        if (fgColor == null) fgColor = component.getBackground();
+        if (bgColor == null) bgColor = component.getForeground();
         
-        Object obj = hmLabelBlink.get(component);
-        if (obj == null) hmLabelBlink.put(component, 1);
-        else {
-            hmLabelBlink.put(component, ((Integer)obj).intValue()+1);
+        component.setOpaque(true);
+        
+        Blinker blinkerx;
+        synchronized (hmBlinker) {
+            boolean bFound;
+            blinkerx = hmBlinker.get(component);
+            if (blinkerx == null) {
+                bFound = false;
+                blinkerx = new Blinker();
+                blinkerx.component = component;
+                blinkerx.colorFgOrig = component.getForeground();
+                blinkerx.colorBgOrig = component.getBackground();
+            }
+            else {
+                bFound = true;
+            }
+            synchronized (blinkerx) {
+                blinkerx.cnt = 0;
+                blinkerx.tot = numberOfTimes;
+                blinkerx.colorFg = fgColor;
+                blinkerx.colorBg = bgColor;
+            }
+            if (bFound) return;
+            hmBlinker.put(component, blinkerx);
         }
-        final int cntThisCount = hmLabelBlink.get(component);
-
-        final Color fc = fColor != null ? fColor : component.getBackground();
-        final Color bc = bColor != null ? bColor : component.getForeground();
         
-        final Color fcOrig = component.getForeground();
-        final Color bcOrig = component.getBackground();
+        final Blinker blinker = blinkerx;
+        final Timer timer = new Timer(msDelay, null);
         
-        
-        final Timer timer = new Timer(150, null);
         ActionListener al = new ActionListener() {
-            int cnt;
             public void actionPerformed(ActionEvent e) {
-                Object objx = hmLabelBlink.get(component);
-                int x;
-                if (objx == null) {
-                    x = 0;
-                }
-                else x = ((Integer) objx).intValue();
-                
-                if (x > 0 && x != cntThisCount) {
-                    timer.stop();
-                    return;
-                }
-                
-                boolean b = (cnt++ % 2 == 0);
-                
-                Color c;
+                synchronized (blinker) {
+                    boolean b = (blinker.cnt++ % 2 == 0);
+                    Color c;
+                    c = (b ? blinker.colorFg : blinker.colorFgOrig);
+                    blinker.component.setForeground(c);
 
-                c = (b ? fc : fcOrig);
-                component.setForeground(c);
+                    c = (b ? blinker.colorBg : blinker.colorBgOrig);
+                    blinker.component.setBackground(c);
 
-                c = (b ? bc : bcOrig);
-                component.setBackground(c);
-
-                if (!b && ((cnt / 2) >= numberOfTimes) ) {
-                    hmLabelBlink.remove(component);
-                    timer.stop();
+                    if (!b && ((blinker.cnt / 2) >= blinker.tot) ) {
+                        synchronized (hmBlinker) {
+                            hmBlinker.remove(component);
+                        }
+                        timer.stop();
+                    }
                 }
+                
             }
         };                 
         timer.addActionListener(al);
         timer.setRepeats(true);
-        timer.setInitialDelay(250);
+        timer.setInitialDelay(80);
         timer.start();
     }
 

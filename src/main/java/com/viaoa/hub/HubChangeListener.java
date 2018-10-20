@@ -412,7 +412,7 @@ public abstract class HubChangeListener {
             
             if (compareValue == Type.EditQueryEnabled) {
                 if (!bValid) return false;
-                if (!(value instanceof OAObject)) return false;
+                if (!(value instanceof OAObject)) return true;
                 return OAObjectEditQueryDelegate.getAllowEnabled((OAObject) value, propertyPath);
             }
             if (compareValue == Type.EditQueryVisible) {

@@ -55,12 +55,14 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     public static ButtonCommand ADD_MANUAL = ButtonCommand.AddManual;
     public static ButtonCommand CLEARAO = ButtonCommand.ClearAO;
     public static ButtonCommand GOTO = ButtonCommand.GoTo;
+    public static ButtonCommand HUBSEARCH = ButtonCommand.HubSearch;
+    public static ButtonCommand SEARCH = ButtonCommand.Search;
     
     public enum ButtonCommand {
         Other(false), Up(true), Down(true), Save(false), Cancel(false), First(true), Last(true), 
         Next(true), Previous(true), Delete(true), Remove(true), New(true), Insert(true), Add(true), 
         Cut(false), Copy(false), Paste(false),
-        NewManual(true), AddManual(true), ClearAO(true), GoTo(false);
+        NewManual(true), AddManual(true), ClearAO(true), GoTo(false), HubSearch(true), Search(false);
         
         private boolean bSetsAO;
         
@@ -139,6 +141,53 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
             };
             
         }
+        else if (command == ButtonCommand.HubSearch) {
+            control = new OAButtonController(hub, enabledMode, command) {
+                @Override
+                protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+                    if (!bIsCurrentlyEnabled) {
+                        if (hub != null) {
+                            if (hub.getLinkHub() != null) {
+                                Object objx = hub.getLinkHub().getAO();
+                                if (!(objx instanceof OAObject)) return false;
+                                bIsCurrentlyEnabled = (((OAObject) objx).isEnabled(hub.getLinkPath())); 
+                            }
+                            else bIsCurrentlyEnabled = (hub.getSize() > 0);
+                        }
+                    }
+                    return bIsCurrentlyEnabled;
+                }
+            };
+        }
+        else if (command == ButtonCommand.Search) {
+            control = new OAButtonController(hub, enabledMode, command) {
+                @Override
+                protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+                    if (hub == null) return bIsCurrentlyEnabled;
+                    Hub hubx = hub.getLinkHub();
+                    String prop = null;
+                    if (hubx != null) prop = hub.getLinkPath();
+                    else {
+                        hubx = hub.getMasterHub();
+                        if (hubx != null) {
+                            prop = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+                        }
+                    }
+                    if (hubx == null || prop == null) {
+                        if (hub != null && !bIsCurrentlyEnabled) return hub.isValid();
+                        return bIsCurrentlyEnabled;
+                    }
+                    Object objx = hubx.getAO();
+                    if (!(objx instanceof OAObject)) return bIsCurrentlyEnabled;
+                    boolean b = ((OAObject)objx).isEnabled(prop);
+                    return b;
+                }
+                @Override
+                public Object getSearchObject() {
+                    return OAButton.this.getSearchObject();
+                }
+            };
+        }
         else {
             control = new OAButtonController(hub, enabledMode, command);
         }
@@ -169,6 +218,9 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         case AddManual:
         case Paste:
             enabledMode = ButtonEnabledMode.HubIsValid;
+            break;
+        case HubSearch:
+            enabledMode = ButtonEnabledMode.HubIsNotEmpty;
             break;
         default:
             enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
@@ -860,6 +912,7 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         public OAButtonController(Hub hub, ButtonEnabledMode enabledMode, ButtonCommand command) {
             super(hub, OAButton.this, enabledMode, command);
         }
+        
         @Override
         public String isValid(Object object, Object value) {
             String msg = OAButton.this.isValid(object, value);
@@ -968,4 +1021,9 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         return control.getEndPropertyName();
     }
 */
+
+  //qqqqqqqqqqqqqqqqqqqqq    
+    public Object getSearchObject() {
+        return null;
+    }
 }

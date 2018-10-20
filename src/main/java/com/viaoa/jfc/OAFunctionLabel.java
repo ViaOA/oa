@@ -20,6 +20,7 @@ import javax.swing.table.*;
 
 import com.viaoa.object.*;
 import com.viaoa.util.OAConv;
+import com.viaoa.util.OAString;
 import com.viaoa.func.OAFunction;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
@@ -352,4 +353,21 @@ public class OAFunctionLabel extends JLabel implements OATableComponent, OAJfcCo
         return this.control.getToolTipTextTemplate();
     }
 
+    private Hub lastHub;
+    @Override
+    public void setText(String text) {
+        boolean b = OAString.isEqual(text, getText());
+        super.setText(text);
+        if (b) return;
+        Hub hx = getHub();
+        if (hx == null) return;
+        hx = getHub().getSharedHub();
+        if (lastHub != hx) {
+            lastHub = hx;
+            return;
+        }
+        // blink
+        OAJfcUtil.blink(this);
+    }
+    
 }
