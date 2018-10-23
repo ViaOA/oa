@@ -140,7 +140,7 @@ public class TextAreaController extends OAJfcController implements FocusListener
         if (hub != null) activeObject = hub.getActiveObject();
         else activeObject = null;
         
-        update();
+        super.afterChangeActiveObject();
         
         if (b) onFocusGained();
         super.afterChangeActiveObject();

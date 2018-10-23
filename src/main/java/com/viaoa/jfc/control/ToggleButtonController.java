@@ -222,6 +222,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         finally {
             bFlag = false;
         }
+        super.afterChangeActiveObject();
     }
     protected void _afterChangeActiveObject() {
         boolean b = false;

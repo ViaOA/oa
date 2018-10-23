@@ -182,7 +182,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
     protected OATable(JComponent compDummy) {
     }
-    
+
     /**
      * @param bAddHack
      *            if true (default) then register [Enter] key and consume

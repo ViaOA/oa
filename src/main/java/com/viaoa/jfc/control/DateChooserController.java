@@ -68,7 +68,7 @@ public class DateChooserController extends OAJfcController implements PropertyCh
         bAO = true;
         dateChooser.setDate(d);
         bAO = false;
-        update();
+        super.afterChangeActiveObject();
     }
 
     /**

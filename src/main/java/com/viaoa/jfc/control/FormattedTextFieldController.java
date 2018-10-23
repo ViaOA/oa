@@ -112,7 +112,7 @@ public class FormattedTextFieldController extends OAJfcController implements Foc
         if (h != null) activeObject = getHub().getActiveObject();
         else activeObject = null;
         
-        update(); 
+        super.afterChangeActiveObject();
         
         if (b) onFocusGained();
     }

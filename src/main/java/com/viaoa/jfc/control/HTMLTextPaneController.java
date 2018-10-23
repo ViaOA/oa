@@ -153,7 +153,7 @@ public abstract class HTMLTextPaneController extends OAJfcController implements 
         else activeObject = null;
         imageChangeCount = editor.getImageChangeCount();
         
-        update(); 
+        super.afterChangeActiveObject();
         
         if (b) onFocusGained();
     }
