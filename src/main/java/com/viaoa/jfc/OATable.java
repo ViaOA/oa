@@ -215,6 +215,17 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         setFillsViewportHeight(true);
     }
 
+    
+//qqqqqqqqqqqqqqqqqqqqqqqqqqq
+    @Override
+    public void setEnabled(boolean enabled) {
+//        enabled = true;        
+        // TODO Auto-generated method stub
+        super.setEnabled(enabled);
+    }
+    
+    
+    
     /**
      * 2006/10/12 If you would like to allow for sorting on a clicked column heading. The user can use
      * [ctrl] to click on multiple headings. Re-clicking on a heading will changed from ascending to
@@ -548,6 +559,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         oaTableModel = new OATableModel(hub);
         setModel(oaTableModel);
         hubAdapter = new MyHubAdapter(hub, this);
+    }
+    
+    public OAJfcController getController() {
+        return hubAdapter;
     }
     
     protected void resetFilterHub() {
@@ -4186,6 +4201,10 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     }
 
     public @Override void afterChangeActiveObject(HubEvent e) {
+        _afterChangeActiveObject(e);
+        super.afterChangeActiveObject(e);
+    }
+    public void _afterChangeActiveObject(HubEvent e) {
         if (getRunningValueChanged()) return; // 20131113
         if (getIgnoreValueChanged()) return; // 20160127
         // super.afterChangeActiveObject(e);

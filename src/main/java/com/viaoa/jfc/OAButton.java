@@ -188,13 +188,14 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
                 }
             };
         }
+        else if (command == ButtonCommand.Save) {
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, false, false);
+            control.getEnabledChangeListener().add(hub, OAObjectDelegate.WORD_Changed, true);
+        }
         else {
             control = new OAButtonController(hub, enabledMode, command);
         }
 
-        if (command == SAVE) {
-            control.getEnabledChangeListener().add(getHub(), OAObjectDelegate.WORD_Changed, true);
-        }
         
         if (bCallSetup) setup();
     }

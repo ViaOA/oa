@@ -940,7 +940,7 @@ public class OAJfcController extends HubListenerAdapter {
         changeListenerEnabled = new MyHubChangeListener() {
             @Override
             protected void onChange() {
-                OAJfcController.this.updateEnabled();
+                OAJfcController.this.update();
             }
         };
         return changeListenerEnabled;
@@ -951,7 +951,7 @@ public class OAJfcController extends HubListenerAdapter {
         changeListenerVisible = new MyHubChangeListener() {
             @Override
             protected void onChange() {
-                OAJfcController.this.updateVisible();
+                OAJfcController.this.update();
             }
         };
         return changeListenerVisible;
@@ -1408,6 +1408,8 @@ public class OAJfcController extends HubListenerAdapter {
     }
     @Override
     public void afterPropertyChange(HubEvent e) {
+int xx=4;//qqqqqqqqqqqqqqqqq
+xx++;
         Object ao = getHub().getAO();
         if (ao != null && e.getObject() == ao) {
             boolean b = false;
