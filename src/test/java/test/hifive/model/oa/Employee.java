@@ -326,10 +326,10 @@ public class Employee extends OAObject {
         
         switch (eq.getType()) {
         case AllowEnabled:
-            eq.setAllowEnabled(TestEditQuery_Class.getAllowEnabled());
+            eq.setAllowed(TestEditQuery_Class.getAllowed());
             break;
         case AllowVisible:
-            eq.setAllowVisible(TestEditQuery_Class.getAllowVisible());
+            eq.setAllowed(TestEditQuery_Class.getAllowed());
             break;
         }
     }

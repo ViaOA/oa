@@ -579,44 +579,74 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                         }
                     }
                     else {
-                        OAMethodInfo mi = oi.getMethodInfo(name);
-                        if (mi != null) {
-                            mi.setEditQueryMethod(m);
+                        OACalcInfo ci = oi.getCalcInfo(name);
+                        if (ci != null) {
+                            ci.setEditQueryMethod(m);
                             if (eq != null) {
                                 s = eq.enabledProperty();
                                 if (OAString.isNotEmpty(s)) {
-                                    mi.setEnabledProperty(s);
-                                    mi.setEnabledValue(eq.enabledValue());
+                                    ci.setEnabledProperty(s);
+                                    ci.setEnabledValue(eq.enabledValue());
                                 }
                                 s = eq.visibleProperty();
                                 if (OAString.isNotEmpty(s)) {
-                                    mi.setVisibleProperty(s);
-                                    mi.setVisibleValue(eq.visibleValue());
+                                    ci.setVisibleProperty(s);
+                                    ci.setVisibleValue(eq.visibleValue());
                                 }
+                                s = eq.userEnabledProperty();
                                 if (OAString.isNotEmpty(s)) {
-                                    mi.setUserEnabledProperty(s);
-                                    mi.setUserEnabledValue(eq.userEnabledValue());
+                                    ci.setUserEnabledProperty(s);
+                                    ci.setUserEnabledValue(eq.userEnabledValue());
                                 }
                                 s = eq.userVisibleProperty();
                                 if (OAString.isNotEmpty(s)) {
-                                    mi.setUserVisibleProperty(s);
-                                    mi.setUserVisibleValue(eq.userVisibleValue());
+                                    ci.setUserVisibleProperty(s);
+                                    ci.setUserVisibleValue(eq.userVisibleValue());
                                 }
-                                mi.setViewDependentProperties(eq.viewDependentProperties());
-                                mi.setUserDependentProperties(eq.userDependentProperties());
+                                ci.setViewDependentProperties(eq.viewDependentProperties());
+                                ci.setUserDependentProperties(eq.userDependentProperties());
                             }
                         }
                         else {
-                            b = false;
-                            for (Method mx : methods) {
-                                if (mx.getName().equals(name)) {
-                                    b = true;
-                                    break;
+                            OAMethodInfo mi = oi.getMethodInfo(name);
+                            if (mi != null) {
+                                mi.setEditQueryMethod(m);
+                                if (eq != null) {
+                                    s = eq.enabledProperty();
+                                    if (OAString.isNotEmpty(s)) {
+                                        mi.setEnabledProperty(s);
+                                        mi.setEnabledValue(eq.enabledValue());
+                                    }
+                                    s = eq.visibleProperty();
+                                    if (OAString.isNotEmpty(s)) {
+                                        mi.setVisibleProperty(s);
+                                        mi.setVisibleValue(eq.visibleValue());
+                                    }
+                                    if (OAString.isNotEmpty(s)) {
+                                        mi.setUserEnabledProperty(s);
+                                        mi.setUserEnabledValue(eq.userEnabledValue());
+                                    }
+                                    s = eq.userVisibleProperty();
+                                    if (OAString.isNotEmpty(s)) {
+                                        mi.setUserVisibleProperty(s);
+                                        mi.setUserVisibleValue(eq.userVisibleValue());
+                                    }
+                                    mi.setViewDependentProperties(eq.viewDependentProperties());
+                                    mi.setUserDependentProperties(eq.userDependentProperties());
                                 }
                             }
-                            if (!b) {
-                                s = "OAEditQuery annotation, class="+clazz+", method="+m+", could not find method that it goes with, ex: get"+name;
-                                LOG.log(Level.WARNING, s, new Exception(s));
+                            else {
+                                b = false;
+                                for (Method mx : methods) {
+                                    if (mx.getName().equals(name)) {
+                                        b = true;
+                                        break;
+                                    }
+                                }
+                                if (!b) {
+                                    s = "OAEditQuery annotation, class="+clazz+", method="+m+", could not find method that it goes with, ex: get"+name;
+                                    LOG.log(Level.WARNING, s, new Exception(s));
+                                }
                             }
                         }
                     }

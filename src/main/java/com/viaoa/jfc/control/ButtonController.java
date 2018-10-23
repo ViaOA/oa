@@ -358,9 +358,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 OAObjectEditQuery eqHold = eq;
                 eq = OAObjectEditQueryDelegate.getVerifyRemoveEditQuery(getHub(), obj);
                 if (!eq.getAllowed()) {
-                    String s = eq.getResponse();
-                    if (s == null) s = "";
-                    else s = ", " + s;
+                    String s = eq.getDisplayResponse();
+                    if (s == null) s = "Remove is not allowed";
                     JOptionPane.showMessageDialog(button, s, "Warning", JOptionPane.WARNING_MESSAGE);
                     return false;
                 }
@@ -372,9 +371,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
             case New:
                 eq = OAObjectEditQueryDelegate.getVerifyAddEditQuery(getHub(), null);
                 if (!eq.getAllowed()) {
-                    String s = eq.getResponse();
-                    if (s == null) s = "";
-                    else s = ", " + s;
+                    String s = eq.getDisplayResponse();
+                    if (s == null) s = "Add is not allowed";
                     JOptionPane.showMessageDialog(button, s, "Warning", JOptionPane.WARNING_MESSAGE);
                     return false;
                 }
@@ -395,19 +393,32 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 if (!(objx instanceof OAObject)) break;
                 eq = OAObjectEditQueryDelegate.getConfirmPropertyChangeEditQuery( (OAObject) objx, propx, objSearch, msg, title);
                 break;
+            case Save:
+                if (hub != null) {
+                    objx = hub.getAO();
+                    if (objx instanceof OAObject) {
+                        eq = OAObjectEditQueryDelegate.getVerifySaveEditQuery((OAObject) objx);
+                        if (!eq.getAllowed()) {
+                            String s = eq.getDisplayResponse();
+                            if (s == null) s = "Save is not allowed";
+                            JOptionPane.showMessageDialog(button, s, "Warning", JOptionPane.WARNING_MESSAGE);
+                            return false;
+                        }
+                        eq = OAObjectEditQueryDelegate.getConfirmSaveEditQuery( (OAObject) objx, msg, title);
+                    }
+                }
+                break;
             }            
         }
         
         if (OAString.isNotEmpty(getMethodName())) {
-            eq = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery(obj, getMethodName(), null, updateValue);
+            eq = OAObjectEditQueryDelegate.getVerifyCommandEditQuery(obj, getMethodName());
             if (!eq.getAllowed()) {
-                String s = eq.getResponse();
-                if (s == null) s = "";
-                else s = ", " + s;
+                String s = eq.getDisplayResponse();
                 JOptionPane.showMessageDialog(button, s, "Warning", JOptionPane.WARNING_MESSAGE);
                 return false;
             }
-            eq = OAObjectEditQueryDelegate.getConfirmPropertyChangeEditQuery(obj, getMethodName(), updateValue, msg, title);
+            eq = OAObjectEditQueryDelegate.getConfirmCommandEditQuery(obj, getMethodName(), msg, title);
         }
         
         if (eq != null) {
@@ -425,25 +436,15 @@ public class ButtonController extends OAJfcController implements ActionListener 
         return !getConfirmDialog().wasCancelled();
     }
     
-    
-    
-//qqqqqqqqqqqqqqqq    
+   
     @Override
     public String isValid(Object obj, Object newValue) {
         OAObjectEditQuery em = _isValid(obj);
         String result = null;
         if (em != null) {
             if (!em.getAllowed()) {
-                result = em.getResponse();
-                Throwable t = em.getThrowable();
-                if (OAString.isEmpty(result) && t != null) {
-                    for (; t!=null; t=t.getCause()) {
-                        result = t.getMessage();
-                        if (OAString.isNotEmpty(result)) break;
-                    }
-                    if (OAString.isEmpty(result)) result = em.getThrowable().toString();
-                }
-                else result = "invalid value";
+                result = em.getDisplayResponse();
+                if (OAString.isEmpty(result)) result = "invalid value";
             }
         }
         return result;
@@ -1596,15 +1597,18 @@ public class ButtonController extends OAJfcController implements ActionListener 
             switch (command) {
             case Delete:
                 if (oaObj != null) {
-                    flag = OAObjectEditQueryDelegate.getAllowDelete(oaObj); 
                     flag = flag && oaObj.canDelete();
-                    flag = flag && hub.canRemove(oaObj);
+                    flag = flag && hub.canRemove();
+                }
+                break;
+            case Save:
+                if (oaObj != null) {
+                    flag = flag && oaObj.canSave();
                 }
                 break;
             case Remove:
-                if (oaObj != null) {
-                    flag = OAObjectEditQueryDelegate.getAllowRemove(hub); 
-                    flag = flag && hub.canRemove(oaObj);
+                if (hub != null) {
+                    flag = flag && hub.canRemove();
                 }
                 break;
             case Add:
@@ -1612,8 +1616,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
             case New:
                 if (hub != null) {
                     flag = hub.canAdd();
-                    flag = flag && OAObjectEditQueryDelegate.getAllowAdd(hub); 
-                    flag = flag && hub.canAdd();
                 }
             }            
         }
@@ -1803,5 +1805,13 @@ public class ButtonController extends OAJfcController implements ActionListener 
         
         return this.dlgConfirm;
     }
-    
+
+    @Override
+    public String getToolTipText(Object obj, String ttDefault) {
+        ttDefault = super.getToolTipText(obj, ttDefault);
+        if (obj instanceof OAObject && OAString.isNotEmpty(methodName)) {
+            ttDefault = OAObjectEditQueryDelegate.getToolTip((OAObject) obj, methodName, ttDefault);
+        }
+        return ttDefault;
+    }
 }

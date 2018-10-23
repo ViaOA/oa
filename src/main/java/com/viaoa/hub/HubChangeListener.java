@@ -25,6 +25,7 @@ import com.viaoa.util.*;
 public abstract class HubChangeListener {
     protected HubProp[] hubProps = new HubProp[0];
     public boolean DEBUG;
+    private HubEvent lastHubEvent;
     
     /**
      * Specific types of comparisions.
@@ -125,7 +126,8 @@ public abstract class HubChangeListener {
         return add(hub, prop, true, Type.PropertyNotNull);
     }
 
-    /** add a rule to check the return value for an EditQuery isEnabled */
+    /** add a rule to check the return value for an EditQuery isEnabled 
+     * */
     public HubProp addEditQueryEnabled(Hub hub, String prop) {
         OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, hub.getObjectClass(), prop, null, this, true);
         
@@ -212,7 +214,7 @@ public abstract class HubChangeListener {
             props = null;
         }
 
-        final HubProp newHubProp = new HubProp(hub, propertyPath, newPropertyPath, bUseCompareValue, compareValue, filter);
+        final HubProp newHubProp = new HubProp(hub, propertyPath, newPropertyPath, props, bUseCompareValue, compareValue, filter, bAoOnly);
         
         // see if there is a listener with same hub - and one without a propertyName used
         for (HubProp hp : hubProps) {
@@ -253,48 +255,7 @@ public abstract class HubChangeListener {
             }
         }
             
-
-        newHubProp.hubListener = new HubListenerAdapter() {
-            public void afterChangeActiveObject(HubEvent e) {
-                onChange();
-            }
-            @Override
-            public void afterPropertyChange(HubEvent e) {
-                if (!bAoOnly || e.getObject() == hub.getAO()) {
-                    String s = e.getPropertyName();
-                    if (s != null && s.equalsIgnoreCase(newHubProp.listenToPropertyName)) {
-                        onChange();
-                    }
-                }
-            }
-            // linked to hub listener
-            @Override
-            public void onNewList(HubEvent e) {
-                if (newHubProp.listenToPropertyName == null) {
-                    onChange();
-                }
-            }
-            @Override
-            public void afterAdd(HubEvent e) {
-                if (!bAoOnly && propertyPath == null) onChange();
-            }
-            @Override
-            public void afterInsert(HubEvent e) {
-                if (!bAoOnly && propertyPath == null) onChange();
-            }
-            @Override
-            public void afterRemove(HubEvent e) {
-                if (!bAoOnly && propertyPath == null) onChange();
-            }
-        };
-        
-        if (props == null) {
-            if (propertyPath == null) hub.addHubListener(newHubProp.hubListener);
-            else hub.addHubListener(newHubProp.hubListener, newPropertyPath, bAoOnly);
-        }
-        else {
-            hub.addHubListener(newHubProp.hubListener, newPropertyPath, props, bAoOnly);
-        }
+        assignHubListener(newHubProp);
         
         hubProps = (HubProp[]) OAArray.add(HubProp.class, hubProps, newHubProp);
         onChange();
@@ -309,6 +270,106 @@ public abstract class HubChangeListener {
         }
         return newHubProp;
     }        
+
+    protected void assignHubListener(final HubProp newHubProp) {
+        // see if a new hubListener is needed
+        for (HubProp hp : hubProps) {
+            if (hp.bIgnore) continue;
+            if (hp.hub != newHubProp.hub) continue;
+            if (newHubProp.propertyPath != null) {
+                if (!newHubProp.propertyPath.equalsIgnoreCase(hp.propertyPath)) continue; 
+            }
+            newHubProp.hubListener = hp.hubListener;
+            break;
+        }
+
+        if (newHubProp.hubListener != null) {
+            return;
+        }
+        
+        newHubProp.hubListener = new HubListenerAdapter() {
+            public void afterChangeActiveObject(HubEvent e) {
+                if (e == lastHubEvent) return;
+                lastHubEvent = e;
+                onChange();
+            }
+            @Override
+            public void afterPropertyChange(HubEvent e) {
+                if (e == lastHubEvent) return;
+                lastHubEvent = e;
+
+                String s = e.getPropertyName();
+                for (HubProp hp : hubProps) {
+                    if (hp.bIgnore) continue;
+                    if (hp.hub != newHubProp.hub) continue;
+                    
+                    if (!hp.bAoOnly || e.getObject() == newHubProp.hub.getAO()) {
+                        if (s != null && s.equalsIgnoreCase(hp.listenToPropertyName)) {
+                            onChange();
+                            break;
+                        }
+                    }
+                }
+            }
+            // linked to hub listener
+            @Override
+            public void onNewList(HubEvent e) {
+                if (e == lastHubEvent) return;
+                lastHubEvent = e;
+                onChange();
+            }
+            @Override
+            public void afterAdd(HubEvent e) {
+                if (e == lastHubEvent) return;
+                lastHubEvent = e;
+                for (HubProp hp : hubProps) {
+                    if (hp.bIgnore) continue;
+                    if (hp.hub != newHubProp.hub) continue;
+                    if (!hp.bAoOnly || hp.propertyPath == null) {
+                        onChange();
+                        break;
+                    }
+                }
+            }
+            @Override
+            public void afterInsert(HubEvent e) {
+                if (e == lastHubEvent) return;
+                lastHubEvent = e;
+                for (HubProp hp : hubProps) {
+                    if (hp.bIgnore) continue;
+                    if (hp.hub != newHubProp.hub) continue;
+                    if (!hp.bAoOnly || hp.propertyPath == null) {
+                        onChange();
+                        break;
+                    }
+                }
+            }
+            @Override
+            public void afterRemove(HubEvent e) {
+                if (e == lastHubEvent) return;
+                lastHubEvent = e;
+                for (HubProp hp : hubProps) {
+                    if (hp.bIgnore) continue;
+                    if (hp.hub != newHubProp.hub) continue;
+                    if (!hp.bAoOnly || hp.propertyPath == null) {
+                        onChange();
+                        break;
+                    }
+                }
+            }
+        };
+
+        if (newHubProp.props == null) {
+            if (newHubProp.propertyPath == null) {
+                newHubProp.hub.addHubListener(newHubProp.hubListener);
+            }
+            else newHubProp.hub.addHubListener(newHubProp.hubListener, newHubProp.listenToPropertyName, newHubProp.bAoOnly);
+        }
+        else {
+            newHubProp.hub.addHubListener(newHubProp.hubListener, newHubProp.listenToPropertyName, newHubProp.props, newHubProp.bAoOnly);
+        }
+    }
+    
     
     public void clear() {
         close();
@@ -317,7 +378,12 @@ public abstract class HubChangeListener {
     
     public void close() {
         for (HubProp hp : hubProps) {
-            if (hp.hubListener != null) hp.hub.removeHubListener(hp.hubListener);
+            if (hp.hubListener != null) {
+                hp.hub.removeHubListener(hp.hubListener);
+                for (HubProp hpx : hubProps) {
+                    if (hpx.hubListener == hp.hubListener) hpx.hubListener = null;
+                }
+            }
         }
     }
     
@@ -325,19 +391,29 @@ public abstract class HubChangeListener {
         remove(hub, null);
     }
     public void remove(Hub hub, String prop) {
+        if (hub == null) return;
         for (HubProp hp : hubProps) {
-            if (hp.hub == hub) {
-                if (OAString.equals(prop, hp.propertyPath)) {
-                    if (hp.hubListener != null) hp.hub.removeHubListener(hp.hubListener);
+            if (hp.hub != hub) continue;
+            if (!OAString.equals(prop, hp.propertyPath)) continue;
+            if (hp.hubListener == null) continue;
+
+            boolean b = false;
+            for (HubProp hpx : hubProps) {
+                if (hpx == hp) continue;
+                if (hpx.hubListener == hp.hubListener) {
+                    b = true;
+                    break;
                 }
             }
+            if (!b) hp.hub.removeHubListener(hp.hubListener);
+            hp.hubListener = null;
+            break;
         }
     }
     public void remove(HubProp hp) {
-        if (hp != null && hp.hubListener != null) {
-            hp.hub.removeHubListener(hp.hubListener);
-            hubProps = (HubProp[]) OAArray.removeValue(HubProp.class, hubProps, hp);
-        }
+        if (hp == null) return;
+        remove(hp.hub, hp.propertyPath);
+        hubProps = (HubProp[]) OAArray.removeValue(HubProp.class, hubProps, hp);
     }
     
     
@@ -377,19 +453,23 @@ public abstract class HubChangeListener {
         public Hub<?> hub;
         public String propertyPath;  // original propertyPath
         public String listenToPropertyName;  // name used for listener - in case property path has '.' in it, then this will replace with '_' 
+        public String[] props;
         public HubListener hubListener;
         public Object compareValue;
         public boolean bUseCompareValue;
         public OAFilter filter;
+        public boolean bAoOnly;
         public boolean bIgnore; // flag used when another rule overrides this one
 
-        public HubProp(Hub<?> h, String propertyPath, String listenPropertyName, boolean bUseCompareValue, Object compareValue, OAFilter filter) {
+        public HubProp(Hub<?> h, String propertyPath, String listenPropertyName, String[] props, boolean bUseCompareValue, Object compareValue, OAFilter filter, boolean bAoOnly) {
             this.hub = h;
             this.propertyPath = propertyPath;
             this.listenToPropertyName = listenPropertyName;
+            this.props = props;
             this.bUseCompareValue = bUseCompareValue;
             this.compareValue = compareValue;
             this.filter = filter;
+            this.bAoOnly = bAoOnly;
         }
 
         public boolean getValue() {
@@ -449,11 +529,11 @@ public abstract class HubChangeListener {
             
             if (this.compareValue != null) {
                 if (hp.compareValue == null) return false;
-                if (this.compareValue != hp.compareValue) {
+                //if (this.compareValue != hp.compareValue) {
                     if (!this.compareValue.equals(hp.compareValue)) {
                         if (!this.compareValue.equals(OAConv.convert(this.compareValue.getClass(), hp.compareValue))) return false;
                     }
-                }
+                //}
             }
             else if (hp.compareValue != null) return false;
             

@@ -124,9 +124,9 @@ public class OAJfcController extends HubListenerAdapter {
     private ColorIcon myColorIcon;
     private MultiIcon myMultiIcon;
 
-    private HubChangeListener changeListener; // listens for any/all hub+propPaths needed for component
-    private HubChangeListener changeListenerEnabled;
-    private HubChangeListener changeListenerVisible;
+    private MyHubChangeListener changeListener; // listens for any/all hub+propPaths needed for component
+    private MyHubChangeListener changeListenerEnabled;
+    private MyHubChangeListener changeListenerVisible;
 
 
     
@@ -235,7 +235,7 @@ public class OAJfcController extends HubListenerAdapter {
                 int cnt = 0;
                 for (String prop : properties) {
                     if (cnt == 0) {
-                        addEnabledEditQueryCheck(hub, prop);
+                        addEnabledEditQueryCheck(hub, prop); 
                         addVisibleEditQueryCheck(hub, prop);
                     }
                     else {
@@ -260,7 +260,7 @@ public class OAJfcController extends HubListenerAdapter {
                 if (bUseEditQuery) {
                     // check to see if linkToHub needs to be added to changeListener
                     addEnabledEditQueryCheck(hubLink, linkPropertyName);
-                    addVisibleEditQueryCheck(hubLink, linkPropertyName);
+                    // addVisibleEditQueryCheck(hubLink, linkPropertyName);
                 }
             }
         }
@@ -531,14 +531,16 @@ public class OAJfcController extends HubListenerAdapter {
         if (!em.getAllowed()) {
             result = em.getResponse();
             Throwable t = em.getThrowable();
-            if (OAString.isEmpty(result) && t != null) {
-                for (; t!=null; t=t.getCause()) {
-                    result = t.getMessage();
-                    if (OAString.isNotEmpty(result)) break;
+            if (OAString.isEmpty(result)) {
+                if (t != null) {
+                    for (; t!=null; t=t.getCause()) {
+                        result = t.getMessage();
+                        if (OAString.isNotEmpty(result)) break;
+                    }
+                    if (OAString.isEmpty(result)) result = em.getThrowable().toString();
                 }
-                if (OAString.isEmpty(result)) result = em.getThrowable().toString();
+                else result = "invalid value";
             }
-            else result = "invalid value";
         }
         return result;
     }
@@ -583,14 +585,16 @@ public class OAJfcController extends HubListenerAdapter {
         if (!em.getAllowed()) {
             result = em.getResponse();
             Throwable t = em.getThrowable();
-            if (OAString.isEmpty(result) && t != null) {
-                for (; t!=null; t=t.getCause()) {
-                    result = t.getMessage();
-                    if (OAString.isNotEmpty(result)) break;
+            if (OAString.isEmpty(result)) {
+                if (t != null) {
+                    for (; t!=null; t=t.getCause()) {
+                        result = t.getMessage();
+                        if (OAString.isNotEmpty(result)) break;
+                    }
+                    if (OAString.isEmpty(result)) result = em.getThrowable().toString();
                 }
-                if (OAString.isEmpty(result)) result = em.getThrowable().toString();
+                else result = "invalid value";
             }
-            else result = "invalid value";
         }
         return result;
     }
@@ -913,13 +917,16 @@ public class OAJfcController extends HubListenerAdapter {
         update();
     }
 
-
+    
+    
+    
+    
     /**
      * Used to listen to additional changes that will then call this.update()
      */
     public HubChangeListener getChangeListener() {
         if (changeListener != null) return changeListener;
-        changeListener = new HubChangeListener() {
+        changeListener = new MyHubChangeListener() {
             @Override
             protected void onChange() {
                 OAJfcController.this.update();
@@ -927,6 +934,32 @@ public class OAJfcController extends HubListenerAdapter {
         };
         return changeListener;
     }
+    
+    public HubChangeListener getEnabledChangeListener() {
+        if (changeListenerEnabled != null) return changeListenerEnabled;
+        changeListenerEnabled = new MyHubChangeListener() {
+            @Override
+            protected void onChange() {
+                OAJfcController.this.updateEnabled();
+            }
+        };
+        return changeListenerEnabled;
+    }
+    
+    public HubChangeListener getVisibleChangeListener() {
+        if (changeListenerVisible != null) return changeListenerVisible;
+        changeListenerVisible = new MyHubChangeListener() {
+            @Override
+            protected void onChange() {
+                OAJfcController.this.updateVisible();
+            }
+        };
+        return changeListenerVisible;
+    }
+    
+    
+    
+    
     public HubProp addEnabledCheck(Hub hub, String pp) {
         return getEnabledChangeListener().add(hub, pp);
     }
@@ -943,28 +976,7 @@ public class OAJfcController extends HubListenerAdapter {
         return getEnabledChangeListener().addEditQueryEnabled(hub, propertyName);
     }
     
-    public HubChangeListener getEnabledChangeListener() {
-        if (changeListenerEnabled != null) return changeListenerEnabled;
-        changeListenerEnabled = new HubChangeListener() {
-            @Override
-            protected void onChange() {
-                OAJfcController.this.updateEnabled();
-            }
-        };
-        return changeListenerEnabled;
-    }
-
     
-    public HubChangeListener getVisibleChangeListener() {
-        if (changeListenerVisible != null) return changeListenerVisible;
-        changeListenerVisible = new HubChangeListener() {
-            @Override
-            protected void onChange() {
-                OAJfcController.this.updateVisible();
-            }
-        };
-        return changeListenerVisible;
-    }
     public HubProp addVisibleCheck(Hub hub, String pp) {
         return getVisibleChangeListener().add(hub, pp);
     }
@@ -995,9 +1007,10 @@ public class OAJfcController extends HubListenerAdapter {
         component != null ? component.getClass().getSimpleName() : ""
     );
 */
-        final HubEvent he = OAThreadLocalDelegate.getCurrentHubEvent(); 
-        if (lastUpdateHubEvent != null) {
-            if (he == lastUpdateHubEvent) return;
+        if (OAThreadLocalDelegate.isOpenHubEvent(lastUpdateHubEvent)) return;
+        final HubEvent he = OAThreadLocalDelegate.getOldestHubEvent();
+        if (lastUpdateHubEvent != null &&  (he == lastUpdateHubEvent)) {
+            return;
         }
         lastUpdateHubEvent = he;
         
@@ -1102,7 +1115,9 @@ public class OAJfcController extends HubListenerAdapter {
     private HubEvent lastUpdateEnabledHubEvent;
     private boolean bLastUpdateEnabled;
     public boolean updateEnabled() {
-        final HubEvent he = OAThreadLocalDelegate.getCurrentHubEvent(); 
+        if (OAThreadLocalDelegate.isOpenHubEvent(lastUpdateEnabledHubEvent)) return false;
+        
+        final HubEvent he = OAThreadLocalDelegate.getOldestHubEvent(); 
         if (he == null || he != lastUpdateEnabledHubEvent) {
             lastUpdateEnabledHubEvent = he;
             bLastUpdateEnabled = updateEnabled(component, hub==null ? null : hub.getAO());
@@ -1158,7 +1173,9 @@ public class OAJfcController extends HubListenerAdapter {
     private HubEvent lastUpdateVisibleHubEvent;
     private boolean bLastUpdateVisible;
     public boolean updateVisible() {
-        final HubEvent he = OAThreadLocalDelegate.getCurrentHubEvent(); 
+        if (OAThreadLocalDelegate.isOpenHubEvent(lastUpdateVisibleHubEvent)) return false;
+        
+        final HubEvent he = OAThreadLocalDelegate.getOldestHubEvent(); 
         if (he == null || he != lastUpdateVisibleHubEvent) {
             lastUpdateVisibleHubEvent = he;
             Object obj;
@@ -1389,7 +1406,20 @@ public class OAJfcController extends HubListenerAdapter {
     public void afterPropertyChange(HubEvent e) {
         Object ao = getHub().getAO();
         if (ao != null && e.getObject() == ao) {
-            if (e.getPropertyName().equalsIgnoreCase(OAJfcController.this.getHubListenerPropertyName()) ) {
+            boolean b = false;
+            String prop = e.getPropertyName();
+            if (prop != null && prop.equalsIgnoreCase(OAJfcController.this.getHubListenerPropertyName())) b = true;
+            else {
+                final MyHubChangeListener[] mcls = new MyHubChangeListener[] {changeListener, changeListenerEnabled, changeListenerVisible};
+                for (MyHubChangeListener mcl : mcls) {
+                    if (mcl == null) continue;
+                    if (mcl.isListeningTo(hub, prop)) {
+                        b = true;
+                        break;
+                    }
+                }
+            }
+            if (b) {
                 OAJfcController.this.afterPropertyChange();
                 update();
             }
@@ -1489,6 +1519,126 @@ public class OAJfcController extends HubListenerAdapter {
         if (ttDefault != null && ttDefault.indexOf('<') >=0 && ttDefault.toLowerCase().indexOf("<html>") < 0) ttDefault = "<html>" + ttDefault;
 
         return ttDefault;
+    }
+
+
+    // Shares hubListeners between hub and all 3 hubChangeListeners
+    protected abstract class MyHubChangeListener extends HubChangeListener {
+        @Override
+        public void remove(Hub hub, String prop) {
+            final MyHubChangeListener[] mcls = new MyHubChangeListener[] {changeListener, changeListenerEnabled, changeListenerVisible};
+
+            HubProp hp = null;
+            for (MyHubChangeListener mcl : mcls) {
+                if (mcl == null) continue;
+
+                for (HubProp hpx : mcl.hubProps) {
+                    if (hpx.hub != hub) continue;
+                    if (hpx.hubListener == null) continue;
+                    if (!OAString.equals(prop, hpx.propertyPath)) continue;
+                    hp = hpx;
+                    break;
+                }
+            }
+            if (hp == null) return;
+            
+            int cnt = 0;
+            for (MyHubChangeListener mcl : mcls) {
+                if (mcl == null) continue;
+                for (HubProp hpx : mcl.hubProps) {
+                    if (hpx.hubListener == hp.hubListener) cnt++;
+                }
+            }
+            
+            if (cnt == 1) hp.hub.removeHubListener(hp.hubListener);
+            hp.hubListener = null;
+        }
+
+        @Override
+        public void close() {
+            final MyHubChangeListener[] mcls = new MyHubChangeListener[] {changeListener, changeListenerEnabled, changeListenerVisible};
+            
+            for (HubProp hp : hubProps) {
+                if (hp.bIgnore) continue;
+                if (hp.hubListener == null) continue;
+                if (hp.hub == OAJfcController.this.hub) {
+                    hp.hubListener = null;
+                    continue;
+                }
+                
+                for (MyHubChangeListener mcl : mcls) {
+                    if (mcl == null) continue;
+                    if (mcl == this) continue;
+                    boolean b = false;
+                    for (HubProp hpx : mcl.hubProps) {
+                        if (hpx.hubListener == hp.hubListener) {
+                            b = true;
+                            break;
+                        }
+                    }
+                    if (!b) hp.hub.removeHubListener(hp.hubListener);
+                    for (HubProp hpx : hubProps) {
+                        if (hpx.hubListener == hp.hubListener) hpx.hubListener = null;
+                    }
+                    hp.hubListener = null;
+                }
+            }
+        }
+        
+        @Override
+        protected void assignHubListener(HubProp newHubProp) {
+            if (!_assignHubListener(newHubProp)) {
+                super.assignHubListener(newHubProp);
+            }
+        }
+        protected boolean _assignHubListener(HubProp newHubProp) {
+            if (OAJfcController.this.hub == newHubProp.hub) {
+                if (newHubProp.propertyPath == null) return true;
+                if (newHubProp.propertyPath.indexOf('.') < 0) return true;
+                if (newHubProp.propertyPath.equalsIgnoreCase(OAJfcController.this.propertyPath)) {
+                    return true;
+                }
+            }
+
+            Hub h = OAJfcController.this.hub;
+            if (h != null) {
+                h = h.getLinkHub();
+                if (h != null && h == newHubProp.hub)  {
+                    if (newHubProp.propertyPath == null) return true;
+                }
+            }
+            
+            final MyHubChangeListener[] mcls = new MyHubChangeListener[] {changeListener, changeListenerEnabled, changeListenerVisible};
+            for (MyHubChangeListener mcl : mcls) {
+                if (mcl == null) continue;
+                for (HubProp hp : mcl.hubProps) {
+                    if (hp.bIgnore) continue;
+                    if (hp.hub != newHubProp.hub) continue;
+                    if (hp.hubListener == null) continue;
+                    if (newHubProp.propertyPath == null) {
+                        newHubProp.hubListener = hp.hubListener;
+                        return true;
+                    }
+                    if (newHubProp.propertyPath.indexOf('.') < 0) {
+                        newHubProp.hubListener = hp.hubListener;
+                        return true;
+                    }
+                    if (!newHubProp.propertyPath.equalsIgnoreCase(hp.propertyPath)) continue; 
+                    newHubProp.hubListener = hp.hubListener;
+                    return true;
+                }
+            }            
+            return false;
+        }
+        public boolean isListeningTo(Hub hub, String prop) {
+            if (hub == null) return false;
+            for (HubProp hp : hubProps) {
+                if (hp.bIgnore) continue;
+                if (hp.hub != hub) continue;
+                if (OAString.isEqual(hp.propertyPath, prop, true)) return true;
+            }
+            return false;
+        }
     }
 }
 

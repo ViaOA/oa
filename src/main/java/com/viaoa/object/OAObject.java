@@ -731,7 +731,8 @@ public class OAObject implements java.io.Serializable, Comparable {
         OAObjectSaveDelegate.save(this, iCascadeRule);  // this will save on server if using OAClient
     }
     public boolean canSave() {
-        return true;
+        boolean flag = OAObjectEditQueryDelegate.getAllowSave(this); 
+        return flag;
     }
     
     /**
@@ -763,7 +764,8 @@ public class OAObject implements java.io.Serializable, Comparable {
     	OAObjectDeleteDelegate.delete(this);
     }
     public boolean canDelete() {
-        return OAObjectEditQueryDelegate.getAllowDelete(this);
+        boolean b = OAObjectEditQueryDelegate.getAllowDelete(this);
+        return b;
     }
     /**
      * called after an object is deleted.

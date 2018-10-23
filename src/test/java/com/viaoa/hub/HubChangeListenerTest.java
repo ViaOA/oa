@@ -279,13 +279,14 @@ public class HubChangeListenerTest extends OAUnitTest {
                 vint.inc();
             }
         };
-        assertTrue(hcl.getValue());
+        assertFalse(hcl.getValue());  // hub.isValue=false
         assertEquals(1, vint.value);
         hubEmp.setAO(null);
-        assertTrue(hcl.getValue());
+        assertFalse(hcl.getValue());
         assertEquals(1, vint.value);
         hubEmp.setPos(-1);
         assertEquals(1, vint.value);
+        assertFalse(hcl.getValue());
 
         hubEmp.setPos(1);
         assertTrue(hcl.getValue());

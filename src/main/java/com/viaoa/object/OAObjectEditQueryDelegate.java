@@ -82,6 +82,13 @@ public class OAObjectEditQueryDelegate {
         return getVerifyDeleteEditQuery(obj).getAllowed();
     }
     
+    public static boolean getAllowSave(OAObject obj) {
+        return getAllowSaveEditQuery(obj).getAllowed();
+    }
+    public static boolean getVerifySave(OAObject obj) {
+        return getVerifySaveEditQuery(obj).getAllowed();
+    }
+
     
     public static String getFormat(OAObject obj, String propertyName, String defaultFormat) {
         OAObjectEditQuery em = new OAObjectEditQuery(Type.GetFormat);
@@ -165,6 +172,13 @@ public class OAObjectEditQueryDelegate {
         editQuery.setValue(newValue);
         
         processEditQuery(editQuery, oaObj, propertyName, oldValue, newValue);
+        return editQuery;
+    }
+    public static OAObjectEditQuery getVerifyCommandEditQuery(final OAObject oaObj, final String methodName) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.VerifyCommand);
+        editQuery.setName(methodName);
+        
+        processEditQuery(editQuery, oaObj, methodName, null, null);
         return editQuery;
     }
     
@@ -256,6 +270,19 @@ public class OAObjectEditQueryDelegate {
         return editQuery;
     }
 
+    public static OAObjectEditQuery getAllowSaveEditQuery(final OAObject oaObj) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowSave);
+        editQuery.setValue(oaObj);
+        processEditQuery(editQuery, oaObj, null, null, null);
+        return editQuery;
+    }
+    public static OAObjectEditQuery getVerifySaveEditQuery(final OAObject oaObj) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.VerifySave);
+        editQuery.setValue(oaObj);
+        processEditQuery(editQuery, oaObj, null, null, null);
+        return editQuery;
+    }
+
     public static OAObjectEditQuery getAllowDeleteEditQuery(final OAObject oaObj) {
         final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowDelete);
         editQuery.setValue(oaObj);
@@ -272,7 +299,7 @@ public class OAObjectEditQueryDelegate {
     }
     
     public static OAObjectEditQuery getConfirmPropertyChangeEditQuery(final OAObject oaObj, String property, Object newValue, String confirmMessage, String confirmTitle) {
-        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.GetConfirmPropertyChange);
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.SetConfirmForPropertyChange);
         editQuery.setValue(newValue);
         editQuery.setName(property);
         editQuery.setConfirmMessage(confirmMessage);
@@ -281,9 +308,27 @@ public class OAObjectEditQueryDelegate {
         processEditQuery(editQuery, oaObj, property, null, newValue);
         return editQuery;
     }
+    public static OAObjectEditQuery getConfirmCommandEditQuery(final OAObject oaObj, String methodName, String confirmMessage, String confirmTitle) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.SetConfirmForCommand);
+        editQuery.setName(methodName);
+        editQuery.setConfirmMessage(confirmMessage);
+        editQuery.setConfirmTitle(confirmTitle);
+        
+        processEditQuery(editQuery, oaObj, methodName, null, null);
+        return editQuery;
+    }
 
+    public static OAObjectEditQuery getConfirmSaveEditQuery(final OAObject oaObj, String confirmMessage, String confirmTitle) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.SetConfirmForSave);
+        editQuery.setConfirmMessage(confirmMessage);
+        editQuery.setConfirmTitle(confirmTitle);
+        
+        processEditQuery(editQuery, oaObj, null, null, null);
+        return editQuery;
+    }
+    
     public static OAObjectEditQuery getConfirmDeleteEditQuery(final OAObject oaObj, String confirmMessage, String confirmTitle) {
-        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.GetConfirmDelete);
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.SetConfirmForDelete);
         editQuery.setConfirmMessage(confirmMessage);
         editQuery.setConfirmTitle(confirmTitle);
         
@@ -292,7 +337,7 @@ public class OAObjectEditQueryDelegate {
     }
     
     public static OAObjectEditQuery getConfirmRemoveEditQuery(final Hub hub, final OAObject oaObj, String confirmMessage, String confirmTitle) {
-        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.GetConfirmRemove);
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.SetConfirmForRemove);
         editQuery.setConfirmMessage(confirmMessage);
         editQuery.setConfirmTitle(confirmTitle);
         
@@ -306,7 +351,7 @@ public class OAObjectEditQueryDelegate {
     }
 
     public static OAObjectEditQuery getConfirmAddEditQuery(final Hub hub, final OAObject oaObj, String confirmMessage, String confirmTitle) {
-        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.GetConfirmAdd);
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.SetConfirmForAdd);
         editQuery.setConfirmMessage(confirmMessage);
         editQuery.setConfirmTitle(confirmTitle);
         
@@ -535,9 +580,10 @@ public class OAObjectEditQueryDelegate {
         Hub[] hubs = OAObjectHubDelegate.getHubReferences(oaObj);
         
         // call editQuery method for method
-        if (editQuery.getType().checkEnabledFirst) {
+        if (OAString.isNotEmpty(propertyName) && editQuery.getType().checkEnabledFirst) {
             OAObjectEditQuery editQueryX = new OAObjectEditQuery(Type.AllowEnabled);
             editQueryX.setAllowed(editQuery.getAllowed());
+            editQueryX.setName(editQuery.getName());
             callEditQuery(oaObj, propertyName, editQueryX);
 
             // call hub listeners
@@ -552,7 +598,10 @@ public class OAObjectEditQueryDelegate {
             editQuery.setAllowed(bPassed);
             if (OAString.isEmpty(editQuery.getResponse())) editQuery.setResponse(editQueryX.getResponse());
         }
-        callEditQuery(oaObj, propertyName, editQuery);
+        
+        if (OAString.isNotEmpty(propertyName)) {
+            callEditQuery(oaObj, propertyName, editQuery);
+        }
         
         // call hub listeners
         if (hubs != null) {
@@ -699,6 +748,7 @@ public class OAObjectEditQueryDelegate {
             // this can overwrite editQuery.allowed        
             OAObjectEditQuery editQueryX = new OAObjectEditQuery(Type.AllowEnabled);
             editQueryX.setAllowed(editQuery.getAllowed());
+            editQueryX.setName(editQuery.getName());
             callEditQuery(oaObj, null, editQueryX);
             bPassed = editQueryX.getAllowed();
             editQuery.setAllowed(bPassed);
@@ -744,6 +794,7 @@ public class OAObjectEditQueryDelegate {
             if (li != null && OAString.isNotEmpty(propertyName)) {
                 editQueryX = new OAObjectEditQuery(Type.AllowEnabled);
                 editQueryX.setAllowed(editQuery.getAllowed());
+                editQueryX.setName(editQuery.getName());
                 callEditQuery(oaObj, propertyName, editQueryX);
                 bPassed = editQueryX.getAllowed();
                 editQuery.setAllowed(bPassed);
@@ -760,6 +811,7 @@ public class OAObjectEditQueryDelegate {
         if (editQuery.getType().checkEnabledFirst) {
             OAObjectEditQuery editQueryX = new OAObjectEditQuery(Type.AllowEnabled);
             editQueryX.setAllowed(editQuery.getAllowed());
+            editQueryX.setName(editQuery.getName());
             _processEditQueryForHubListeners(editQueryX, hub, oaObj, propertyName, oldValue, newValue);
             editQuery.setAllowed(editQueryX.getAllowed());
         }    
@@ -848,7 +900,7 @@ public class OAObjectEditQueryDelegate {
     protected static void callEditQuery(final OAObject oaObj, String propertyName, final OAObjectEditQuery em) {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
         
-        if (propertyName == null) propertyName = "";
+        if (propertyName == null) propertyName = "";  // blank will be class onEditQuery(..)
         
         Method method = oi.getEditQueryMethod(propertyName);
         //was: Method method = OAObjectInfoDelegate.getMethod(oi, "onEditQuery"+propertyName, 1);
@@ -936,16 +988,29 @@ public class OAObjectEditQueryDelegate {
                 if (OAString.isNotEmpty(s)) changeListener.add(hubUser, s);
             }
             else {
-                OAMethodInfo mi = oi.getMethodInfo(prop);
-                if (mi != null) {
-                    if (bEnabled) s = mi.getEnabledProperty();
-                    else s = mi.getVisibleProperty(); 
+                OACalcInfo ci = oi.getCalcInfo(prop);
+                if (ci != null) {
+                    if (bEnabled) s = ci.getEnabledProperty();
+                    else s = ci.getVisibleProperty();
                     if (OAString.isNotEmpty(s)) changeListener.add(hub, ppPrefix+s);
-                    addDependentProps(hub, ppPrefix, mi.getViewDependentProperties(), mi.getUserDependentProperties(), false, changeListener);
+                    addDependentProps(hub, ppPrefix, ci.getViewDependentProperties(), ci.getUserDependentProperties(), false, changeListener);
                     
-                    if (bEnabled) s = mi.getUserEnabledProperty();
-                    else s = mi.getUserVisibleProperty();
+                    if (bEnabled) s = ci.getUserEnabledProperty();
+                    else s = ci.getUserVisibleProperty();
                     if (OAString.isNotEmpty(s)) changeListener.add(hubUser, s);
+                }
+                else {
+                    OAMethodInfo mi = oi.getMethodInfo(prop);
+                    if (mi != null) {
+                        if (bEnabled) s = mi.getEnabledProperty();
+                        else s = mi.getVisibleProperty(); 
+                        if (OAString.isNotEmpty(s)) changeListener.add(hub, ppPrefix+s);
+                        addDependentProps(hub, ppPrefix, mi.getViewDependentProperties(), mi.getUserDependentProperties(), false, changeListener);
+                        
+                        if (bEnabled) s = mi.getUserEnabledProperty();
+                        else s = mi.getUserVisibleProperty();
+                        if (OAString.isNotEmpty(s)) changeListener.add(hubUser, s);
+                    }
                 }
             }
         }

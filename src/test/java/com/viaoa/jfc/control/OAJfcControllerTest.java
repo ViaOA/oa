@@ -31,7 +31,7 @@ public class OAJfcControllerTest extends OAUnitTest {
         OAJfcController jc = new OAJfcController(hub, null, Employee.P_LastName, lbl, HubChangeListener.Type.AoNotNull, false, true);
 
         hls = HubEventDelegate.getAllListeners(hub);
-        assertEquals(5, hls.length);
+        assertEquals(1, hls.length);
         
         assertEquals(hub, jc.getHub());
         assertEquals(Employee.P_LastName, jc.getPropertyPath());
@@ -128,9 +128,9 @@ public class OAJfcControllerTest extends OAUnitTest {
         OAJfcController jc = new OAJfcController(hubEt, null, "name", lbl, HubChangeListener.Type.AoNotNull, false, true);
 
         hls = HubEventDelegate.getAllListeners(hub);
-        assertEquals(3, hls.length);
+        assertEquals(1, hls.length);
         hls = HubEventDelegate.getAllListeners(hubEt);
-        assertEquals(4, hls.length);
+        assertEquals(1, hls.length);
 
         
         Employee emp = new Employee();
@@ -208,7 +208,7 @@ public class OAJfcControllerTest extends OAUnitTest {
         assertEquals(1, vint.value);
 
         hls = HubEventDelegate.getAllListeners(hub);
-        assertEquals(3, hls.length);
+        assertEquals(1, hls.length);
         
         Employee emp = new Employee();
         hub.add(emp);
@@ -229,9 +229,9 @@ public class OAJfcControllerTest extends OAUnitTest {
         assertEquals(loc, hubLoc.getAO());
 
         hls = HubEventDelegate.getAllListeners(hub);
-        assertEquals(3, hls.length);
+        assertEquals(1, hls.length);
         hls = HubEventDelegate.getAllListeners(hubLoc);
-        assertEquals(6, hls.length);
+        assertEquals(3, hls.length);
         
         comp.setName("xx");
         assertEquals(3, vint.value);
@@ -299,10 +299,17 @@ public class OAJfcControllerTest extends OAUnitTest {
         final JLabel lbl = new JLabel();        
         Hub<Employee> hubEmp = new Hub<Employee>(Employee.class);
         for (int i=0; i<5; i++) hubEmp.add(new Employee());
+
+        HubListener[] hls = HubEventDelegate.getAllListeners(hubEmp);
+        assertEquals(0, hls==null?0:hls.length);
+
         
         Hub<Location> hubLoc = new Hub<Location>(Location.class);
         for (int i=0; i<5; i++) hubLoc.add(new Location());
         hubLoc.setLinkHub(hubEmp, Employee.P_Location);
+
+        hls = HubEventDelegate.getAllListeners(hubEmp);
+        assertEquals(1, hls.length);
         
         final VInteger vint = new VInteger();
         assertEquals(0, vint.value);
@@ -315,6 +322,12 @@ public class OAJfcControllerTest extends OAUnitTest {
             }
         };
 
+        hls = HubEventDelegate.getAllListeners(hubEmp);
+        assertEquals(2, hls.length);
+
+        hls = HubEventDelegate.getAllListeners(hubLoc);
+        assertEquals(1, hls.length);
+        
         boolean b = jc.updateEnabled();
         assertFalse(b);
         
@@ -358,9 +371,8 @@ public class OAJfcControllerTest extends OAUnitTest {
         assertNotNull(hubLoc.getAO());
         assertNotNull(hubEmp.getAO());
         
-        
         jc.close();
-        HubListener[] hls = HubEventDelegate.getAllListeners(hubEmp);
+        hls = HubEventDelegate.getAllListeners(hubEmp);
         assertEquals(1, hls.length);
         hls = HubEventDelegate.getAllListeners(hubLoc);
         assertEquals(0, hls.length);
@@ -386,13 +398,13 @@ public class OAJfcControllerTest extends OAUnitTest {
         assertEquals(1, vint.value);
 
         hls = HubEventDelegate.getAllListeners(hubSite);
-        assertEquals(10, hls.length);
+        assertEquals(3, hls.length);
         
         for (int i=0; i<5; i++) hubSite.add(new Site());
         assertEquals(1, vint.value);
         
         hls = HubEventDelegate.getAllListeners(hubSite);
-        assertEquals(10, hls.length);
+        assertEquals(3, hls.length);
         
         hubSite.getAt(0).setName("aa");
         assertEquals(1, vint.value);

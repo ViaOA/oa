@@ -156,7 +156,7 @@ public class HubAddRemoveDelegate {
             OAObjectEditQuery eq = OAObjectEditQueryDelegate.getVerifyRemoveAllEditQuery(thisHub);
             if (!eq.getAllowed()) {
                 String s = eq.getResponse();
-                if (OAString.isEmpty(s)) s = "Cant remove object, OAObjectEditQuery allowRemoveAll retured false";
+                if (OAString.isEmpty(s)) s = "Cant clear, OAObjectEditQuery allowRemoveAll retured false";
                 throw new RuntimeException(s);
             }
         }        

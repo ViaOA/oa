@@ -1019,6 +1019,7 @@ public class HubEventDelegate {
         }
     }
 
+/**qqqqq these are in Hub    
     public static boolean canAdd(Hub thisHub) {
         return canAdd(thisHub, null);
     }
@@ -1038,4 +1039,5 @@ public class HubEventDelegate {
     public static boolean canRemoveAll(Hub thisHub) {
         return OAObjectEditQueryDelegate.getAllowRemoveAll(thisHub);
     }
+*/    
 }

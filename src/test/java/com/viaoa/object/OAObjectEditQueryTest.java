@@ -96,7 +96,8 @@ public class OAObjectEditQueryTest extends OAUnitTest {
         
         try {
             emp.setLastName("test");
-            fail("setLastName should fail");
+        //    fail("setLastName should fail");
+            //  firePropertyChange calls editQuery, and will only log.warn (not throw exception)
         }
         catch (Exception e) {
         }

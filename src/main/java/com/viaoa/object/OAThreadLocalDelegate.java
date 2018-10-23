@@ -1085,6 +1085,29 @@ static volatile int unlockCnt;
         return tl.alHubEvent.get(x-1);
     }
 
+    public static boolean isOpenHubEvent(HubEvent he) {
+        if (he == null) return false;
+        if (OAThreadLocalDelegate.TotalHubEvent.get() == 0) {
+            return false;
+        }
+        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(false);
+        if (tl == null || tl.alHubEvent == null || tl.alHubEvent.size() == 0) return false;
+        boolean b = tl.alHubEvent.contains(he);
+        return b;
+    }
+    public static HubEvent getOldestHubEvent() {
+        if (OAThreadLocalDelegate.TotalHubEvent.get() == 0) {
+            return null;
+        }
+        OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(false);
+        if (tl == null) return null;
+        if (tl.alHubEvent == null) return null;
+        int x = tl.alHubEvent.size();
+        if (x == 0) return null;
+        return tl.alHubEvent.get(0);
+    }
+    
+    
     public static void addHubEvent(HubEvent  he) {
         if (he == null) return;
         OAThreadLocal tl = OAThreadLocalDelegate.getThreadLocal(true);

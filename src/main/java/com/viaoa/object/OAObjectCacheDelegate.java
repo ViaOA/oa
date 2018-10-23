@@ -442,6 +442,30 @@ public class OAObjectCacheDelegate {
         }
     }
     
+    public static OAObject getRandom(Class<? extends OAObject> clazz, int max) {
+        TreeMapHolder tmh = (TreeMapHolder) OAObjectHashDelegate.hashCacheClass.get(clazz);
+        Map.Entry<OAObjectKey, WeakReference<OAObject>> ent = null;
+
+        if (tmh == null) return null;
+        try {
+            tmh.rwl.readLock().lock();
+            int x = Math.min(tmh.treeMap.size(), max);
+            x = (int) (Math.random() * x);
+            ent = tmh.treeMap.firstEntry();
+            for (int i=0; i<x && ent!=null; i++) {
+                ent = tmh.treeMap.higherEntry(ent.getKey());
+            }
+            if (ent == null) return null;
+            WeakReference<OAObject> ref = ent.getValue();
+            if (ref == null) return null;
+            return ref.get();
+        }
+        finally {
+            tmh.rwl.readLock().unlock();
+        }
+    }
+    
+    
     /**
         Returns a Vector of Strings that describe the Classes and amount of objects that are loaded.
     */

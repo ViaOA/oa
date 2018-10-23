@@ -10,8 +10,8 @@
 */
 package com.viaoa.ds;
 
+import java.lang.ref.WeakReference;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +29,7 @@ import com.viaoa.object.OAObject;
 public class OASelectManager {
     private static Logger LOG = Logger.getLogger(OASelectManager.class.getName());
     
-    private static ConcurrentHashMap<OASelect, OASelect> hmSelect = new ConcurrentHashMap<OASelect, OASelect>(23, .75f, 3);
+    private static ConcurrentHashMap<Integer, WeakReference<OASelect>> hmSelect = new ConcurrentHashMap<Integer, WeakReference<OASelect>>(23, .75f, 3);
     private static AtomicBoolean abStartThread = new AtomicBoolean(false);
     private static int timeLimitInSeconds = (5 * 60);
 
@@ -37,9 +37,10 @@ public class OASelectManager {
         timeLimitInSeconds = seconds;
     }
     
-    
     public static void add(OASelect sel) {
-        hmSelect.put(sel, sel);
+        if (sel == null) return;
+        final int id = sel.getId();
+        hmSelect.put(id, new WeakReference(sel));
         if (!abStartThread.compareAndSet(false, true)) return;
         
         Thread thread = new Thread(new Runnable() {
@@ -62,7 +63,8 @@ public class OASelectManager {
 
     
     public static void remove(OASelect sel) {
-        hmSelect.remove(sel);
+        final int id = sel.getId();
+        WeakReference<OASelect> ref = hmSelect.remove(id);
     }    
 
     protected static void performCleanup() {
@@ -71,12 +73,17 @@ public class OASelectManager {
         time -= (timeLimitInSeconds * 1000);
 
         int iTotal = hmSelect.size();
-        Set<Map.Entry<OASelect, OASelect>> set = hmSelect.entrySet();
+        Set<Map.Entry<Integer, WeakReference<OASelect>>> set = hmSelect.entrySet();
         
-        for (Iterator<Map.Entry<OASelect, OASelect>> it = set.iterator() ; it.hasNext(); ) {
-            Map.Entry<OASelect, OASelect> me = it.next();
-            OASelect sel = me.getKey();
-
+        for (Iterator<Map.Entry<Integer, WeakReference<OASelect>>> it = set.iterator() ; it.hasNext(); ) {
+            Map.Entry<Integer, WeakReference<OASelect>> me = it.next();
+            WeakReference<OASelect> ref = me.getValue();
+            if (ref == null) continue;
+            OASelect sel = ref.get();
+            if (sel == null) {
+                it.remove();
+                continue;
+            }
             if (sel.isCancelled()) {
                 it.remove();
                 continue;

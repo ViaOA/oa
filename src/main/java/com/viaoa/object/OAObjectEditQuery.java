@@ -13,6 +13,7 @@ package com.viaoa.object;
 import javax.swing.JLabel;
 
 import com.viaoa.util.OAConv;
+import com.viaoa.util.OAString;
 
 /**
  * Used to allow interaction with OAObject and other (ex: UI) components.
@@ -33,14 +34,8 @@ public class OAObjectEditQuery {
     private String toolTip;
     private String format;
     
-    private boolean allowEnabled=true;  // also works with verifyPropertyChange
-    private boolean allowVisible=true;
-
-    private boolean allowAdd=true;    // hubs
-    private boolean allowRemove=true; // hubs
-    private boolean allowRemoveAll=true; // hubs
-    private boolean allowDelete=true; // hubs
-
+    private boolean allowed;
+    
     private Object value;  // depends on Type
     private JLabel label;
 
@@ -64,28 +59,31 @@ public class OAObjectEditQuery {
         AllowRemove(true, true),     // use: allowRemove
         AllowRemoveAll(true, true),  // use: allowRemoveAll
         AllowDelete(true, true),     // use: allowDelete
-                             
+        AllowSave(true, true),       
+        
         VerifyPropertyChange(true, false),// use: value to get new value, name, response, throwable - set allowEnablede=false, or throwable!=null to cancel
-
         VerifyAdd(true, true),           // use: value to get added object, allowAdd, throwable - set allowAdd=false, or throwable!=null to cancel
         VerifyRemove(true, true),        // use: value to get removed object, allowRemove, throwable - set allowRemove=false, or throwable!=null to cancel
         VerifyRemoveAll(true, true),     // use: allowRemoveAll, response, throwable - set allowRemoveAll=false, or throwable!=null to cancel
         VerifyDelete(true, true),        // use: value to get deleted object, allowDelete, throwable - set allowDelete=false, or throwable!=null to cancel
+        VerifySave(true, true),
+        VerifyCommand(true, true),
         
-        GetConfirmPropertyChange(false),
-        GetConfirmAdd(false),
-        GetConfirmRemove(false),
-        GetConfirmDelete(false),
-        /*
-        GetDependentProperties(false),
-        */
+        SetConfirmForPropertyChange(false),
+        SetConfirmForAdd(false),
+        SetConfirmForRemove(false),
+        SetConfirmForRemoveAll(false),  //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq <<<<< qqqqqqqqqqqqqq
+        SetConfirmForDelete(false),
+        SetConfirmForSave(false),
+        SetConfirmForCommand(false), //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq <<<<<<<<<<<<<<<<<<<<<<< qqqqqqqqqqqqq
         
         GetToolTip(false),      // use: toolTip
         RenderLabel(false),     // use: label and update it's props
         UpdateLabel(false),      // update the label that belongs to a component
         GetFormat(false);       // use: format
         
-        public boolean checkOwner, checkEnabledFirst;
+        public boolean checkOwner;
+        public boolean checkEnabledFirst;
         Type(boolean checkOwner) {
             this.checkOwner = checkOwner;
         }
@@ -97,6 +95,7 @@ public class OAObjectEditQuery {
     
     public OAObjectEditQuery(Type type) {
         this.type = type;
+        this.allowed = true;
     }
     
     public void setType(Type t) {
@@ -104,10 +103,7 @@ public class OAObjectEditQuery {
     }
     /**
      * Type of query.  
-     * 
      * NOTE: Type.AllowEnabled will also be called for all types that have checkEnabledFirst=true
-     * 
-     * @return
      */
     public Type getType() {
         return this.type;
@@ -126,6 +122,22 @@ public class OAObjectEditQuery {
     }
     public void setThrowable(Throwable t) {
         this.throwable = t;
+    }
+
+
+    public String getDisplayResponse() {
+        String s = getResponse();
+        Throwable t = getThrowable();
+        if (OAString.isEmpty(s) && t != null) {
+            if (t != null) {
+                for (; t!=null; t=t.getCause()) {
+                    s = t.getMessage();
+                    if (OAString.isNotEmpty(s)) break;
+                }
+                if (OAString.isEmpty(s)) s = getThrowable().toString();
+            }
+        }
+        return s;
     }
     
 
@@ -150,43 +162,14 @@ public class OAObjectEditQuery {
         this.toolTip = toolTip;
     }
 
-    public boolean getAllowEnabled() {
-        return allowEnabled;
+    public boolean getAllowed() {
+        return allowed;
     }
-    public void setAllowEnabled(boolean enabled) {
-        this.allowEnabled = enabled;
+    public void setAllowed(boolean enabled) {
+        this.allowed = enabled;
     }
-    public boolean getAllowVisible() {
-        return allowVisible;
-    }
-    public void setAllowVisible(boolean allowVisible) {
-        this.allowVisible = allowVisible;
-    }
-    public boolean getAllowAdd() {
-        return allowAdd;
-    }
-    public void setAllowAdd(boolean allowAdd) {
-        this.allowAdd = allowAdd;
-    }
-    public boolean getAllowRemove() {
-        return allowRemove;
-    }
-    public void setAllowRemove(boolean allowRemove) {
-        this.allowRemove = allowRemove;
-    }
-    public boolean getAllowRemoveAll() {
-        return allowRemoveAll;
-    }
-    public void setAllowRemoveAll(boolean allowRemoveAll) {
-        this.allowRemoveAll = allowRemoveAll;
-    }
-    public boolean getAllowDelete() {
-        return allowDelete;
-    }
-    public void setAllowDelete(boolean allowDelete) {
-        this.allowDelete = allowDelete;
-    }
-
+    
+    
     public Object getValue() {
         return value;
     }
@@ -220,66 +203,6 @@ public class OAObjectEditQuery {
     }
     public void setName(String name) {
         this.name = name;
-    }
-
-    // get the return boolean from a "allow" or "verify" query
-    public boolean getAllowed() {
-        if (getThrowable() != null) return false;
-        if (!getAllowEnabled()) return false;  // all are disabled
-        
-        switch (getType()) {
-        case AllowEnabled:
-        case VerifyPropertyChange:
-            break;
-        case AllowVisible:
-            if (!getAllowVisible()) return false;
-            break;
-        case AllowAdd:
-        case VerifyAdd:
-            if (!getAllowAdd()) return false;
-            break;
-        case AllowRemove:
-        case VerifyRemove:
-            if (!getAllowRemove()) return false;
-            break;
-        case AllowRemoveAll:
-        case VerifyRemoveAll:
-            if (!getAllowRemoveAll()) return false;
-            break;
-        case AllowDelete:
-        case VerifyDelete:
-            if (!getAllowDelete()) return false;
-            break;
-        }
-        return true;
-    }
-
-    public void setAllowed(boolean b) {
-        switch (getType()) {
-        case AllowEnabled:
-        case VerifyPropertyChange:
-            setAllowEnabled(b);
-            break;
-        case AllowVisible:
-            setAllowVisible(b);
-            break;
-        case AllowAdd:
-        case VerifyAdd:
-            setAllowAdd(b);
-            break;
-        case AllowRemove:
-        case VerifyRemove:
-            setAllowRemove(b);
-            break;
-        case AllowRemoveAll:
-        case VerifyRemoveAll:
-            setAllowRemoveAll(b);
-            break;
-        case AllowDelete:
-        case VerifyDelete:
-            setAllowDelete(b);
-            break;
-        }
     }
 
 }    

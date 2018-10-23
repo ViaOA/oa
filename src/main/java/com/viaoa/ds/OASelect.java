@@ -11,6 +11,7 @@
 package com.viaoa.ds;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import com.viaoa.object.*;
 import com.viaoa.util.OAArray;
@@ -69,6 +70,9 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
 
     private static Logger LOG = Logger.getLogger(OASelect.class.getName());
     
+    private static final AtomicInteger aiId = new AtomicInteger(); 
+    private final int id;
+    
     protected Class clazz;
     protected OAObject whereObject;
     protected String where;
@@ -98,10 +102,12 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
     
     /** Create a new OASelect that is not initialzed. */
     public OASelect() {
+        this.id = aiId.incrementAndGet();
     }
 
     /** Create a new OASelect that is initialzed to query Objects for a Class. */
     public OASelect(Class<TYPE> c) {
+        this();
         setSelectClass(c);
     }
 
@@ -109,6 +115,7 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
         Create a new OASelect that is initialzed to query Objects for a Class for a passthru query. 
     */
     public OASelect(Class<TYPE> c, boolean passthru, String where, String order) {
+        this();
         setSelectClass(c);
         setPassthru(passthru);
         setWhere(where);
@@ -119,6 +126,7 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
         Create a new OASelect that is initialized to query Objects for a Class. 
     */
     public OASelect(Class<TYPE> c, String where, String order) {
+        this();
         setSelectClass(c);
         setWhere(where);
         setOrder(order);
@@ -128,6 +136,7 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
     Create a new OASelect that is initialized to query Objects for a Class. 
 	*/
 	public OASelect(Class<TYPE> c, String where, Object[] params, String order) {
+        this();
 	    setSelectClass(c);
 	    setWhere(where);
 	    setParams(params);
@@ -139,10 +148,16 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
         Create a new OASelect that is initialzed to query Objects for a Class. 
     */
     public OASelect(Class<TYPE> c, OAObject whereObject, String order) {
+        this();
         setWhereObject(whereObject);
         setOrder(order);
     }
 
+    public int getId() {
+        return id;
+    }
+    
+    
     /**
      * Values used to replace '?' in where clause.
      * @param params list of values to replace '?' in where clause.
