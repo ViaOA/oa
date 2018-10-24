@@ -1408,8 +1408,6 @@ public class OAJfcController extends HubListenerAdapter {
     }
     @Override
     public void afterPropertyChange(HubEvent e) {
-int xx=4;//qqqqqqqqqqqqqqqqq
-xx++;
         Object ao = getHub().getAO();
         if (ao != null && e.getObject() == ao) {
             boolean b = false;
