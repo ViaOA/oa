@@ -11,6 +11,8 @@
 package com.viaoa.jfc.control;
 
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,7 +29,7 @@ import com.viaoa.util.OATemplate;
  * @author vvia
  *
  */
-public class AutoCompleteTextFieldController extends OAJfcController {
+public class AutoCompleteTextFieldController extends OAJfcController implements FocusListener {
     private final JTextField txt;
     
     protected String searchTemplate;
@@ -56,6 +58,7 @@ public class AutoCompleteTextFieldController extends OAJfcController {
 
     protected void init() {
         getAutoCompleteList();
+        txt.addFocusListener(this);
     }
 
     public void setMaxResults(int x) {
@@ -217,21 +220,28 @@ public class AutoCompleteTextFieldController extends OAJfcController {
             }
             @Override
             protected void onValueSelected(int pos, String value) {
-                String s = isValidHubChangeAO(hub.getAt(pos));
+                Object obj = null;
+                TreeSearchItem tsi = null;
+                if (pos >= 0 && pos < alList.size()) {
+                    tsi = alList.get(pos);
+                    obj = tsi.obj;
+                }
+                if (getHub().getAO() == obj) return;
+                
+                String s = isValidHubChangeAO(obj);
                 if (OAString.isNotEmpty(s)) {
                     JOptionPane.showMessageDialog(AutoCompleteTextFieldController.this.txt, s, "Warning", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                else if (!confirmHubChangeAO(hub.getAt(pos))) {
+                else if (!confirmHubChangeAO(obj)) {
                     return;
                 }
                 
                 if (pos < 0) {
                     getHub().setAO(null);
                 }
-                else if (pos >= 0 && pos < alList.size()) {
-                    TreeSearchItem tsi = alList.get(pos);
-                    getHub().setAO(tsi.obj);
+                else if (tsi != null) {
+                    getHub().setAO(obj);
                     super.onValueSelected(pos, value);
                 }
             }
@@ -251,5 +261,15 @@ public class AutoCompleteTextFieldController extends OAJfcController {
         autoCompleteList.setShowOne(true);        
         return autoCompleteList;
     }
+
+    @Override
+    public void focusGained(FocusEvent e) {
+    }
+    @Override
+    public void focusLost(FocusEvent e) {
+        // TODO Auto-generated method stub
+        getTemplateForDisplay().setHiliteOutputText(null);
+    }
+    
 
 }

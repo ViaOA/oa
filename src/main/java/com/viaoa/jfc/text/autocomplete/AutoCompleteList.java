@@ -68,6 +68,7 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
             }
         });
 
+/*qqqq            
         txt.addActionListener(new ActionListener() {
             // note: this is never called, since the keyEvent <enter> is used
             @Override
@@ -85,6 +86,7 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
                 }
             }
         });
+*/        
     }
 
     @Override
