@@ -11,8 +11,6 @@
 package com.viaoa.jfc.control;
 
 import java.awt.*;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,18 +27,19 @@ import com.viaoa.util.OATemplate;
  * @author vvia
  *
  */
-public class AutoCompleteTextFieldController extends OAJfcController implements FocusListener {
+public class AutoCompleteTextFieldController extends OAJfcController {
     private final JTextField txt;
     
     protected String searchTemplate;
     private OATemplate templateSearch;
     
-    private AutoCompleteList autoCompleteList;
+    public AutoCompleteList autoCompleteList;
     private int maxResults = 35;
     
     public AutoCompleteTextFieldController(Hub hub, JTextField txt, String propertyPath) {
         super(hub, null, propertyPath, txt, HubChangeListener.Type.HubNotEmpty, true, true);
         this.txt = txt;
+        
         init();
     }
 
@@ -58,7 +57,7 @@ public class AutoCompleteTextFieldController extends OAJfcController implements 
 
     protected void init() {
         getAutoCompleteList();
-        txt.addFocusListener(this);
+        // txt.addFocusListener(this);
     }
 
     public void setMaxResults(int x) {
@@ -78,9 +77,11 @@ public class AutoCompleteTextFieldController extends OAJfcController implements 
     @Override
     public void update() {
         try {
+            if (autoCompleteList != null) autoCompleteList.bIgnorePopup = true;
             _update(); 
         }
         finally {
+            if (autoCompleteList != null) autoCompleteList.bIgnorePopup = false;
         }
         super.update();
     }
@@ -167,11 +168,10 @@ public class AutoCompleteTextFieldController extends OAJfcController implements 
                     if (pos < 0) continue;
                     
                     String displayValue;
-                    
                     if (!(obj instanceof OAObject) || getTemplateForDisplay()==null) displayValue = searchValue;
                     else {
-                        getTemplateForDisplay().setHiliteOutputText(text);
-                        displayValue = getTemplateForDisplay().process((OAObject)obj);
+                        getTemplateForDisplay2().setHiliteOutputText(text);
+                        displayValue = getTemplateForDisplay2().process((OAObject)obj);
                     }
                     if (displayValue != null && displayValue.toLowerCase().indexOf("html") < 0) displayValue = "<html>" + displayValue;
                     TreeSearchItem tsi = new TreeSearchItem(searchValue, displayValue, obj);
@@ -262,14 +262,54 @@ public class AutoCompleteTextFieldController extends OAJfcController implements 
         return autoCompleteList;
     }
 
-    @Override
-    public void focusGained(FocusEvent e) {
-    }
-    @Override
-    public void focusLost(FocusEvent e) {
-        // TODO Auto-generated method stub
-        getTemplateForDisplay().setHiliteOutputText(null);
+    private OATemplate templateDisplay2;
+    private String displayTemplate2;
+    public OATemplate getTemplateForDisplay2() {
+        if (OAString.isNotEmpty(getDisplayTemplate())) {
+            if (templateDisplay2 == null || !getDisplayTemplate().equals(displayTemplate2)) {
+                displayTemplate2 = getDisplayTemplate();
+                templateDisplay2 = new OATemplate<>(displayTemplate2);
+            }
+        }
+        return templateDisplay2;
     }
     
+    public void onFocusGained() {
+        /* not needed, since html cant be used with textfield.setText
+        OATemplate temp = getTemplateForDisplay();
+        if (temp == null) return;
+
+        if (getHub() == null) return;
+        Object obj = getHub().getAO();
+        if (!(obj instanceof OAObject)) return;
+        
+        String text;
+        temp = getTemplateForSearch();
+        if (temp != null) {
+            text = temp.process((OAObject)obj);
+        }
+        else {
+            text = getValueAsString(obj, getFormat());
+        }
+        if (!text.equals(txt.getText())) txt.setText(text);
+        */
+    }
+    public void onFocusLost() {
+        OATemplate temp = getTemplateForDisplay();
+        if (temp == null) return;
+        temp.setHiliteOutputText(null);
+
+        /* removed since txt.setText does not render html
+        if (getHub() == null) return;
+        Object obj = getHub().getAO();
+        if (!(obj instanceof OAObject)) return;
+        
+        
+        String displayValue = temp.process((OAObject)obj);
+        if (displayValue != null && displayValue.toLowerCase().indexOf("html") < 0) displayValue = "<html>" + displayValue;
+        
+        txt.setText(displayValue);
+        */
+    }
 
 }

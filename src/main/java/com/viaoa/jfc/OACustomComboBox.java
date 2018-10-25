@@ -16,6 +16,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.border.*;
+import javax.swing.plaf.metal.MetalComboBoxButton;
 
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
@@ -65,7 +66,18 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     
     @Override
     public void initialize() {
+        enableEvents(AWTEvent.MOUSE_EVENT_MASK);
     }
+
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        if ((e.getID() == MouseEvent.MOUSE_PRESSED) && tableCellEditor != null && tableCellEditor.getIgnorePopup()) {
+            e.consume();
+            return;
+        }
+        super.processMouseEvent(e);
+    }
+    
     
     /*
      *  2006/12/13
@@ -369,6 +381,24 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
         return tableCellEditor;
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        if (table == null) {
+            super.paintComponent(g);
+            return;
+        }
+        // 20181024: hack so that rect is not set to height=5 by removing arrow button insets
+        Component[] comps = getComponents();
+        if (comps != null && comps.length > 0 && (comps[0] instanceof MetalComboBoxButton)) {
+            MetalComboBoxButton bx = (MetalComboBoxButton) comps[0];
+            Border border = bx.getBorder();
+            bx.setBorder(null);
+            super.paintComponent(g);
+            bx.setBorder(border);
+        }
+        else super.paintComponent(g);
+    }
+    
     // hack: JComboBox could be container, so set focus to first good component
     JComponent focusComp;
     protected JComponent getFocusComponent() {

@@ -239,19 +239,22 @@ public abstract class OATableCellEditor implements TableCellEditor, FocusListene
 
 
     public boolean stopCellEditing() { // fired by JTable when another cell is mouse selected
+        lastMouseEvent = null;
         editMode = false;
         fireEditingStopped();
 		return true;
     }
 
+    @Override
     public Component getTableCellEditorComponent(JTable table,Object value,boolean isSelected,int row,int column) {
         this.table = (OATable) table;
         return vcomp;
     }
 
+    protected MouseEvent lastMouseEvent;
     public void startCellEditing(java.util.EventObject e) {
+        if (e instanceof MouseEvent) lastMouseEvent = (MouseEvent) e;
         editMode = true;
     }
-
 
 }

@@ -274,16 +274,17 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
     private volatile boolean bFlag;
     
     public void itemStateChanged(ItemEvent evt) {
+        boolean b = true;
         try {
             if (bFlag) return;
             bFlag = true;
-            _itemStateChanged(evt);
+            b = _itemStateChanged(evt);
         }
         finally {
-            bFlag = false;
+            if (b) bFlag = false;
         }
     }    
-    protected void _itemStateChanged(ItemEvent evt) {
+    protected boolean _itemStateChanged(ItemEvent evt) {
         Object value;
 
         if ( (hubSelect != null) || hub != null) {
@@ -294,7 +295,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
                 if (type == ItemEvent.SELECTED) value = valueOn;
                 else value = valueOff;
                 if (value instanceof OANullObject) {
-                    return;
+                    return true;
                 }
                 
                 if (hubSelect != null) {
@@ -317,7 +318,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
                         }
 
                         if (OACompare.compare(prev, value) == 0) {
-                            return;
+                            return true;
                         }
                         
                         boolean bValid = true;
@@ -330,16 +331,20 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
                         }
                         else if (!confirmPropertyChange(obj, value)) bValid = false;
                         // else if (!confirm()) bValid = false;
-                        if (!bValid) {
+                        if (!bValid) {  // need to reset the checkbox
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
                                     bFlag = true;
-                                    afterChangeActiveObject();
-                                    bFlag = false;
+                                    try {
+                                        _afterChangeActiveObject();
+                                    }
+                                    finally {
+                                        bFlag = false;
+                                    }
                                 }
                             });
-                            return;
+                            return false;
                         }
                         
                         setValue(obj, value);
@@ -382,6 +387,7 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
                 }
             }                               
         }
+        return true;
     }
     
     public void setXORValue(int xor) {

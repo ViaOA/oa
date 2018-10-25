@@ -11,7 +11,9 @@
 package com.viaoa.jfc;
 
 import java.awt.*;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -32,6 +34,7 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
     public OAAutoCompleteTextField(Hub hub, String propertyPath, int cols) {
         control = new AutoCompleteTextFieldController(hub, this, propertyPath);
         setColumns(cols);
+        enableEvents(AWTEvent.FOCUS_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
         initialize();
     }
 
@@ -183,12 +186,7 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         if (control == null) return null;
         return control.getPropertyPath();
     }
-/**qqqqq    
-    public String getEndPropertyName() {
-        if (control == null) return null;
-        return control.getEndPropertyName();
-    }
-*/    
+
     /**
         Column heading when this component is used as a column in an OATable.
     */
@@ -206,48 +204,66 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
     /**
         Editor used when this component is used as a column in an OATable.
     */
-    protected OATableCellEditor tableCellEditor;
+    protected MyTableCellEditor tableCellEditor;
     public TableCellEditor getTableCellEditor() {
         if (tableCellEditor != null) return tableCellEditor;
             
-        tableCellEditor = new OATableCellEditor(OAAutoCompleteTextField.this) {
-            public Object getCellEditorValue() {
-                return OAAutoCompleteTextField.this.getText();
-            }
-
-            public void startCellEditing(java.util.EventObject e) {
-                super.startCellEditing(e);
-                OAAutoCompleteTextField.this.selectAll();
-            }
-
-            int pos1, pos2;
-            public void keyPressed(KeyEvent e) {
-                pos1 = OAAutoCompleteTextField.this.getSelectionStart();
-                pos2 = OAAutoCompleteTextField.this.getSelectionEnd();
-            }
-
-            public void keyReleased(KeyEvent e) {
-                int key = e.getKeyCode();
-                editArrowKeys = (OATableCellEditor.UP | OATableCellEditor.DOWN | OATableCellEditor.LEFT | OATableCellEditor.RIGHT );
-                if (pos1 == pos2) {
-                    if (key == KeyEvent.VK_LEFT) {
-                        if (pos1 == 0) editArrowKeys = 0;
-                    }
-                    if (key == KeyEvent.VK_RIGHT) {
-                        int x = OAAutoCompleteTextField.this.getText().length();
-                        if (pos2 == x) editArrowKeys = 0;
-                    }
-                }
-                super.keyReleased(e);
-            }
-            
-        };
-
+        tableCellEditor = new MyTableCellEditor();
+                
         this.setBorder(new LineBorder(UIManager.getColor("Table.selectionBackground"), 1));
         
         return tableCellEditor;
     }
 
+    private class MyTableCellEditor extends OATableCellEditor {
+        public MyTableCellEditor() {
+            super(OAAutoCompleteTextField.this);
+        }
+        public Object getCellEditorValue() {
+            return OAAutoCompleteTextField.this.getText();
+        }
+
+        public void startCellEditing(java.util.EventObject e) {
+            super.startCellEditing(e);
+            try {
+                OAAutoCompleteTextField.this.control.autoCompleteList.bIgnorePopup = true;
+                OAAutoCompleteTextField.this.selectAll();
+            }
+            finally {
+                OAAutoCompleteTextField.this.control.autoCompleteList.bIgnorePopup = false;
+            }
+        }
+
+        int pos1, pos2;
+        public void keyPressed(KeyEvent e) {
+            pos1 = OAAutoCompleteTextField.this.getSelectionStart();
+            pos2 = OAAutoCompleteTextField.this.getSelectionEnd();
+        }
+
+        public void keyReleased(KeyEvent e) {
+            int key = e.getKeyCode();
+            editArrowKeys = (OATableCellEditor.UP | OATableCellEditor.DOWN | OATableCellEditor.LEFT | OATableCellEditor.RIGHT );
+            if (pos1 == pos2) {
+                if (key == KeyEvent.VK_LEFT) {
+                    if (pos1 == 0) editArrowKeys = 0;
+                }
+                if (key == KeyEvent.VK_RIGHT) {
+                    int x = OAAutoCompleteTextField.this.getText().length();
+                    if (pos2 == x) editArrowKeys = 0;
+                }
+            }
+            super.keyReleased(e);
+        }
+        
+        public boolean getIgnorePopup(boolean bClear)  {
+            if (lastMouseEvent == null) return false;
+            if (bClear) lastMouseEvent = null;
+            return true;
+        }
+        
+    };
+    
+    
     // OATableComponent Interface method
     public Component getTableRenderer(JLabel renderer, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         if (control != null) {
@@ -331,5 +347,24 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         return this.control.getSearchTemplate();
     }
 
+    @Override
+    protected void processFocusEvent(FocusEvent e) {
+        super.processFocusEvent(e);
+        if (e.getID() == FocusEvent.FOCUS_GAINED) getController().onFocusGained();
+        else if (e.getID() == FocusEvent.FOCUS_LOST) getController().onFocusLost();
+    }
+    
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        if ((e.getID() == MouseEvent.MOUSE_PRESSED) && tableCellEditor != null && tableCellEditor.getIgnorePopup(false)) {
+            e.consume();
+            return;
+        }
+        if ((e.getID() == MouseEvent.MOUSE_RELEASED) && tableCellEditor != null && tableCellEditor.getIgnorePopup(true)) {
+            e.consume();
+            return;
+        }
+        super.processMouseEvent(e);
+    }
     
 }

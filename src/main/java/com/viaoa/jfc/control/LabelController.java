@@ -89,6 +89,11 @@ public class LabelController extends OAJfcController {
             siblingHelper = new OASiblingHelper(this.hub);
             siblingHelper.add(this.propertyPath);
         }
+        
+        // default to right align for numeric
+        if (OAReflect.isNumber(getEndPropertyClass())) {
+            thisLabel.setHorizontalAlignment(JLabel.RIGHT);
+        }
         update();
     }
 

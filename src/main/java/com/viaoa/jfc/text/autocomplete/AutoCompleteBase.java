@@ -38,7 +38,7 @@ public abstract class AutoCompleteBase {
     protected boolean bExactMatchOnly;
     protected JScrollPane scroll;
     protected boolean bShowOne;  // show popup, even if only 1 value to display
-    protected boolean bIgnorePopup;
+    public boolean bIgnorePopup;
     
     
     /**
@@ -155,7 +155,8 @@ public abstract class AutoCompleteBase {
         	@Override
         	public void focusGained(FocusEvent e) {
         		super.focusGained(e);
-    			if (!popup.isVisible()) showPopup();
+//qqqqqqqqqqqq        		
+//    			if (!popup.isVisible()) showPopup();
         	}
             @Override
             public void focusLost(FocusEvent e) {

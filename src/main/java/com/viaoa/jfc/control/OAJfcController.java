@@ -203,14 +203,14 @@ public class OAJfcController extends HubListenerAdapter {
             if (OAString.isNotEmpty(hubListenerPropertyName)) hub.addHubListener(this, hubListenerPropertyName, true);
             else hub.addHubListener(this);
         }
+
+        oaPropertyPath = new OAPropertyPath(hub.getObjectClass(), propertyPath);
+        final String[] properties = oaPropertyPath.getProperties();
+        endPropertyName = (properties == null || properties.length == 0) ? null : properties[properties.length-1];
         
         if (hubChangeListenerType != null) { // else: this class already is listening to hub
             hubChangeListenerTypeLast = getEnabledChangeListener().add(hub, hubChangeListenerType);
         }
-        
-        oaPropertyPath = new OAPropertyPath(hub.getObjectClass(), propertyPath);
-        final String[] properties = oaPropertyPath.getProperties();
-        endPropertyName = (properties == null || properties.length == 0) ? null : properties[properties.length-1];
         
         Method[] ms = oaPropertyPath.getMethods();
         endPropertyFromClass = hub.getObjectClass();
@@ -227,6 +227,7 @@ public class OAJfcController extends HubListenerAdapter {
             bIsHubCalc = false;
             endPropertyClass = String.class;
         }
+        bDefaultFormat = false;
         
         if (!bUseLinkHub) {
             if (bUseEditQuery) {
@@ -608,7 +609,6 @@ public class OAJfcController extends HubListenerAdapter {
     */
     public String getFormat() {
         if (format != null) return format;
-        
         if (!bDefaultFormat) {
             bDefaultFormat = true;
             if (oaPropertyPath != null) {

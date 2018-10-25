@@ -29,7 +29,9 @@ public class OAComboBoxTableCellEditor extends OATableCellEditor {
         super(cb, (OATableCellEditor.UP | OATableCellEditor.DOWN), (OATableCellEditor.UP | OATableCellEditor.DOWN) );
         // cb.setBorder(null);
         //cb.setBorder( UIManager.getBorder("Table.focusCellHighlightBorder") );
-        cb.setBorder(new LineBorder(UIManager.getColor("Table.selectionBackground"), 1));
+        
+        // 20181024 removed        
+        //was: cb.setBorder(new LineBorder(UIManager.getColor("Table.selectionBackground"), 1));
         
         this.vcb = cb;
 
@@ -58,7 +60,11 @@ public class OAComboBoxTableCellEditor extends OATableCellEditor {
         super.focusGained(e);
     }
     
-    
+    public boolean getIgnorePopup()  {
+        if (lastMouseEvent == null) return false;
+        lastMouseEvent = null;
+        return true;
+    }
 
     public Object getCellEditorValue() {
         return vcb.getSelectedItem();    
@@ -74,6 +80,7 @@ public class OAComboBoxTableCellEditor extends OATableCellEditor {
 return true; // 2005/02/07
 //was:        return super.shouldSelectCell(anEvent);
     }
+
 }
 
 /***

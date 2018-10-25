@@ -18,6 +18,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.event.*;
+import javax.swing.plaf.metal.MetalComboBoxButton;
 import javax.swing.border.*;
 
 import com.viaoa.object.*;
@@ -45,7 +46,6 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJfcComp
     */
     public OAComboBox() {
         this(null, null);
-        initialize();
     }
 
     /**
@@ -53,9 +53,8 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJfcComp
     */
     public OAComboBox(Hub hub) {
         this(hub, "");
-        initialize();
     }
-
+    
     /**
         Create ComboBox that is bound to a property for the active object in a Hub.
         @param columns is width of list using character width size.
@@ -63,7 +62,6 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJfcComp
     public OAComboBox(Hub hub, String propertyPath, int columns) {
         this(hub, propertyPath);
         setColumns(columns);
-        initialize();
     }
     /**
         Create ComboBox that is bound to a property for the active object in a Hub.
@@ -78,9 +76,23 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJfcComp
         Color c = UIManager.getColor("ComboBox.foreground");
         if (c == null) c = Color.black;
         // removed: UIManager.put("ComboBox.disabledForeground", c);
+        
+        enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+        
         initialize();
     }
 
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        if (e.getID() == MouseEvent.MOUSE_PRESSED && tableCellEditor != null && tableCellEditor.getIgnorePopup()) {
+        //int x = e.getModifiers();
+        //if ((x & MouseEvent.MOUSE_CLICKED) > 0 && tableCellEditor != null && tableCellEditor.getIgnorePopup()) {
+            e.consume();
+            return;
+        }
+        super.processMouseEvent(e);
+    }
+    
     @Override
     public void initialize() {
     }
@@ -453,7 +465,23 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         }
     }
 
-
+    @Override
+    protected void paintComponent(Graphics g) {
+        if (table == null) {
+            super.paintComponent(g);
+            return;
+        }
+        // 20181024: hack so that rect is not set to height=5 by removing arrow button insets
+        Component[] comps = getComponents();
+        if (comps != null && comps.length > 0 && (comps[0] instanceof MetalComboBoxButton)) {
+            MetalComboBoxButton bx = (MetalComboBoxButton) comps[0];
+            Border border = bx.getBorder();
+            bx.setBorder(null);
+            super.paintComponent(g);
+            bx.setBorder(border);
+        }
+        else super.paintComponent(g);
+    }
 
     private OAComboBoxTableCellEditor tableCellEditor;
     /**
@@ -465,8 +493,6 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         }
         return tableCellEditor;
     }
-
-
 
     // hack: JComboBox could be container, so set focus to first good component
     private JComponent focusComp;
