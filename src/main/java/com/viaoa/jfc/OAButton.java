@@ -20,6 +20,7 @@ import javax.swing.event.*;
 
 import com.viaoa.jfc.OAButton.ButtonCommand;
 import com.viaoa.jfc.OAButton.ButtonEnabledMode;
+import com.viaoa.jfc.OAMenuItem.OAMenuItemController;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.dialog.OAPasswordDialog;
 import com.viaoa.jfc.table.OAButtonTableCellEditor;
@@ -191,6 +192,10 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         else if (command == ButtonCommand.Save) {
             control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, false, false);
             control.getEnabledChangeListener().add(hub, OAObjectDelegate.WORD_Changed, true);
+        }
+        else if (command == ButtonCommand.New) {
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, true, false);
+            control.getEnabledChangeListener().addNewEnabled(hub);
         }
         else {
             control = new OAButtonController(hub, enabledMode, command);

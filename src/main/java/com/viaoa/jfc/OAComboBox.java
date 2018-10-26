@@ -136,7 +136,7 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJfcComp
     public Dimension getSize() {
         Dimension d = super.getSize();
         if (popupColumns > 0 && !bDoLayout) {
-            int w = OATable.getCharWidth(OAComboBox.this, OAComboBox.this.getFont(), popupColumns);;
+            int w = OAJfcUtil.getCharWidth(popupColumns);;
             d.width = Math.max(d.width, w);
         }
         return d;
@@ -195,10 +195,10 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
 	    			pop.pack();
     			}
 		        Dimension d = new Dimension();
-		        d.width = OATable.getCharWidth(OAComboBox.this, OAComboBox.this.getFont(), popupColumns);;
+		        d.width = OAJfcUtil.getCharWidth(popupColumns);;
 		        d.width = Math.max(d.width, OAComboBox.this.getWidth());
 
-		        d.height = OATable.getCharHeight(OAComboBox.this, OAComboBox.this.getFont());
+		        d.height = OAJfcUtil.getCharHeight();
 		        int rows = getModel().getSize();
 		        int max = getMaximumRowCount();
 		        if (max < 1) max = 30;
@@ -385,7 +385,7 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
     public void setColumns(int x) {
         control.setColumns(x);
 
-        int w = OATable.getCharWidth(this, getFont(), x);
+        int w = OAJfcUtil.getCharWidth(x);
         Border b = this.getBorder();
         if (b != null) {
         	Insets ins = b.getBorderInsets(this);
@@ -730,7 +730,7 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         Insets ins = getInsets();
         int inx = ins == null ? 0 : ins.left + ins.right;
 
-        d.width = OATable.getCharWidth(this, getFont(), cols) + inx; 
+        d.width = OAJfcUtil.getCharWidth(cols) + inx; 
         
         return d;
     }
@@ -743,7 +743,7 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         Insets ins = getInsets();
         int inx = ins == null ? 0 : ins.left + ins.right;
 
-        d.width = OATable.getCharWidth(this, getFont(), cols) + inx; 
+        d.width = OAJfcUtil.getCharWidth(cols) + inx; 
         return d;
     }
     

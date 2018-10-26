@@ -250,7 +250,7 @@ public abstract class OACustomComboBox extends JComboBox implements OATableCompo
     public void setColumns(int x) {
         control.setColumns(x);
 
-        int w = OATable.getCharWidth(this, getFont(), x);
+        int w = OAJfcUtil.getCharWidth(x);
         Border b = this.getBorder();
         if (b != null) {
             Insets ins = b.getBorderInsets(this);
@@ -602,7 +602,7 @@ focusComp = this;
         Insets ins = getInsets();
         int inx = ins == null ? 0 : ins.left + ins.right;
 
-        d.width = OATable.getCharWidth(this, getFont(), cols) + inx; 
+        d.width = OAJfcUtil.getCharWidth(cols) + inx; 
         
         return d;
     }
@@ -615,7 +615,7 @@ focusComp = this;
         Insets ins = getInsets();
         int inx = ins == null ? 0 : ins.left + ins.right;
 
-        d.width = OATable.getCharWidth(this, getFont(), cols) + inx; 
+        d.width = OAJfcUtil.getCharWidth(cols) + inx; 
         return d;
     }
 

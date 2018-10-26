@@ -32,6 +32,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
 
+import com.viaoa.jfc.OAJfcUtil;
 import com.viaoa.jfc.OATable;
 
 
@@ -316,7 +317,7 @@ public abstract class AutoComplete {
         Dimension d = list.getPreferredScrollableViewportSize();        
         if (d == null) return; // dont show
         
-        d.width = Math.max(d.width, OATable.getCharWidth(list, list.getFont(), 29));
+        d.width = Math.max(d.width, OAJfcUtil.getCharWidth(29));
         
         d.width += 7;  // include popup borders
         d.height += 10; // include popup borders

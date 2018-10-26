@@ -26,6 +26,7 @@ import javax.swing.text.*;
 import javax.swing.text.html.*;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.jfc.OAJfcUtil;
 import com.viaoa.jfc.OATable;
 import com.viaoa.jfc.editor.html.control.FileImageHandler;
 import com.viaoa.jfc.editor.html.control.Hub2ImageHandler;
@@ -1407,10 +1408,10 @@ public class OAHTMLTextPane extends JTextPane implements OAPrintable {
     }
 
     protected void calcPreferredSize() {
-        int h = OATable.getCharHeight(this, getFont());
+        int h = OAJfcUtil.getCharHeight(this, getFont());
         h *= prefRows;
 
-        int w = OATable.getCharWidth(this, getFont(), prefCols);
+        int w = OAJfcUtil.getCharWidth(this, getFont(), prefCols);
 
         // setPreferredScrollableViewportSize(new Dimension(w, h));
         setPreferredSize(new Dimension(w, h));

@@ -265,6 +265,10 @@ public class OAJfcUtil {
         timer.start();
     }
 
+    
+    /**
+     * Same as window.pack(), except that it works with OAResizePanel.
+     */
     public static void pack(Window window) {
         if (window == null) return;
         try {
@@ -274,6 +278,69 @@ public class OAJfcUtil {
         finally {
             OAResizePanel.setPacking(null);
         }
+    }
+
+    static int averageCharWidth = 0;
+    static int averageCharHeight = 0;
+    static int lastFontSize = 0;
+
+    
+    /**
+     * Used to determine the pixel width based on the average width of a character 'X'.
+     */
+    public static int getCharWidth(Component comp, int columns) {
+        if (comp == null) return 0;
+        return getCharWidth(comp, comp.getFont(), columns);
+    }
+    public static int getCharWidth(int columns) {
+        if (averageCharWidth != 0) {
+            return averageCharWidth * columns;
+        }
+        JTextField txt = new JTextField();
+        Font font = txt.getFont();
+        return getCharWidth(txt, font, columns);
+    }
+    public static int getCharWidth(Component comp, Font font, int columns) {
+        if (comp == null) return 0;
+
+        if (averageCharWidth == 0 || (font != null && font.getSize() != lastFontSize)) {
+            if (font == null) {
+                System.out.println("OATable.getCharWidth=null, will use average=12 as default");
+                Exception e = new Exception("OATable.getCharWidth=null, will use average=12 as default");
+                e.printStackTrace();
+                return (11 * columns);
+            }
+            lastFontSize = font.getSize();
+            FontMetrics fm = comp.getFontMetrics(font);
+            //averageCharWidth = (int) (fm.stringWidth("9XYma") / 5);
+            // averageCharWidth = fm.charWidth('m');  // =11, same code used by JTextField.getColumnWidth 
+
+            averageCharWidth = (int) (fm.stringWidth("9m0M123456") / 10);  // =7
+
+            /* test
+            Font fontx = new Font( "Monospaced", Font.PLAIN, 12 );
+            fm = comp.getFontMetrics(fontx);
+            int x2 = fm.charWidth('m'); =7
+            */
+        }
+        
+        return (averageCharWidth * columns);
+    }
+
+    public static int getCharHeight() {
+        if (averageCharHeight != 0) return averageCharHeight;
+        JTextField txt = new JTextField();
+        Font font = txt.getFont();
+        return getCharHeight(txt, font);
+    }
+    
+    public static int getCharHeight(Component comp, Font font) {
+        if (averageCharHeight == 0 || (font != null && font.getSize() != lastFontSize)) {
+            lastFontSize = font.getSize();
+            FontMetrics fm = comp.getFontMetrics(font);
+            averageCharHeight = (int) fm.getHeight();
+        }
+        return (averageCharHeight);
     }
     
 }

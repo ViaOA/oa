@@ -1902,7 +1902,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
 
         if (this.columns > 0) {
             Dimension d = super.getPreferredSize();
-        	this.widthColumn = OATable.getCharWidth(this,getFont(), cols);
+        	this.widthColumn = OAJfcUtil.getCharWidth(cols);
         }
     	invalidate();
     }
@@ -1913,7 +1913,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
 
         if (this.miniColumns > 0) {
             Dimension d = super.getMinimumSize();
-            this.miniWidthColumn = OATable.getCharWidth(this,getFont(), cols);
+            this.miniWidthColumn = OAJfcUtil.getCharWidth(cols);
         }
         invalidate();
     }

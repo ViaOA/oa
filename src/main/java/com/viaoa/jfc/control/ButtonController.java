@@ -1562,6 +1562,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     flag = (hub.getSize() == 0);
                     break;
                 }
+                flag = flag && getHub().canAdd();
                 break;
             case Up:
                 flag = (obj != null && hub.getPos() > 0);

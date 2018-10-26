@@ -100,7 +100,7 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         control.setColumns(x);
         invalidate();
         if (table != null) {
-            int w = OATable.getCharWidth(this,getFont(),x+1);
+            int w = OAJfcUtil.getCharWidth(x+1);
             table.setColumnWidth(table.getColumnIndex(this),w);
         }
     }
@@ -130,7 +130,7 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         if (cols > 0) {
             Insets ins = getInsets();
             int inx = ins == null ? 0 : ins.left + ins.right;
-            d.width = OATable.getCharWidth(this,getFont(),cols)+inx+2;
+            d.width = OAJfcUtil.getCharWidth(cols)+inx+2;
         }
         return d;
     }
@@ -152,7 +152,7 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         Insets ins = getInsets();
         int inx = ins == null ? 0 : ins.left + ins.right;
         
-        if (cols > 0) d.width = OATable.getCharWidth(this, getFont(), cols) + inx;
+        if (cols > 0) d.width = OAJfcUtil.getCharWidth(cols) + inx;
         else {
             // also check size of text, so that label is not bigger then the text it needs to display
             String s = getText();
@@ -174,7 +174,7 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         if (isMinimumSizeSet()) return d;
         int cols = getMiniColumns();
         if (cols < 1) return d;
-        d.width = OATable.getCharWidth(this, getFont(), cols+1);
+        d.width = OAJfcUtil.getCharWidth(cols+1);
         return d;
     }
         

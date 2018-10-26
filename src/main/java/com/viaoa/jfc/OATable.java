@@ -1810,13 +1810,15 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         return this.addColumnMain(heading, width, path, null, (TableCellEditor) null, -1, fmt);
     }
 
+    
+/**qqqqqqqqqq    
     static int averageCharWidth = 0;
     static int averageCharHeight = 0;
     static int lastFontSize = 0;
 
-    /**
+    / **
      * Used to determine the pixel width based on the average width of a character 'X'.
-     */
+     * /
     public static int getCharWidth(Component comp, int columns) {
         if (comp == null) return 0;
         return getCharWidth(comp, comp.getFont(), columns);
@@ -1847,11 +1849,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
             averageCharWidth = (int) (fm.stringWidth("9m0M123456") / 10);  // =7
 
-            /* test
+            / * test
             Font fontx = new Font( "Monospaced", Font.PLAIN, 12 );
             fm = comp.getFontMetrics(fontx);
             int x2 = fm.charWidth('m'); =7
-            */
+            * /
         }
         
         return (averageCharWidth * columns);
@@ -1872,7 +1874,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         return (averageCharHeight);
     }
-
+***/
+    
+    
     /*
      * later ... public void addColumn(String heading, int width, OATableColumn oatc) { int pos =
      * columns.size(); columns.insertElementAt(oatc, pos);
@@ -1945,14 +1949,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 }
                 else {
                     width = comp.getPreferredSize().width;
-                    width /= getCharWidth(comp, font, 1);
+                    width /= OAJfcUtil.getCharWidth(comp, font, 1);
                 }
             }
             else {
                 width = heading == null ? 3 : heading.length();
             }
         }
-        int w = OATable.getCharWidth(this, font, width);
+        int w = OAJfcUtil.getCharWidth(this, font, width);
         w += 6; // borders, etc.
 
         TableCellRenderer rend = null;

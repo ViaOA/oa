@@ -100,8 +100,8 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         Dimension d = super.getPreferredSize();
         if (d == null || d.width == 0) {
             d = new Dimension(
-                    OATable.getCharWidth(columns), 
-                    OATable.getCharHeight() * getVisibleRows() 
+                    OAJfcUtil.getCharWidth(columns), 
+                    OAJfcUtil.getCharHeight() * getVisibleRows() 
             );
         }
         return d;
@@ -120,7 +120,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         Insets ins = getInsets();
         int inx = ins == null ? 0 : ins.left + ins.right;
         
-        d.width = OATable.getCharWidth(cols) + inx;
+        d.width = OAJfcUtil.getCharWidth(cols) + inx;
 
         return d;
     }
@@ -138,7 +138,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         Insets ins = getInsets();
         int inx = ins == null ? 0 : ins.left + ins.right;
         
-        d.width = OATable.getCharWidth(cols) + inx;
+        d.width = OAJfcUtil.getCharWidth(cols) + inx;
 
         return d;
     }

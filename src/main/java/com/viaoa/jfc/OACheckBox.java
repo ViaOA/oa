@@ -196,7 +196,7 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
     */
     public void setColumns(int x) {
         columns = x;
-        this.width = OATable.getCharWidth(this,getFont(),x);
+        this.width = OAJfcUtil.getCharWidth(x);
         if (table != null) table.setColumnWidth(table.getColumnIndex(this),width);
         Dimension d = getPreferredSize();
         d.width = this.width;

@@ -63,7 +63,7 @@ public class ComboBoxPopupMenuListener implements PopupMenuListener {
 
 		Dimension d = pop.getPreferredSize();
 		d.width = width;
-		if (cbo != null) d.height = 24 * (OATable.getCharHeight(cbo, cbo.getFont()) + 6);
+		if (cbo != null) d.height = 24 * (OAJfcUtil.getCharHeight(cbo, cbo.getFont()) + 6);
 		pop.setPreferredSize(d);
 	}
 	

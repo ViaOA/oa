@@ -21,6 +21,7 @@ import com.viaoa.jfc.OAButton.OAButtonController;
 import com.viaoa.jfc.control.*;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectDelegate;
+import com.viaoa.object.OAObjectEditQueryDelegate;
 import com.viaoa.hub.*;
 
 // See OAButton - this is a copy of the same code
@@ -130,6 +131,10 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
         else if (command == ButtonCommand.Save) {
             control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, false, false);
             control.getEnabledChangeListener().add(hub, OAObjectDelegate.WORD_Changed, true);
+        }
+        else if (command == ButtonCommand.New) {
+            control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, true, false);
+            control.getEnabledChangeListener().addNewEnabled(hub);
         }
         else {
             control = new OAMenuItemController(hub, enabledMode, command);

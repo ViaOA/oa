@@ -152,7 +152,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
     public void setColumns(int x) {
         super.setColumns(x);
         if (table != null) {
-            int w = OATable.getCharWidth(this,getFont(),x);
+            int w = OAJfcUtil.getCharWidth(x);
             table.setColumnWidth(table.getColumnIndex(this),w);
         }
     }
@@ -313,7 +313,7 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
         Insets ins = getInsets();
         int inx = ins == null ? 0 : ins.left + ins.right;
         
-        if (cols > 0) d.width = OATable.getCharWidth(this, getFont(), cols) + inx;
+        if (cols > 0) d.width = OAJfcUtil.getCharWidth(cols) + inx;
         else {
             // also check size of text
             String s = getText();
@@ -330,13 +330,13 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
 
         return d;
     }
-
+    
     public Dimension getMinimumSize() {
         Dimension d = super.getMinimumSize();
         if (isMinimumSizeSet()) return d;
         int cols = getMinimumColumns();
         if (cols < 1) return d;
-        d.width = OATable.getCharWidth(this, getFont(), cols+1);
+        d.width = OAJfcUtil.getCharWidth(cols+1);
         return d;
     }
 
