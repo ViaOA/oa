@@ -155,8 +155,8 @@ public abstract class AutoCompleteBase {
         	@Override
         	public void focusGained(FocusEvent e) {
         		super.focusGained(e);
-//qqqqqqqqqqqq        		
-//    			if (!popup.isVisible()) showPopup();
+        		// 20181024 removed, wait for keyboard or mouse activity after focus        		
+        		// if (!popup.isVisible()) showPopup();
         	}
             @Override
             public void focusLost(FocusEvent e) {
@@ -199,7 +199,7 @@ public abstract class AutoCompleteBase {
         if (!textComp.isEnabled()) return;
 
         searchAndDisplay(textComp.getText(), offset);
-        /**qqqqqqqq was
+        /* was
         Dimension d = updateSelectionList(textComp.getText(), offset);
         if (d == null) return; // dont show
         d.width += 7;  // include popup borders
@@ -224,7 +224,7 @@ public abstract class AutoCompleteBase {
     class DocumentExactMatchFilter extends DocumentFilter {
     	@Override
     	public void insertString(DocumentFilter.FilterBypass fb, int offset, String text, AttributeSet attr) throws BadLocationException {
-    		// p("insert(offset="+offset+", text="+text);//qqqqqq
+    		// p("insert(offset="+offset+", text="+text);
     		
 			Document doc = fb.getDocument();
 			int lenDoc = doc.getLength();
@@ -259,7 +259,7 @@ public abstract class AutoCompleteBase {
     	   
     	@Override
     	public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attr) throws BadLocationException {
-    		// p("replace(offset="+offset+", length="+length+", text="+text);//qqqqqq
+    		// p("replace(offset="+offset+", length="+length+", text="+text);
 			if (text == null) text = "";
     	    Document doc = fb.getDocument();
 			int lenDoc = doc.getLength();
@@ -305,7 +305,7 @@ public abstract class AutoCompleteBase {
     	
     	@Override
     	public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
-    		// p("remove(offset="+offset+", length="+length);//qqqqqq
+    		// p("remove(offset="+offset+", length="+length);
 			
 			Document doc = fb.getDocument();
 			int lenDoc = doc.getLength();

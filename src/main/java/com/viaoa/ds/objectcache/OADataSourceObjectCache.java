@@ -43,6 +43,8 @@ public class OADataSourceObjectCache extends OADataSourceAuto {
         if (!bRegister) removeFromList();
     }
 
+//TODO:  qqqqqqqqqqqqqq this does not sort qqqqqqqqqqqqq    
+    
     @Override
     public OADataSourceIterator select(Class selectClass, 
         String queryWhere, Object[] params, String queryOrder, 

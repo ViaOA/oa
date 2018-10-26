@@ -1007,8 +1007,7 @@ public class OAJfcController extends HubListenerAdapter {
         component != null ? component.getClass().getSimpleName() : ""
     );
 */
-        if (OAThreadLocalDelegate.isOpenHubEvent(lastUpdateHubEvent)) return;
-        final HubEvent he = OAThreadLocalDelegate.getOldestHubEvent();
+        final HubEvent he = OAThreadLocalDelegate.getCurrentHubEvent();
         if (lastUpdateHubEvent != null &&  (he == lastUpdateHubEvent)) {
             return;
         }
@@ -1115,9 +1114,7 @@ public class OAJfcController extends HubListenerAdapter {
     private HubEvent lastUpdateEnabledHubEvent;
     private boolean bLastUpdateEnabled;
     public boolean updateEnabled() {
-        if (OAThreadLocalDelegate.isOpenHubEvent(lastUpdateEnabledHubEvent)) return false;
-        
-        final HubEvent he = OAThreadLocalDelegate.getOldestHubEvent(); 
+        final HubEvent he = OAThreadLocalDelegate.getCurrentHubEvent(); 
         if (he == null || he != lastUpdateEnabledHubEvent) {
             lastUpdateEnabledHubEvent = he;
             bLastUpdateEnabled = updateEnabled(component, hub==null ? null : hub.getAO());
@@ -1173,9 +1170,7 @@ public class OAJfcController extends HubListenerAdapter {
     private HubEvent lastUpdateVisibleHubEvent;
     private boolean bLastUpdateVisible;
     public boolean updateVisible() {
-        if (OAThreadLocalDelegate.isOpenHubEvent(lastUpdateVisibleHubEvent)) return false;
-        
-        final HubEvent he = OAThreadLocalDelegate.getOldestHubEvent(); 
+        final HubEvent he = OAThreadLocalDelegate.getCurrentHubEvent(); 
         if (he == null || he != lastUpdateVisibleHubEvent) {
             lastUpdateVisibleHubEvent = he;
             Object obj;

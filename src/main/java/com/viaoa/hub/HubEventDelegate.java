@@ -383,7 +383,7 @@ public class HubEventDelegate {
 	    int x = hl.length;
 	    if (x > 0) {
 	        Exception exception = null;
-	        HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
+	        final HubEvent hubEvent = new HubEvent(thisHub, obj, pos);
             OAThreadLocalDelegate.addHubEvent(hubEvent);
 	        for (int i=0; i<x; i++) {
 	            try {
