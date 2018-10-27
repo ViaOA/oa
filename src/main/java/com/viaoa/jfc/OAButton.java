@@ -58,12 +58,13 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     public static ButtonCommand GOTO = ButtonCommand.GoTo;
     public static ButtonCommand HUBSEARCH = ButtonCommand.HubSearch;
     public static ButtonCommand SEARCH = ButtonCommand.Search;
+    public static ButtonCommand SELECT = ButtonCommand.Select;
     
     public enum ButtonCommand {
         Other(false), Up(true), Down(true), Save(false), Cancel(false), First(true), Last(true), 
         Next(true), Previous(true), Delete(true), Remove(true), New(true), Insert(true), Add(true), 
         Cut(false), Copy(false), Paste(false),
-        NewManual(true), AddManual(true), ClearAO(true), GoTo(false), HubSearch(true), Search(false);
+        NewManual(true), AddManual(true), ClearAO(true), GoTo(false), HubSearch(true), Search(false), Select(true);
         
         private boolean bSetsAO;
         
@@ -140,7 +141,9 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
                     return bIsCurrentlyEnabled;
                 }
             };
-            
+        }
+        else if (command == ButtonCommand.Select) {
+            control = new OAButtonController(hub, enabledMode, command, HubChangeListener.Type.AoNotNull, true, false);
         }
         else if (command == ButtonCommand.HubSearch) {
             control = new OAButtonController(hub, enabledMode, command) {

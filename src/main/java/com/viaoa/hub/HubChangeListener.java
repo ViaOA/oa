@@ -12,13 +12,16 @@ package com.viaoa.hub;
 
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectEditQueryDelegate;
 import com.viaoa.util.*;
 
 /**
  * Allows listening for changes to 1 or more Hubs and property paths.
  * Can include compare values, that can then be checked using getValue() to see if all conditions are true. 
- * Use add method to add as many checks and hubs necessary. 
+ * Use add method to add as many checks and hubs as necessary. 
+ * 
+ * calling getValue will determine if all of the conditions are true.  ex: AO != null,  editQueryEnabled=true, propValue==X, etc.
  * 
  * @author vincevia
  */
@@ -126,6 +129,58 @@ public abstract class HubChangeListener {
         return add(hub, prop, true, Type.PropertyNotNull);
     }
 
+    public HubProp addAddEnabled(final Hub hub) {
+        return addNewEnabled(hub);
+    }
+    public HubProp addNewEnabled(final Hub hub) {
+        if (hub == null) return null;
+        
+        OAFilter filter = new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                boolean b = hub.canAdd();
+                return b;
+            }
+        };
+        HubProp hp = add(hub, null, false, null, filter, false);
+        
+        Hub hx = hub.getMasterHub();
+        if (hx != null) {
+            add(hx, Type.AoNotNull);
+            OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), null, null, this, true);
+        }
+        return hp;
+    }
+    public HubProp addRemoveEnabled(final Hub hub) {
+        if (hub == null) return null;
+        
+        addAoNotNull(hub);
+        OAFilter filter = new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                boolean b;
+                if (obj instanceof OAObject) b = hub.canRemove((OAObject) obj);
+                else b = hub.canRemove();
+                return b;
+            }
+        };
+        HubProp hp = add(hub, null, false, null, filter, false);
+        
+        Hub hx = hub.getMasterHub();
+        if (hx != null) {
+            add(hx, Type.AoNotNull);
+            OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), null, null, this, true);
+        }
+        return hp;
+    }
+    public HubProp addSaveEnabled(final Hub hub) {
+        if (hub == null) return null;
+        addAoNotNull(hub);
+        HubProp hp = add(hub, OAObjectDelegate.WORD_Changed, true);
+        return hp;
+    }
+    
+    
     /** add a rule to check the return value for an EditQuery isEnabled 
      * */
     public HubProp addEditQueryEnabled(Hub hub, String prop) {

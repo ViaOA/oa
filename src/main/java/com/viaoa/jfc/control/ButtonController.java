@@ -155,7 +155,9 @@ public class ButtonController extends OAJfcController implements ActionListener 
     */
     public ButtonController(Hub hub, AbstractButton button) {
         this(hub, button, OAButton.ButtonEnabledMode.ActiveObjectNotNull, null);
-        create(button, enabledMode, command);
+    }
+    public ButtonController(Hub hub, AbstractButton button, OAButton.ButtonEnabledMode enabledMode) {
+        this(hub, button, enabledMode, null);
     }
 
     private void create(AbstractButton but, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command) {

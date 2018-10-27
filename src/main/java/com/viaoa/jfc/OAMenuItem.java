@@ -48,6 +48,10 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
     public static ButtonCommand NEW_MANUAL = ButtonCommand.NewManual;
     public static ButtonCommand ADD_MANUAL = ButtonCommand.AddManual;
     public static ButtonCommand CLEARAO = ButtonCommand.ClearAO;
+    public static ButtonCommand GOTO = ButtonCommand.GoTo;
+    public static ButtonCommand HUBSEARCH = ButtonCommand.HubSearch;
+    public static ButtonCommand SEARCH = ButtonCommand.Search;
+    public static ButtonCommand SELECT = ButtonCommand.Select;
 
     public static ButtonEnabledMode UsesIsEnabled = ButtonEnabledMode.UsesIsEnabled;
     public static ButtonEnabledMode Always = ButtonEnabledMode.Always;
@@ -82,7 +86,9 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
                     return bIsCurrentlyEnabled;
                 }
             };
-            
+        }
+        else if (command == ButtonCommand.Select) {
+            control = new OAMenuItemController(hub, enabledMode, command, HubChangeListener.Type.AoNotNull, true, false);
         }
         else if (command == ButtonCommand.HubSearch) {
             control = new OAMenuItemController(hub, enabledMode, command) {

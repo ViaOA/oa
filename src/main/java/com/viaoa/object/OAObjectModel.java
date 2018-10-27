@@ -59,7 +59,6 @@ public class OAObjectModel {
         setAllowHubSearch(false);
         setAllowAdd(true);
         setAllowNew(true);
-        setAllowRemove(true);
         setAllowRemove(false);
         setAllowSave(true);
         setAllowDelete(true);
