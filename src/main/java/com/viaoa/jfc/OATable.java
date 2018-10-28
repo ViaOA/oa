@@ -863,11 +863,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 }
             }
 
-            
-            
-            
-            int x = JOptionPane.showOptionDialog(OAJfcUtil.getWindow(OATable.this), "Ok to move?", "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
-            if (x != 0) return;
+            if (hub.contains(dragObject)) {
+                int pos = hub.getPos(dragObject);
+                if (pos == row) return;
+                if (pos+1 == row || pos-1 == row) return;
+                int x = JOptionPane.showOptionDialog(OAJfcUtil.getWindow(OATable.this), "Ok to move?", "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
+                if (x != 0) return;
+            }
             
             if (ttc != null) {
                 if (hub.getAt(row) == null) {
