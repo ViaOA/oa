@@ -318,7 +318,6 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
             // also check size of text
             String s = getText();
             if (s == null) s = " ";
-    
             
             FontMetrics fm = getFontMetrics(getFont());
             d.width = Math.min(d.width, fm.stringWidth(s+"www")+inx+2);

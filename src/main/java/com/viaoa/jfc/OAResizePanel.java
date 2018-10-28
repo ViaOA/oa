@@ -10,7 +10,9 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Window;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -61,6 +63,7 @@ public class OAResizePanel extends JPanel {
         setup(comp, percentage, bBoth);
     }
     
+
     private void setup(JComponent comp, int percentage, boolean bBoth) {
         
         // 20181004
@@ -141,13 +144,29 @@ public class OAResizePanel extends JPanel {
     }
     
     public OAResizePanel(JComponent comp, JComponent comp2, int percentage, boolean bBoth) {
+        this(null, comp,comp2, percentage, bBoth);
+    }
+
+    public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2, int percentage) {
+        this(icon, comp,comp2, percentage, false);
+    }
+    
+    public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2, int percentage, boolean bBoth) {
         JPanel panComp = new JPanel();
         BoxLayout box = new BoxLayout(panComp, BoxLayout.X_AXIS);
         panComp.setLayout(box);
+        if (icon != null) {
+            JLabel lbl = new JLabel(icon);
+            lbl.setOpaque(true);
+            panComp.add(lbl);
+            panComp.add(Box.createHorizontalStrut(4));
+            lbl.setLabelFor(comp);
+        }
         panComp.add(comp);
         if (comp2 != null) panComp.add(comp2);
         setup(panComp, percentage, bBoth);        
     }
+
     public OAResizePanel(JComponent comp, JComponent comp2, int percentage) {
         this(comp, comp2, percentage, false);
     }

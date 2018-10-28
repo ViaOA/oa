@@ -50,6 +50,10 @@ public class OAJfcControllerFactory {
         OAJfcController jc = new OAJfcController(hub, null, null, comp, HubChangeListener.Type.AoNotNull, false, false);
         return jc;
     }
+    public static OAJfcController createOnlyHubValid(Hub hub, JComponent comp) {
+        OAJfcController jc = new OAJfcController(hub, null, null, comp, HubChangeListener.Type.HubValid, false, false);
+        return jc;
+    }
 
     
     

@@ -143,7 +143,7 @@ public class OAJfcController extends HubListenerAdapter {
         this.hubObject = object;
         this.propertyPath = propertyPath;
         this.component = comp;
-        this.bUseLinkHub = bUseLinkHub && (hub != null) && (hub.getLinkHub() != null);
+        this.bUseLinkHub = bUseLinkHub;
         this.bUseEditQuery = bUseEditQuery;
         this.hubChangeListenerType = type;
         
