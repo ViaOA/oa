@@ -17,6 +17,8 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 import com.viaoa.object.*;
+import com.viaoa.util.OADate;
+import com.viaoa.util.converter.OAConverterNumber;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
@@ -367,9 +369,6 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
     		bMousePressed = false;
     	}
     }
-    public String getFormat() {
-    	return null;
-    }
 
     /*
     Popup message used to confirm button click before running code.
@@ -487,5 +486,13 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
     public String getToolTipTextTemplate() {
         return this.control.getToolTipTextTemplate();
     }
+
+    public void setFormat(String fmt) {
+        control.setFormat(fmt);
+    }
+    public String getFormat() {
+        return control.getFormat();
+    }
+
 }
 
