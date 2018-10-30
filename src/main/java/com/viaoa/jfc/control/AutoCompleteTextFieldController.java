@@ -34,7 +34,7 @@ public class AutoCompleteTextFieldController extends OAJfcController {
     private OATemplate templateSearch;
     
     public AutoCompleteList autoCompleteList;
-    private int maxResults = 35;
+    private int maxResults = 50;
     
     public AutoCompleteTextFieldController(Hub hub, JTextField txt, String propertyPath) {
         super(hub, null, propertyPath, txt, HubChangeListener.Type.HubNotEmpty, true, true);
@@ -168,7 +168,10 @@ public class AutoCompleteTextFieldController extends OAJfcController {
                     if (pos < 0) continue;
                     
                     String displayValue;
-                    if (!(obj instanceof OAObject) || getTemplateForDisplay()==null) displayValue = searchValue;
+                    if (!(obj instanceof OAObject) || getTemplateForDisplay()==null) {
+                        displayValue = searchValue;
+                        displayValue = OAString.hilite(displayValue, text);
+                    }
                     else {
                         getTemplateForDisplay2().setHiliteOutputText(text);
                         displayValue = getTemplateForDisplay2().process((OAObject)obj);

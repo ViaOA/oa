@@ -10,12 +10,15 @@
 */
 package com.viaoa.jfc.text.autocomplete;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.*;
@@ -24,6 +27,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.*;
 
+import com.viaoa.jfc.OATable;
 import com.viaoa.jfc.control.ListController;
 import com.viaoa.util.OAString;
 
@@ -66,8 +70,30 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
                 String s2 = completer.getTextForSelectedValue(row, s1);
                 completer.onValueSelected(row, s2);
             }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                onMouseOver(-1, e);
+                super.mouseExited(e);
+            }
+            @Override
+            public void mousePressed(MouseEvent e) {
+                onMouseOver(-1, e);
+                super.mousePressed(e);
+            }
+        });
+        
+        list.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                onMouseOver(list.locationToIndex(e.getPoint()), e);
+                super.mouseMoved(e);
+            }
         });
 
+        
+        
+        
+        
         /* 20181023 removed since [enter] does this already            
         txt.addActionListener(new ActionListener() {
             // note: this is never called, since the keyEvent <enter> is used
@@ -89,6 +115,17 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
         */        
     }
 
+    protected int mouseOverRow=-1;
+    private Rectangle rectMouseOver;
+
+    protected void onMouseOver(int row, MouseEvent evt) {
+        mouseOverRow = row;
+        if (rectMouseOver != null) list.repaint(rectMouseOver);
+        if (row < 0) rectMouseOver = null;
+        else rectMouseOver = list.getCellBounds(row, row);
+    }
+    
+    
     @Override
     protected Dimension updateSelectionList(String text, int offset) {
         String[] ss = getSearchData(textComp.getText(), offset);
@@ -233,7 +270,17 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
                 s = "";
             }
             list.setToolTipText(s);
-            return origListCellRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            
+            Component comp = origListCellRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (index == mouseOverRow && comp instanceof JLabel) {
+                JLabel lbl = (JLabel) comp;
+                lbl.setForeground(Color.white);
+                lbl.setBackground(OATable.COLOR_MouseOver);
+                s = lbl.getText();
+                s = OAString.convert(s, "background:yellow", "background:green");  // change html hilite (OAString.hilite) from yellow to green (looks cool ha)
+                lbl.setText(s);
+            }
+            return comp;
         }
     }
 }

@@ -382,7 +382,14 @@ public class HubShareDelegate {
 	public static void setSharedHub(Hub thisHub, Hub sharedMasterHub, boolean shareActiveObject) {
 	    setSharedHub(thisHub, sharedMasterHub, shareActiveObject, null);
 	}
+
     protected static void setSharedHub(Hub thisHub, Hub sharedMasterHub, boolean shareActiveObject, Object newLinkValue) {
+        _setSharedHub(thisHub, sharedMasterHub, shareActiveObject, newLinkValue);
+        // 20181030 update temp listener cache
+        HubEventDelegate.clearGetAllListenerCache(thisHub);
+    }
+	
+	protected static void _setSharedHub(Hub thisHub, Hub sharedMasterHub, boolean shareActiveObject, Object newLinkValue) {
         if (thisHub == null) return;
         if (thisHub == sharedMasterHub) sharedMasterHub = null;
 	    // added: 2004/05/13, removed 2004/05/14
@@ -688,11 +695,17 @@ public class HubShareDelegate {
 	}
 	*/
 
-    
-	// 20120715
+
     public static void addSharedHub(Hub thisHub, Hub hub) {
+        _addSharedHub(thisHub, hub);
+        // 20181030 update temp listener cache
+        HubEventDelegate.clearGetAllListenerCache(thisHub);
+    }
+	
+	// 20120715
+    protected static void _addSharedHub(Hub thisHub, Hub hub) {
         if (thisHub == null || hub == null) return;
-    
+        
         int pos;
         synchronized (thisHub.datau) {
             if (thisHub.datau.getWeakSharedHubs() == null) {
@@ -734,8 +747,14 @@ public class HubShareDelegate {
             }
         }
     }
-	
+
     protected static void removeSharedHub(Hub sharedHub, Hub hub) {
+        _removeSharedHub(sharedHub, hub);
+        // 20181030 update temp listener cache
+        HubEventDelegate.clearGetAllListenerCache(hub);  // will clear both hubs
+    }
+	
+    protected static void _removeSharedHub(Hub sharedHub, Hub hub) {
         if (sharedHub.datau.getWeakSharedHubs() == null) return;
         boolean bFound = false;
         synchronized (sharedHub.datau) {

@@ -866,7 +866,6 @@ public class HubEventDelegate {
 	        try {
 	            rwCacheGetAllListeners.readLock().lock();
 	            for (int i=0; i<maxCacheGetAllListeners; i++) {
-	                
 	                CacheGetAllListeners cl = cacheGetAllListeners[i];
 	                HubListener[] hl = cl.hl;
 	                if (cl.hub == thisHub) {
@@ -911,19 +910,16 @@ public class HubEventDelegate {
     	    for (int i=0; i<maxCacheGetAllListeners; i++) {
     	        Hub h = cacheGetAllListeners[i].hub;
     	        if (h == null) continue;
-
+    	        
                 if (hub == null || hub == h) {
                     cacheGetAllListeners[i].hub = null;
                     cacheGetAllListeners[i].hl = null;
                     continue;
                 }
     	        Class c = hub.getObjectClass();
-    	        if (c == null) continue;
-
                 Class c2 = h.getObjectClass();
-                if (c2 == null) continue;
-    	        
-    	        if (c.equals(c2)) {
+
+                if (c == null || c2 == null || c.equals(c2)) {
     	            cacheGetAllListeners[i].hub = null;
     	            cacheGetAllListeners[i].hl = null;
     	        }
