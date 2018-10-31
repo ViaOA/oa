@@ -142,6 +142,10 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
             control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, true, false);
             control.getEnabledChangeListener().addNewEnabled(hub);
         }
+        else if (command == ButtonCommand.Delete) {
+            control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, false);
+            control.getEnabledChangeListener().addDeleteEnabled(hub);
+        }
         else {
             control = new OAMenuItemController(hub, enabledMode, command);
         }

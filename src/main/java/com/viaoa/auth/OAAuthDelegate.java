@@ -1,10 +1,10 @@
 package com.viaoa.auth;
 
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
 
@@ -36,8 +36,7 @@ public class OAAuthDelegate {
         boolean b = OAConv.toBoolean(val);
         return b;
     }
-    
-    
+
     public static void addUserHub(Object context, Hub<? extends OAObject> hub) {
         if (hub == null) return;
         if (context == null) context = NullContext;
@@ -59,7 +58,6 @@ public class OAAuthDelegate {
         return hmUserHub.get(context); 
     }
 
-    
     public static OAObject getUser() {
         return getUser(null);
     }
@@ -67,6 +65,17 @@ public class OAAuthDelegate {
         Hub<? extends OAObject> hub = getUserHub(context);
         if (hub == null) return null;
         return hub.getAO();
+    }
+
+    /**
+     * Used to know if the logged in user can edit processed data.
+     */
+    public static boolean canEditProcessed() {
+        OAObject user = getUser();
+        if (user == null) return false;
+        Object valx = OAObjectReflectDelegate.getProperty(user, getAllowEditProcessedPropertyPath());
+        boolean bx = OAConv.toBoolean(valx);
+        return bx;
     }
 
 }

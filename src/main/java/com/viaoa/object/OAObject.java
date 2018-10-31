@@ -342,10 +342,10 @@ public class OAObject implements java.io.Serializable, Comparable {
         return OAObjectEditQueryDelegate.getVerifyPropertyChange(this, propertyName, oldValue, newValue);
     }
     public boolean isEnabled(String propertyName) {
-        return OAObjectEditQueryDelegate.getAllowEnabled(this, propertyName);
+        return OAObjectEditQueryDelegate.getAllowEnabled(this, propertyName, false);
     }
     public boolean isEnabled() {
-        return OAObjectEditQueryDelegate.getAllowEnabled(this, null);
+        return OAObjectEditQueryDelegate.getAllowEnabled(this, null, false);
     }
     public boolean isVisible(String propertyName) {
         return OAObjectEditQueryDelegate.getAllowVisible(this, propertyName);
@@ -764,7 +764,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     	OAObjectDeleteDelegate.delete(this);
     }
     public boolean canDelete() {
-        boolean b = OAObjectEditQueryDelegate.getAllowDelete(this);
+        boolean b = OAObjectEditQueryDelegate.getAllowDelete(this, false);
         return b;
     }
     /**

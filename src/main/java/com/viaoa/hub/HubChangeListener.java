@@ -10,10 +10,12 @@
 */
 package com.viaoa.hub;
 
+import com.viaoa.auth.OAAuthDelegate;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectEditQueryDelegate;
+import com.viaoa.object.OAObjectInfo;
 import com.viaoa.util.*;
 
 /**
@@ -138,12 +140,14 @@ public abstract class HubChangeListener {
         OAFilter filter = new OAFilter() {
             @Override
             public boolean isUsed(Object obj) {
-                boolean b = hub.canAdd();
+                boolean b = OAObjectEditQueryDelegate.getAllowAdd(hub, true);
                 return b;
             }
         };
         HubProp hp = add(hub, null, false, null, filter, false);
-        
+
+        OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, hub.getObjectClass(), null, null, this, true);
+
         Hub hx = hub.getMasterHub();
         if (hx != null) {
             add(hx, Type.AoNotNull);
@@ -151,6 +155,43 @@ public abstract class HubChangeListener {
         }
         return hp;
     }
+
+    public HubProp addDeleteEnabled(final Hub hub) {
+        if (hub == null) return null;
+        
+        OAFilter filter = new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                boolean b = (obj instanceof OAObject) && OAObjectEditQueryDelegate.getAllowDelete((OAObject)obj, true);
+                return b;
+            }
+        };
+        HubProp hp = add(hub, null, false, null, filter, false);
+
+        OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, hub.getObjectClass(), null, null, this, true);
+        
+        return hp;
+    }
+
+    // uses ObjectInfo.isProcessed and OAAuth to determine if user has permission 
+    public HubProp addProcessedEnabled(final Hub hub) {
+        if (hub == null) return null;
+        
+        OAObjectInfo oi = hub.getOAObjectInfo();
+        if (!oi.getProcessed()) return null;
+        
+        OAFilter filter = new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                boolean b = OAAuthDelegate.canEditProcessed();
+                return b;
+            }
+        };
+        Hub hubUser = OAAuthDelegate.getUserHub();
+        HubProp hp = add(hubUser, OAAuthDelegate.getAllowEditProcessedPropertyPath());
+        return hp;
+    }
+    
     public HubProp addRemoveEnabled(final Hub hub) {
         if (hub == null) return null;
         
@@ -195,7 +236,6 @@ public abstract class HubChangeListener {
                 OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, null, this, true);
             }
         }
-        
         return add(hub, prop, true, Type.EditQueryEnabled);
     }
     public HubProp addEditQueryEnabled(Hub hub, Class cz, String prop, String ppPrefix) {
@@ -223,7 +263,6 @@ public abstract class HubChangeListener {
 
         return add(hub, prop, true, Type.EditQueryVisible);
     }
-    
     
     public HubProp add(Hub hub, HubChangeListener.Type type) {
         return add(hub, null, (type==null?false:true), type, null, (type==null?true:type.bUseAoOnly));
@@ -277,7 +316,6 @@ public abstract class HubChangeListener {
                 return null;
             }
         }
-
         
         if (bUseCompareValue && compareValue == Type.EditQueryEnabled) {
             for (HubProp hp : hubProps) {
@@ -548,7 +586,7 @@ public abstract class HubChangeListener {
             if (compareValue == Type.EditQueryEnabled) {
                 if (!bValid) return false;
                 if (!(value instanceof OAObject)) return true;
-                return OAObjectEditQueryDelegate.getAllowEnabled((OAObject) value, propertyPath);
+                return OAObjectEditQueryDelegate.getAllowEnabled((OAObject) value, propertyPath, true);
             }
             if (compareValue == Type.EditQueryVisible) {
                 if (!bValid) return true;

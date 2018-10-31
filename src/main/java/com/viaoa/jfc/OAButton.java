@@ -200,6 +200,10 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
             control = new OAButtonController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, true, false);
             control.getEnabledChangeListener().addNewEnabled(hub);
         }
+        else if (command == ButtonCommand.Delete) {
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, false);
+            control.getEnabledChangeListener().addDeleteEnabled(hub);
+        }
         else {
             control = new OAButtonController(hub, enabledMode, command);
         }

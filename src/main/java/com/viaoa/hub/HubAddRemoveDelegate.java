@@ -58,12 +58,12 @@ public class HubAddRemoveDelegate {
         }
         
         if (!bIsRemovingAll && !thisHub.getEnabled()) {
-            return;
+            throw new RuntimeException("Cant remove object, hub is disabled");
         }
         if (!bIsRemovingAll && !OARemoteThreadDelegate.isRemoteThread()) {
             if (!canRemove(thisHub, obj)) {
                 if (!OAThreadLocalDelegate.isDeleting(obj)) {
-                    throw new RuntimeException("Cant remove object, can remove retured false");
+                    throw new RuntimeException("Cant remove object, can remove returned false");
                 }
             }
         }

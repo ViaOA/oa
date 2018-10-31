@@ -2151,17 +2151,17 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     }
     
     public boolean canAdd() {
-        return OAObjectEditQueryDelegate.getAllowAdd(this);
+        return OAObjectEditQueryDelegate.getAllowAdd(this, false);
     }
     public boolean canAdd(OAObject obj) {
-        if (!OAObjectEditQueryDelegate.getAllowAdd(this)) return false;
+        if (!OAObjectEditQueryDelegate.getAllowAdd(this, false)) return false;
         return OAObjectEditQueryDelegate.getVerifyAdd(this, obj);
     }
     public boolean canRemove() {
-        return OAObjectEditQueryDelegate.getAllowRemove(this);
+        return OAObjectEditQueryDelegate.getAllowRemove(this, false);
     }
     public boolean canRemove(OAObject obj) {
-        if (!OAObjectEditQueryDelegate.getAllowRemove(this)) return false;
+        if (!OAObjectEditQueryDelegate.getAllowRemove(this, false)) return false;
         return OAObjectEditQueryDelegate.getVerifyRemove(this, obj);
     }
     public boolean canRemoveAll() {
