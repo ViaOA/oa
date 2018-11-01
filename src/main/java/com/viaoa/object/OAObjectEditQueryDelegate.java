@@ -60,7 +60,7 @@ public class OAObjectEditQueryDelegate {
     public static boolean getAllowAdd(Hub hub) {
         return getAllowAdd(hub, false);
     }
-    public static boolean getAllowAdd(Hub hub, final boolean bProcessedCheck) {
+    public static boolean getAllowAdd(Hub hub, boolean bProcessedCheck) {
         return getAllowAddEditQuery(hub, bProcessedCheck).getAllowed();
     }
     public static boolean getVerifyAdd(Hub hub, OAObject obj) {
@@ -202,10 +202,11 @@ public class OAObjectEditQueryDelegate {
     }
     
     public static OAObjectEditQuery getAllowAddEditQuery(final Hub hub, final boolean bProcessedCheck) {
+        if (hub == null) return null;
         final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowAdd);
-        OAObject objMaster = hub.getMasterObject();
-        if (objMaster == null) {
-            if (bProcessedCheck && hub != null) {
+        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
+        if (li == null || li.getPrivateMethod()) {
+            if (bProcessedCheck) {
                 if (hub.getOAObjectInfo().getProcessed()) {
                     updateEditProcessed(editQuery);
                 }
@@ -213,6 +214,7 @@ public class OAObjectEditQueryDelegate {
             processEditQueryForHubListeners(editQuery, hub, null, null, null, null);
         }
         else {
+            OAObject objMaster = hub.getMasterObject();
             String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
             editQuery.setName(propertyName);
             processEditQuery(editQuery, objMaster, propertyName, null, null, bProcessedCheck);
@@ -220,26 +222,29 @@ public class OAObjectEditQueryDelegate {
         return editQuery;
     }
     public static OAObjectEditQuery getVerifyAddEditQuery(final Hub hub, final OAObject oaObj) {
+        if (hub == null) return null;
         final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.VerifyAdd);
         editQuery.setValue(oaObj);
 
-        OAObject objMaster = hub.getMasterObject();
-        if (objMaster == null) {
+        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
+        if (li == null || li.getPrivateMethod()) {
             processEditQueryForHubListeners(editQuery, hub, oaObj, null, null, null);
         }
         else {
+            OAObject objMaster = hub.getMasterObject();
             String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
             editQuery.setName(propertyName);
             processEditQuery(editQuery, objMaster, propertyName, null, null);
         }
         return editQuery;
     }
-
+    
     public static OAObjectEditQuery getAllowRemoveEditQuery(final Hub hub, final boolean bProcessedCheck) {
+        if (hub == null) return null;
         final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowRemove);
 
-        OAObject objMaster = hub.getMasterObject();
-        if (objMaster == null) {
+        OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
+        if (li == null || li.getPrivateMethod()) {
             if (bProcessedCheck && hub != null) {
                 if (hub.getOAObjectInfo().getProcessed()) {
                     updateEditProcessed(editQuery);
@@ -250,6 +255,7 @@ public class OAObjectEditQueryDelegate {
         else {
             String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
             editQuery.setName(propertyName);
+            OAObject objMaster = hub.getMasterObject();
             processEditQuery(editQuery, objMaster, propertyName, null, null, bProcessedCheck);
         }
         return editQuery;
