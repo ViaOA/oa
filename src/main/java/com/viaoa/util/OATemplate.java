@@ -711,8 +711,7 @@ public class OATemplate<F extends OAObject> {
                         fmt = OAString.convert(fmt, '\"', "");
                     }
                 }
-
-                s = getValue(obj, prop, width, fmt, props);
+                s = getValue(obj, prop, width, fmt, props, true);
                 s = getOutputText(s);
                 sb.append(s);
                 break;
@@ -804,6 +803,9 @@ public class OATemplate<F extends OAObject> {
      * @return
      */
     protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props) {
+        return getValue(obj, propertyName, width, fmt, props, false);
+    }
+    protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, boolean bUseFormat) {
         if (propertyName == null) return "";
         String result = null;
 
@@ -851,7 +853,15 @@ public class OATemplate<F extends OAObject> {
                     if (objx instanceof Hub) {
                         objx = ((Hub) objx).getSize(); // default is to get size of hub
                     }
-                    result = OAConv.toString(objx);
+
+                    String fmtx = null;
+                    if (bUseFormat && OAString.isEmpty(fmt) && obj instanceof OAObject) {
+                        bFmt = false;
+                        OAPropertyPath pp = new OAPropertyPath(obj.getClass(), propertyName);
+                        fmtx = pp.getFormat();
+                    }                    
+                    
+                    result = OAConv.toString(objx, fmtx);
 
                     // if not html, then convert [lf] to <br>
                     boolean b = true;

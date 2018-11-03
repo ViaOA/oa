@@ -446,6 +446,22 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         return getController().getLabel();
     }
 
+    private Object lastObject;
+    @Override
+    public void setText(String text) {
+        boolean b = OAString.isEqual(text, getText());
+        super.setText(text);
+        if (b) return;
+        Hub hx = getHub();
+        if (hx == null) return;
+        Object objx = hx.getAO();
+        if (lastObject != objx) {
+            lastObject = objx;
+            return;
+        }
+        // blink
+        OAJfcUtil.blink(this);
+    }
     
     
     

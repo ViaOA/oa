@@ -98,9 +98,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     protected Hub hubFilterMaster;
     protected HubFilter hubFilter;
     protected Hub hubSelect;
+    protected TableController control;
     protected OATableModel oaTableModel;
     protected Vector<OATableColumn> columns = new Vector<OATableColumn>(5, 5);
-    protected MyHubAdapter hubAdapter;
     protected boolean includeScrollBar; // used by setPreferredSize
     protected boolean bAllowDrag = false;
     protected boolean bAllowDrop = false;
@@ -204,8 +204,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         Class c = b.getClass();
         setSurrendersFocusOnKeystroke(true);
 
-        setIntercellSpacing(new Dimension(5,2));
-        //was: setIntercellSpacing(new Dimension(4, 1));
+        setIntercellSpacing(new Dimension(6, 2));
+        int x = getRowHeight();
+        setRowHeight(x+2);
+        
+
 
 
         dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
@@ -365,12 +368,12 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      */
     public void resetFilters() {
         try {
-            hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+            control.aiIgnoreValueChanged.incrementAndGet();
             _resetFilters();
             
         }
         finally {
-            hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+            control.aiIgnoreValueChanged.decrementAndGet();
         }
     }
     private void _resetFilters() {
@@ -385,7 +388,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         // 20180521
         if (hubSelect != null) {
-            hubAdapter.rebuildListSelectionModel();
+            control.rebuildListSelectionModel();
         }        
 
         Container cont = getParent();
@@ -519,7 +522,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (!getKeepSorted()) hub.cancelSort();
 
         if (hubSelect != null) {
-            hubAdapter.rebuildListSelectionModel();
+            control.rebuildListSelectionModel();
             /*
             hubSelect.clear();
             for (Object obj : objs) {
@@ -558,11 +561,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         resetFilterHub();
         oaTableModel = new OATableModel(hub);
         setModel(oaTableModel);
-        hubAdapter = new MyHubAdapter(hub, this);
+        control = new TableController(hub, this);
     }
     
     public OAJfcController getController() {
-        return hubAdapter;
+        return control;
     }
     
     protected void resetFilterHub() {
@@ -937,7 +940,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         this.hubSelect = hub;
         int x = (hub == null) ? ListSelectionModel.SINGLE_SELECTION : ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
         getSelectionModel().setSelectionMode(x);
-        hubAdapter.setSelectHub(hubSelect);
+        control.setSelectHub(hubSelect);
         bMultiSelectControlKey = (hub != null);
     }
 
@@ -1413,14 +1416,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             if (oaTableModel != null) {
                 boolean b = false;
                 try {
-                    if (hubAdapter != null) {
+                    if (control != null) {
                         b = true;
-                        hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                        control.aiIgnoreValueChanged.incrementAndGet();
                     }
                     oaTableModel.fireTableStructureChanged();
                 }
                 finally {
-                    if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                    if (b && control != null) control.aiIgnoreValueChanged.decrementAndGet();
                 }
             }
         }
@@ -1435,14 +1438,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             if (oaTableModel != null) {
                 boolean b = false;
                 try {
-                    if (hubAdapter != null) {
+                    if (control != null) {
                         b = true;
-                        hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                        control.aiIgnoreValueChanged.incrementAndGet();
                     }
                     oaTableModel.fireTableStructureChanged();
                 }
                 finally {
-                    if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                    if (b && control != null) control.aiIgnoreValueChanged.decrementAndGet();
                 }
             }
         }
@@ -1974,14 +1977,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         if (oaTableModel != null) {
             boolean b = false;
             try {
-                if (hubAdapter != null) {
+                if (control != null) {
                     b = true;
-                    hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                    control.aiIgnoreValueChanged.incrementAndGet();
                 }
                 oaTableModel.fireTableStructureChanged();
             }
             finally {
-                if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                if (b && control != null) control.aiIgnoreValueChanged.decrementAndGet();
             }
         }
 
@@ -2068,9 +2071,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             for (int i=0; i<3; i++) {
                 boolean b = false;
                 try {
-                    if (hubAdapter != null) {
+                    if (control != null) {
                         b  = true;
-                        hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                        control.aiIgnoreValueChanged.incrementAndGet();
                     }
                     _fireTableStructureChanged();
                     break;
@@ -2079,7 +2082,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                     // ignore
                 }
                 finally {
-                    if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                    if (b && control != null) control.aiIgnoreValueChanged.decrementAndGet();
                 }
             }
         }
@@ -2094,6 +2097,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                     int x = hub.getPos(obj);
                     if (x >= 0) addRowSelectionInterval(x, x);
                 }
+            }
+            else {
+                int x = hub.getPos();
+                if (x >= 0) control.setSelectedRow(x);
             }
             OATable t = OATable.this;
             if (t != null) {
@@ -2542,14 +2549,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 boolean b = false;
                 boolean bx = OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
                 try {
-                    if (hubAdapter != null) {
+                    if (control != null) {
                         b = true;
-                        hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                        control.aiIgnoreValueChanged.incrementAndGet();
                     }
                     hf.refresh();
                 }
                 finally {
-                    if (b && hubAdapter != null) hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                    if (b && control != null) control.aiIgnoreValueChanged.decrementAndGet();
                     if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
                 }
                 oaTableModel.fireTableStructureChanged();
@@ -2621,13 +2628,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 }
             }
             
-            String s = hubAdapter.isValidHubChangeAO(hub.getAt(row));
+            String s = control.isValidHubChangeAO(hub.getAt(row));
             boolean b = true;
             if (OAString.isNotEmpty(s)) {
                 b = false;
                 JOptionPane.showMessageDialog(this, s, "Warning", JOptionPane.WARNING_MESSAGE);
             }
-            else if (!hubAdapter.confirmHubChangeAO(hub.getAt(row))) {
+            else if (!control.confirmHubChangeAO(hub.getAt(row))) {
                 b = false;
             }
 
@@ -2637,7 +2644,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                     @Override
                     public void run() {
                         abIgnoreHubPos.set(false);
-                        hubAdapter.afterChangeActiveObject(null);
+                        control.afterChangeActiveObject(null);
                     }
                 });
                 return false;
@@ -2687,11 +2694,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 if (aiRow.get() == row) {
                     boolean bx = OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
                     try {
-                        hubAdapter._bIsRunningValueChanged = true;
+                        control._bIsRunningValueChanged = true;
                         HubAODelegate.updateDetailHubs(hub); 
                     }
                     finally {
-                        hubAdapter._bIsRunningValueChanged = false;
+                        control._bIsRunningValueChanged = false;
                         if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
                     }
                     setCursor(Cursor.getDefaultCursor());
@@ -2720,7 +2727,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
         if (hub.getPos() != row) {
             try {
-                hubAdapter._bIsRunningValueChanged = true; // 20131113
+                control._bIsRunningValueChanged = true; // 20131113
                 // 20180605
                 if (hubSelect != null) {
                     if (hubSelect.size() > 1) return false;
@@ -2738,7 +2745,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 //was: hub.setPos(row);
             }
             finally {
-                hubAdapter._bIsRunningValueChanged = false;
+                control._bIsRunningValueChanged = false;
             }
         }
 
@@ -3419,7 +3426,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                                 getSelectHub().remove(obj);
                             }
                         }
-                        hubAdapter.rebuildListSelectionModel();
+                        control.rebuildListSelectionModel();
                     }
                     else {
                         getSelectHub().removeAll();
@@ -3811,14 +3818,14 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 /**
  * Class used to bind Table to a Hub.
  */
-class MyHubAdapter extends OAJfcController implements ListSelectionListener {
+class TableController extends OAJfcController implements ListSelectionListener {
     OATable table;
     private HubListenerAdapter hlSelect;
 
     AtomicInteger aiIgnoreValueChanged = new AtomicInteger();  // used to ignore calls to valueChanged(...)
     volatile boolean _bIsRunningValueChanged; // flag set when valueChanged is running
 
-    public MyHubAdapter(Hub hub, OATable table) {
+    public TableController(Hub hub, OATable table) {
         super(hub, null, null, table, HubChangeListener.Type.HubValid, ((hub!=null)?(hub.getLinkHub()!=null):false), false);
         this.table = table;
         table.getSelectionModel().addListSelectionListener(this);
@@ -3837,20 +3844,20 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
     
     protected boolean getIgnoreValueChanged() {
         if (table.tableLeft != null) {
-            if (table.tableLeft.hubAdapter.aiIgnoreValueChanged.get() > 0) return true;
+            if (table.tableLeft.control.aiIgnoreValueChanged.get() > 0) return true;
         }
         else if (table.tableRight != null) {
-            if (table.tableRight.hubAdapter.aiIgnoreValueChanged.get() > 0) return true;
+            if (table.tableRight.control.aiIgnoreValueChanged.get() > 0) return true;
         }
         return aiIgnoreValueChanged.get() > 0;
     }
 
     protected boolean getRunningValueChanged() {
         if (table.tableLeft != null) {
-            if (table.tableLeft.hubAdapter._bIsRunningValueChanged) return true;
+            if (table.tableLeft.control._bIsRunningValueChanged) return true;
         }
         else if (table.tableRight != null) {
-            if (table.tableRight.hubAdapter._bIsRunningValueChanged) return true;
+            if (table.tableRight.control._bIsRunningValueChanged) return true;
         }
         return _bIsRunningValueChanged;
     }
@@ -4138,14 +4145,14 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
         
         boolean b = false;
         try {
-            if (table.hubAdapter != null) {
+            if (table.control != null) {
                 b = true;
-                table.hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                table.control.aiIgnoreValueChanged.incrementAndGet();
             }
             table.oaTableModel.fireTableStructureChanged();
         }
         finally {
-            if (b && table.hubAdapter != null) table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+            if (b && table.control != null) table.control.aiIgnoreValueChanged.decrementAndGet();
         }
         
         int x = getHub().getPos();
@@ -4333,11 +4340,11 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
 
         if (SwingUtilities.isEventDispatchThread()) {
             try {
-                table.hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                table.control.aiIgnoreValueChanged.incrementAndGet();
                 table.oaTableModel.fireTableRowsDeleted(pos, pos);
             }
             finally {
-                table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                table.control.aiIgnoreValueChanged.decrementAndGet();
             }
             rebuildListSelectionModel();
         }
@@ -4345,7 +4352,7 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
-                        table.hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                        table.control.aiIgnoreValueChanged.incrementAndGet();
                         try {
                             table.oaTableModel.fireTableRowsDeleted(pos, pos);
                         }
@@ -4353,7 +4360,7 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
                         }
                     }
                     finally {
-                        table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                        table.control.aiIgnoreValueChanged.decrementAndGet();
                     }
                     rebuildListSelectionModel();
                 }
@@ -4394,11 +4401,11 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
 
         if (SwingUtilities.isEventDispatchThread()) {
             try {
-                table.hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                table.control.aiIgnoreValueChanged.incrementAndGet();
                 table.oaTableModel.fireTableRowsInserted(pos, pos);
             }
             finally {
-                table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                table.control.aiIgnoreValueChanged.decrementAndGet();
             }
             if (!bIsAdd) rebuildListSelectionModel();
         }
@@ -4407,11 +4414,11 @@ class MyHubAdapter extends OAJfcController implements ListSelectionListener {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
-                        table.hubAdapter.aiIgnoreValueChanged.incrementAndGet();
+                        table.control.aiIgnoreValueChanged.incrementAndGet();
                         table.oaTableModel.fireTableRowsInserted(pos, pos);
                     }
                     finally {
-                        table.hubAdapter.aiIgnoreValueChanged.decrementAndGet();
+                        table.control.aiIgnoreValueChanged.decrementAndGet();
                     }
                     if (!bIsAdd) rebuildListSelectionModel();
                 }

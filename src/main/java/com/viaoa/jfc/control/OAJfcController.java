@@ -53,6 +53,7 @@ public class OAJfcController extends HubListenerAdapter {
     protected final JComponent component;
     
     protected Hub hub;
+    protected final boolean bAoOnly;
     protected String propertyPath;
     protected OAPropertyPath oaPropertyPath;
 
@@ -138,10 +139,26 @@ public class OAJfcController extends HubListenerAdapter {
     private OATemplate templateToolTipText;
     
     
+    /**
+     * Create new controller for Hub and Jfc component
+     * @param hub 
+     * @param object if hub is null, then this object will be put in temp hub and made the AO
+     * @param propertyPath property used by component
+     * @param bAoOnly should controller listen to propChange for all objects in hub, or just AO.
+     * @param comp
+     * @param type default type of change listener
+     * @param bUseLinkHub should setup also include setting up the link hub
+     * @param bUseEditQuery use editQuery to determine enabled/visibl. 
+     */
     public OAJfcController(Hub hub, Object object, String propertyPath, JComponent comp, HubChangeListener.Type type, final boolean bUseLinkHub, final boolean bUseEditQuery) {
+        this(hub, object, propertyPath, true, comp, type, bUseLinkHub, bUseEditQuery);
+    }
+    
+    public OAJfcController(Hub hub, Object object, String propertyPath, boolean bAoOnly, JComponent comp, HubChangeListener.Type type, final boolean bUseLinkHub, final boolean bUseEditQuery) {
         this.hub = hub;
         this.hubObject = object;
         this.propertyPath = propertyPath;
+        this.bAoOnly = bAoOnly;
         this.component = comp;
         this.bUseLinkHub = bUseLinkHub;
         this.bUseEditQuery = bUseEditQuery;
@@ -196,11 +213,11 @@ public class OAJfcController extends HubListenerAdapter {
         
         if (propertyPath != null && propertyPath.indexOf('.') >= 0) {
             hubListenerPropertyName = propertyPath.replace('.', '_');
-            hub.addHubListener(this, hubListenerPropertyName, new String[] {propertyPath}, true);
+            hub.addHubListener(this, hubListenerPropertyName, new String[] {propertyPath}, bAoOnly);
         }
         else {
             hubListenerPropertyName = propertyPath; 
-            if (OAString.isNotEmpty(hubListenerPropertyName)) hub.addHubListener(this, hubListenerPropertyName, true);
+            if (OAString.isNotEmpty(hubListenerPropertyName)) hub.addHubListener(this, hubListenerPropertyName, bAoOnly);
             else hub.addHubListener(this);
         }
 
@@ -1404,10 +1421,13 @@ public class OAJfcController extends HubListenerAdapter {
     @Override
     public void afterPropertyChange(HubEvent e) {
         Object ao = getHub().getAO();
-        if (ao != null && e.getObject() == ao) {
-            boolean b = false;
-            String prop = e.getPropertyName();
-            if (prop != null && prop.equalsIgnoreCase(OAJfcController.this.getHubListenerPropertyName())) b = true;
+        if (bAoOnly) {
+            if (ao == null || e.getObject() != ao) return;
+        }
+        boolean b = false;
+        String prop = e.getPropertyName();
+        if (prop != null) {
+            if (prop.equalsIgnoreCase(OAJfcController.this.getHubListenerPropertyName())) b = true;
             else {
                 final MyHubChangeListener[] mcls = new MyHubChangeListener[] {changeListener, changeListenerEnabled, changeListenerVisible};
                 for (MyHubChangeListener mcl : mcls) {
@@ -1418,10 +1438,10 @@ public class OAJfcController extends HubListenerAdapter {
                     }
                 }
             }
-            if (b) {
-                OAJfcController.this.afterPropertyChange();
-                update();
-            }
+        }
+        if (b) {
+            OAJfcController.this.afterPropertyChange();
+            update();
         }
     }
 

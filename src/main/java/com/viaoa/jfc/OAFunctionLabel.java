@@ -293,9 +293,9 @@ public class OAFunctionLabel extends JLabel implements OATableComponent, OAJfcCo
         private Type type;
         private String ppFunc;  // name of property that function is to use
         public OAFunctionLabelController(Hub hub, Type type, String propertyPath) {
-            super(hub, OAFunctionLabel.this, propertyPath, HubChangeListener.Type.HubValid);
+            super(hub, OAFunctionLabel.this, propertyPath, HubChangeListener.Type.HubValid, false);  // false= listen to all objects in Hub 
             ppFunc = propertyPath;
-            getChangeListener().add(hub, ppFunc, true, HubChangeListener.Type.HubValid, null, false);
+            //was: getChangeListener().add(hub, ppFunc, true, HubChangeListener.Type.HubValid, null, false);
         }
 
         public Type getType() {
