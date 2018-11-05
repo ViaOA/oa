@@ -275,13 +275,17 @@ public class OAConverter {
         The round method allows you to specify the number of decimal places that you know the number currently should have.
         The round method will first round the number to this amount of decimal places before performing the round.
         
+        SEE: https://stackoverflow.com/questions/2808535/round-a-double-to-2-decimal-places
+        
         @param accurateDecimalPlaces is number of decimal places that number should have.  See note above.
         @param decimalPlaces is number of decimal places that number needs to be rounded to.
         @param roundType is type of rounding to perform.  See BigDecimal for types of rounding, ex: BigDecimal.ROUND_HALF_UP
         @see BigDecimal
     */
     public static double round(double d, int accurateDecimalPlaces, int decimalPlaces, int roundType) {
-        BigDecimal bd = new BigDecimal(d);
+        String s = Double.toString(d);
+        BigDecimal bd = new BigDecimal(s);
+        //was:  BigDecimal bd = new BigDecimal(d);   // not as precise as using string
         if (accurateDecimalPlaces != decimalPlaces) bd = bd.setScale(accurateDecimalPlaces, roundType);
         bd = bd.setScale(decimalPlaces, roundType);
         return bd.doubleValue();
@@ -302,20 +306,17 @@ public class OAConverter {
     }
 
     
-    /** was: Uses BigDecimal to round number to "decimalPlaces" amount of decimal numbers. 
+    /** Uses BigDecimal to round number to "decimalPlaces" amount of decimal numbers. 
         <p>
         By Default, uses BigDecimal.ROUND_HALF_UP.
         @param decimalPlaces number of decimal places to round to
         @see #round(double,int,int,int) Notes about rounding
         @see BigDecimal
     */
-    
-    /*
-     * Rounds using Round_HALF_UP
-     */
     public static double round(double d, int decimalPlaces) {
-        // was: return round(d, decimalPlaces, decimalPlaces, BigDecimal.ROUND_HALF_UP);
-        
+        // 20181104 returned to using this:
+        return round(d, decimalPlaces, decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        /* was: does not use round_half_up,  ex: 1.235
         // this will be faster (no BigDecimal needed)
         if (decimalPlaces < 0) return d;
         
@@ -333,6 +334,7 @@ public class OAConverter {
         d /= decimalValue;
         if (bNegative) d *= -1;
         return d;
+        */
     }
     
     /**
@@ -416,25 +418,25 @@ public class OAConverter {
         return bd1.doubleValue();
     }    
     private static double mathOp(int opType, double d, Number n, int decimalPlaces, int roundType) {
-        return mathOp(opType, new BigDecimal(d), n, decimalPlaces, roundType);
+        return mathOp(opType, new BigDecimal(Double.toString(d)), n, decimalPlaces, roundType);
     }    
     private static double mathOp(int opType, Number d, double d1, int decimalPlaces, int roundType) {
-        return mathOp(opType, d, new BigDecimal(d1), decimalPlaces, roundType);
+        return mathOp(opType, d, new BigDecimal(Double.toString(d1)), decimalPlaces, roundType);
     }    
     private static double mathOp(int opType, double d, double d1, int decimalPlaces, int roundType) {
-        return mathOp(opType, new BigDecimal(d), new BigDecimal(d1), decimalPlaces, roundType);
+        return mathOp(opType, new BigDecimal(Double.toString(d)), new BigDecimal(Double.toString(d1)), decimalPlaces, roundType);
     }    
     private static double mathOp(int opType, Number n1, Number n2, int decimalPlaces) {
         return mathOp(opType, n1, n2, decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     private static double mathOp(int opType, double d, Number n, int decimalPlaces) {
-        return mathOp(opType, new BigDecimal(d), n, decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        return mathOp(opType, new BigDecimal(Double.toString(d)), n, decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     private static double mathOp(int opType, Number d, double d1, int decimalPlaces) {
-        return mathOp(opType, d, new BigDecimal(d1), decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        return mathOp(opType, d, new BigDecimal(Double.toString(d1)), decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     private static double mathOp(int opType, double d, double d1, int decimalPlaces) {
-        return mathOp(opType, new BigDecimal(d), new BigDecimal(d1), decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        return mathOp(opType, new BigDecimal(d), new BigDecimal(Double.toString(d1)), decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
 
 
@@ -443,22 +445,22 @@ public class OAConverter {
         return mathOp(MATH_OP_ADD, n1, n2, decimalPlaces, roundType);
     }    
     public static double add(double d, Number n, int decimalPlaces, int roundType) {
-        return mathOp(MATH_OP_ADD, new BigDecimal(d), n, decimalPlaces, roundType);
+        return mathOp(MATH_OP_ADD, new BigDecimal(Double.toString(d)), n, decimalPlaces, roundType);
     }    
     public static double add(Number d, double d1, int decimalPlaces, int roundType) {
-        return mathOp(MATH_OP_ADD, d, new BigDecimal(d1), decimalPlaces, roundType);
+        return mathOp(MATH_OP_ADD, d, new BigDecimal(Double.toString(d1)), decimalPlaces, roundType);
     }    
     public static double add(double d, double d1, int decimalPlaces, int roundType) {
-        return mathOp(MATH_OP_ADD, new BigDecimal(d), new BigDecimal(d1), decimalPlaces, roundType);
+        return mathOp(MATH_OP_ADD, new BigDecimal(Double.toString(d)), new BigDecimal(Double.toString(d1)), decimalPlaces, roundType);
     }    
     public static double add(Number n1, Number n2, int decimalPlaces) {
         return mathOp(MATH_OP_ADD, n1, n2, decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double add(double d, Number n, int decimalPlaces) {
-        return mathOp(MATH_OP_ADD, new BigDecimal(d), n, decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        return mathOp(MATH_OP_ADD, new BigDecimal(Double.toString(d)), n, decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double add(Number d, double d1, int decimalPlaces) {
-        return mathOp(MATH_OP_ADD, d, new BigDecimal(d1), decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        return mathOp(MATH_OP_ADD, d, new BigDecimal(Double.toString(d1)), decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }
     public static double add(double d1, double d2, int decimalPlaces) {
         double d = d1 + d2;
@@ -470,13 +472,13 @@ public class OAConverter {
         return mathOp(MATH_OP_ADD, n1, n2, -1, -1);
     }    
     public static double add(double d, Number n) {
-        return mathOp(MATH_OP_ADD, new BigDecimal(d), n, -1, -1);
+        return mathOp(MATH_OP_ADD, new BigDecimal(Double.toString(d)), n, -1, -1);
     }    
     public static double add(Number d, double d1) {
-        return mathOp(MATH_OP_ADD, d, new BigDecimal(d1), -1, -1);
+        return mathOp(MATH_OP_ADD, d, new BigDecimal(Double.toString(d1)), -1, -1);
     }    
     public static double add(double d, double d1) {
-        return mathOp(MATH_OP_ADD, new BigDecimal(d), new BigDecimal(d1), -1, -1);
+        return mathOp(MATH_OP_ADD, new BigDecimal(Double.toString(d)), new BigDecimal(Double.toString(d1)), -1, -1);
     }    
 
 
@@ -485,39 +487,39 @@ public class OAConverter {
         return mathOp(MATH_OP_SUBTRACT, n1, n2, decimalPlaces, roundType);
     }    
     public static double subtract(double d, Number n, int decimalPlaces, int roundType) {
-        return mathOp(MATH_OP_SUBTRACT, new BigDecimal(d), n, decimalPlaces, roundType);
+        return mathOp(MATH_OP_SUBTRACT, new BigDecimal(Double.toString(d)), n, decimalPlaces, roundType);
     }    
     public static double subtract(Number d, double d1, int decimalPlaces, int roundType) {
-        return mathOp(MATH_OP_SUBTRACT, d, new BigDecimal(d1), decimalPlaces, roundType);
+        return mathOp(MATH_OP_SUBTRACT, d, new BigDecimal(Double.toString(d1)), decimalPlaces, roundType);
     }    
     public static double subtract(double d, double d1, int decimalPlaces, int roundType) {
-        return mathOp(MATH_OP_SUBTRACT, new BigDecimal(d), new BigDecimal(d1), decimalPlaces, roundType);
+        return mathOp(MATH_OP_SUBTRACT, new BigDecimal(Double.toString(d)), new BigDecimal(Double.toString(d1)), decimalPlaces, roundType);
     }    
     public static double subtract(Number n1, Number n2, int decimalPlaces) {
         return mathOp(MATH_OP_SUBTRACT, n1, n2, decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double subtract(double d, Number n, int decimalPlaces) {
-        return mathOp(MATH_OP_SUBTRACT, new BigDecimal(d), n, decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        return mathOp(MATH_OP_SUBTRACT, new BigDecimal(Double.toString(d)), n, decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double subtract(Number d, double d1, int decimalPlaces) {
-        return mathOp(MATH_OP_SUBTRACT, d, new BigDecimal(d1), decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        return mathOp(MATH_OP_SUBTRACT, d, new BigDecimal(Double.toString(d1)), decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double subtract(double d1, double d2, int decimalPlaces) {
         double d = d1 - d2;
         return round(d, decimalPlaces);
-        // return mathOp(MATH_OP_SUBTRACT, new BigDecimal(d1), new BigDecimal(d2), decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        // return mathOp(MATH_OP_SUBTRACT, new BigDecimal(Double.toString(d1)), new BigDecimal(Double.toString(d2)), decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double subtract(Number n1, Number n2) {
         return mathOp(MATH_OP_SUBTRACT, n1, n2, -1, -1);
     }    
     public static double subtract(double d, Number n) {
-        return mathOp(MATH_OP_SUBTRACT, new BigDecimal(d), n, -1, -1);
+        return mathOp(MATH_OP_SUBTRACT, new BigDecimal(Double.toString(d)), n, -1, -1);
     }    
     public static double subtract(Number d, double d1) {
-        return mathOp(MATH_OP_SUBTRACT, d, new BigDecimal(d1), -1, -1);
+        return mathOp(MATH_OP_SUBTRACT, d, new BigDecimal(Double.toString(d1)), -1, -1);
     }    
     public static double subtract(double d1, double d2) {
-        return mathOp(MATH_OP_SUBTRACT, new BigDecimal(d1), new BigDecimal(d2), -1, -1);
+        return mathOp(MATH_OP_SUBTRACT, new BigDecimal(Double.toString(d1)), new BigDecimal(Double.toString(d2)), -1, -1);
     }    
 
 
@@ -526,39 +528,39 @@ public class OAConverter {
         return mathOp(MATH_OP_MULTIPLY, n1, n2, decimalPlaces, roundType);
     }    
     public static double multiply(double d, Number n, int decimalPlaces, int roundType) {
-        return mathOp(MATH_OP_MULTIPLY, new BigDecimal(d), n, decimalPlaces, roundType);
+        return mathOp(MATH_OP_MULTIPLY, new BigDecimal(Double.toString(d)), n, decimalPlaces, roundType);
     }    
     public static double multiply(Number d, double d1, int decimalPlaces, int roundType) {
-        return mathOp(MATH_OP_MULTIPLY, d, new BigDecimal(d1), decimalPlaces, roundType);
+        return mathOp(MATH_OP_MULTIPLY, d, new BigDecimal(Double.toString(d1)), decimalPlaces, roundType);
     }    
     public static double multiply(double d, double d1, int decimalPlaces, int roundType) {
-        return mathOp(MATH_OP_MULTIPLY, new BigDecimal(d), new BigDecimal(d1), decimalPlaces, roundType);
+        return mathOp(MATH_OP_MULTIPLY, new BigDecimal(Double.toString(d)), new BigDecimal(Double.toString(d1)), decimalPlaces, roundType);
     }    
     public static double multiply(Number n1, Number n2, int decimalPlaces) {
         return mathOp(MATH_OP_MULTIPLY, n1, n2, decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double multiply(double d, Number n, int decimalPlaces) {
-        return mathOp(MATH_OP_MULTIPLY, new BigDecimal(d), n, decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        return mathOp(MATH_OP_MULTIPLY, new BigDecimal(Double.toString(d)), n, decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double multiply(Number d, double d1, int decimalPlaces) {
-        return mathOp(MATH_OP_MULTIPLY, d, new BigDecimal(d1), decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        return mathOp(MATH_OP_MULTIPLY, d, new BigDecimal(Double.toString(d1)), decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double multiply(double d1, double d2, int decimalPlaces) {
         double d = d1 * d2;
         return round(d, decimalPlaces);
-        //was: return mathOp(MATH_OP_MULTIPLY, new BigDecimal(d1), new BigDecimal(d2), decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        //was: return mathOp(MATH_OP_MULTIPLY, new BigDecimal(Double.toString(d1)), new BigDecimal(Double.toString(d2)), decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double multiply(Number n1, Number n2) {
         return mathOp(MATH_OP_MULTIPLY, n1, n2, -1, -1);
     }    
     public static double multiply(double d, Number n) {
-        return mathOp(MATH_OP_MULTIPLY, new BigDecimal(d), n, -1, -1);
+        return mathOp(MATH_OP_MULTIPLY, new BigDecimal(Double.toString(d)), n, -1, -1);
     }    
     public static double multiply(Number d, double d1) {
-        return mathOp(MATH_OP_MULTIPLY, d, new BigDecimal(d1), -1, -1);
+        return mathOp(MATH_OP_MULTIPLY, d, new BigDecimal(Double.toString(d1)), -1, -1);
     }    
     public static double multiply(double d, double d1) {
-        return mathOp(MATH_OP_MULTIPLY, new BigDecimal(d), new BigDecimal(d1), -1, -1);
+        return mathOp(MATH_OP_MULTIPLY, new BigDecimal(Double.toString(d)), new BigDecimal(Double.toString(d1)), -1, -1);
     }    
 
 
@@ -567,39 +569,39 @@ public class OAConverter {
         return mathOp(MATH_OP_DIVIDE, n1, n2, decimalPlaces, roundType);
     }    
     public static double divide(double d, Number n, int decimalPlaces, int roundType) {
-        return mathOp(MATH_OP_DIVIDE, new BigDecimal(d), n, decimalPlaces, roundType);
+        return mathOp(MATH_OP_DIVIDE, new BigDecimal(Double.toString(d)), n, decimalPlaces, roundType);
     }    
     public static double divide(Number d, double d1, int decimalPlaces, int roundType) {
-        return mathOp(MATH_OP_DIVIDE, d, new BigDecimal(d1), decimalPlaces, roundType);
+        return mathOp(MATH_OP_DIVIDE, d, new BigDecimal(Double.toString(d1)), decimalPlaces, roundType);
     }    
     public static double divide(double d, double d1, int decimalPlaces, int roundType) {
-        return mathOp(MATH_OP_DIVIDE, new BigDecimal(d), new BigDecimal(d1), decimalPlaces, roundType);
+        return mathOp(MATH_OP_DIVIDE, new BigDecimal(Double.toString(d)), new BigDecimal(Double.toString(d1)), decimalPlaces, roundType);
     }    
     public static double divide(Number n1, Number n2, int decimalPlaces) {
         return mathOp(MATH_OP_DIVIDE, n1, n2, decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double divide(double d, Number n, int decimalPlaces) {
-        return mathOp(MATH_OP_DIVIDE, new BigDecimal(d), n, decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        return mathOp(MATH_OP_DIVIDE, new BigDecimal(Double.toString(d)), n, decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double divide(Number d, double d1, int decimalPlaces) {
-        return mathOp(MATH_OP_DIVIDE, d, new BigDecimal(d1), decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        return mathOp(MATH_OP_DIVIDE, d, new BigDecimal(Double.toString(d1)), decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double divide(double d1, double d2, int decimalPlaces) {
         double d = d1 / d2;
         return round(d, decimalPlaces);
-        //was: return mathOp(MATH_OP_DIVIDE, new BigDecimal(d1), new BigDecimal(d2), decimalPlaces, BigDecimal.ROUND_HALF_UP);
+        //was: return mathOp(MATH_OP_DIVIDE, new BigDecimal(Double.toString(d1)), new BigDecimal(Double.toString(d2)), decimalPlaces, BigDecimal.ROUND_HALF_UP);
     }    
     public static double divide(Number n1, Number n2) {
         return mathOp(MATH_OP_DIVIDE, n1, n2, -1, -1);
     }    
     public static double divide(double d, Number n) {
-        return mathOp(MATH_OP_DIVIDE, new BigDecimal(d), n, -1, -1);
+        return mathOp(MATH_OP_DIVIDE, new BigDecimal(Double.toString(d)), n, -1, -1);
     }    
     public static double divide(Number d, double d1) {
-        return mathOp(MATH_OP_DIVIDE, d, new BigDecimal(d1), -1, -1);
+        return mathOp(MATH_OP_DIVIDE, d, new BigDecimal(Double.toString(d1)), -1, -1);
     }    
     public static double divide(double d, double d1) {
-        return mathOp(MATH_OP_DIVIDE, new BigDecimal(d), new BigDecimal(d1), -1, -1);
+        return mathOp(MATH_OP_DIVIDE, new BigDecimal(Double.toString(d)), new BigDecimal(Double.toString(d1)), -1, -1);
     }    
 
 

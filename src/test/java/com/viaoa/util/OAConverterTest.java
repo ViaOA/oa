@@ -47,6 +47,31 @@ public class OAConverterTest extends OAUnitTest {
         assertTrue(OAConv.compare(d, d2, 4) < 0);
         d2 = 1.23454666;
         assertTrue(OAConv.compare(d, d2, 4) == 0);
+
+        
+        d = 39.424;
+        d = OAConv.round(d, 2);
+        assertTrue(39.42 == d);
+        
+        d = 39.426;
+        d = OAConv.round(d, 2);
+        assertTrue(39.43 == d);
+        
+        d = 39.4251;
+        d = OAConv.round(d, 2);
+        assertTrue(39.43 == d);
+        
+        d = 39.425;
+        d = OAConv.round(d, 2);
+        assertTrue(39.43 == d);
+
+        d = 48.5475;
+        d = OAConv.round(d, 2);
+        assertTrue(48.55 == d);
+        
+        d = 970.95 * .05;
+        d = OAConv.round(d, 2);
+        assertTrue(48.55 == d);
     }
     
     @Test
