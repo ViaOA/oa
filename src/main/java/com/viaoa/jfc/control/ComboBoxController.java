@@ -368,6 +368,9 @@ public class ComboBoxController extends OAJfcController implements FocusListener
         if (value == null) s = null;
         else if (value instanceof OANullObject) {
             s = nullDescription;
+            if (hub != null && hub.getAO() != null) {
+                s = OAString.convert(s, "select", "clear current value");
+            }
         }
         else if (value instanceof String) {
             s = (String) value;

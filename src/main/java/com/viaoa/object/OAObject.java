@@ -353,6 +353,10 @@ public class OAObject implements java.io.Serializable, Comparable {
     public boolean isVisible() {
         return OAObjectEditQueryDelegate.getAllowVisible(this, null);
     }
+    public boolean verifyCommand(String methodName) {
+        OAObjectEditQuery eq = OAObjectEditQueryDelegate.getVerifyCommandEditQuery(this, methodName);
+        return eq.getAllowed();
+    }
     
     /**
         Flag to know if object is new and has not been saved.

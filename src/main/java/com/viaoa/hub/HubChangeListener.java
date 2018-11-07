@@ -131,6 +131,10 @@ public abstract class HubChangeListener {
         return add(hub, prop, true, Type.PropertyNotNull);
     }
 
+    public HubProp addPropertyChange(Hub hub, String prop) {
+        return add(hub, prop);
+    }
+    
     public HubProp addAddEnabled(final Hub hub) {
         return addNewEnabled(hub);
     }
