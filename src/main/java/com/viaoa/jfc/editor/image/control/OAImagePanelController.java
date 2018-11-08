@@ -17,31 +17,40 @@ import java.awt.image.RenderedImage;
 import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 
+import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubChangeListener;
 import com.viaoa.jfc.OAButton;
 import com.viaoa.jfc.OAJfcUtil;
 import com.viaoa.jfc.OAMultiButtonSplitButton;
+import com.viaoa.jfc.control.OAJfcController;
 import com.viaoa.jfc.editor.image.view.*;
+import com.viaoa.jfc.editor.image.OAImageEditor;
 import com.viaoa.jfc.editor.image.OAImagePanel;
 import com.viaoa.jfc.image.*;
+import com.viaoa.object.OAObject;
 import com.viaoa.util.OAArray;
+import com.viaoa.util.OAString;
 
 /**
  * Controller for OAImagePanel and image components.
  * Adds toolbar commands, etc. 
  * @author vincevia
  */
-public class OAImagePanelController {
+public class OAImagePanelController extends OAJfcController {
+    private static Logger LOG = Logger.getLogger(OAImagePanelController.class.getName());
     private ImageComponents comps;
     private ScalePanelController controlScalePanel;
     private ZoomPanelController controlZoomPanel;
     private BrightnessPanelController controlBrightnessPanel;
     private ContrastPanelController controlContrastPanel;
     
+    private OAImageEditor editor;
     private JToolBar toolBar;
     private OAImagePanel panImage;
     private static ImageFileChooserController controlImageFileChooser;
@@ -49,18 +58,56 @@ public class OAImagePanelController {
     private File file;
     private JButton[] cmdOpens = new JButton[0];  // open buttons to add to open - creating a splitbutton dropdown
 
-    public OAImagePanelController() {
+    public OAImagePanelController(Hub hub, OAImageEditor editor, String property) {
+        super(hub, null, property, editor, HubChangeListener.Type.AoNotNull, false, true);
+        editor = this.editor;
         comps = new ImageComponents();
         setup();
+        enableVisibleListener(true);
     }
 
+    private Object lastActiveObject;
+    private boolean bCallingUpdate;
+    
+    @Override
+    public void update(JComponent comp, Object object, boolean bIncudeToolTip) {
+        super.update(comp, object, bIncudeToolTip);
+        if (hub == null) return;
+        Object objao = hub.getAO();
+        
+        if (lastActiveObject == objao) {
+            return;        
+        }
+        lastActiveObject = objao;        
+        byte[] bs = null; 
+        if (objao instanceof OAObject) {
+            Object objx = ((OAObject) objao).getProperty(propertyPath);
+            if (objx instanceof byte[]) { 
+                bs = (byte[]) objx;
+            }
+        }
+        
+        Image img = null;
+        try {
+            img = OAImageUtil.convertToBufferedImage(bs);
+        }
+        catch (Exception e) {
+            LOG.log(Level.WARNING, "error while creating image from bytes", e);
+        }
+        try {
+            bCallingUpdate = true;
+            setImage(img);
+        }
+        finally {
+            bCallingUpdate = false;            
+        }
+    }
 
     public void addOpenButton(JButton cmd) {
         if (cmd != null) {
             cmdOpens = (JButton[]) OAArray.add(JButton.class, cmdOpens, cmd);
         }
     }
-    
     
     private void updateUndoButton() {
         int x = panImage.getUndoableCount();
@@ -84,6 +131,7 @@ public class OAImagePanelController {
      * Called whenever the current image has changed.
      */
     protected void onImageChanged() {
+        updateUndoButton();
     }
     
     protected void setup() {
@@ -280,13 +328,37 @@ public class OAImagePanelController {
         return file;
     }
     
+    public boolean updateHubProperty() {
+        if (bCallingUpdate) return true;
+        if (getHub() != null && OAString.isNotEmpty(getPropertyPath())) {
+            Object objx = getHub().getAO();
+            if (objx instanceof OAObject) {
+                Image image = getBufferedImage();
+                byte[] bs = null;
+                if (image != null) {
+                    try {
+                        bs = OAImageUtil.convertToBytes(image);
+                    }
+                    catch (Exception e) {}
+                }
+                ((OAObject) objx).setProperty(getPropertyPath(), bs);
+                return true;
+            }                
+        }
+        return false;
+    }
+    
     public void onSave() {
         if (panImage == null || panImage.getImage() == null) return;
+        
+        boolean bUpdatedObject = updateHubProperty();
+        
         if (file == null) {
+            if (bUpdatedObject) return;
             onSaveAs();
             return;
         }
-
+        
         String ext = file.getName();
         int x = ext.lastIndexOf('.');
         if (x < 0 || (x == ext.length()-1)) ext = "jpg";
@@ -300,6 +372,9 @@ public class OAImagePanelController {
         }
         catch (Exception e) {
             JOptionPane.showMessageDialog(OAJfcUtil.getWindow(panImage), "Error saving file \"" + file.getName()+"\"\nError: " + e.getMessage(), "Save image", JOptionPane.WARNING_MESSAGE);
+        }
+        if (bUpdatedObject) {
+            file = null;
         }
     }
     
@@ -562,15 +637,20 @@ public class OAImagePanelController {
         }
         panImage.setImage(image);
         
-        updateEnabled();
+        if (updateHubProperty()) file = null;
+
+        updateCommands();
     }
     
     private boolean bEnabled = true;
     public void setEnabled(boolean b) {
         bEnabled = b;
-        updateEnabled();
+        updateCommands();
     }
-    public void updateEnabled() {
+    public boolean getEnabled() {
+        return bEnabled;
+    }
+    public void updateCommands() {
         boolean b = (panImage != null && panImage.getImage() != null && bEnabled);
         
         comps.getCropButton().setEnabled(b && panImage.getShowRectangle());
@@ -584,7 +664,7 @@ public class OAImagePanelController {
         
         updateUndoButton();
         
-        comps.getOpenButton().setEnabled(bEnabled);
+        comps.getOpenButton().setEnabled(bEnabled && (hub == null || hub.getAO() != null));
         for (int i=0; cmdOpens != null && i < cmdOpens.length; i++) {
             cmdOpens[i].setEnabled(bEnabled);
         }
@@ -700,6 +780,8 @@ public class OAImagePanelController {
         kyle.setVisible(true);
     }
     
+    
+/**    
     public static void main(String[] args) throws Exception {
         try {
             //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -713,7 +795,7 @@ public class OAImagePanelController {
         OAImagePanelController cont = new OAImagePanelController() {
             int qqq;
             @Override
-            protected void onImageChanged() {
+            public void onImageChanged() {
                 System.out.println("onImageChnnage "+(qqq++));                
             }
         };
@@ -740,6 +822,6 @@ public class OAImagePanelController {
         }
         catch (Exception e) {}
     }
-    
+*/    
 }
 

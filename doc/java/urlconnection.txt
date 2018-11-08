@@ -67,6 +67,63 @@ qqqqqqqqqqqqqqqqqqq
         fos.close();
     }
  
+ qqqqqqqqqqqqqqqqqqqqqqqqq HTTPS qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+ 
+ see: http://www.nakov.com/blog/2009/07/16/disable-certificate-validation-in-java-ssl-connections/
+ 
+         // Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+        } };
+
+        // Install the all-trusting trust manager
+        SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+        // Create all-trusting host name verifier
+        HostnameVerifier allHostsValid = new HostnameVerifier() {
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        };
+
+        // Install the all-trusting host verifier
+        HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+
+        URL url = new URL("https://concrete-designs.com/wp-content/uploads/product_images/37080006.png");
+        System.out.println("Loading url=" + url);
+
+// use this directly
+BufferedImage bi = ImageIO.read(new URL("https://concrete-designs.com/wp-content/uploads/product_images/37080006.png"));
+
+
+// instead of all of this
+        HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+
+        // URLConnection con = url.openConnection();
+        con.connect();
+        InputStream is = con.getInputStream();
+        int x = con.getContentLength();
+
+        ImageStore imgStore = getImageStore();
+        if (imgStore == null) {
+            imgStore = = new ImageStore();
+            setImageStore(imgStore);
+        }
+        
+        byte[] bs = new byte[x];
+        is.read(bs);
+        imgStore.setBytes(bs);
+ 
  
  
  

@@ -25,6 +25,7 @@ import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.dialog.OAPasswordDialog;
 import com.viaoa.jfc.table.OAButtonTableCellEditor;
 import com.viaoa.jfc.table.OATableComponent;
+import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.util.OAString;
@@ -197,17 +198,23 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
             control.getEnabledChangeListener().add(hub, OAObjectDelegate.WORD_Changed, true);
         }
         else if (command == ButtonCommand.New) {
-            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, true, false);
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, true, true);
             control.getEnabledChangeListener().addNewEnabled(hub);
         }
         else if (command == ButtonCommand.Delete) {
-            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, false);
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
             control.getEnabledChangeListener().addDeleteEnabled(hub);
+        }
+        else if (command == ButtonCommand.Remove) {
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
+            control.getEnabledChangeListener().addRemoveEnabled(hub);
+        }
+        else if (command == ButtonCommand.ClearAO) {
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
         }
         else {
             control = new OAButtonController(hub, enabledMode, command);
         }
-
         
         if (bCallSetup) setup();
     }

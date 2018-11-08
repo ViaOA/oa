@@ -13,13 +13,22 @@ package com.viaoa.jfc.control;
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.*;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 
 import com.viaoa.ds.OADataSource;
@@ -31,6 +40,7 @@ import com.viaoa.jfc.*;
 import com.viaoa.jfc.table.*;
 import com.viaoa.object.OAObjectEditQuery;
 import com.viaoa.object.OAObjectEditQueryDelegate;
+import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
@@ -272,7 +282,20 @@ public class OAJfcController extends HubListenerAdapter {
         }
         else {
             hubLink = hub.getLinkHub();
-            linkPropertyName = hub.getLinkPath();
+            if (hubLink != null) {
+                linkPropertyName = hub.getLinkPath();
+            }
+            else {
+                Hub hubx = HubDetailDelegate.getMasterHub(hub);
+                if (hubx != null) {
+                    OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterToDetail(hub);
+                    if (li != null && li.getType() == li.TYPE_ONE) {
+                        hubLink = hubx;
+                        linkPropertyName = li.getName();
+                    }
+                }
+            }
+            
             if (hubLink != null) {
                 getEnabledChangeListener().add(hubLink, HubChangeListener.Type.AoNotNull);
                 if (bUseEditQuery) {
@@ -359,6 +382,7 @@ public class OAJfcController extends HubListenerAdapter {
             changeListenerVisible.close();
             changeListenerVisible = null;
         }
+        enableVisibleListener(false);
         if (hub != null) hub.removeHubListener(this);
     }
     
@@ -1029,6 +1053,11 @@ public class OAJfcController extends HubListenerAdapter {
             return;
         }
         lastUpdateHubEvent = he;
+
+        if (hmVisibleListener != null) {
+            // check to see if component is visible
+            if (!isVisibleOnScreen()) return;
+        }
         
         if (component == null) return;
         Object obj;
@@ -1541,6 +1570,102 @@ public class OAJfcController extends HubListenerAdapter {
     }
 
 
+    /**
+     * Used when enabledVisibleListener(true) is set up.  WIll be called when component is in a visible window/tab.
+     * default is to call update().
+     */
+    protected void onVisibleListenerChange() {
+        update();
+    }
+    
+    private HashMap<Component, Object> hmVisibleListener;
+    /**
+     * for components that need to know if it is visible on the screen.
+     *    currently checks tabbedPanels and windows.
+     */
+    public void enableVisibleListener(boolean b) {
+        if (b) {
+            if (hmVisibleListener == null) hmVisibleListener = new HashMap<>();
+        }
+        else {
+            if (hmVisibleListener == null) return;
+            for (Entry<Component, Object> entry : hmVisibleListener.entrySet()) {
+                Component comp = entry.getKey();
+                if (comp instanceof JTabbedPane) {
+                    JTabbedPane tp = (JTabbedPane) comp;
+                    tp.removeChangeListener((ChangeListener) entry.getValue());
+                }
+                if (comp instanceof Window) {
+                    Window win = (Window) comp;
+                    win.removeComponentListener((ComponentListener) entry.getValue());
+                }
+            }
+            hmVisibleListener = null;
+        }
+    }
+    public boolean isVisibleOnScreen() {
+        if (component == null) return false;
+        boolean bVisible = true;
+        
+        Component last = component;
+        Component comp = component.getParent();
+        for ( ; comp != null; comp = comp.getParent()) {
+            if (comp instanceof JTabbedPane) {
+                final JTabbedPane tp = (JTabbedPane) comp;
+                int x = tp.getTabCount();
+                for (int i=0; i<x; i++) {
+                    Object compx = tp.getComponentAt(i);
+                    if (compx == last) {
+                        if (hmVisibleListener != null) {
+                            if (hmVisibleListener.get(comp) == null) {
+                                final int pos = i;
+                                ChangeListener cl = (new ChangeListener() {
+                                    @Override
+                                    public void stateChanged(ChangeEvent e) {
+                                        if (tp.getSelectedIndex() == pos) {
+                                            update();
+                                        }
+                                    }
+                                });
+                                tp.addChangeListener(cl);
+                                hmVisibleListener.put(tp, cl);
+                            }
+                        }
+                        
+                        if (tp.getSelectedIndex() != i) {
+                            bVisible = false;
+                            if (hmVisibleListener == null) return false;
+                        }
+                    }
+                }
+            }
+            else if (comp instanceof Window) {
+                Window win = (Window) comp;
+                if (hmVisibleListener != null) {
+                    if (hmVisibleListener.get(comp) == null) {
+                        ComponentListener cl = new ComponentAdapter() {
+                            @Override
+                            public void componentShown(ComponentEvent e) {
+                                update();
+                            }
+                        };
+                        win.addComponentListener(cl);
+                        hmVisibleListener.put(win, cl);
+                    }
+                }
+                
+                if (!win.isVisible()) {
+                    bVisible = false;
+                    if (hmVisibleListener == null) return false;
+                }
+                break;
+            }
+            last = comp;
+        }
+        return bVisible;
+    }
+    
+    
     // Shares hubListeners between hub and all 3 hubChangeListeners
     protected abstract class MyHubChangeListener extends HubChangeListener {
         @Override
@@ -1659,5 +1784,6 @@ public class OAJfcController extends HubListenerAdapter {
             return false;
         }
     }
+    
 }
 

@@ -220,6 +220,9 @@ public class OAHTMLReport<F extends OAObject> extends OAReport {
     public void setHub(Hub<F> hub) {
         this.hub = hub;
     }
+    public Hub<F> getHub() {
+        return this.hub;
+    }
     public void setObject(F obj) {
         this.obj = obj;
     }

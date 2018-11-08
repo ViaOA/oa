@@ -233,8 +233,6 @@ public class OADataSourceAuto extends OADataSource {
 
     @Override
     public byte[] getPropertyBlobValue(OAObject obj, String propertyName) {
-        Object objx = obj.getProperty(propertyName);
-        if (objx instanceof byte[]) return (byte[]) objx;
         return null;
     }
 

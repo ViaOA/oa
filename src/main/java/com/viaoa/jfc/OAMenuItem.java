@@ -139,12 +139,19 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
             control.getEnabledChangeListener().add(hub, OAObjectDelegate.WORD_Changed, true);
         }
         else if (command == ButtonCommand.New) {
-            control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, true, false);
+            control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, true, true);
             control.getEnabledChangeListener().addNewEnabled(hub);
         }
         else if (command == ButtonCommand.Delete) {
-            control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, false);
+            control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
             control.getEnabledChangeListener().addDeleteEnabled(hub);
+        }
+        else if (command == ButtonCommand.Remove) {
+            control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
+            control.getEnabledChangeListener().addRemoveEnabled(hub);
+        }
+        else if (command == ButtonCommand.ClearAO) {
+            control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
         }
         else {
             control = new OAMenuItemController(hub, enabledMode, command);

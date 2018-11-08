@@ -49,6 +49,7 @@ import com.viaoa.jfc.control.HTMLTextPaneController;
 import com.viaoa.jfc.editor.html.*;
 import com.viaoa.jfc.editor.html.OAHTMLEditorKit.Callback;
 import com.viaoa.jfc.editor.html.view.*;
+import com.viaoa.jfc.editor.image.OAImageEditor;
 import com.viaoa.jfc.editor.image.control.OAImagePanelController;
 import com.viaoa.jfc.image.OAImageUtil;
 import com.viaoa.jfc.print.OAPrintUtil;
@@ -2929,10 +2930,18 @@ public class OAHTMLTextPaneController extends OATextController {
         dlgImageEditor.setLayout(new BorderLayout());
         dlgImageEditor.setTitle("Image Editor");
         
+        /*was
         JToolBar tool = getImagePanelController().getToolBar();
         dlgImageEditor.add(tool, BorderLayout.NORTH);
         getImagePanelController().getOAImagePanel().setBorder(new LineBorder(Color.lightGray, 1));
         dlgImageEditor.add(new JScrollPane(getImagePanelController().getOAImagePanel()), BorderLayout.CENTER);
+        */
+
+        JToolBar tool = getImageEditor().getController().getToolBar();
+        getImageEditor().getController().getOAImagePanel().setBorder(new LineBorder(Color.lightGray, 1));
+        
+        dlgImageEditor.add(getImageEditor(), BorderLayout.CENTER);
+        
         dlgImageEditor.setSize(500, 500);
         
         tool.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0,false), "esc");
@@ -2946,6 +2955,17 @@ public class OAHTMLTextPaneController extends OATextController {
         return dlgImageEditor;
     }
     
+//qqqqqqqqq    
+    private OAImageEditor imageEditor;
+    public OAImageEditor getImageEditor() {
+        if (imageEditor != null) return imageEditor;
+        imageEditor = new OAImageEditor(null, null) {
+            
+        };
+        return imageEditor;
+    }
+    
+    /*qqqqqqqqqqq was:            
     public OAImagePanelController getImagePanelController() {
         if (contImagePanel == null) {
             contImagePanel = new OAImagePanelController() {
@@ -2957,6 +2977,7 @@ public class OAHTMLTextPaneController extends OATextController {
         }
         return contImagePanel;
     }
+    */
 
     /**
      * Edit the selected image (MyImageView) and then call OAHTMLTextPane.updateImage(src, img) 
@@ -2968,11 +2989,11 @@ public class OAHTMLTextPaneController extends OATextController {
         if (htmlEditor == null || !htmlEditor.isEnabled() || !htmlEditor.isEditable()) return;
         
         Image img = view.getImage();
-        getImagePanelController().setImage(img);
+        getImageEditor().getController().setImage(img);
         
         getImageEditorDialog().setVisible(true); // modal
  
-        img = getImagePanelController().getBufferedImage();
+        img = getImageEditor().getController().getBufferedImage();
         view.setImage(img);
         
         AttributeSet aset; // = view.getAttributes();  this only has Style attributes, not html, ex: SRC
@@ -2993,7 +3014,7 @@ public class OAHTMLTextPaneController extends OATextController {
      * Have user select a file and then call OAHTMLTextPane.insertImage(src, img) 
      */
     protected void onInsertImage() {
-        JFileChooser fc = getImagePanelController().getImageFileChooserController().getOpenImageFileChooser();
+        JFileChooser fc = getImageEditor().getController().getImageFileChooserController().getOpenImageFileChooser();
         
         int x = fc.showOpenDialog(getWindow());
         if (x != JFileChooser.APPROVE_OPTION) return;
@@ -3059,7 +3080,7 @@ public class OAHTMLTextPaneController extends OATextController {
     private InsertImageDialog dlgInsertImage;
     protected InsertImageDialog getInsertImageDialog() {
         if (dlgInsertImage == null) {
-            JFileChooser fc = getImagePanelController().getImageFileChooserController().getOpenImageFileChooser();
+            JFileChooser fc = getImageEditor().getController().getImageFileChooserController().getOpenImageFileChooser();
             dlgInsertImage = new InsertImageDialog(SwingUtilities.windowForComponent(editor), fc);
         }
         return dlgInsertImage;

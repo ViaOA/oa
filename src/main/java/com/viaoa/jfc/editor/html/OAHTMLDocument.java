@@ -120,7 +120,7 @@ public class OAHTMLDocument extends HTMLDocument {
                     }
                 }
                 else if (t == HTML.Tag.TD) {
-                    b = stackNoBorder.peek();
+                    b = stackNoBorder.size() > 0 && stackNoBorder.peek();
                 }
                 if (b) {
                     Object obj = a.getAttribute(HTML.Attribute.STYLE);

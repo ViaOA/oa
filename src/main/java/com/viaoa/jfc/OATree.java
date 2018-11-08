@@ -1747,6 +1747,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                 }
             }
             
+            Hub hubForceAO = null;
             if (tndUse.node.def.updateHub != null) {
                 Hub hubNode = tndUse.getHub();
                 if (hubNode != null) {
@@ -1781,6 +1782,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                     if (bLastNode) {
                         if (tnd.node instanceof OATreeTitleNode) HubAODelegate.setActiveObjectForce(tndUse.node.def.updateHub, null); 
                         else HubAODelegate.setActiveObjectForce(tndUse.node.def.updateHub, tndUse.object);
+                        hubForceAO = tndUse.node.def.updateHub;
                     }
                     else {
                         // update this node, only if none of the other nodes are using the same updateHub
@@ -1802,7 +1804,10 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                 if (bLastNode || tndUse.node.hub.getActiveObject() != tnd.object) {
                     // 20120228 if selected treeNodeTitle, then tnd.object will be null - set AO=null
                     if (bLastNode) {
-                        HubAODelegate.setActiveObjectForce(tndUse.node.hub, tnd.object);
+                        if (hubForceAO != tndUse.node.hub) {
+                            HubAODelegate.setActiveObjectForce(tndUse.node.hub, tnd.object);
+                            hubForceAO = tndUse.node.hub;
+                        }
                     }
                     else {
                         tndUse.node.hub.setActiveObject(tnd.object);
@@ -1812,7 +1817,9 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
             }
 
             if (hubAdditonalUpdate != null) {
-                HubAODelegate.setActiveObjectForce(hubAdditonalUpdate, null);
+                if (hubForceAO != hubAdditonalUpdate) {
+                    HubAODelegate.setActiveObjectForce(hubAdditonalUpdate, null);
+                }
             }
         }
 
