@@ -11,6 +11,12 @@
 package com.viaoa.jfc.report;
 
 
+/*
+Insert images from object.prop
+    <img src="oaproperty://com.cdi.model.oa.ImageStore/bytes?<%=item.imageStore.id%>">
+
+*/
+
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.print.PageFormat;

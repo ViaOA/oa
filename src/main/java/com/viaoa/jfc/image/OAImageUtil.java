@@ -153,6 +153,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 
 import com.viaoa.jfc.image.jpg.CMYKJPEGImageReader;
+import com.viaoa.util.OAWebUtil;
 
 /**
  * Various untility methods for working with Images.
@@ -1226,7 +1227,19 @@ public class OAImageUtil {
         BufferedImage convertedImg = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB);
         convertedImg.getGraphics().drawImage(src, 0, 0, null);
         return convertedImg;
-   }    
-    
+    }    
+   
+    public static BufferedImage loadWebImage(String url) throws Exception {
+        OAWebUtil.setupHttpsAccess();
+        BufferedImage bi = ImageIO.read(new URL(url));
+        return bi;
+    }
+    public static byte[] loadWebImageBytes(String url) throws Exception {
+        BufferedImage bi = OAImageUtil.loadWebImage(url);
+        if (bi == null) return null;
+        byte[] bs = OAImageUtil.convertToBytes(bi);
+        return bs;
+    }
+  
     
 }

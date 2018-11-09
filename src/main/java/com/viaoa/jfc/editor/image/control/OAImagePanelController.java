@@ -64,6 +64,7 @@ public class OAImagePanelController extends OAJfcController {
         comps = new ImageComponents();
         setup();
         enableVisibleListener(true);
+        updateCommands();
     }
 
     private Object lastActiveObject;
@@ -132,6 +133,8 @@ public class OAImagePanelController extends OAJfcController {
      */
     protected void onImageChanged() {
         updateUndoButton();
+        // 20181109
+        updateHubProperty();
     }
     
     protected void setup() {
@@ -140,7 +143,6 @@ public class OAImagePanelController extends OAJfcController {
             protected void onImageChanged() {
                 super.onImageChanged();
                 OAImagePanelController.this.onImageChanged();
-                updateUndoButton();
             }
             @Override
             public void setShowRectangle(boolean b) {
@@ -264,6 +266,12 @@ public class OAImagePanelController extends OAJfcController {
                 OAImagePanelController.this.onOpen();
             }
         });
+        comps.getUrlButton().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                OAImagePanelController.this.onOpenUrl();
+            }
+        });
         comps.getDeleteButton().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -317,6 +325,34 @@ public class OAImagePanelController extends OAJfcController {
             JOptionPane.showMessageDialog(OAJfcUtil.getWindow(panImage), "Error reading file \"" + fileName+"\"\nError: " + e.getMessage(), "Open image", JOptionPane.WARNING_MESSAGE);
         }
     }
+    
+    protected void onOpenUrl() {
+        getUrlDialog().setVisible(true);
+    }
+    protected UrlDialog dlgUrl;
+    public UrlDialog getUrlDialog() {
+        if (dlgUrl != null) return dlgUrl;
+        dlgUrl = new UrlDialog(OAJfcUtil.getWindow(panImage)) {
+            @Override
+            protected void onOk() {
+                String s = getTextField().getText();
+                setVisible(false);
+                onOpenUrl(s);
+            }
+        };
+        return dlgUrl;
+    }
+    protected void onOpenUrl(String urlLocation) {
+        try {
+            Image img = OAImageUtil.loadWebImage(urlLocation);
+            setImage(img);
+        }
+        catch (Exception e) {
+            JOptionPane.showMessageDialog(OAJfcUtil.getWindow(panImage), "Error downloading file \"" + urlLocation+"\"\nError: " + e.getMessage(), "Download image from web", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    
     protected void onDelete() {
         setImage(null);
     }
@@ -653,6 +689,8 @@ public class OAImagePanelController extends OAJfcController {
     public void updateCommands() {
         boolean b = (panImage != null && panImage.getImage() != null && bEnabled);
         
+        b = b && (hub == null || hub.getAO() != null);
+        
         comps.getCropButton().setEnabled(b && panImage.getShowRectangle());
         
         comps.getRotateCWButton().setEnabled(b);
@@ -690,6 +728,9 @@ public class OAImagePanelController extends OAJfcController {
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
         
+        // 20181109
+        addOpenButton(comps.getUrlButton());
+        comps.getUrlButton().setText("Web Download ...");
         
         if (cmdOpens != null && cmdOpens.length > 0) {
             splitButtonOpen = new OAMultiButtonSplitButton();

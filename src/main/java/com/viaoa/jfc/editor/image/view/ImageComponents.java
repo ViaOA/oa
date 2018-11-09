@@ -12,6 +12,7 @@ package com.viaoa.jfc.editor.image.view;
 
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.event.KeyEvent;
 
 import javax.swing.*;
 
@@ -26,7 +27,7 @@ public class ImageComponents {
 
     private JButton cmdCrop, cmdRotateCW, cmdRotateCCW, cmdBrighter, cmdDarker, cmdSharpen, cmdBlur;
     private JButton cmdScale, cmdUndo, cmdMoreContrast, cmdLessContrast, cmdBrightness, cmdContrast, cmdZoom;
-    private JButton cmdOpen, cmdSave, cmdSaveAs, cmdDelete;
+    private JButton cmdOpen, cmdUrl, cmdSave, cmdSaveAs, cmdDelete;
     private JButton cmdTwain, cmdSignature;
     
     public JButton getCropButton() {
@@ -226,6 +227,18 @@ public class ImageComponents {
         return cmdOpen;
     }
 
+    public JButton getUrlButton() {
+        if (cmdUrl == null) {
+            cmdUrl = new JButton();
+            cmdUrl.setIcon(new ImageIcon(ImageComponents.class.getResource("image/hyperLink.gif")));
+            cmdUrl.setToolTipText("download an image from the web (http[s] server).");
+            cmdUrl.setRequestFocusEnabled(false);
+            cmdUrl.setFocusPainted(false);
+        }
+        return cmdUrl;
+    }
+    
+    
     public JButton getDeleteButton() {
         if (cmdDelete == null) {
             cmdDelete = new JButton();
