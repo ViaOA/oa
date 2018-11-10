@@ -45,7 +45,7 @@ public class OAObjectModel {
     protected boolean bAllowMove;
     
     protected String displayName;
-    protected String displayNamePlural;
+    protected String pluralDisplayName;
    
 
     // flag to know if this model is used by JFC UI apps, in which case it can use Hubs that are loaded in swingWorker thread
@@ -82,12 +82,12 @@ public class OAObjectModel {
 //        firePropertyChange(P_DisplayName, old, this.displayName);
     }
     
-    public String getDisplayNamePlural() {
-        return displayNamePlural;
+    public String getPluralDisplayName() {
+        return pluralDisplayName;
     }
-    public void setDisplayNamePlural(String newValue) {
-        String old = displayNamePlural;
-        this.displayNamePlural = newValue;
+    public void setPluralDisplayName(String newValue) {
+        String old = pluralDisplayName;
+        this.pluralDisplayName = newValue;
 //        firePropertyChange(P_DisplayNamePlural, old, this.displayNamePlural);
     }
     

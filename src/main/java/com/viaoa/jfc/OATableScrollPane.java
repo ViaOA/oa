@@ -157,7 +157,13 @@ public class OATableScrollPane extends JScrollPane implements ChangeListener, Pr
     }
 
     protected OATable createFixedTable(OATable mainTable) {
-        OATable t = new OATable(mainTable.getHub());
+        OATable t = new OATable(mainTable.getHub()) {
+            @Override
+            public void resizeCounterColumn() {
+                super.resizeCounterColumn();
+                fixedTable.setPreferredScrollableViewportSize(fixedTable.getPreferredSize());
+            }
+        };
         /*
             public Component getRenderer(JTable table,Object value, boolean isSelected, boolean hasFocus,int row, int column) {
                 return OATableScrollPane.this.mainTable.getRenderer(table, value, isSelected, hasFocus, row, column);

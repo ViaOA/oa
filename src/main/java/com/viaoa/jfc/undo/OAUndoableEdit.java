@@ -154,7 +154,7 @@ public class OAUndoableEdit implements UndoableEdit {
         if (object != null) c = object.getClass();
         else if (hub != null) c = hub.getObjectClass();
         if (c != null) {
-            s = OAString.getClassName(c);
+            s = c.getSimpleName();
             s = OAString.convertHungarian(s);
         }
         return s;

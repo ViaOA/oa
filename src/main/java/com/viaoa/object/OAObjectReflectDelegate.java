@@ -1951,9 +1951,9 @@ public class OAObjectReflectDelegate {
         }
 
         try {
+            newObject = (OAObject) createNewObject(oaObj.getClass());
             OAThreadLocalDelegate.setLoading(true);
             OAThreadLocalDelegate.setSuppressCSMessages(true);
-            newObject = (OAObject) createNewObject(oaObj.getClass());
             _copyInto(oaObj, newObject, excludeProperties, copyCallback, hmNew);
         }
         finally {
@@ -1998,9 +1998,7 @@ public class OAObjectReflectDelegate {
             throw new IllegalArgumentException("OAObject.copyInto() object is not same class");
         }
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj.getClass());
-        List al = oi.getPropertyInfos();
-        for (int i = 0; i < al.size(); i++) {
-            OAPropertyInfo pi = (OAPropertyInfo) al.get(i);
+        for (OAPropertyInfo pi : oi.getPropertyInfos()) {
             if (excludeProperties != null) {
                 int j = 0;
                 for (; j >= 0 && j < excludeProperties.length; j++) {
@@ -2019,9 +2017,7 @@ public class OAObjectReflectDelegate {
         }
 
         // make copy of owned many objects
-        al = oi.getLinkInfos();
-        for (int i = 0; i < al.size(); i++) {
-            OALinkInfo li = (OALinkInfo) al.get(i);
+        for (OALinkInfo li : oi.getLinkInfos()) {
             if (li.getType() != li.MANY) continue;
             if (li.getCalculated()) continue;
             if (li.getPrivateMethod()) continue;
@@ -2067,9 +2063,7 @@ public class OAObjectReflectDelegate {
         }
 
         // set One links, if it is not an owner, or if it is autocreated
-        al = oi.getLinkInfos();
-        for (int i = 0; i < al.size(); i++) {
-            OALinkInfo li = (OALinkInfo) al.get(i);
+        for (OALinkInfo li : oi.getLinkInfos()) {
             if (li.getType() != li.ONE) continue;
             if (li.getCalculated()) continue;
             if (li.getPrivateMethod()) continue;

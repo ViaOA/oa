@@ -1456,6 +1456,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * Add a column that will that will use checkboxes to show selected rows.
      */
     public OATableColumn addCounterColumn() {
+        bResizeCounterColumn = true;
         return addCounterColumn("#", 4);
     }
 
@@ -1479,9 +1480,19 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         };
         tcCount = addColumn(heading, width, lbl);
         tcCount.setAllowSorting(false);
+        resizeCounterColumn();
         return tcCount;
     }
-    protected OATableColumn tcCount; 
+    protected OATableColumn tcCount;
+    protected boolean bResizeCounterColumn;
+    
+    public void resizeCounterColumn() {
+        if (!bResizeCounterColumn || tcCount == null) return;
+        String s = ""+getHub().getSize();
+        int x = Math.max(s.length(), 2);
+        tcCount.getTableColumn().setPreferredWidth(OAJfcUtil.getCharWidth(x)+11);
+    }
+
     
     // 20150423
     /**
@@ -4168,6 +4179,9 @@ class TableController extends OAJfcController implements ListSelectionListener {
 
         // update hubSelect, to see if objects are in table.hub
         rebuildListSelectionModel();
+        
+        if (table.tableLeft != null && table.tableLeft.tcCount != null) table.tableLeft.resizeCounterColumn(); 
+        else table.resizeCounterColumn();
     }
 
     public @Override void afterSort(HubEvent e) {

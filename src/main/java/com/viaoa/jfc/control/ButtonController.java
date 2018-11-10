@@ -1175,7 +1175,17 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 OAObject obj = getClipboardObject();
                 if (obj != null) {
                     if (!hub.contains(obj)) {
-                        hub.add(obj);
+                        if (bEnableUndo) {
+                            if (hub.getMasterObject() != null) {
+                                String propx = HubDetailDelegate.getPropertyFromDetailToMaster(hub);
+                                OAUndoManager.add(OAUndoableEdit.createUndoablePropertyChange("Paste "+(hub.getOAObjectInfo().getDisplayName()), obj,
+                                    propx, obj.getProperty(propx), hub.getMasterObject())); 
+                            }
+                            else {
+                                OAUndoManager.add(OAUndoableEdit.createUndoableAdd("Paste "+(hub.getOAObjectInfo().getDisplayName()), hub, obj));
+                            }
+                        }
+                        hub.insert(obj, pos);
                     }
                     hub.setAO(obj);
                 }

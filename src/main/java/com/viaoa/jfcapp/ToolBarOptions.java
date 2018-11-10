@@ -19,8 +19,12 @@ public class ToolBarOptions {
     public boolean bHubSearch;
     public boolean bDownload;
 
-    // bGoBack bIcon bLabel bGoto bCommands bSearch bFind bCustom bHubCalc bReport bTable bHubSearch bDownload
     
+    public ToolBarOptions() {
+    }
+    
+    
+    // bGoBack bIcon bLabel bGoto bCommands bSearch bFind bCustom bHubCalc bReport bTable bHubSearch bDownload
     public ToolBarOptions(boolean bGoBack, boolean bIcon, boolean bLabel, boolean bGoto, boolean bCommands, boolean bSearch,
             boolean bFind, boolean bCustom, boolean bHubCalc, boolean bReport, boolean bTable, boolean bHubSearch, boolean bDownload) {
         this.bGoBack = bGoBack;

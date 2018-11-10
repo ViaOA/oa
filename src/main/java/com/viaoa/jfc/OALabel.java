@@ -446,6 +446,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         return getController().getLabel();
     }
 
+    private int lastHortAlign;
     private Object lastObject;
     @Override
     public void setText(String text) {
@@ -455,10 +456,17 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         Hub hx = getHub();
         if (hx == null) return;
         Object objx = hx.getAO();
+        int x = getHorizontalAlignment();
         if (lastObject != objx) {
             lastObject = objx;
+            lastHortAlign = x;
             return;
         }
+        if (x != lastHortAlign) {
+            lastHortAlign = x;
+            return;
+        }
+        
         // blink
         OAJfcUtil.blink(this);
     }
