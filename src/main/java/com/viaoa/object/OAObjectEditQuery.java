@@ -15,6 +15,15 @@ import javax.swing.JLabel;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
 
+/*
+
+    @OAEditQuery()
+    public void onEditQueryLastName(OAObjectEditQuery eq) {
+        switch (eq.getType()) {
+        case AllowVisible:
+
+*/
+
 /**
  * Used to allow interaction with OAObject and other (ex: UI) components.
  * 

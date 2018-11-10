@@ -108,7 +108,9 @@ import com.viaoa.util.OAString;
  * <li>background
  * 
  * <img src='classpath://com.theice.tsam.view.image/icon.gif' alt="">
- * <img src='oaproperty:://classPath/propName?Id' alt=''>  ???? verify that this is correct qqqqqqqqqqq
+ * <img src='oaproperty:://classPath/propName?Id' alt=''>  
+ * 
+ *      ex:  <img src="oaproperty://com.cdi.model.oa.ImageStore/bytes?<%=item.imageStore.id%>">
  * 
  * <li>width
  * <li>height
