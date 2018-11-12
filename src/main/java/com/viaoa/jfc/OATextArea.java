@@ -192,6 +192,20 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJfcComp
         return defaultValue;
     }
 
+
+    public void setTabReplacement(String value) {
+        control.setTabReplacement(value);
+    }
+    public String getTabReplacement() {
+        return control.getTabReplacement();
+    }
+    public void setTrimPastedCode(boolean b) {
+        control.setTrimPastedCode(b);
+    }
+    public boolean getTrimPastedCode() {
+        return control.getTrimPastedCode();
+    }
+    
     
     /**
      * This is a callback method that can be overwritten to determine if the component should be visible or not.

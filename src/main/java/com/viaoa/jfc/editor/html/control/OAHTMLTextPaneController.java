@@ -1154,7 +1154,7 @@ public class OAHTMLTextPaneController extends OATextController {
     >>   COMMAND: InsertField
     *****************************/    
         protected KeyStroke getInsertFieldKeyStroke() {
-            return KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK, false);
+            return KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK, false);
         }
         private Action actionInsertField;
         protected Action getInsertFieldAction() {
@@ -1183,7 +1183,7 @@ public class OAHTMLTextPaneController extends OATextController {
             miInsertField.setToolTipText("Insert a Field to use for dynamic data/mail merges");
             miInsertField.setIcon(new ImageIcon(getImageURL("field.gif")));
             miInsertField.addActionListener(getInsertFieldAction());
-            KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK, false);
+            KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK, false);
             miInsertField.setAccelerator(ks);
             return miInsertField;
         }
@@ -1237,7 +1237,7 @@ public class OAHTMLTextPaneController extends OATextController {
     protected JMenuItem createEditSourceMenuItem() {
         JMenuItem miEditSource = new JMenuItem("Source Code ...");
         miEditSource.setToolTipText("Edit HTML source code");
-        miEditSource.setMnemonic(KeyEvent.VK_I);
+        // miEditSource.setMnemonic(KeyEvent.VK_);
         miEditSource.setIcon(new ImageIcon(getImageURL("source.gif")));
         miEditSource.addActionListener(getEditSourceAction());
         // miEditSource.setAccelerator(getEditSourceKeyStroke());
@@ -2400,7 +2400,7 @@ public class OAHTMLTextPaneController extends OATextController {
     
 // PopupMenu    
     private JMenu pmenuEdit; 
-    protected JPopupMenu getPopupMenu() {
+    public JPopupMenu getPopupMenu() {
         if (editorKit == null) return null; // not yet initialized
         if (popupMenu != null) return popupMenu;
         popupMenu = new JPopupMenu();

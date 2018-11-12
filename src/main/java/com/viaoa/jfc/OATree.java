@@ -1515,11 +1515,18 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         }
     }
     
+//qqqqqqqqqqqqqqqq    
+private boolean bProcessingMousePressed;    
+public boolean isProcessingMousePressed() {
+    return bProcessingMousePressed;
+}
+    
     /**
         Handles popup menus for TreeNodes.
     */
     protected void _processMouseEvent(MouseEvent mouseEvent) {
         if (mouseEvent.getID() == MouseEvent.MOUSE_PRESSED) {
+            bProcessingMousePressed = true;
             bValueChangedCalled = false;  // this is used with valueChanged() to know if super.processMouse() calls valueChanged()
             downLastMouse = true;
             OATreeNodeData tnd = updateCheckBox(mouseEvent.getPoint());
@@ -1556,6 +1563,9 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         }
         catch (Exception e) {
             LOG.log(Level.WARNING, "", e);
+        }
+        finally {
+            bProcessingMousePressed = false;
         }
         
         

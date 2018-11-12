@@ -11,6 +11,7 @@
 package com.viaoa.jfc.control;
 
 import java.awt.Component;
+import java.awt.Event;
 import java.awt.event.*;
 
 import javax.swing.*;
@@ -484,6 +485,11 @@ public class TextFieldController extends OAJfcController implements FocusListene
             }
         	textField.selectAll();
     	}
+    	else if (e.getKeyCode() == KeyEvent.VK_SPACE && ((e.getModifiers() & Event.CTRL_MASK) > 0)) {
+    	    // could be invoking insert-field (see InsertFieldTextController)
+//..qqqqqqqqqqqqqqqq    	    
+    	    bMousePressed = true;
+        }
     }
     
     @Override

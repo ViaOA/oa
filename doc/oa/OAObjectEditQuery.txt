@@ -1,0 +1,51 @@
+
+
+
+
+*** class
+    @OAEditQuery(enabledProperty = SalesOrder.P_CanEdit)
+    public void onEditQuery(OAObjectEditQuery em) {
+    }
+
+    
+*** property
+    
+    
+*** link
+
+
+
+*** command method
+    @OAEditQuery(enabledProperty = SalesOrder.P_DateSubmitted, enabledValue = false, 
+        viewDependentProperties = {SalesOrder.P_DateClosed}
+    )
+    public void onEditQuerySubmitToQuickBooks(OAObjectEditQuery em) {
+        switch (em.getType()) {
+        case AllowEnabled:
+            em.setAllowed(true); 
+            em.setResponse("");
+            break;
+        case AllowVisible:
+            em.setAllowed(true); 
+            em.setResponse("");
+            break;
+        case VerifyCommand:
+            em.setAllowed(true);
+            em.setResponse("");
+            // em.setThrowable(new RuntimeException("error"));
+            break;
+        case SetConfirmForCommand:
+            em.setConfirmMessage("please confirm"); 
+            em.setConfirmTitle("confirm"); 
+            break;
+        case GetToolTip:
+            em.setToolTip("tooltip");
+            break;
+        case UpdateLabel:
+            JLabel lbl = em.getLabel();
+            lbl.setText("");
+            break;
+        }
+    }
+
+

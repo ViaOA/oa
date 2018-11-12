@@ -105,8 +105,13 @@ public class TextAreaController extends OAJfcController implements FocusListener
                 }
             }
             @Override
-            public void insertString(int offset, String str, AttributeSet attr)
-                    throws BadLocationException {
+            public void insertString(int offset, String str, AttributeSet attr) throws BadLocationException {
+                if (str != null && str.length() == 1 && str.charAt(0) == '\t') {
+                    if (tabReplacement != null) str = tabReplacement;
+                }
+                else if (bTrimPastedCode && str.length() > 1) {
+                    str = OAString.unindentCode(str);
+                }
                 super.insertString(offset, str, attr);
             }
             @Override
@@ -133,6 +138,22 @@ public class TextAreaController extends OAJfcController implements FocusListener
         update();
     }
 
+    protected String tabReplacement;
+    public void setTabReplacement(String value) {
+        this.tabReplacement = value;
+    }
+    public String getTabReplacement() {
+        return tabReplacement;
+    }
+    protected boolean bTrimPastedCode;
+    public void setTrimPastedCode(boolean b) {
+        this.bTrimPastedCode = b;
+    }
+    public boolean getTrimPastedCode() {
+        return this.bTrimPastedCode;
+    }
+    
+    
     public @Override void afterChangeActiveObject() {
         boolean b = (focusActiveObject != null && focusActiveObject == activeObject);
         if (b) onFocusLost();

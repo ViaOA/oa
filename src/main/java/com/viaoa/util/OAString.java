@@ -36,10 +36,10 @@ public class OAString {
     public static String trim(String line) {
         if (line == null) return line;
         StringTokenizer st = new StringTokenizer(line," ",false);
-        StringBuffer sb = null;
+        StringBuilder sb = null;
         for ( ;st.hasMoreElements(); ) {
             String word = st.nextToken();
-            if (sb == null) sb = new StringBuffer(line.length());
+            if (sb == null) sb = new StringBuilder(line.length());
             else sb.append(' ');
             sb.append(word);
         }
@@ -155,7 +155,7 @@ public class OAString {
         if (value == null) return "";
 
         int x = value.length();
-        StringBuffer sb = new StringBuffer(x);
+        StringBuilder sb = new StringBuilder(x);
         for (int i=0; i<x ;i++) {
             char ch = value.charAt(i);
 
@@ -288,7 +288,7 @@ public class OAString {
      */
     public static String removeCharacters(String line, String search) {
         if (line == null || search == null) return line;
-        StringBuffer sb = new StringBuffer(line.length());
+        StringBuilder sb = new StringBuilder(line.length());
         int x = line.length();
         for (int i=0; i<x; i++) {
             char ch = line.charAt(i);
@@ -304,7 +304,7 @@ public class OAString {
      */
     public static String removeOtherCharacters(String line, String keep) {
         if (line == null || keep == null) return line;
-        StringBuffer sb = new StringBuffer(line.length());
+        StringBuilder sb = new StringBuilder(line.length());
         int x = line.length();
         for (int i=0; i<x; i++) {
             char ch = line.charAt(i);
@@ -322,7 +322,7 @@ public class OAString {
     }    
     public static String removeNonDigits(String line, boolean bAllowDot) {
         if (line == null) return line;
-        StringBuffer sb = new StringBuffer(line.length());
+        StringBuilder sb = new StringBuilder(line.length());
         int x = line.length();
         for (int i=0; i<x; i++) {
             char ch = line.charAt(i);
@@ -338,7 +338,7 @@ public class OAString {
      */
     public static String removeNonFileNameChars(String line) {
         if (line == null) return line;
-        StringBuffer sb = new StringBuffer(line.length());
+        StringBuilder sb = new StringBuilder(line.length());
         int x = line.length();
         for (int i=0; i<x; i++) {
             char ch = line.charAt(i);
@@ -373,7 +373,7 @@ public class OAString {
         int xr = replace.length();
         int xl = line.length();
         
-        StringBuffer sb = null;  // dont allocate until first match is found
+        StringBuilder sb = null;  // dont allocate until first match is found
         char c=0, origChar=0;
         for (int i=startPos,j=0; ;i++) {
 
@@ -384,7 +384,7 @@ public class OAString {
                     j++;
                     if (j == xs) {
                         if (sb == null) {
-                            sb = new StringBuffer(xl + (xl/10));
+                            sb = new StringBuilder(xl + (xl/10));
                             int e = (i - j) + 1;
                             if (e > 0) sb.append(line.substring(0,e));
                         }
@@ -1154,7 +1154,7 @@ public class OAString {
         if (format == null) return str;
 
         x = format.length();
-        StringBuffer sb = new StringBuffer(str.length() + x);
+        StringBuilder sb = new StringBuilder(str.length() + x);
 
 
         // find L or R and format number
@@ -2231,6 +2231,38 @@ public class OAString {
     }
 
     /**
+     * remove leading spaces from each line in a string that is separated by '\n' 
+     * @param text
+     * @param bBasedOnFirstLine if true, then each line will only remove the same leading spaces found in the first line.  This is good for code.
+     */
+    public static String unindent(String text) {
+        return unindent(text, false);
+    }
+    /**
+     * Used for removing the extra indent spacing for pasting code.
+     */
+    public static String unindentCode(String text) {
+        return unindent(text, true);
+    }
+    public static String unindent(String text, boolean bBasedOnFirstLine) {
+        String newText = "";
+
+        int max = -1;
+        for (String s : text.split("\n") ) {
+            if (newText.length() > 0) newText += '\n';
+            
+            int pos = 0;
+            for ( ; pos < s.length() && s.charAt(pos) == ' ' && (!bBasedOnFirstLine || max < 0 || pos < max); pos++);
+            if (bBasedOnFirstLine && max < 0) max = pos;
+            
+            if (pos > 0) s = s.substring(pos);
+            newText += s;
+        }
+        return newText;
+    }
+    
+    
+    /**
      * Remove ending whitspace from a string.
      */
     public static String trimEndingWhitespace(String text) {
@@ -2823,7 +2855,7 @@ public class OAString {
         if (bIgnoreCase) search = search.toLowerCase();
         
         int xl = line.length();
-        StringBuffer sb = null;  // dont allocate until first match is found
+        StringBuilder sb = null;  // dont allocate until first match is found
         char c=0, origChar=0;
         for (int i=0,j=0; ;i++) {
  
@@ -2834,7 +2866,7 @@ public class OAString {
                     j++;
                     if (j == xs) {
                         if (sb == null) {
-                            sb = new StringBuffer(xl + (xl/10));
+                            sb = new StringBuilder(xl + (xl/10));
                             int e = (i - j) + 1;
                             if (e > 0) sb.append(line.substring(0,e));
                         }

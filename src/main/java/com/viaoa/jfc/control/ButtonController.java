@@ -417,7 +417,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
             eq = OAObjectEditQueryDelegate.getVerifyCommandEditQuery(obj, getMethodName());
             if (!eq.getAllowed()) {
                 String s = eq.getDisplayResponse();
-                JOptionPane.showMessageDialog(button, s, "Warning", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(button, s, "Command Warning", JOptionPane.WARNING_MESSAGE);
                 return false;
             }
             eq = OAObjectEditQueryDelegate.getConfirmCommandEditQuery(obj, getMethodName(), msg, title);
@@ -1185,7 +1185,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
                                 OAUndoManager.add(OAUndoableEdit.createUndoableAdd("Paste "+(hub.getOAObjectInfo().getDisplayName()), hub, obj));
                             }
                         }
-                        hub.insert(obj, pos);
+                        if (pos < 0) hub.add(obj);
+                        else hub.insert(obj, pos);
                     }
                     hub.setAO(obj);
                 }

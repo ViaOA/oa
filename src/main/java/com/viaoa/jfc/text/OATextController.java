@@ -10,10 +10,7 @@
 */
 package com.viaoa.jfc.text;
 
-
 import java.awt.Color;
-
-
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -26,19 +23,22 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.undo.*;
 
 import com.viaoa.jfc.OAButton;
+import com.viaoa.jfc.border.CustomLineBorder;
 import com.viaoa.jfc.text.autocomplete.AutoComplete;
 import com.viaoa.jfc.text.spellcheck.SpellChecker;
 import com.viaoa.jfc.text.view.FindDialog;
+import com.viaoa.util.OAString;
 
 
 /**
- * Adds popup menu to any text component.
- * 
+ * Adds popup menu and spellcheck to any text component
  * @see #main(String[]) for an example.
  */
 public class OATextController {
@@ -62,6 +62,12 @@ public class OATextController {
         this.spellChecker = spellChecker;
         this.bAddUndoSupport = bAddUndoSupport;
 
+        
+        Border border = txt.getBorder();
+        border = new CompoundBorder(new CustomLineBorder(0, 3, 0, 0, Color.LIGHT_GRAY), border); 
+        txt.setBorder(border);
+        txt.setToolTipText(OAString.concat(txt.getToolTipText(), "[right click for menu]", " \n"));
+        
         if (spellChecker != null) {
             this.autoComplete = new AutoComplete(txt) {
                 @Override
@@ -809,7 +815,7 @@ public class OATextController {
         getPopupMenu().show(editor, e.getPoint().x, e.getPoint().y);
     }
     
-    protected JPopupMenu getPopupMenu() {
+    public JPopupMenu getPopupMenu() {
         if (popupMenu != null) return popupMenu;
         
         popupMenu = new JPopupMenu();
@@ -849,6 +855,8 @@ public class OATextController {
         return popupMenu;
     }
     protected void addMenuItems(JPopupMenu popupMenu) {
+        int xx = 4;
+        xx++;//qqqqqqq
     }
     
     protected Window getWindow() {
