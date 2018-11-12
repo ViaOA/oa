@@ -78,6 +78,9 @@ import com.viaoa.util.*;
  *  
  *  
  *  OAHTMLReport will automatically set property values for $DATE, $TIME, $PAGE parameters
+ *  
+ *  Also includes $RANDOM, $SEQ
+ *  
  *  <br>
  * The html code uses special tags "<%= ? %>", where "?" is the property name, or property path to use.
  * 
@@ -101,6 +104,7 @@ public class OAHTMLConverter {
     private TreeNode rootTreeNode;
     private String htmlTemplate;
     private final AtomicInteger aiStopCalled = new AtomicInteger();
+    private int seq;
 
     public OAHTMLConverter() {
     }
@@ -789,14 +793,18 @@ public class OAHTMLConverter {
                 if (props != null) objx = props.get(propertyName);
                 if (objx == null) {
                     if (propInternal != null) objx = propInternal.get(propertyName);
+                    if (objx == null) {
+                        if (propertyName.equalsIgnoreCase("random")) objx = (int) (Math.random() * 10000);
+                        else if (propertyName.equalsIgnoreCase("seq")) objx = ++seq;
+                    }
                 }
                 if (objx != null) {
+                    bFmt = false;
                     if (objx instanceof OADateTime) {
                         result = ((OADateTime) objx).toString(fmt);
-                        bFmt = false;
                     }
                     else {
-                        if (objx != null) result = objx.toString();
+                        if (objx != null) result = OAConv.toString(objx, fmt);
                     }
                 }
             }
@@ -805,6 +813,8 @@ public class OAHTMLConverter {
                 if (result == null) {
                     if (propInternal != null) {
                         Object objx = propInternal.get(propertyName);
+                        if (propertyName.equalsIgnoreCase("random")) objx = (int) (Math.random() * 10000);
+                        else if (propertyName.equalsIgnoreCase("seq")) objx = ++seq;
                         if (objx == null) result = null;
                         else result = objx.toString();
                     }
@@ -814,7 +824,9 @@ public class OAHTMLConverter {
         else {
             if (obj != null && propertyName.length() > 0) {
                 Object objx;
-                if (obj != null) objx = this.getProperty(obj, propertyName);
+                if (obj != null) {
+                    objx = this.getProperty(obj, propertyName);
+                }
                 else objx = null;
                 if (objx instanceof Boolean && fmt != null && fmt.indexOf(';') >= 0) {
                     result = OAConv.toString(objx, fmt);
@@ -824,9 +836,10 @@ public class OAHTMLConverter {
                     if (objx instanceof Hub) {
                         objx = ((Hub) objx).getSize(); // default is to get size of hub
                     }
-                    result = OAConv.toString(objx);
+                    result = OAConv.toString(objx, fmt);
+                    bFmt = false;
 
-                    // if not html, then convert [lf] to <br>
+                    // if not html, then convert [crlf] to <br>
                     boolean b = true;
                     if (result.indexOf('<') >= 0 && result.indexOf('>') >= 0) {
                         String s = result.toLowerCase();
@@ -847,7 +860,7 @@ public class OAHTMLConverter {
 
         if (bFmt && fmt != null && fmt.length() > 0) {
             result = OAString.format(result, fmt);
-            result = OAString.convert(result, " ", "&nbsp;");
+            result = OAString.convert(result, "  ", "&nbsp;&nbsp;");
         }
 
         return result;

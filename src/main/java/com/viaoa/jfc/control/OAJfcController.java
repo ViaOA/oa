@@ -16,6 +16,8 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.net.*;
@@ -382,6 +384,11 @@ public class OAJfcController extends HubListenerAdapter {
             changeListenerVisible.close();
             changeListenerVisible = null;
         }
+        if (hierarchyListener != null) {
+            component.removeHierarchyListener(hierarchyListener);
+            hierarchyListener = null;
+        }
+
         enableVisibleListener(false);
         if (hub != null) hub.removeHubListener(this);
     }
@@ -1585,7 +1592,10 @@ public class OAJfcController extends HubListenerAdapter {
      */
     public void enableVisibleListener(boolean b) {
         if (b) {
-            if (hmVisibleListener == null) hmVisibleListener = new HashMap<>();
+            if (hmVisibleListener == null) {
+                hmVisibleListener = new HashMap<>();
+                isVisibleOnScreen();
+            }
         }
         else {
             if (hmVisibleListener == null) return;
@@ -1603,12 +1613,35 @@ public class OAJfcController extends HubListenerAdapter {
             hmVisibleListener = null;
         }
     }
+    
+    private HierarchyListener hierarchyListener;
     public boolean isVisibleOnScreen() {
         if (component == null) return false;
         boolean bVisible = true;
         
-        Component last = component;
         Component comp = component.getParent();
+
+        // 20181112
+        if (comp == null && hierarchyListener == null) {
+            hierarchyListener = new HierarchyListener() {
+                @Override
+                public void hierarchyChanged(HierarchyEvent e) {
+                    if (hierarchyListener == null) return;
+                    if (hmVisibleListener != null) {
+                        if (component.getParent() == null) return;
+                        if (hmVisibleListener.size() == 0) {
+                            isVisibleOnScreen();                            
+                            if (hmVisibleListener.size() == 0) return;
+                        }
+                    }
+                    component.removeHierarchyListener(hierarchyListener);
+                    hierarchyListener = null;
+                }
+            };
+            component.addHierarchyListener(hierarchyListener);
+        }
+
+        Component last = component;
         for ( ; comp != null; comp = comp.getParent()) {
             if (comp instanceof JTabbedPane) {
                 final JTabbedPane tp = (JTabbedPane) comp;

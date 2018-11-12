@@ -66,7 +66,7 @@ public class OATextController {
         Border border = txt.getBorder();
         border = new CompoundBorder(new CustomLineBorder(0, 3, 0, 0, Color.LIGHT_GRAY), border); 
         txt.setBorder(border);
-        txt.setToolTipText(OAString.concat(txt.getToolTipText(), "[right click for menu]", " \n"));
+        // txt.setToolTipText(OAString.concat(txt.getToolTipText(), "[right click for menu]", " \n"));
         
         if (spellChecker != null) {
             this.autoComplete = new AutoComplete(txt) {

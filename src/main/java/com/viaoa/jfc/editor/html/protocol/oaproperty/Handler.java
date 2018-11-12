@@ -128,24 +128,24 @@ public class Handler extends com.viaoa.jfc.editor.html.protocol.classpath.Handle
             throw new IOException(s, e);
         }
         
-        int w = 0;
-        int h = 0;
+        int wMax = 0;
+        int hMax = 0;
         for (int i=0; i<params.length; i++) {
             String s = params[i];
             int pos = s.indexOf("=");
             if (pos < 0) continue;
             s = s.substring(0, pos);
             String s2 = params[i].substring(pos+1); 
-            if (s.equalsIgnoreCase("w")) {
-               w = OAConv.toInt(s2);
+            if (s.equalsIgnoreCase("w") || s.equalsIgnoreCase("mw") || s.equalsIgnoreCase("maxw")) {
+               wMax = OAConv.toInt(s2);
             }
-            else if (s.equalsIgnoreCase("h")) {
-                h = OAConv.toInt(s2);
+            if (s.equalsIgnoreCase("h") || s.equalsIgnoreCase("mh") || s.equalsIgnoreCase("maxh")) {
+                hMax = OAConv.toInt(s2);
             }
         }
-        if (w > 0 || h > 0) {
+        if (wMax > 0 || hMax > 0) {
             BufferedImage bi = OAImageUtil.convertToBufferedImage(bx);
-            bi = OAImageUtil.scaleDownToSize(bi, w, h);
+            bi = OAImageUtil.scaleDownToSize(bi, wMax, hMax);
             bx = OAImageUtil.convertToBytes(bi);
         }
         
