@@ -116,6 +116,7 @@ public class OAJfcController extends HubListenerAdapter {
 
     protected String toolTipTextPropertyPath;
     protected String nullDescription = "";
+    protected boolean bHtml;
 
     // display collumn width
     private int columns;
@@ -149,7 +150,6 @@ public class OAJfcController extends HubListenerAdapter {
 
     protected String toolTipTextTemplate;
     private OATemplate templateToolTipText;
-    
     
     /**
      * Create new controller for Hub and Jfc component
@@ -1409,7 +1409,14 @@ public class OAJfcController extends HubListenerAdapter {
         update();
     }
 
+    public void setHtml(boolean b) {
+        this.bHtml = b;
+    }
+    public boolean getHtml() {
+        return this.bHtml;
+    }
 
+    
     /**
         Description to use for Undo and Redo presentation names.
         @see OAUndoableEdit#setPresentationName

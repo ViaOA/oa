@@ -162,6 +162,7 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
             pi.setId(m.getAnnotation(OAId.class) != null);
             pi.setUnique(oaprop.isUnique());
             pi.setProcessed(oaprop.isProcessed());
+            pi.setHtml(oaprop.isHtml());
             pi.setClassType(m.getReturnType());
 
             OAColumn oacol = (OAColumn) m.getAnnotation(OAColumn.class);
@@ -245,6 +246,7 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
             }
             ci.setOACalculatedProperty(annotation);
             ci.setClassType(m.getReturnType());
+            ci.setHtml(annotation.isHtml());
 
             OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
             if (eq != null) {

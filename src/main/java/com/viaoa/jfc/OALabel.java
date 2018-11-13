@@ -33,6 +33,8 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     private OALabelController control;
     private OATable table;
     private String heading = "";
+    private boolean bHtml;
+    
 
     /**
         Create label that is bound to a property for the active object in a Hub.
@@ -405,7 +407,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         public OALabelController(OAObject hubObject, String propertyPath) {
             super(hubObject, OALabel.this, propertyPath);
         }        
-        
+
         @Override
         protected boolean isVisible(boolean bIsCurrentlyVisible) {
             bIsCurrentlyVisible = super.isVisible(bIsCurrentlyVisible);
@@ -429,6 +431,16 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     @Override
     public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column,boolean wasChanged, boolean wasMouseOver) {
         Object obj = ((OATable) table).getObjectAt(row, column);
+        
+        if ((value instanceof String) && getHtml()) {
+            String sval = (String) value;
+            if (sval.toLowerCase().indexOf("<html") < 0) {
+                if (sval.indexOf("<") >= 0 && sval.indexOf(">") >= 0) {
+                    lbl.setText("<html>"+sval);
+                }
+            }
+        }
+        
         customizeRenderer(lbl, obj, value, isSelected, hasFocus, row, wasChanged, wasMouseOver);
     }
 
@@ -525,5 +537,12 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     }
     public String getToolTipTextTemplate() {
         return this.control.getToolTipTextTemplate();
+    }
+    
+    public void setHtml(boolean b) {
+        control.setHtml(b);
+    }
+    public boolean getHtml() {
+        return control.getHtml();
     }
 }

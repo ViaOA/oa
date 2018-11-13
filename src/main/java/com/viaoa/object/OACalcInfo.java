@@ -64,6 +64,7 @@ public class OACalcInfo implements java.io.Serializable {
      */
     boolean bIsForHub;  
     private Method editQueryMethod;
+    private boolean isHtml;
 
     private String[] viewDependentProperties;
     private String[] userDependentProperties;
@@ -108,6 +109,14 @@ public class OACalcInfo implements java.io.Serializable {
     public String getName() {
         return name;
     }
+    
+    public boolean isHtml() {
+        return isHtml;
+    }
+    public void setHtml(boolean b) {
+        this.isHtml = b;
+    }
+    
     /** get property paths of all dependent properties */
     public String[] getDependentProperties() {
         return dependentProperties;

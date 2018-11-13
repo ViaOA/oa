@@ -241,6 +241,7 @@ public class Table {
 
     // get the matching link columns in the "to" table
     public Column[] getLinkToColumns(Link link, Table toTable) {
+        if (link == null || toTable == null) return null;
         String revProp = link.reversePropertyName;
         Link[] links = toTable.getLinks();
         Column[] hold = null;

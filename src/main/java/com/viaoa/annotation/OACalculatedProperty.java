@@ -47,6 +47,7 @@ public @interface OACalculatedProperty {
     boolean isPhone() default false;
     boolean isZipCode() default false;
     boolean isCurrency() default false;
+    boolean isHtml() default false;
 
     String columnName() default "";
     String toolTip() default "";

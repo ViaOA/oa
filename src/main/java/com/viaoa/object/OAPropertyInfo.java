@@ -40,6 +40,7 @@ public class OAPropertyInfo implements java.io.Serializable {
     private boolean isCurrency;
     private Method editQueryMethod;
     private boolean isProcessed;
+    private boolean isHtml;
 
     private String enabledProperty;
     private boolean enabledValue;
@@ -185,6 +186,13 @@ public class OAPropertyInfo implements java.io.Serializable {
     }
     public void setCurrency(boolean b) {
         this.isCurrency = b;
+    }
+
+    public boolean isHtml() {
+        return isHtml;
+    }
+    public void setHtml(boolean b) {
+        this.isHtml = b;
     }
     
     public void setViewDependentProperties(String[] ss) {

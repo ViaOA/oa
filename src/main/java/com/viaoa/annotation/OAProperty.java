@@ -68,6 +68,7 @@ public @interface OAProperty {
     boolean isCaseSensitive() default false;
     boolean isPhone() default false;
     boolean isZipCode() default false;
+    boolean isHtml() default false;
     
     /** @return if true, then the property value must be unique. */
     boolean isUnique() default false;

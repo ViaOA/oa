@@ -15,6 +15,8 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
+import com.viaoa.annotation.OACalculatedProperty;
+import com.viaoa.annotation.OAProperty;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
@@ -98,6 +100,16 @@ public class LabelController extends OAJfcController {
         if (OAReflect.isNumber(getEndPropertyClass())) {
             thisLabel.setHorizontalAlignment(JLabel.RIGHT);
         }
+        
+        OAProperty pa = oaPropertyPath.getOAPropertyAnnotation();
+        if (pa != null && pa.isHtml()) {
+            setHtml(true);
+        }
+        else {
+            OACalculatedProperty ca = oaPropertyPath.getOACalculatedPropertyAnnotation();
+            if (ca != null && ca.isHtml()) setHtml(true);
+        }
+        
         update();
     }
 
