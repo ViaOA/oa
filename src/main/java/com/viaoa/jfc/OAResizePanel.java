@@ -50,7 +50,9 @@ import javax.swing.border.LineBorder;
  */
 public class OAResizePanel extends JPanel {
 
-    public static boolean DEBUG = false;
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqq    
+public static boolean DEBUG = true;
+//    public static boolean DEBUG = false;
     
     public OAResizePanel(JComponent comp) {
         setup(comp, 50, false);
@@ -63,9 +65,87 @@ public class OAResizePanel extends JPanel {
         setup(comp, percentage, bBoth);
     }
     
+    public OAResizePanel(JComponent comp, JComponent comp2, int percentage, boolean bBoth) {
+        this(null, comp,comp2, percentage, bBoth);
+    }
 
-    private void setup(JComponent comp, int percentage, boolean bBoth) {
+    public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2, int percentage) {
+        this(icon, comp,comp2, percentage, false);
+    }
+
+    public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2, int percentage, boolean bBoth) {
+        final JPanel panel = new JPanel();
+
+        GridBagLayout gb = new GridBagLayout();
+        panel.setLayout(gb);
+        panel.setBorder(null);
         
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.anchor = GridBagConstraints.WEST;
+        gc.fill = gc.NONE;
+        gc.weightx = gc.weighty = 0.0; 
+        
+        if (icon != null) {
+            JLabel lbl = new JLabel(icon);
+            lbl.setOpaque(true);
+            gc.insets = new Insets(0, 0, 0, 5);
+            panel.add(lbl, gc);
+            lbl.setLabelFor(comp);
+        }
+        gc.insets = new Insets(0, 0, 0, 0);
+        if (bBoth) {
+            gc.fill = gc.BOTH;
+            gc.weightx = gc.weighty = 1.0; 
+        }
+        else {
+            gc.fill = gc.HORIZONTAL;
+            gc.weightx = 1.0; 
+        }
+
+        // 20161129 this will allow for using preferred, and max sizing
+        JPanel panComp = new JPanel();
+        BoxLayout box = new BoxLayout(panComp, BoxLayout.X_AXIS);
+        panComp.setLayout(box);
+        panComp.add(comp);
+
+        
+        if (comp2 != null) {
+            panComp.add(Box.createHorizontalStrut(2));
+            panComp.add(comp2);
+        }
+        
+        panel.add(panComp, gc);
+        
+        setup(panel, percentage, bBoth);        
+    }
+
+    
+/*was    
+    public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2, int percentage, boolean bBoth) {
+        JPanel panComp = new JPanel();
+        BoxLayout box = new BoxLayout(panComp, BoxLayout.X_AXIS);
+        panComp.setLayout(box);
+        if (icon != null) {
+            JLabel lbl = new JLabel(icon);
+            lbl.setOpaque(true);
+            panComp.add(lbl);
+            panComp.add(Box.createHorizontalStrut(4));
+            lbl.setLabelFor(comp);
+        }
+        panComp.add(comp);
+        if (comp2 != null) panComp.add(comp2);
+        setup(panComp, percentage, bBoth);        
+    }
+*/
+    public OAResizePanel(JComponent comp, JComponent comp2, int percentage) {
+        this(comp, comp2, percentage, false);
+    }
+    public OAResizePanel(JComponent comp, JComponent comp2) {
+        this(comp, comp2, 50, false);
+    }
+
+    
+    private void setup(JComponent comp, int percentage, boolean bBoth) {
         // 20181004
         if (comp instanceof JScrollPane) {
             JScrollPane jsp = (JScrollPane) comp;
@@ -121,6 +201,7 @@ public class OAResizePanel extends JPanel {
         panComp.setLayout(box);
         panComp.add(comp);
         
+        
         gcx.weightx = gcx.weighty = ((double)percentage)/100.0d;
         gcx.gridwidth = 1;
         add(panComp, gcx);
@@ -133,6 +214,11 @@ public class OAResizePanel extends JPanel {
             lbl.setText("<<");        
             lbl.setOpaque(true);        
             lbl.setBackground(Color.lightGray);
+
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq            
+if (comp instanceof JLabel)            
+            lbl.setBackground(Color.RED);
+            
             setBorder(new LineBorder(Color.yellow, 3));
         }
         add(lbl, gcx);
@@ -143,36 +229,6 @@ public class OAResizePanel extends JPanel {
         }
     }
     
-    public OAResizePanel(JComponent comp, JComponent comp2, int percentage, boolean bBoth) {
-        this(null, comp,comp2, percentage, bBoth);
-    }
-
-    public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2, int percentage) {
-        this(icon, comp,comp2, percentage, false);
-    }
-    
-    public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2, int percentage, boolean bBoth) {
-        JPanel panComp = new JPanel();
-        BoxLayout box = new BoxLayout(panComp, BoxLayout.X_AXIS);
-        panComp.setLayout(box);
-        if (icon != null) {
-            JLabel lbl = new JLabel(icon);
-            lbl.setOpaque(true);
-            panComp.add(lbl);
-            panComp.add(Box.createHorizontalStrut(4));
-            lbl.setLabelFor(comp);
-        }
-        panComp.add(comp);
-        if (comp2 != null) panComp.add(comp2);
-        setup(panComp, percentage, bBoth);        
-    }
-
-    public OAResizePanel(JComponent comp, JComponent comp2, int percentage) {
-        this(comp, comp2, percentage, false);
-    }
-    public OAResizePanel(JComponent comp, JComponent comp2) {
-        this(comp, comp2, 50, false);
-    }
 
     /**
      * Used when Window.pack is called so that preferred size is used.

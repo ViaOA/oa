@@ -399,12 +399,18 @@ public abstract class AutoCompleteBase {
                     catch (Exception e) {
                     }
                 }
-                try {
-                    dim = updateSelectionList(textComp.getText(), offset);
-                }
-                catch (Exception e) {
-                    System.out.println("Error in AutoCompleteBase, calling updateSelectionList, ex="+e);
-                    e.printStackTrace();
+                for (int i=0; i<3 ;i++) {
+                    try {
+                        dim = updateSelectionList(textComp.getText(), offset);
+                        break;
+                    }
+                    catch (Exception e) {
+                        if (i > 0) {
+                            //qqqqq this is not in awtThread, so it there can be errors ... might need to initialize jcomponents beforehand
+                            System.out.println("Error in AutoCompleteBase, calling updateSelectionList, ex="+e);
+                            e.printStackTrace();
+                        }
+                    }
                 }
                 return null;
             }

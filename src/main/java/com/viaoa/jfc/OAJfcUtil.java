@@ -296,9 +296,15 @@ public class OAJfcUtil {
         if (averageCharWidth != 0) {
             return averageCharWidth * columns;
         }
+        return getCharWidth() * columns;
+    }
+    public static int getCharWidth() {
+        if (averageCharWidth != 0) {
+            return averageCharWidth;
+        }
         JTextField txt = new JTextField();
         Font font = txt.getFont();
-        return getCharWidth(txt, font, columns);
+        return getCharWidth(txt, font, 1);
     }
     public static int getCharWidth(Component comp, Font font, int columns) {
         if (comp == null) return 0;
@@ -315,7 +321,10 @@ public class OAJfcUtil {
             //averageCharWidth = (int) (fm.stringWidth("9XYma") / 5);
             // averageCharWidth = fm.charWidth('m');  // =11, same code used by JTextField.getColumnWidth 
 
-            averageCharWidth = (int) (fm.stringWidth("9m0M123456") / 10);  // =7
+            // 2018116
+            String s = "AaBbCcDdEeFfGgWwMmYyZz12345";
+            averageCharWidth = (int) Math.ceil(fm.stringWidth(s) / s.length());  // =7or8
+            //was: averageCharWidth = (int) (fm.stringWidth("9m0M123456") / 10);  // =7or8
 
             /* test
             Font fontx = new Font( "Monospaced", Font.PLAIN, 12 );

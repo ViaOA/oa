@@ -169,8 +169,10 @@ public class ComboBoxController extends OAJfcController implements FocusListener
         }
         ComboBoxController.this.update();
         ComboBoxController.this.comboBox.repaint();
+        super.afterChangeActiveObject(e);
     }
     public @Override void afterPropertyChange() {
+        super.afterPropertyChange();
         ComboBoxController.this.comboBox.repaint();
     }
     

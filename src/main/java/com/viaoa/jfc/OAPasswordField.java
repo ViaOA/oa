@@ -204,7 +204,7 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
     }
 	
 	
-    class OAPasswordFieldController extends TextFieldController {
+    public class OAPasswordFieldController extends TextFieldController {
         public OAPasswordFieldController(Hub hub, String propertyPath) {
             super(hub, OAPasswordField.this, propertyPath);
             // passwords are not encrypted by default        

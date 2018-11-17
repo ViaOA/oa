@@ -165,6 +165,32 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
             };
         }
         else if (command == ButtonCommand.Search) {
+//qqqqqqqqqqqqqqqqqqqqqqqqqqq 
+            control = new OAButtonController(hub, ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, false, false) {
+                @Override
+                public Object getSearchObject() {
+                    return OAButton.this.getSearchObject();
+                }
+            };
+
+            Hub hubx = null;
+            String propx = null;
+            if (hub != null) {
+                hubx = hub.getLinkHub();
+                if (hubx != null) propx = hub.getLinkPath();
+                else {
+                    hubx = hub.getMasterHub();
+                    if (hubx != null) {
+                        propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+                    }
+                }
+            }
+            if (hubx != null && OAString.isNotEmpty(propx)) {
+                control.getEnabledChangeListener().addEditQueryEnabled(hubx, propx);
+            }
+            
+            
+/*was:            
             control = new OAButtonController(hub, enabledMode, command) {
                 @Override
                 protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
@@ -192,6 +218,7 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
                     return OAButton.this.getSearchObject();
                 }
             };
+*/            
         }
         else if (command == ButtonCommand.Save) {
             control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, false, false);

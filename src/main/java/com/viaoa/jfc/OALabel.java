@@ -256,7 +256,8 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         }
         
         if (d.height < 15) {
-            d.height = 18;
+            if (heightHold > 0) d.height = heightHold;
+            else d.height = lblStatic.getPreferredSize().height;
         }
         
         return d;
@@ -276,27 +277,32 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
             }
         }
 
+        // 20181115 resize based on size of text        
+        String text = getText();
+        if (text == null) text = "";
+
+        int x = Math.min(text.length(), cols);
+        x = Math.max(x, getMiniColumns());
+        x = Math.max(x, 2);
+        cols = x;
+        
+        
         Insets ins = getInsets();
         int inx = ins == null ? 0 : ins.left + ins.right;
         
-        if (cols > 0) d.width = OAJfcUtil.getCharWidth(cols) + inx;
-        else {
-            // also check size of text, so that label is not bigger then the text it needs to display
-            String s = getText();
-            if (s == null) s = " ";
-            
-            FontMetrics fm = getFontMetrics(getFont());
-            d.width = Math.min(d.width, fm.stringWidth(s)+inx+2);
+        d.width = OAJfcUtil.getCharWidth(cols) + inx + 6;
+
+        if (OAString.isEmpty(text)) {
+            if (heightHold > 0) d.height = heightHold;
+            else d.height = lblStatic.getPreferredSize().height;
         }
-        
-        // dont size under pref size
-        Dimension dx = getPreferredSize();
-        d.width = Math.max(d.width, dx.width);
-        d.height = Math.max(d.height, dx.height);
+        else heightHold = d.height;
 
         return d;
     }
-
+    private int heightHold;
+    private static JLabel lblStatic = new JLabel("XXX"); 
+    
     public Dimension getMinimumSize() {
         Dimension d = super.getMinimumSize();
         if (isMinimumSizeSet()) return d;
@@ -463,24 +469,29 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     @Override
     public void setText(String text) {
         boolean b = OAString.isEqual(text, getText());
-        super.setText(text);
-        if (b) return;
-        Hub hx = getHub();
-        if (hx == null) return;
-        Object objx = hx.getAO();
-        int x = getHorizontalAlignment();
-        if (lastObject != objx) {
-            lastObject = objx;
-            lastHortAlign = x;
-            return;
-        }
-        if (x != lastHortAlign) {
-            lastHortAlign = x;
-            return;
-        }
         
-        // blink
-        OAJfcUtil.blink(this);
+        if (text == null) text = "";
+        super.setText(text);
+        
+        if (!b) {
+            Hub hx = getHub();
+            if (hx == null) return;
+            Object objx = hx.getAO();
+            int x = getHorizontalAlignment();
+            if (lastObject != objx) {
+                lastObject = objx;
+                lastHortAlign = x;
+                return;
+            }
+            if (x != lastHortAlign) {
+                lastHortAlign = x;
+                return;
+            }
+            
+            // blink
+            OAJfcUtil.blink(this);
+        }
+        invalidate();
     }
     
     

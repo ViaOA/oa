@@ -333,6 +333,7 @@ public class QueryConverter {
             Link link = links[i];
             Table newFromTable = null;
             if (link.toTable != toTable) {
+                if (link.toTable == null) continue;
                 if (!link.toTable.bLink) continue;
 
                 if (propertyFromWhereObject == null) continue;
@@ -1724,8 +1725,8 @@ public class QueryConverter {
             for (int i=0; i < links.length; i++) {
                 counter++;
                 Table toTable = tabLinks[i].toTable;
-
-                links[i] = new Linkinfo(tabLinks[i].toTable.clazz, counter, this);
+                if (toTable == null) continue;
+                links[i] = new Linkinfo(toTable.clazz, counter, this);
                 if (toTable.bLink) {
                     links[i].table = toTable;
                     links[i].bLink = true;

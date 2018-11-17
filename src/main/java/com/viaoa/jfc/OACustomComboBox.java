@@ -587,8 +587,53 @@ focusComp = this;
             super.update(comp, object, bIncudeToolTip);
             OACustomComboBox.this.afterUpdate();
         }
+        @Override
+        protected void afterChangeActiveObject() {
+            super.afterChangeActiveObject();
+            OACustomComboBox.this.invalidate();
+        }
+        @Override
+        protected void afterPropertyChange() {
+            super.afterPropertyChange();
+            OACustomComboBox.this.invalidate();
+        }
     }
 
+    
+    public Dimension getMaximumSize() {
+        Dimension d = super.getMaximumSize();
+        if (isMaximumSizeSet()) return d;
+        
+        int cols = getMaxColumns();
+        if (cols <= 0) {
+            cols = getColumns() * 2;
+            if (cols <= 0) return d;
+        }
+
+        // 20181115 resize based on size of text
+        Hub h = getHub();
+        if (h != null && control != null) {
+            Object obj = h.getAO();
+            String s = control.getValueAsString(obj);
+
+            int x = s == null ? 0 : s.length();
+            x = Math.min(x, cols);
+            
+            int x2 = getMinimumColumns();
+            if (x2 == 0) x2 = getColumns();
+            x = Math.max(x, x2);
+            x = Math.max(x, 2);
+            cols = x;
+        }
+        
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
+
+        d.width = OAJfcUtil.getCharWidth(cols) + inx + 20; 
+        return d;
+    }
+    
+/*qqqqqqqqq was: before 20181116    
     public Dimension getMaximumSize() {
         Dimension d = super.getMaximumSize();
         if (isMaximumSizeSet()) return d;
@@ -606,7 +651,7 @@ focusComp = this;
         
         return d;
     }
-
+*/
     public Dimension getMinimumSize() {
         Dimension d = super.getMinimumSize();
         if (isMinimumSizeSet()) return d;

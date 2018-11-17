@@ -18,8 +18,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.net.*;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -301,16 +299,13 @@ public class OAJfcController extends HubListenerAdapter {
             if (hubLink != null) {
                 getEnabledChangeListener().add(hubLink, HubChangeListener.Type.AoNotNull);
                 if (bUseEditQuery) {
-                    // check to see if linkToHub needs to be added to changeListener
                     addEnabledEditQueryCheck(hubLink, linkPropertyName);
-                    // addVisibleEditQueryCheck(hubLink, linkPropertyName);
+                    addVisibleEditQueryCheck(hubLink, linkPropertyName);
                 }
             }
         }
         update();
     }
-
-    
     
     public void bind(Hub hub, String propertyPath, boolean bUseLinkHub) {
         this.hub = hub;
@@ -606,6 +601,21 @@ public class OAJfcController extends HubListenerAdapter {
         return value;
     }
     
+    private HubProp hpViewOnly;
+    public void setViewOnly(boolean b) {
+        if (b) {
+            if (hpViewOnly == null) {
+                hpViewOnly = getEnabledChangeListener().addAlwaysFalse();
+            }
+        }
+        else {
+            if (hpViewOnly != null) {
+                getEnabledChangeListener().remove(hpViewOnly);
+                hpViewOnly = null;
+            }
+        }
+    }
+    
     /**
      * Used to verify a property change.
      * @return null if no errors, else error message
@@ -875,7 +885,7 @@ public class OAJfcController extends HubListenerAdapter {
     
     
     public Icon getIcon() {
-        if (this.image == null) {
+        if (this.image != null) {
             ImageIcon ii = new ImageIcon(this.image);
             return ii;
         }
@@ -1149,7 +1159,7 @@ public class OAJfcController extends HubListenerAdapter {
                             if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
                                 objx = oaPropertyPath.getLastLinkValue(objx);
                             }
-                            OAObjectEditQueryDelegate.renderLabel((OAObject)objx, endPropertyName, (JLabel)  comp);
+                            OAObjectEditQueryDelegate.renderLabel((OAObject)objx, endPropertyName, lblThis);
                         }
                     }
                     catch (Exception e) {

@@ -48,6 +48,16 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
                 if (msg == null) msg = super.isValid(object, value);
                 return msg;
             }
+            @Override
+            public void afterChangeActiveObject() {
+                super.afterChangeActiveObject();
+                OAFormattedTextField.this.revalidate();
+            }
+            @Override
+            public void afterPropertyChange() {
+                super.afterPropertyChange();
+                OAFormattedTextField.this.revalidate();
+            }
         };
         initialize();
     }
@@ -103,11 +113,80 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
         if (table != null) table.setColumnHeading(table.getColumnIndex(this),heading);
     }
 
+    @Override
+    protected int getColumnWidth() {
+        int x = OAJfcUtil.getCharWidth();
+        return x;
+    }
+    
     public Dimension getMinimumSize() {
         Dimension d = super.getPreferredSize();
         return d;
     }
 
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension d = super.getPreferredSize();
+        return d;
+    }
+    
+    public Dimension getMaximumSize() {
+        Dimension d = super.getMaximumSize();
+        if (isMaximumSizeSet()) return d;
+        
+        int maxCols = getMaximumColumns();
+        if (maxCols < 1)  {
+            //cols = control.getDataSourceMaxColumns();
+            //if (cols < 1) {
+                maxCols = control.getPropertyInfoMaxColumns();
+                if (maxCols < 1) {
+                    maxCols = 999;
+                    // cols = getColumns() * 2; 
+                }
+            //}
+        }
+
+        // 20181115 resize based on size of text        
+        String s = getText();
+        if (s == null) s = "";
+        int x = Math.min(s.length()+3, maxCols);
+        
+        int cols = getColumns();
+        x = Math.max(x, cols);
+        x = Math.max(x, 2);
+        cols = x;
+        
+        /*
+        x = s.length();
+        if (x + 5 > cols) {
+            cols = Math.min(maxCols, x+5);
+        }
+        */
+        
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
+        
+        d.width = OAJfcUtil.getCharWidth(cols) + inx;
+        return d;
+    }
+
+    public void setMaximumColumns(int x) {
+        control.setMaximumColumns(x);
+        invalidate();
+    }
+    public int getMaximumColumns() {
+        return control.getMaximumColumns();
+    }
+    public void setMinimumColumns(int x) {
+        control.setMinimumColumns(x);
+        invalidate();
+    }
+    public int getMinimumColumns() {
+        return control.getMinimumColumns();
+    }
+    
+    
+    
     /** called by getTableCellRendererComponent */
     public Component getTableRenderer(JLabel renderer, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         if (control != null) {

@@ -69,8 +69,14 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJfcComp
     public OAComboBox(Hub hub, String propertyPath) {
         control = new OAComboBoxController(hub, propertyPath) {
             @Override
-            public void onItemSelected(int row) {
-                 OAComboBox.this.onItemSelected(row);
+            protected void afterChangeActiveObject() {
+                super.afterChangeActiveObject();
+                OAComboBox.this.revalidate();                
+            }
+            @Override
+            public void afterPropertyChange() {
+                super.afterPropertyChange();
+                OAComboBox.this.revalidate();                
             }
         };
         Color c = UIManager.getColor("ComboBox.foreground");
@@ -726,11 +732,32 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
             cols = getColumns() * 2;
             if (cols <= 0) return d;
         }
+
+        // 20181115 resize based on size of text
+        Hub h = getHub();
+        if (h != null && control != null) {
+            Object obj = h.getAO();
+            String s = control.getValueAsString(obj);
+
+            int x = s == null ? 0 : s.length();
+            x = Math.min(x, cols);
+            
+            int x2 = getMinimumColumns();
+            if (x2 == 0) x2 = getColumns();
+            x = Math.max(x, x2);
+            x = Math.max(x, 2);
+            cols = x;
+        }
         
         Insets ins = getInsets();
         int inx = ins == null ? 0 : ins.left + ins.right;
 
-        d.width = OAJfcUtil.getCharWidth(cols) + inx; 
+        d.width = OAJfcUtil.getCharWidth(cols) + inx + 40; 
+
+        if (control != null) {
+            Icon icon = getIcon();
+            if (icon != null) d.width += (icon.getIconWidth() + 10);
+        }
         
         return d;
     }
