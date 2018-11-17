@@ -327,15 +327,16 @@ public class CutCopyPasteController {
         bManualCut = bManualCopy = bManualPaste = false;    
         bManualCut = bManualCopy = (hubManual.getAO() != null);
         
-        OAObject obj = getClipboardObject();
+        OAObject obj = getClipboardObject(true);
+        if (obj == null) obj = getClipboardObject(false);
         bManualPaste = obj != null && obj.getClass().equals(hubManual.getObjectClass());
     }
 
-    protected OAObject getClipboardObject() {
+    protected OAObject getClipboardObject(boolean bFromCut) {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
         OAObject oaObj;
         try {
-            Object objx = cb.getData(OATransferable.OAOBJECT_FLAVOR);
+            Object objx = cb.getData(bFromCut ? OATransferable.OAOBJECT_CUT_FLAVOR : OATransferable.OAOBJECT_COPY_FLAVOR);
             if (objx instanceof OAObject) oaObj = (OAObject) objx;
             else oaObj = null;
         }
@@ -373,7 +374,7 @@ public class CutCopyPasteController {
         }
         else if (hubManual != null) {
             Object ho = hubManual.getActiveObject();
-            if (ho instanceof OAObject) addToClipboard(hubManual, (OAObject)ho);
+            if (ho instanceof OAObject) addToClipboard(hubManual, (OAObject)ho, true);
         }
         update();
     }
@@ -384,8 +385,8 @@ public class CutCopyPasteController {
         else if (hubManual != null) {
             Object ho = hubManual.getActiveObject();
             if (ho instanceof OAObject) {
-                OAObject oaObj = ((OAObject)ho).createCopy();
-                addToClipboard(hubManual, oaObj);
+                // OAObject oaObj = ((OAObject)ho).createCopy(); // dont make copy, until it is pasted
+                addToClipboard(hubManual, (OAObject) ho, false);
             }
         }
         update();
@@ -395,7 +396,12 @@ public class CutCopyPasteController {
             omiPaste.doClick();
         }
         else if (hubManual != null) {
-            OAObject obj = getClipboardObject();
+            OAObject obj = getClipboardObject(true);
+            if (obj == null) {
+                obj = getClipboardObject(false);
+                obj = obj.createCopy();
+            }
+            
             if (!hubManual.contains(obj)) {
                 hubManual.add(obj);
             }
@@ -404,9 +410,9 @@ public class CutCopyPasteController {
         update();
     }
 
-    protected void addToClipboard(Hub hub, OAObject obj) {
+    protected void addToClipboard(Hub hub, OAObject obj, boolean bFromCut) {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-        OATransferable t = new OATransferable(hub, obj);
+        OATransferable t = new OATransferable(hub, obj, bFromCut);
         cb.setContents(t, new ClipboardOwner() {
             @Override
             public void lostOwnership(Clipboard clipboard, Transferable contents) {

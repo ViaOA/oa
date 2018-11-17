@@ -14,11 +14,7 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.FlavorEvent;
-import java.awt.datatransfer.FlavorListener;
-import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.*;
 import java.awt.event.*;
 
 import javax.swing.*;
@@ -39,8 +35,6 @@ import com.viaoa.jfc.undo.OAUndoManager;
 import com.viaoa.jfc.undo.OAUndoableEdit;
 import com.viaoa.util.*;
 import com.viaoa.jfc.*;
-import com.viaoa.jfc.OAButton.ButtonCommand;
-import com.viaoa.jfc.OAButton.ButtonEnabledMode;
 import com.viaoa.jfc.dialog.OAConfirmDialog;
 import com.viaoa.jfc.dialog.OAPasswordDialog;
 import com.viaoa.jfc.dnd.OATransferable;
@@ -1157,7 +1151,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 break;
             case Cut:
                 ho = hub.getActiveObject();
-                if (ho instanceof OAObject) addToClipboard((OAObject) ho);
+                if (ho instanceof OAObject) addToClipboard((OAObject) ho, true);
                 break;
             case Copy:
                 if (mhub != null && mhub.getSize() > 0) {
@@ -1165,14 +1159,21 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 }
                 else {
                     ho = hub.getActiveObject();
-                    if (ho instanceof OAObject) {
-                        oaObj = createCopy((OAObject) ho);
-                        if (oaObj != null) addToClipboard(oaObj);
-                    }
+                    if (ho instanceof OAObject) addToClipboard((OAObject) ho, false);
                 }
                 break;
             case Paste:
-                OAObject obj = getClipboardObject();
+                OAObject obj = getClipboardObject(true);
+                if (obj == null) {
+                    obj = getClipboardObject(false);
+                    if (obj != null) {
+                        if (obj.getClass().equals(hub.getObjectClass())) {
+                            obj = OAObjectEditQueryDelegate.getCopy(obj);
+                        }
+                    }
+                }
+                else if (!obj.getClass().equals(hub.getObjectClass())) obj = null;
+
                 if (obj != null) {
                     if (!hub.contains(obj)) {
                         if (bEnableUndo) {
@@ -1194,6 +1195,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     Hub hx = getClipboardHub();
                     if (hx != null) {
                         for (Object objx : hx) {
+                            if (!objx.getClass().equals(hub.getObjectClass())) break;
                             if (!hub.contains(objx)) {
                                 hub.add(objx);
                             }
@@ -1590,9 +1592,13 @@ public class ButtonController extends OAJfcController implements ActionListener 
             case Paste:
                 flag = false;
                 if (hub != null) {
-                    OAObject objx = getClipboardObject();
-                    if (objx != null && objx.getClass().equals(hub.getObjectClass())) {
-                        if (!hub.contains(objx)) flag = true;
+                    OAObject objx = getClipboardObject(true);
+                    if (objx != null) {  // from "cut"
+                        if (!hub.contains(objx) && objx.getClass().equals(hub.getObjectClass())) flag = true;
+                    }
+                    else {
+                        objx = getClipboardObject(false); // from "copy" 
+                        flag = (objx != null && objx.getClass().equals(hub.getObjectClass()));
                     }
                 }
                 if (flag && !HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
@@ -1652,15 +1658,16 @@ public class ButtonController extends OAJfcController implements ActionListener 
 
     // this can be overwritten to customize an object copy.
     protected OAObject createCopy(OAObject obj) {
+        if (obj == null) return null;
         OAObject objx = obj.createCopy();
         return objx;
     }
 
-    protected OAObject getClipboardObject() {
+    protected OAObject getClipboardObject(boolean bFromCut) {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
         OAObject oaObj;
         try {
-            Object objx = cb.getData(OATransferable.OAOBJECT_FLAVOR);
+            Object objx = cb.getData(bFromCut ? OATransferable.OAOBJECT_CUT_FLAVOR : OATransferable.OAOBJECT_COPY_FLAVOR);
             if (objx instanceof OAObject) oaObj = (OAObject) objx;
             else oaObj = null;
         }
@@ -1684,9 +1691,9 @@ public class ButtonController extends OAJfcController implements ActionListener 
         return hub;
     }
 
-    protected void addToClipboard(OAObject obj) {
+    protected void addToClipboard(OAObject obj, boolean bFromCut) {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-        OATransferable t = new OATransferable(getHub(), obj);
+        OATransferable t = new OATransferable(getHub(), obj, bFromCut);
         cb.setContents(t, new ClipboardOwner() {
             @Override
             public void lostOwnership(Clipboard clipboard, Transferable contents) {
@@ -1697,7 +1704,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
 
     protected void addToClipboard(Hub hub) {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-        OATransferable t = new OATransferable(getHub(), hub);
+        OATransferable t = new OATransferable(getHub(), hub, false);
         cb.setContents(t, new ClipboardOwner() {
             @Override
             public void lostOwnership(Clipboard clipboard, Transferable contents) {
