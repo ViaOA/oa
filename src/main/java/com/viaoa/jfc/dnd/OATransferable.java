@@ -10,16 +10,8 @@
 */
 package com.viaoa.jfc.dnd;
 
-import java.awt.*;
-import java.awt.dnd.*;
 import java.awt.datatransfer.*;
-import java.awt.event.*;
-import java.util.Vector;
-import java.lang.reflect.*;
 import java.io.IOException;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
 import com.viaoa.hub.*;
 
 /** 
@@ -28,10 +20,9 @@ import com.viaoa.hub.*;
      Dragged or Dropped.
 */
 public class OATransferable implements Transferable {
-    protected Hub hub;
-    protected Object object;
-    protected Class clazz;
-
+    protected final Hub hub;
+    protected final Object object;  // the original (not a copy).  Use bFromCut=false to know know if paste needs to then make a new copy of the object. 
+    protected final boolean bFromCut; // if the object is from a clipbord "cut"
 
     /** 
         Create new DND Data Flavor that supports Hub.
@@ -51,15 +42,37 @@ public class OATransferable implements Transferable {
         }
     };
 
+    /** 
+        Create new DND Data Flavor where object is from a "cut" command
+    */
+    public static DataFlavor OAOBJECT_CUT_FLAVOR = new DataFlavor(Object.class, "TransferableCutOAObject") {
+        public boolean isFlavorSerializedObjectType() {
+            return false; //was: true;   
+        }
+    };
+
+    /** 
+        Create new DND Data Flavor where object is from a "copy" command
+    */
+    public static DataFlavor OAOBJECT_COPY_FLAVOR = new DataFlavor(Object.class, "TransferableCopyOAObject") {
+        public boolean isFlavorSerializedObjectType() {
+            return false; //was: true;   
+        }
+    };
     
-    static final DataFlavor[] flavors = { HUB_FLAVOR, OAOBJECT_FLAVOR };
+    static final DataFlavor[] flavors = { HUB_FLAVOR, OAOBJECT_FLAVOR, OAOBJECT_CUT_FLAVOR, OAOBJECT_COPY_FLAVOR };
 
     /**
         Creates a new transferable object to <i>wrap</i> a Hub or OAObject.
+        @param bReferenceOnly if the object is from a clipbord "cut"
     */
-    public OATransferable(Hub hub, Object obj) {
+    public OATransferable(Hub hub, Object obj, boolean bFromCut) {
         this.hub = hub;
         this.object = obj;
+        this.bFromCut = bFromCut;
+    }
+    public OATransferable(Hub hub, Object obj) {
+        this(hub, obj, true);
     }
     
     /**
@@ -73,16 +86,29 @@ public class OATransferable implements Transferable {
         Returns the object that is transferable, Hub or Object (OAObject).
     */
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-        if (flavor.equals(HUB_FLAVOR)) return hub;
+        if (flavor == null) return null;
+        if (flavor.equals(HUB_FLAVOR)) {
+            return hub;
+        }
+        if (flavor.equals(OAOBJECT_CUT_FLAVOR) && flavor.getHumanPresentableName().equals(OAOBJECT_CUT_FLAVOR.getHumanPresentableName())) {
+            if (bFromCut) return object;
+            else return null;
+        }
+        if (flavor.equals(OAOBJECT_COPY_FLAVOR) && flavor.getHumanPresentableName().equals(OAOBJECT_COPY_FLAVOR.getHumanPresentableName())) {
+            if (!bFromCut) return object;
+            else return null;
+        }
         return object;
     }
 
     /**
-        Returns true if flave if for the Hub or OAObject Flavor.
+        Returns true if Hub or OAObject Flavor.
     */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         if (flavor.equals(HUB_FLAVOR)) return true;
         if (flavor.equals(OAOBJECT_FLAVOR)) return true;
+        if (flavor.equals(OAOBJECT_CUT_FLAVOR)) return true;
+        if (flavor.equals(OAOBJECT_COPY_FLAVOR)) return true;
         return false;
     }
     

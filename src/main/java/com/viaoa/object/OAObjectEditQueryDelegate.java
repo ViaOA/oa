@@ -52,7 +52,29 @@ public class OAObjectEditQueryDelegate {
     public static boolean getAllowEnabled(Hub hub) {
         return getAllowEnabledEditQuery(hub).getAllowed();
     }
+    public static boolean getAllowCopy(OAObject oaObj) {
+        if (oaObj == null) return false;
+        return getAllowCopyEditQuery(oaObj).getAllowed();
+    }
+    public static OAObject getCopy(OAObject oaObj) {
+        if (oaObj == null) return null;
+        OAObjectEditQuery eq = getCopyEditQuery(oaObj);
 
+        Object objx = eq.getValue();
+        if (!(objx instanceof OAObject)) {
+            if (!eq.getAllowed()) return null;
+            objx = oaObj.createCopy();
+        }
+        
+        getAfterCopyEditQuery(oaObj, (OAObject) objx);
+        return (OAObject) objx;
+    }
+    public static void afterCopy(OAObject oaObj, OAObject oaObjCopy) {
+        if (oaObj == null || oaObjCopy == null) return;
+        getAfterCopyEditQuery(oaObj, oaObjCopy);
+    }
+    
+    
     public static boolean getVerifyPropertyChange(OAObject obj, String propertyName, Object oldValue, Object newValue) {
         return getVerifyPropertyChangeEditQuery(obj, propertyName, oldValue, newValue).getAllowed();
     }
@@ -168,6 +190,22 @@ public class OAObjectEditQueryDelegate {
             editQuery.setName(propertyName);
             processEditQuery(editQuery, objMaster, propertyName, null, null);
         }
+        return editQuery;
+    }
+    public static OAObjectEditQuery getAllowCopyEditQuery(final OAObject oaObj) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowCopy);
+        processEditQuery(editQuery, oaObj, null, null, null);
+        return editQuery;
+    }
+    public static OAObjectEditQuery getCopyEditQuery(final OAObject oaObj) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.GetCopy);
+        processEditQuery(editQuery, oaObj, null, null, null);
+        return editQuery;
+    }
+    public static OAObjectEditQuery getAfterCopyEditQuery(final OAObject oaObj, final OAObject oaObjCopy) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AfterCopy);
+        editQuery.setValue(oaObjCopy);
+        processEditQuery(editQuery, oaObj, null, null, oaObjCopy);
         return editQuery;
     }
 

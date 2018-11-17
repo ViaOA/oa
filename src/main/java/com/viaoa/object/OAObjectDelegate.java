@@ -87,7 +87,7 @@ public class OAObjectDelegate {
      * @param bAddToCache if true then call OAObjectCacheDelegate.add()
      * @param bInitializeWithCS if true, then call OAObjectCSDelegate.initialize().
      */
-    private static void initialize(OAObject oaObj, OAObjectInfo oi, boolean bInitializeNulls, boolean bInitializeWithDS, boolean bAddToCache, boolean bInitializeWithCS, boolean bSetChangedToFalse) {
+    protected static void initialize(OAObject oaObj, OAObjectInfo oi, boolean bInitializeNulls, boolean bInitializeWithDS, boolean bAddToCache, boolean bInitializeWithCS, boolean bSetChangedToFalse) {
         final boolean bWasLoading = OAThreadLocalDelegate.setLoading(true);
     	try {
             if (oi == null) oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);

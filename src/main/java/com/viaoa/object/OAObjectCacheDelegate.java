@@ -1039,7 +1039,7 @@ public class OAObjectCacheDelegate {
     
     
    
-/*qqqqqqqq    
+/*qqq    
     public static void updateClientInfo(OAClientInfo ci) {
     	// LOG.fine("called");
         Enumeration enumx = OAObjectHashDelegate.hashCacheClass.keys();
@@ -1056,7 +1056,7 @@ public class OAObjectCacheDelegate {
 */    
 }
 
-/**qqqqqqqqqqqqqqqqqqqqqq	
+/**qqq	
 static {
 	Thread t = new Thread(new Runnable() {
 	@Override

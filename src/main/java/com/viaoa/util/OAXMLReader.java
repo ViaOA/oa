@@ -344,6 +344,8 @@ public class OAXMLReader {
                 finally {
                     OAThreadLocalDelegate.setLoading(false);
                 }
+                // 20181115
+                OAObjectCacheDelegate.add(objNew);
             }
             if (guid != null && objNew != null) hashGuid.put(guid, objNew);
             hm.put(XML_OBJECT, objNew); 
@@ -404,10 +406,14 @@ public class OAXMLReader {
                 }
                 
                 for (HashMap hmx : (ArrayList<HashMap>)v) {
-                    
-                    if (bLoadingNew) OAThreadLocalDelegate.setLoading(false);
-                    Object objx = _processChildren(hmx, li==null?OAObject.class:li.getToClass(), bIsPreloading, level+1);
-                    if (bLoadingNew) OAThreadLocalDelegate.setLoading(true);
+                    Object objx = null;
+                    try {
+                        if (bLoadingNew) OAThreadLocalDelegate.setLoading(false);
+                        objx = _processChildren(hmx, li==null?OAObject.class:li.getToClass(), bIsPreloading, level+1);
+                    }
+                    finally {
+                        if (bLoadingNew) OAThreadLocalDelegate.setLoading(true);
+                    }
                     
                     if (!bIsPreloading) {
                         h.add(objx);

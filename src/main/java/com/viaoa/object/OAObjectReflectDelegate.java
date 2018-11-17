@@ -1951,15 +1951,20 @@ public class OAObjectReflectDelegate {
         }
 
         try {
-            newObject = (OAObject) createNewObject(oaObj.getClass());
+            // 20181115
             OAThreadLocalDelegate.setLoading(true);
             OAThreadLocalDelegate.setSuppressCSMessages(true);
+            
+            newObject = (OAObject) createNewObject(oaObj.getClass());
+            OAObjectDelegate.initialize(newObject, oi, true, true, false, false, true);
+
             _copyInto(oaObj, newObject, excludeProperties, copyCallback, hmNew);
         }
         finally {
-            OAThreadLocalDelegate.setLoading(false);
             OAThreadLocalDelegate.setSuppressCSMessages(false);
+            OAThreadLocalDelegate.setLoading(false);
         }
+        OAObjectCacheDelegate.add(newObject);        
         return newObject;
     }
 

@@ -61,7 +61,8 @@ public class OAObjectEditQuery {
         AllowRemove(true, true),     // use: allowRemove
         AllowRemoveAll(true, true),  // use: allowRemoveAll
         AllowDelete(true, true),     // use: allowDelete
-        AllowSave(false, false),     // dont check parent(s) or if enabled.  Need to be able to save a disabled object  
+        AllowSave(false, false),     // dont check parent(s) or if enabled.  Need to be able to save a disabled object
+        AllowCopy(false),
         
         VerifyPropertyChange(true, false),// use: value to get new value, name, response, throwable - set allowEnablede=false, or throwable!=null to cancel
         VerifyAdd(true, true),           // use: value to get added object, allowAdd, throwable - set allowAdd=false, or throwable!=null to cancel
@@ -70,6 +71,9 @@ public class OAObjectEditQuery {
         VerifyDelete(true, true),        // use: value to get deleted object, allowDelete, throwable - set allowDelete=false, or throwable!=null to cancel
         VerifySave(false, false),        // dont check parent(s) or if enabled.  Need to be able to save a disabled object
         VerifyCommand(true, true),
+        
+        GetCopy(false),     // can set allowed(..), or setVale(newObj), or nothing to have OAObject.createCopy(..) called.
+        AfterCopy(false),   // value=newObject
         
         SetConfirmForPropertyChange(false),
         SetConfirmForAdd(false),
