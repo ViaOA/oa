@@ -89,7 +89,7 @@ public class OAAnnotationDelegate {
             }
         }
         // prop ids
-        Method[] methods = clazz.getDeclaredMethods();
+        final Method[] methods = clazz.getDeclaredMethods();
         String[] ss = oi.getIdProperties();
         for (Method m : methods) {
             OAId oaid = m.getAnnotation(OAId.class);
@@ -436,7 +436,9 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                     continue;
                 }
             }
-            if (oi.getMethodInfo(name) != null) continue;
+            if (oi.getMethodInfo(name) != null) {
+                continue;
+            }
             s = getPropertyName(name);
             if (!s.equals(name)) {
                 boolean b = true;
@@ -450,7 +452,7 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                 if (b) continue;
             }
             
-            String s2 = "onEditQuery";
+            final String s2 = "onEditQuery";
             if (!name.startsWith(s2)) {
                 s = "OAEditQuery annotation, class="+clazz+", method="+m+", should be named onEditQuery*";
                 LOG.log(Level.WARNING, s, new Exception(s));
@@ -870,7 +872,8 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                         break;
                     }
                 }
-                table.addLink(getPropertyName(m.getName()), database.getTable(m.getReturnType()), oaone.reverseName(), poss);
+                Table tt = database.getTable(m.getReturnType());
+                if (tt != null) table.addLink(getPropertyName(m.getName()), tt, oaone.reverseName(), poss);
             }
             else if (oamany != null) {
                 Column[] cols = table.getColumns();
@@ -880,7 +883,8 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                     poss = OAArray.add(poss, i);
                 }
                 Class c = OAAnnotationDelegate.getHubObjectClass(oamany, m);
-                table.addLink(getPropertyName(m.getName()), database.getTable(c), oamany.reverseName(), poss);
+                Table tt = database.getTable(c);
+                if (tt != null) table.addLink(getPropertyName(m.getName()), tt, oamany.reverseName(), poss);
             }
         }
         
