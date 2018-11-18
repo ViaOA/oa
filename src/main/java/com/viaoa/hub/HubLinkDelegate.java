@@ -536,7 +536,6 @@ public class HubLinkDelegate {
         updateLinkedToHub(fromHub, linkToHub, obj, changedPropName, true);
     }
     protected static void updateLinkedToHub(final Hub fromHub, Hub linkToHub, Object obj, String changedPropName, boolean bAdjustMaster) {
-    
 		if (fromHub.datau.isAutoCreate()) return;
 
         obj = HubLinkDelegate.getPropertyValueInLinkedToHub(fromHub, obj);  // link property value
@@ -565,12 +564,22 @@ public class HubLinkDelegate {
                     };
                     Hub[] hubs = HubShareDelegate.getAllSharedHubs(fromHub, filter);
                     
+                    /*
                     //was: Hub[] hubs = HubShareDelegate.getAllSharedHubs(fromHub);
                     boolean b = true;
                     for (int i=0; i < hubs.length && b; i++) {
-                        if (hubs[i].datam.getMasterObject() != null) b = false;
+                        if (hubs[i].datam.getMasterObject() != null) {
+                            b = false;
+                            break;
+                        }
                     }
-	            	if (b) fromHub.addElement(obj);
+                    */
+                    /*
+	            	if (b) {
+	            	    // 2018117 dont add to fromHub.  Instead use HubCopy (HubFilter), which will add to hub. 
+	            	    //was: fromHub.addElement(obj);
+	            	}
+	            	*/
 	            }
 	        }
 	        else {
@@ -641,7 +650,7 @@ public class HubLinkDelegate {
             if (fromHub.getAO() == null && obj == null) bForce = true;
             
             // finally :), change the active object in the from hub.
-            HubAODelegate.setActiveObject(fromHub, obj,false,false,bForce); // adjustMaster, bUpdateLink, force
+            HubAODelegate.setActiveObject(fromHub, obj, false, false, bForce); // adjustMaster, bUpdateLink, force
         }
     }
     
