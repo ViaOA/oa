@@ -30,7 +30,8 @@ public class HubCopy<T extends OAObject> extends HubFilter<T> {
 	
 	@Override
 	public boolean isUsed(T object) {
-	    return true;
+	    if (object != objTemp) return true;
+	    return hubMaster.contains(object);
 	}
 	
     @Override

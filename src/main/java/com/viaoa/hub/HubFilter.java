@@ -1,4 +1,4 @@
-/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
+/*  Copyright 1999-2018 Vince Via vvia@viaoa.com
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -37,6 +37,10 @@ import com.viaoa.util.filter.*;
     };
     </pre>
     <p>
+    
+    Note: HubFilter will also monitor the link to hub+property and will make sure that the link to property value
+    is included in the filtered hub.  If it isUsed=false, then it will only be added temporarily, until the linkToHub.AO is changed.   
+    
     For more information about this package, see <a href="package-summary.html#package_description">documentation</a>.
 */
 
@@ -478,7 +482,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     */
     private HubListener linkHubListener;
     private Hub hubLink;
-    private Object objTemp;  // temp object that is the current linkHub object value
+    protected Object objTemp;  // temp object that is the current linkHub object value
 
     protected void setupLinkHubListener() {
         Hub<T> hub = getHub();
@@ -486,13 +490,17 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         if (hubLink != null) hubLink.removeHubListener(linkHubListener);
         hubLink = hub.getLinkHub();
         if (hubLink == null) return;
-        
+
         linkHubListener = new HubListenerAdapter() {
             public @Override void afterChangeActiveObject(HubEvent evt) {
                 Hub<T> hub = getHub();
                 if (hub == null || bClosed) return;
                 if (objTemp != null) {
-                    if (!isUsed((T) objTemp)) {
+                    Object objx = hubLink.getAO();
+                    if (objx != null) {
+                        objx = HubLinkDelegate.getPropertyValueInLinkedToHub(hub, objx);
+                    }
+                    if (objx != objTemp) {
                         objTemp = getObject((T)objTemp);
                         try {
                             aiUpdating.incrementAndGet();
@@ -501,14 +509,14 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
                         finally {
                             aiUpdating.decrementAndGet();
                         }
+                        objTemp = null;
                     }
-                    objTemp = null;
                 }
                 if (bRefreshOnLinkChange) {
                     refresh(); // 20110930 need to refresh since the linkTo hub has changed                
                 }   
                 Object obj = hubLink.getAO();
-                if (obj != null) {
+                if (objTemp == null && obj != null) {
                     obj = HubLinkDelegate.getPropertyValueInLinkedToHub(hub, obj);
                     if (obj != null) {
                         if (!hub.contains(obj)) {
@@ -516,6 +524,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
                                 aiUpdating.incrementAndGet();
                                 objTemp = obj;
                                 addObject((T)obj, false);
+                                hub.setAO(obj);
                             }
                             finally {
                                 aiUpdating.decrementAndGet();
@@ -525,7 +534,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
                 }
             }
         };
-        
+        linkHubListener.afterChangeActiveObject(null);        
         hubLink.addHubListener(linkHubListener);
     }
 
@@ -762,6 +771,17 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     protected void removeObject(T obj) {
         Hub<T> hub = getHub();
         if (hub == null || bClosed) return;
+        if (hubLink != null && aiUpdating.get() == 0) {
+            // check to see if it is still needed by linkHub.linkProp and stored as objTemp
+            Object objx = hubLink.getAO();
+            if (objx != null) {
+                objx = HubLinkDelegate.getPropertyValueInLinkedToHub(hub, objx);
+                if (objx == obj) {
+                    objTemp = obj; // dont remove yet
+                    return;
+                }
+            }
+        }
         hub.remove(obj);
     }
     
