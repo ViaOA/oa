@@ -109,7 +109,8 @@ public class TextAreaController extends OAJfcController implements FocusListener
                 if (str != null && str.length() == 1 && str.charAt(0) == '\t') {
                     if (tabReplacement != null) str = tabReplacement;
                 }
-                else if (bTrimPastedCode && str.length() > 1) {
+                else if (bTrimPastedCode && str.length() > 1 && str.indexOf('\n') >= 0) {
+                    // from a paste
                     str = OAString.unindentCode(str);
                 }
                 super.insertString(offset, str, attr);
