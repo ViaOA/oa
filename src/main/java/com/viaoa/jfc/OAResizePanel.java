@@ -50,9 +50,7 @@ import javax.swing.border.LineBorder;
  */
 public class OAResizePanel extends JPanel {
 
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqq    
-public static boolean DEBUG = true;
-//    public static boolean DEBUG = false;
+    public static boolean DEBUG = false;
     
     public OAResizePanel(JComponent comp) {
         setup(comp, 50, false);
