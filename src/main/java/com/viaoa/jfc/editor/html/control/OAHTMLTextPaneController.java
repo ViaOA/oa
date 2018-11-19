@@ -1203,7 +1203,13 @@ public class OAHTMLTextPaneController extends OATextController {
         private JButton cmdInsertField;
         public JButton getInsertFieldButton() {
             if (cmdInsertField == null) {
-                cmdInsertField = new JButton("Insert field ...");
+                cmdInsertField = new JButton("Insert field ...") {
+                    @Override
+                    public void setEnabled(boolean b) {
+                        // TODO Auto-generated method stub
+                        super.setEnabled(b);
+                    }
+                };
                 cmdInsertField.setToolTipText("Insert a Field to use for dynamic data/mail merges");
                 cmdInsertField.setRequestFocusEnabled(false);
                 cmdInsertField.setFocusPainted(false);

@@ -138,6 +138,12 @@ public class OASplitButton extends JButton {
         dropDownButton.setEnabled(b);
         super.setEnabled(b);
     }
+    @Override
+    public void setVisible(boolean b) {
+        mainButton.setVisible(b);
+        dropDownButton.setVisible(b);
+        super.setVisible(b);
+    }
 
     /**
      * gets the drop down button (with the arrow)

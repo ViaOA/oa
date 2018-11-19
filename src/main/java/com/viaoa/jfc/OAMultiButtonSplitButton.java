@@ -19,11 +19,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-
 import com.viaoa.util.OAArray;
 
 /**
@@ -36,18 +31,18 @@ import com.viaoa.util.OAArray;
  */
 public class OAMultiButtonSplitButton extends OASplitButton {
     private static final long serialVersionUID = 1L;
+    public boolean DEBUG;
 
     private JPopupMenu popup;
     private JButton cmdSelected;
     private boolean bShowTextInSelectedButton = true;
     private boolean bShowSelectedButton = true;
-    private GridBagConstraints gc;
-    private boolean bIsPopupVisible;
+    private boolean bAllowChangeMasterButton = true;
+    
 
     private JButton[] buttons = new JButton[0];
-    private PropertyChangeListener propertyChangeListener;
-    private boolean bFirst=true;
-    private JPanel panHidden; // so that each comp/button will have a parent 
+    private final JPanel panHidden; // so that each comp/button will have a parent 
+    private final GridBagConstraints gc;
     
     public JPopupMenu getPopupMenu() {
         return popup;
@@ -71,17 +66,15 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         super.add(panHidden, BorderLayout.WEST);
         
         popup.setInvoker(this);
-        
-//        BoxLayout lay = new BoxLayout(popup, BoxLayout.Y_AXIS);
-//        popup.setLayout(lay);
+        popup.setLayout(new GridBagLayout());
         
         gc = new GridBagConstraints();
         Insets ins = new Insets(1, 3, 1, 3);
         gc.insets = ins;
-        gc.anchor = gc.NORTHWEST;
+        gc.anchor = gc.NORTH;
         gc.gridwidth = gc.REMAINDER;
         gc.fill = gc.BOTH;
-        popup.setLayout(new GridBagLayout());
+        gc.weightx = gc.weighty = 1.0; 
         
         
         dropDownButton.addActionListener(new ActionListener() {
@@ -91,28 +84,56 @@ public class OAMultiButtonSplitButton extends OASplitButton {
                 popup.show(sb, 0, sb.getHeight());
             }
         });
+    }
+    
+    protected void update() {
+        if (buttons == null || buttons.length == 0) return;
+
+        boolean bEnabled = false;
+        boolean bVisible = false;
         
-        // 20110810
-        propertyChangeListener = new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("enabled".equalsIgnoreCase(evt.getPropertyName())) {
-                    Object val= evt.getNewValue();
-                    boolean b = (val instanceof Boolean) && ((Boolean) val).booleanValue();
-                    if (evt.getSource() == cmdSelected) {
-                        mainButton.setEnabled(b);
-                    }
+        for (JButton button : buttons) {
+            popup.add(button, gc);
+            bEnabled = bEnabled || button.isEnabled();
+            bVisible = bVisible || button.isVisible();
+        }
+
+        if (!bAllowChangeMasterButton) {
+            for (JButton button : buttons) {
+                if (button.isEnabled()) {
+                    panHidden.add(button, gc);
+                    cmdSelected = button;
+                    updateMain(button);
+                    break;
                 }
             }
-        };
-    }
-
-    @Override
-    public void setEnabled(boolean b) {
-        super.setEnabled(b);
-        if (b && cmdSelected != null) {
-            mainButton.setEnabled(cmdSelected.isEnabled());
         }
+        else {
+            updateMain(cmdSelected);
+        }
+        setEnabled(bEnabled);
+        setVisible(bVisible);
+    }
+    
+    public void setSelected(JButton cmd) {
+        if (cmd == null) return;
+        cmdSelected = cmd;
+        update();
+    }
+    
+    protected void updateMain(JButton cmd) {
+        if (bShowTextInSelectedButton) {
+            mainButton.setText(cmdSelected.getText());
+            mainButton.setFont(cmdSelected.getFont());
+        }
+        mainButton.setIcon(cmdSelected.getIcon());
+        mainButton.setToolTipText(cmdSelected.getToolTipText());
+        mainButton.setEnabled(cmdSelected.isEnabled());
+    }
+    public void setSelected(int pos) {
+        if (!bShowSelectedButton) return;
+        if (pos < 0 || buttons == null || pos >= buttons.length) return;
+        setSelected(buttons[pos]);
     }
     
     
@@ -123,13 +144,11 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         return bShowSelectedButton;
     }
     
-    
     public void setShowTextInSelectedButton(boolean b) {
         bShowTextInSelectedButton = b;
     }
 
     // can a dropdown button become the main button?
-    private boolean bAllowChangeMasterButton = true;
     public void setAllowChangeMasterButton(boolean b) {
         bAllowChangeMasterButton = b;
     }
@@ -152,106 +171,64 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         });
     }
     
-    public void addButton(final JButton cmd) {
-        if (cmd == null) return;
-        addButton(cmd, false);
-    }
   
-    
-    
     public int getButtonCount() {
         return buttons==null?0:buttons.length;
     }
-    
-
     public JButton[] getButtons() {
         return buttons;
     }
     
-    public void addButton(final JButton cmd, boolean bDefault) {
+    public void addButton(final JButton cmd, boolean bParmNotUsedA) {
+        addButton(cmd);
+    }
+    
+    public void addButton(final JButton cmd) {
         if (cmd == null) return;
-        // cmd.setAlignmentX(LEFT_ALIGNMENT);
-        cmd.setHorizontalAlignment(SwingConstants.LEFT);  // Sets the horizontal alignment of the icon and text.
+
+        cmd.setHorizontalAlignment(SwingConstants.LEFT); 
 
         buttons = (JButton[]) OAArray.add(JButton.class, buttons, cmd);
-
-        panHidden.add(cmd);
-
-        
-        boolean bMainButton = (!bAllowChangeMasterButton & buttons.length == 1);
-        
-        boolean bAdd = true;
-        if (bDefault || bFirst) {
-            bFirst = false;
-            setSelected(cmd);
-            if (!bAllowChangeMasterButton) {
-                if (bShowSelectedButton) {
-                    bAdd = false;
-                }
-            }
-        }
-
-        if (bAdd) popup.add(cmd, gc);
+        popup.add(cmd, gc);
         
         cmd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (bAllowChangeMasterButton) {
-                    setSelected(cmd);
-                }
+                setSelected(cmd);
                 popup.setVisible(false);
             }
         });
-
         
-        if (bMainButton) {
-            cmd.addComponentListener(new ComponentListener() {
-                @Override
-                public void componentResized(ComponentEvent e) {
-                }
-                @Override
-                public void componentMoved(ComponentEvent e) {
-                }
-                
-                boolean bManualHide;
-                @Override
-                public void componentShown(ComponentEvent e) {
-                    setSelected(cmd);
-                    if (bManualHide) OAMultiButtonSplitButton.this.setVisible(true);
-                }
-                @Override
-                public void componentHidden(ComponentEvent e) {
-                    bManualHide = false;
-                    for (JButton jb : buttons) {
-                        if (jb.isVisible()) {
-                            setSelected(jb);
-                            return;
-                        }
-                    }
-                    bManualHide = true;
-                    OAMultiButtonSplitButton.this.setVisible(false);
-                }
-            });
-        }
-    }
+        cmd.addComponentListener(new ComponentListener() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+            }
+            @Override
+            public void componentMoved(ComponentEvent e) {
+            }
+            @Override
+            public void componentShown(ComponentEvent e) {
+                update();
+            }
+            @Override
+            public void componentHidden(ComponentEvent e) {
+                update();
+            }
+        });
 
-    public void setSelected(JButton cmd) {
-        if (!bShowSelectedButton) return;
-        cmdSelected = cmd;
-        if (bShowTextInSelectedButton) {
-            mainButton.setText(cmdSelected.getText());
-            mainButton.setFont(cmdSelected.getFont());
-        }
-        mainButton.setIcon(cmdSelected.getIcon());
-        mainButton.setToolTipText(cmdSelected.getToolTipText());
-        mainButton.setEnabled(cmdSelected.isEnabled());
-        cmdSelected.addPropertyChangeListener(propertyChangeListener);
+        cmd.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("enabled".equalsIgnoreCase(evt.getPropertyName())) {
+                    update();
+                }
+            }
+        });
+        
+        if (buttons.length == 1) cmdSelected = cmd;
+        update();
     }
-    public void setSelected(int pos) {
-        if (!bShowSelectedButton) return;
-        if (pos < 0 || buttons == null || pos >= buttons.length) return;
-        setSelected(buttons[pos]);
-    }
+    
     
     public Dimension getPreferredSize() {
         if (mainButton == null) return super.getPreferredSize();
@@ -286,25 +263,28 @@ public class OAMultiButtonSplitButton extends OASplitButton {
 
         multiButton.setText("This is the button text");
         
-        JButton but = new JButton("hey1");
+        JButton but = new JButton("Test 1");
         but.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("1");
             }
         });
-        multiButton.addButton(but, true);
+        multiButton.addButton(but);
         bx = but;
 
-        but = new JButton("another drop down button");
+        but = new JButton("Test2 another drop down button");
         but.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("2");
-                bx.setVisible(!bx.isVisible());
+               // bx.setVisible(!bx.isVisible());
             }
         });
-        multiButton.addButton(but, false);
+        multiButton.addButton(but);
+
+        multiButton.addButton(new JButton("Test 3 Button A"));
+        multiButton.addButton(new JButton("Test 4 Button Z"));
         
         multiButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -315,8 +295,7 @@ public class OAMultiButtonSplitButton extends OASplitButton {
 
         frm.pack();
         
-//but.setVisible(false);
-        
+        //but.setVisible(false);
         
         Dimension d = frm.getSize();
         d.width *= 2;
