@@ -209,54 +209,63 @@ public class HubDelegate {
 	    */
 	}
 	
+	
     /**
 	    If this hub has a master Hub or link Hub and that Hub does not have an active Object set,
 	    then this Hub is invalid.
-
-
-
 	*/
-	public static boolean isValid(Hub hub) {
+	public static boolean isValid(final Hub hub) {
 	    HubDataMaster dm = HubDetailDelegate.getDataMaster(hub);
 	    if (dm.getMasterHub() != null && dm.getMasterObject() == null) {
 	    	return false;
 	    }
-	    if (hub.datau.getLinkToHub() != null) {
-            if (!HubDelegate.isValid(hub.datau.getLinkToHub())) {
-                return false;
+
+        // 20181119 reworked to check other hubs for hubWithLink 
+	    Hub h = HubLinkDelegate.getHubWithLink(hub, true);
+        if (h != null) {
+            h = h.datau.getLinkToHub();
+            if (h != null) {
+                if (!HubDelegate.isValid(h)) {
+                    return false;
+                }
+                if (h.dataa.activeObject == null) {
+                    if (!h.datau.isAutoCreate()) return false;
+                }
             }
-            
-            if (hub.datau.getLinkToHub().dataa.activeObject == null) {
-                if (!hub.datau.isAutoCreate()) return false;
-            }
-            return true;
-	    }
+        }
+
 	    if (hub.datau.getAddHub() != null) {
 	        return HubDelegate.isValid(hub.datau.getAddHub());
 	    }
 	    return true;
 	}
 	
+	
+	
 	/** created 20110904
 	 * Find the hub that controls whether or not this hub is valid.
 	 * So that it can also be listened to, so that hub isValid can be recalculated
 	 * @return controlling hub, or param hub if there is no controlling hub
 	 */
-	public static Hub getControllingHub(Hub hub) {
-        HubDataMaster dm = HubDetailDelegate.getDataMaster(hub);
+	public static Hub getControllingHub(Hub thisHub) {
+        HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
         if (dm.getMasterHub() != null) {
             return dm.getMasterHub();
         }
-        if (hub.datau.getLinkToHub() != null) {
-            if (hub.datau.isAutoCreate()) {
-                return getControllingHub(hub.datau.getLinkToHub());
+        
+        // 20181119 find shared hub with link
+        Hub hubWithLink = HubLinkDelegate.getHubWithLink(thisHub, true);
+        
+        if (hubWithLink != null && hubWithLink.datau.getLinkToHub() != null) {
+            if (hubWithLink.datau.isAutoCreate()) {
+                return getControllingHub(hubWithLink.datau.getLinkToHub());
             }
-            return hub.datau.getLinkToHub();
+            return hubWithLink.datau.getLinkToHub();
         }        
-        if (hub.datau.getAddHub() != null) {
-            return HubDelegate.getControllingHub(hub.datau.getAddHub());
+        if (thisHub.datau.getAddHub() != null) {
+            return HubDelegate.getControllingHub(thisHub.datau.getAddHub());
         }
-        return hub;
+        return thisHub;
 	}
 	
 	/**

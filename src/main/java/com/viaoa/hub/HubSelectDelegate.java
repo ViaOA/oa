@@ -338,8 +338,6 @@ if (sel.getNextCount() != thisHub.getCurrentSize()) {
                 };
                 Hub[] hubs = HubShareDelegate.getAllSharedHubs(thisHub, filter);
 	    	    
-	    	    
-	            //was: Hub[] hubs = HubShareDelegate.getAllSharedHubs(thisHub);
 	            for (int i=0; i<hubs.length; i++) {
 	            	if (hubs[i] != thisHub && hubs[i].dataa != thisHub.dataa) {
 	        			if (hubs[i].datau.getLinkToHub() == null) {

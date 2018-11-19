@@ -197,6 +197,7 @@ public class HubShareDelegate {
             final int cnter, boolean bOnlyIfSharedAO, boolean bIncludeHubShareAO) {
         if (filter == null) return thisHub;
         
+        // first try a quickcheck on the main shared hub
         if (!bOnlyIfSharedAO || HubShareDelegate.isUsingSameSharedAO(findHub, thisHub)) {
             if (filter.isUsed(thisHub)) {
                 return thisHub;

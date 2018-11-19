@@ -169,7 +169,8 @@ public class HubLinkDelegate {
     }
     
     public static void updateLinkProperty(Hub thisHub, Object fromObject, int pos) {
-        if (thisHub.datau.getLinkToHub() == null || thisHub.datau.getLinkToHub().datau.isUpdatingActiveObject()) return;
+        Hub h = thisHub.datau.getLinkToHub();
+        if (h == null || h.datau.isUpdatingActiveObject()) return;
         try {
             _updateLinkProperty(thisHub, fromObject, pos);
         }

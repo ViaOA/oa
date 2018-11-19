@@ -437,7 +437,11 @@ public class HubDetailDelegate {
     protected static void updateDetailActiveObject(final Hub thisHub, final Hub hubDetailHub, final boolean bUpdateLink, final boolean bShareActiveObject) {
         boolean bUseCurrent = (bShareActiveObject && thisHub.dataa == hubDetailHub.dataa);  // if hubs are sharing active object then dont change it.
         if (!bUseCurrent || (thisHub == hubDetailHub)) {
-            if (thisHub.datau.getLinkToHub() == null) {
+            
+            // 20181119 find shared hub with link
+            Hub hubWithLink = HubLinkDelegate.getHubWithLink(thisHub, true);
+            
+            if (hubWithLink == null) {
                 // if there is not a linkHub, then go to default object
                 int pos;
                 if (bUseCurrent) pos = thisHub.getPos();
@@ -454,25 +458,25 @@ public class HubDetailDelegate {
                 // if linkHub & !bUpdateLink, then retreive value from linked property
                 // and make that the activeObject in this Hub
                 try {
-                    Object obj = thisHub.datau.getLinkToHub().getActiveObject();
-                    if (obj != null) obj = thisHub.datau.getLinkToGetMethod().invoke(obj, null );
-                    if (thisHub.datau.isLinkPos()) {
+                    Object obj = hubWithLink.getActiveObject();
+                    if (obj != null) obj = hubWithLink.datau.getLinkToGetMethod().invoke(obj, null );
+                    if (hubWithLink.datau.isLinkPos()) {
                         int x = -1;
                         if (obj != null && obj instanceof Number) x = ((Number)obj).intValue();
                         if (thisHub.getPos() != x) {
-                            HubAODelegate.setActiveObject(thisHub, thisHub.elementAt(x),x,bUpdateLink,false,false);//bUpdateLink,bForce,bCalledByShareHub
+                            HubAODelegate.setActiveObject(thisHub, thisHub.elementAt(x), x, bUpdateLink, false, false);//bUpdateLink,bForce,bCalledByShareHub
                         }
                     }
-                    else if (thisHub.datau.getLinkFromPropertyName() != null ) { // 20110116 ex: Breed.name linked to Pet.breed (string)
+                    else if (hubWithLink.datau.getLinkFromPropertyName() != null) { // 20110116 ex: Breed.name linked to Pet.breed (string)
                         Object objx;
-                        if (obj != null) objx = thisHub.find(thisHub.datau.getLinkFromPropertyName(), obj);
+                        if (obj != null) objx = hubWithLink.find(hubWithLink.datau.getLinkFromPropertyName(), obj);
                         else objx = null;
-                        HubAODelegate.setActiveObject(thisHub,objx,bUpdateLink,false,false);
+                        HubAODelegate.setActiveObject(thisHub, objx, bUpdateLink, false, false);
                     }
                     else {
                         int pos = thisHub.getPos(obj);
-                        if (obj != null &&  pos < 0) obj = null;
-                        HubAODelegate.setActiveObject(thisHub,obj,pos,bUpdateLink,false,false);//bUpdateLink,bForce,bCalledByShareHub
+                        if (obj != null && pos < 0) obj = null;
+                        HubAODelegate.setActiveObject(thisHub, obj, pos, bUpdateLink, false, false);//bUpdateLink,bForce,bCalledByShareHub
                     }
                 }
                 catch (Exception e) {
@@ -491,7 +495,7 @@ public class HubDetailDelegate {
             
             // only update sharedHubs with diff dataa, setActiveObject will do others
             if (h2.dataa != hubDetailHub.dataa) {
-                updateDetailActiveObject(h2, hubDetailHub,false,bShareActiveObject); // dont update link properties
+                updateDetailActiveObject(h2, hubDetailHub, false, bShareActiveObject); // dont update link properties
             }
         }
         
