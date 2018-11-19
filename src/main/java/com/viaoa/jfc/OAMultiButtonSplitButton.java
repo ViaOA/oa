@@ -44,9 +44,6 @@ public class OAMultiButtonSplitButton extends OASplitButton {
     private final JPanel panHidden; // so that each comp/button will have a parent 
     private final GridBagConstraints gc;
     
-    public JPopupMenu getPopupMenu() {
-        return popup;
-    }
     
     public OAMultiButtonSplitButton() {
         popup = new JPopupMenu() {
@@ -84,8 +81,24 @@ public class OAMultiButtonSplitButton extends OASplitButton {
                 popup.show(sb, 0, sb.getHeight());
             }
         });
+        
+//qqqqqqqqqqqqq        
+        mainButton.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("enabled".equalsIgnoreCase(evt.getPropertyName())) {
+int xx = 4;
+xx++;
+                }
+            }
+        });
+        
     }
     
+    public JPopupMenu getPopupMenu() {
+        return popup;
+    }
+
     protected void update() {
         if (buttons == null || buttons.length == 0) return;
 
@@ -99,18 +112,21 @@ public class OAMultiButtonSplitButton extends OASplitButton {
         }
 
         if (!bAllowChangeMasterButton) {
+            cmdSelected = null;
             for (JButton button : buttons) {
                 if (button.isEnabled()) {
-                    panHidden.add(button, gc);
                     cmdSelected = button;
-                    updateMain(button);
+                    panHidden.add(cmdSelected, gc);
                     break;
                 }
             }
+            if (cmdSelected == null && buttons.length > 0) {
+                cmdSelected = buttons[0];
+                panHidden.add(cmdSelected, gc);
+            }
         }
-        else {
-            updateMain(cmdSelected);
-        }
+
+        updateMain(cmdSelected);
         setEnabled(bEnabled);
         setVisible(bVisible);
     }
