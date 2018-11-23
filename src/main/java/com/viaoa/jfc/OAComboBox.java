@@ -41,6 +41,7 @@ public class OAComboBox extends JComboBox implements OATableComponent, OAJfcComp
         UIManager.put( "ComboBox.disabledForeground", Color.BLACK );        
     }
     
+    
     /**
         Create an unbound ComboBox.
     */
@@ -390,18 +391,9 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
     */
     public void setColumns(int x) {
         control.setColumns(x);
-
-        int w = OAJfcUtil.getCharWidth(x);
-        Border b = this.getBorder();
-        if (b != null) {
-        	Insets ins = b.getBorderInsets(this);
-        	if (ins != null) w += ins.left + ins.right;
-        }
-        if (table != null) { 
-        	table.setColumnWidth(table.getColumnIndex(this), w);
-        }
-        String str = "w";
-        for (int i=1; i<x; i++) str += "w";
+        
+        String str = "X";
+        for (int i=1; i<x; i++) str += "m";
         super.setPrototypeDisplayValue(str);
     }
 
@@ -722,55 +714,102 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
         }
     }
     
-    
-    public Dimension getMaximumSize() {
-        Dimension d = super.getMaximumSize();
-        if (isMaximumSizeSet()) return d;
-        
-        int cols = getMaxColumns();
-        if (cols <= 0) {
-            cols = getColumns() * 2;
-            if (cols <= 0) return d;
-        }
+    // same as OACustomComboBox
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension d = super.getPreferredSize();
+        if (isPreferredSizeSet()) return d;
 
-        // 20181115 resize based on size of text
+        String text = null;
         Hub h = getHub();
         if (h != null && control != null) {
             Object obj = h.getAO();
-            String s = control.getValueAsString(obj);
-
-            int x = s == null ? 0 : s.length();
-            x = Math.min(x, cols);
-            
-            int x2 = getMinimumColumns();
-            if (x2 == 0) x2 = getColumns();
-            x = Math.max(x, x2);
-            x = Math.max(x, 2);
-            cols = x;
+            text = control.getValueAsString(obj);
         }
+        if (text == null) text = "";
+        final int textLen = text.length();
+
+        // resize based on size of text        
+        int cols = getController().getCalcColumns();
+        int maxCols = getMaximumColumns();
+        if (cols < 1 && maxCols < 1) return d;
+        if (maxCols < 1) maxCols = cols;
+        else if (cols < 1) cols = 0;
+        
+        if (textLen >= cols && textLen > 0) {
+            FontMetrics fm = getFontMetrics(getFont());
+            if (textLen > maxCols) text = text.substring(0, maxCols);
+            d.width = fm.stringWidth(text) + 8;
+        }
+        else {
+            d.width = OAJfcUtil.getCharWidth(cols);
+        }
+
+        Insets ins = getInsets();
+        if (ins != null) d.width += ins.left + ins.right;
+        
+        if (control != null) {
+            Icon icon = getIcon();
+            if (icon != null) d.width += (icon.getIconWidth() + 10);
+        }
+        d.width += 22;
+        return d;
+    }
+    @Override
+    public Dimension getMaximumSize() {
+        Dimension d = super.getMaximumSize();
+        if (isMaximumSizeSet()) return d;
+
+        String text = null;
+        Hub h = getHub();
+        if (h != null && control != null) {
+            Object obj = h.getAO();
+            text = control.getValueAsString(obj);
+        }
+        if (text == null) text = "";
+        final int textLen = text.length();
+        
+        // resize based on size of text        
+        int cols = getController().getCalcColumns();
+        int maxCols = getMaximumColumns();
+        if (cols < 1 && maxCols < 1) return d;
+        if (maxCols < 1) maxCols = cols;
+        else if (cols < 1) cols = maxCols;
+        
+        if (textLen >= cols && textLen > 0) {
+            FontMetrics fm = getFontMetrics(getFont());
+            if (textLen > maxCols) text = text.substring(0, maxCols);
+            d.width = fm.stringWidth(text) + 8;
+        }
+        else d.width = OAJfcUtil.getCharWidth(cols);
         
         Insets ins = getInsets();
-        int inx = ins == null ? 0 : ins.left + ins.right;
-
-        d.width = OAJfcUtil.getCharWidth(cols) + inx + 40; 
+        if (ins != null) d.width += ins.left + ins.right;
 
         if (control != null) {
             Icon icon = getIcon();
             if (icon != null) d.width += (icon.getIconWidth() + 10);
         }
-        
+        d.width += 22;
         return d;
     }
-
+    @Override
     public Dimension getMinimumSize() {
         Dimension d = super.getMinimumSize();
         if (isMinimumSizeSet()) return d;
         int cols = getMinimumColumns();
         if (cols < 1) return d;
-        Insets ins = getInsets();
-        int inx = ins == null ? 0 : ins.left + ins.right;
 
-        d.width = OAJfcUtil.getCharWidth(cols) + inx; 
+        d.width = OAJfcUtil.getCharWidth(cols);
+
+        Insets ins = getInsets();
+        if (ins != null) d.width += ins.left + ins.right;
+        
+        if (control != null) {
+            Icon icon = getIcon();
+            if (icon != null) d.width += (icon.getIconWidth() + 10);
+        }
+        d.width += 22;
         return d;
     }
     

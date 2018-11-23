@@ -93,22 +93,12 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
     }
     
     /**
-        Width of label, based on average width of the font's character 'w'.
-    */
-    public int getColumns() {
-        return control.getColumns();            
-    }
-    /**
         Width of label, based on average width of the font's character.
     */
     public void setColumns(int x) {
         super.setColumns(x);
         control.setColumns(x);
         invalidate();
-        if (table != null) {
-            int w = OAJfcUtil.getCharWidth(x+1);
-            table.setColumnWidth(table.getColumnIndex(this),w);
-        }
     }
     public void setMaximumColumns(int x) {
         control.setMaximumColumns(x);
@@ -148,7 +138,7 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         if (cols < 1)  {
             //maxCols = control.getDataSourceMaxColumns();
             //if (maxCols < 1) {
-            cols = control.getPropertyInfoMaxColumns();
+            cols = control.getPropertyInfoMaxLength();
             
             if (cols < 1) {
                 cols = getColumns() * 2; 

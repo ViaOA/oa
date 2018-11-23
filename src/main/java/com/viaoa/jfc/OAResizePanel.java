@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Rectangle;
 import java.awt.Window;
 
 import javax.swing.Box;
@@ -17,8 +16,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.Scrollable;
-import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 
 
@@ -49,17 +46,22 @@ import javax.swing.border.LineBorder;
  
  */
 public class OAResizePanel extends JPanel {
+    protected JComponent comp1, comp2;
 
-    public static boolean DEBUG = false;
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq    
+    public static boolean DEBUG = true;
     
     public OAResizePanel(JComponent comp) {
-        setup(comp, 50, false);
+        comp1 = comp;
+        setup(comp, 100, false);
     }
     public OAResizePanel(JComponent comp, int percentage) {
+        comp1 = comp;
         setup(comp, percentage, false);
     }
 
     public OAResizePanel(JComponent comp, int percentage, boolean bBoth) {
+        comp1 = comp;
         setup(comp, percentage, bBoth);
     }
     
@@ -72,6 +74,8 @@ public class OAResizePanel extends JPanel {
     }
 
     public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2, int percentage, boolean bBoth) {
+        comp1 = comp;
+        comp2 = comp2;
         final JPanel panel = new JPanel();
 
         GridBagLayout gb = new GridBagLayout();
@@ -100,12 +104,11 @@ public class OAResizePanel extends JPanel {
             gc.weightx = 1.0; 
         }
 
-        // 20161129 this will allow for using preferred, and max sizing
+        // this will allow for using preferred, and max sizing
         JPanel panComp = new JPanel();
         BoxLayout box = new BoxLayout(panComp, BoxLayout.X_AXIS);
         panComp.setLayout(box);
         panComp.add(comp);
-
         
         if (comp2 != null) {
             panComp.add(Box.createHorizontalStrut(2));
@@ -139,12 +142,11 @@ public class OAResizePanel extends JPanel {
         this(comp, comp2, percentage, false);
     }
     public OAResizePanel(JComponent comp, JComponent comp2) {
-        this(comp, comp2, 50, false);
+        this(comp, comp2, 100, false);
     }
 
     
     private void setup(JComponent comp, int percentage, boolean bBoth) {
-        // 20181004
         if (comp instanceof JScrollPane) {
             JScrollPane jsp = (JScrollPane) comp;
             Component compx = ((JScrollPane) comp).getViewport().getView();
@@ -180,7 +182,6 @@ public class OAResizePanel extends JPanel {
             }
         }
         
-        
         GridBagLayout gb = new GridBagLayout();
         setLayout(gb);
         setBorder(null);
@@ -193,31 +194,37 @@ public class OAResizePanel extends JPanel {
         if (bBoth) gcx.fill = gcx.BOTH;
         else gcx.fill = gcx.HORIZONTAL;
 
-        // 20161129 this will allow for using preferred, and max sizing
+        // boxlayout will allow for using preferred, and max sizing
         JPanel panComp = new JPanel();
         BoxLayout box = new BoxLayout(panComp, BoxLayout.X_AXIS);
         panComp.setLayout(box);
         panComp.add(comp);
         
-        
-        gcx.weightx = gcx.weighty = ((double)percentage)/100.0d;
+        gcx.weightx = ((double)percentage)/100.0d;
+        if (bBoth) gcx.weighty = gcx.weightx;
         gcx.gridwidth = 1;
         add(panComp, gcx);
         
         gcx.gridwidth = GridBagConstraints.REMAINDER;
-        gcx.weightx = gcx.weighty = (100.0d-percentage)/100.0d;
+        gcx.weightx = (100.0d-percentage)/100.0d;
+        if (bBoth) gcx.weighty = gcx.weightx;
         
         JLabel lbl = new JLabel("");
-        if (DEBUG) {        
-            lbl.setText("<<");        
+        if (DEBUG) {
             lbl.setOpaque(true);        
             lbl.setBackground(Color.lightGray);
-
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq            
-if (comp instanceof JLabel)            
-            lbl.setBackground(Color.RED);
-            
-            setBorder(new LineBorder(Color.yellow, 3));
+            setBorder(new LineBorder(Color.yellow, 2));
+            if (comp1 instanceof OAJfcComponent) {
+                int c1 = ((OAJfcComponent) comp1).getController().getColumns();
+                int c2 = ((OAJfcComponent) comp1).getController().getMaximumColumns();
+                if (c1 < c2) lbl.setText("+-");        
+                else {
+                    lbl.setText("::");
+                    lbl.setBackground(Color.RED);
+                }
+                lbl.setToolTipText("cols="+c1+", max="+c2);
+            }
+            else lbl.setText("<");        
         }
         add(lbl, gcx);
         
@@ -228,40 +235,42 @@ if (comp instanceof JLabel)
     }
     
 
+//qqqqqqqqqqqqqq    
+//qqqqqqqqqqq revisit this, used by OATemplate apps    
+    
     /**
      * Used when Window.pack is called so that preferred size is used.
-     * 
+     * @see OAJfcUtil#pack(Window)
      */
     public static void setPacking(Window window) {
         windowPack = window;
     }
     private static Window windowPack;
+
+    
     
     // JScrollPane will only go down in size to preferred size.
     //   this will allow it to be 3/4 between preferred and minimum
-    private boolean bFoundWindow;
-    private boolean bHasScrollPane; 
-    
-    @Override
-    public Dimension getPreferredSize() {
+    //@Override
+    public Dimension getPreferredSizeXXX() {
         Dimension d = super.getPreferredSize();
-        if (windowPack != null) {
+        if (windowPack == null) {
             return d;
         }
+        boolean bFoundWindow = false;;
+        boolean bHasScrollPane = false; 
         
-        if (!bFoundWindow) {
-            Component comp = this.getParent();
-            for ( ; comp != null; comp = comp.getParent()) {
-                if (comp instanceof JScrollPane) {
-                    bHasScrollPane = true;
-                }
-                if (comp instanceof Window) {
-                    bFoundWindow = true;
-                }                
+        Component comp = this.getParent();
+        for ( ; comp != null; comp = comp.getParent()) {
+            if (comp instanceof JScrollPane) {
+                bHasScrollPane = true;
             }
+            if (comp == windowPack) {
+                bFoundWindow = true;
+            }                
         }
         
-        if (bHasScrollPane) {
+        if (bFoundWindow && bHasScrollPane) {
             Dimension dx = super.getMinimumSize();
             int x = d.width - dx.width;
             if (x > 0) {
@@ -271,5 +280,4 @@ if (comp instanceof JLabel)
         }
         return d;
     }
-    
 }

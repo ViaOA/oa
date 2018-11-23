@@ -17,7 +17,6 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 import com.viaoa.object.*;
-import com.viaoa.util.OADate;
 import com.viaoa.util.converter.OAConverterNumber;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
@@ -25,8 +24,6 @@ import com.viaoa.jfc.table.*;
 
 public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComponent {
     OACheckBoxController control;
-    int columns;
-    int width;
     OATable table;
     String heading;
 
@@ -191,18 +188,13 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
         Width of component, based on average width of the font's character.
     */
     public int getColumns() {
-        return columns;            
+        return getController().getColumns();
     }
     /**
         Width of component, based on average width of the font's character.
     */
     public void setColumns(int x) {
-        columns = x;
-        this.width = OAJfcUtil.getCharWidth(x);
-        if (table != null) table.setColumnWidth(table.getColumnIndex(this),width);
-        Dimension d = getPreferredSize();
-        d.width = this.width;
-        setPreferredSize(d);
+        getController().setColumns(x);
     }
 
     @Override

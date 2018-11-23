@@ -124,6 +124,7 @@ public class OAJfcController extends HubListenerAdapter {
     private int miniColumns;
     // max column/chars
     private int maxColumns;
+    private int maxInput;
     private int propertyInfoMaxColumns = -2;
     private int dataSourceMaxColumns = -2;
     
@@ -1058,7 +1059,7 @@ public class OAJfcController extends HubListenerAdapter {
      *  Called to have component update itself.  
      */
     public void update() {
-/*qqq Test        
+/*qqqq Test        
     System.out.printf((++cntUpdate)+") %s %s %s\n", 
         hub!=null ? hub.getObjectClass().getSimpleName() : "", 
         propertyPath, 
@@ -1252,12 +1253,28 @@ public class OAJfcController extends HubListenerAdapter {
         if (comp.isVisible() != bVisible) {
             comp.setVisible(bVisible);
         }
-        if (comp instanceof OAJfcComponent) {
+        if (comp == component) {
+            JLabel lbl = getLabel();
+            if (lbl != null && lbl.isVisible() != bVisible) {
+                lbl.setVisible(bVisible);
+            }
+        }
+        else if (comp instanceof OAJfcComponent) {
             OAJfcController jc = ((OAJfcComponent) comp).getController();
             if (jc != null) {
                 JLabel lbl = jc.getLabel();
                 if (lbl != null && lbl.isVisible() != bVisible) {
                     lbl.setVisible(bVisible);
+                }
+            }
+        }
+        int i = 0;
+        for (Container cp=comp.getParent(); cp != null && i < 3; cp=cp.getParent(),i++) {
+            if (cp instanceof OAResizePanel) {
+                OAResizePanel rp = (OAResizePanel) cp;
+                if (rp.isVisible() != bVisible) {
+                    rp.setVisible(bVisible);
+                    break;
                 }
             }
         }
@@ -1273,6 +1290,9 @@ public class OAJfcController extends HubListenerAdapter {
         this.columns = x;
     }
     public int getColumns() {
+        if (component instanceof JTextField) {
+            ((JTextField) component).getColumns();
+        }
         return this.columns;
     }
     public void setMinimumColumns(int x) {
@@ -1289,14 +1309,35 @@ public class OAJfcController extends HubListenerAdapter {
         return maxColumns;
     }
 
+    public void setMaximumInput(int x) {
+        maxInput = x;
+    }
+    public void setMaxInput(int x) {
+        maxInput = x;
+    }
+    
+    public int getCalcMaxInput() {
+        if (maxInput > 0) return maxInput;
+        int x = getPropertyInfoMaxLength();
+        return Math.max(0, x);
+    }
+    
+    public int getCalcColumns() {
+        int x = getColumns();
+        if (x > 0) return x;
+        x = getPropertyInfoDisplayColumns();
+        return Math.max(0, x);
+    }
+   
+    
     public int getPropertyInfoDisplayColumns() {
         if (propertyInfoDisplayColumns == -2) {
-            getPropertyInfoMaxColumns();
+            getPropertyInfoMaxLength();
         }
         return propertyInfoDisplayColumns;
     }
     
-    public int getPropertyInfoMaxColumns() {
+    public int getPropertyInfoMaxLength() {
         if (propertyInfoMaxColumns == -2) {
             Hub h = getHub();
             if (h == null) return propertyInfoMaxColumns;
@@ -1321,7 +1362,7 @@ public class OAJfcController extends HubListenerAdapter {
         if (dataSourceMaxColumns == -2) {
             
             // annotation OAColumn has ds max length
-            int x = getPropertyInfoMaxColumns();
+            int x = getPropertyInfoMaxLength();
             if (x > 0) {
                 dataSourceMaxColumns = x;
                 return x;
@@ -1752,7 +1793,7 @@ public class OAJfcController extends HubListenerAdapter {
         public void close() {
             final MyHubChangeListener[] mcls = new MyHubChangeListener[] {changeListener, changeListenerEnabled, changeListenerVisible};
             
-            for (HubProp hp : hubProps) {
+            for (final HubProp hp : hubProps) {
                 if (hp.bIgnore) continue;
                 if (hp.hubListener == null) continue;
                 if (hp.hub == OAJfcController.this.hub) {
@@ -1770,7 +1811,7 @@ public class OAJfcController extends HubListenerAdapter {
                             break;
                         }
                     }
-                    if (!b) hp.hub.removeHubListener(hp.hubListener);
+                    if (!b && hp.hub != null) hp.hub.removeHubListener(hp.hubListener);
                     for (HubProp hpx : hubProps) {
                         if (hpx.hubListener == hp.hubListener) hpx.hubListener = null;
                     }

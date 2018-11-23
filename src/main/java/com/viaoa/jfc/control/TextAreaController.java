@@ -87,7 +87,7 @@ public class TextAreaController extends OAJfcController implements FocusListener
                 switch (errorType) {
                 case OAPlainDocument.ERROR_MAX_LENGTH:
                     int max = getMaximumColumns();
-                    if (max <= 0) max = getPropertyInfoMaxColumns();
+                    if (max <= 0) max = getPropertyInfoMaxLength();
                     msg = "Maximum input exceeded, currently set to " + max;
                     if (textArea instanceof OATextArea) {
                         msg += " for " + TextAreaController.this.getEndPropertyName();

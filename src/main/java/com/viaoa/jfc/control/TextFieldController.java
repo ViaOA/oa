@@ -93,6 +93,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
             textField.removeMouseListener(this);
         }
         textField = tf;
+        if (tf != null) setColumns(tf.getColumns());
         if (hub == null) return; 
         
         if (OAReflect.isNumber(endPropertyClass)) {
@@ -131,8 +132,8 @@ public class TextFieldController extends OAJfcController implements FocusListene
             	String msg = "";
             	switch (errorType) {
             	case OAPlainDocument.ERROR_MAX_LENGTH:
-        	        int max = getMaximumColumns();
-        	        if (max <= 0) max = getPropertyInfoMaxColumns();
+        	        int max = getCalcMaxInput();
+        	        if (max <= 0) max = getPropertyInfoMaxLength();
             		msg = "Maximum input exceeded, currently set to " + max;
 
             		if (textField instanceof OATextField) {
@@ -165,7 +166,8 @@ public class TextFieldController extends OAJfcController implements FocusListene
             }
         };
         
-        int max = getPropertyInfoMaxColumns();
+        int max = getCalcMaxInput();
+        if (max < 1)  max = getPropertyInfoMaxLength();
         // if (max <= 0) max = getDataSourceMaxColumns();  // use getOAColumn max instead 
         
         if (max > 0) document.setMaxLength(max);
@@ -219,11 +221,9 @@ public class TextFieldController extends OAJfcController implements FocusListene
         }
     }
 
-    public void setMax(int x) {
-        setMaximumColumns(x);
-    }
-    public void setMaximumColumns(int x) {
-        super.setMaximumColumns(x);
+    @Override
+    public void setMaxInput(int x) {
+        super.setMaxInput(x);
         if (document != null) {
             document.setMaxLength(x);
         }

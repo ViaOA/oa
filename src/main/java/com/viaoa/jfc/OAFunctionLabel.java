@@ -121,10 +121,6 @@ public class OAFunctionLabel extends JLabel implements OATableComponent, OAJfcCo
     public void setColumns(int x) {
         control.setColumns(x);
         invalidate();
-        if (table != null) {
-            int w = OAJfcUtil.getCharWidth(x+1);
-            table.setColumnWidth(table.getColumnIndex(this),w);
-        }
     }
     public void setMaximumColumns(int x) {
         control.setMaximumColumns(x);
@@ -164,7 +160,7 @@ public class OAFunctionLabel extends JLabel implements OATableComponent, OAJfcCo
         if (cols < 1)  {
             //maxCols = control.getDataSourceMaxColumns();
             //if (maxCols < 1) {
-            cols = control.getPropertyInfoMaxColumns();
+            cols = control.getPropertyInfoMaxLength();
             
             if (cols < 1) {
                 cols = getColumns() * 2; 

@@ -32,7 +32,6 @@ import com.viaoa.jfc.undo.OAUndoableEdit;
 public class OAList extends JList implements OATableComponent, DragGestureListener, DropTargetListener, OAJfcComponent {
     protected OATable table;
     protected OAListController control;
-    protected int columns = 16;
 
     // 10/16/99 Drag&Drop  
     boolean bAllowDrag = false;
@@ -100,7 +99,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         Dimension d = super.getPreferredSize();
         if (d == null || d.width == 0) {
             d = new Dimension(
-                    OAJfcUtil.getCharWidth(columns), 
+                    OAJfcUtil.getCharWidth(getColumns()), 
                     OAJfcUtil.getCharHeight() * getVisibleRows() 
             );
         }
@@ -111,7 +110,7 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         Dimension d = super.getMaximumSize();
         if (isMaximumSizeSet()) return d;
         int cols = getMaxColumns();
-        if (cols < 1) cols = control.getPropertyInfoMaxColumns(); 
+        if (cols < 1) cols = control.getPropertyInfoMaxLength(); 
         
         if (cols < getColumns())  {
             cols = getColumns() * 2; 
@@ -348,27 +347,18 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         Width of component, based on average width of the font's character.
     */
     public int getColumns() {
-        return columns;
+        return getController().getColumns();
     }
-    /** was: 20080515
-        Width of component, based on average width of the font's character.
-    / 
-    public void setColumns(int cols) {
-        columns = cols;
-        int w = OATable.getCharWidth(this,getFont(),cols);
-        setFixedCellWidth(w);
-    }
-    */
     
     /**
 	    Width of ComboBox, based on average width of the font's character.
 	*/
 	public void setColumns(int x) {
-	    columns = x;
+        getController().setColumns(x);
 		String str = null;
 		for (int i=0; i<x; i++) {
 			if (str == null) str = "X";
-			else str += "X"; 
+			else str += "m"; 
 		}
 	    super.setPrototypeCellValue(str);
 	}

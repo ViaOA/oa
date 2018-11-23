@@ -165,7 +165,6 @@ public abstract class OATextFieldAutoCompleteList extends JTextField implements 
     }
     public void setColumns(int x) {
         super.setColumns(x);
-        if (table != null) table.setColumnWidth(table.getColumnIndex(this),super.getPreferredSize().width);
     }
 
     public String getPropertyPath() {

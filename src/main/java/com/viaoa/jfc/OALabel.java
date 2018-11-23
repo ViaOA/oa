@@ -11,14 +11,10 @@
 package com.viaoa.jfc;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.table.*;
 
 import com.viaoa.object.*;
@@ -26,7 +22,6 @@ import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.border.CustomLineBorder;
 import com.viaoa.jfc.control.*;
-import com.viaoa.jfc.image.ColorIcon;
 import com.viaoa.jfc.table.*;
 
 public class OALabel extends JLabel implements OATableComponent, OAJfcComponent {
@@ -207,10 +202,6 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     public void setColumns(int x) {
         control.setColumns(x);
         invalidate();
-        if (table != null) {
-            int w = OAJfcUtil.getCharWidth(x+1);
-            table.setColumnWidth(table.getColumnIndex(this),w);
-        }
     }
     public void setMaximumColumns(int x) {
         control.setMaximumColumns(x);
@@ -241,63 +232,84 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         return control.getMinimumColumns();
     }
 
+    
+    @Override
     public Dimension getPreferredSize() {
         Dimension d = super.getPreferredSize();
         if (isPreferredSizeSet()) return d;
-        int cols = getColumns();
-        if (cols <= 0) {
-            cols = control.getPropertyInfoDisplayColumns();
+
+        String text = getText();
+        if (text == null) text = "";
+        final int textLen = text.length();
+        
+        // resize based on size of text        
+        int cols = getController().getCalcColumns();
+        int maxCols = getMaximumColumns();
+        if (cols < 1 && maxCols < 1) return d;
+        if (maxCols < 1) maxCols = cols;
+        else if (cols < 1) cols = 0;
+        
+        if (textLen >= cols && textLen > 0) {
+            FontMetrics fm = getFontMetrics(getFont());
+            if (textLen > maxCols) text = text.substring(0, maxCols);
+            d.width = fm.stringWidth(text) + 8;
+        }
+        else {
+            d.width = OAJfcUtil.getCharWidth(cols);
+        }
+
+        Insets ins = getInsets();
+        if (ins != null) d.width += ins.left + ins.right;
+        
+//qqqqq label specific
+        if (control != null) {
+            Icon icon = getIcon();
+            if (icon != null) d.width += (icon.getIconWidth() + 10);
         }
         
-        if (cols > 0) {
-            Insets ins = getInsets();
-            int inx = ins == null ? 0 : ins.left + ins.right;
-            d.width = OAJfcUtil.getCharWidth(cols)+inx+2;
-        }
-        
-        if (d.height < 15) {
+        if (d.height < 12) {
             if (heightHold > 0) d.height = heightHold;
             else d.height = lblStatic.getPreferredSize().height;
         }
-        
         return d;
     }
-    
+    @Override
     public Dimension getMaximumSize() {
         Dimension d = super.getMaximumSize();
         if (isMaximumSizeSet()) return d;
-        int cols = getMaxColumns();
-        if (cols < 1)  {
-            //maxCols = control.getDataSourceMaxColumns();
-            //if (maxCols < 1) {
-            cols = control.getPropertyInfoMaxColumns();
-            
-            if (cols < 1) {
-                cols = getColumns() * 2; 
-            }
-        }
 
-        // 20181115 resize based on size of text        
         String text = getText();
         if (text == null) text = "";
-
-        int x = Math.min(text.length(), cols);
-        x = Math.max(x, getMiniColumns());
-        x = Math.max(x, 2);
-        cols = x;
+        final int textLen = text.length();
         
+        // resize based on size of text        
+        int cols = getController().getCalcColumns();
+        int maxCols = getMaximumColumns();
+        if (cols < 1 && maxCols < 1) return d;
+        if (maxCols < 1) maxCols = cols;
+        else if (cols < 1) cols = 0;
+
+        if (textLen >= cols && textLen > 0) {
+            FontMetrics fm = getFontMetrics(getFont());
+            if (textLen > maxCols) text = text.substring(0, maxCols);
+            d.width = fm.stringWidth(text) + 8;
+        }
+        else d.width = OAJfcUtil.getCharWidth(cols);
         
         Insets ins = getInsets();
-        int inx = ins == null ? 0 : ins.left + ins.right;
+        if (ins != null) d.width += ins.left + ins.right;
         
-        d.width = OAJfcUtil.getCharWidth(cols) + inx + 6;
-
+//qqqqq label specific
+        if (control != null) {
+            Icon icon = getIcon();
+            if (icon != null) d.width += (icon.getIconWidth() + 10);
+        }
+        
         if (OAString.isEmpty(text)) {
             if (heightHold > 0) d.height = heightHold;
             else d.height = lblStatic.getPreferredSize().height;
         }
         else heightHold = d.height;
-
         return d;
     }
     private int heightHold;
@@ -425,8 +437,19 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
             return bIsCurrentlyEnabled;
         }
+        @Override
+        public void update(JComponent comp, Object object, boolean bIncudeToolTip) {
+            try {
+                bInUpdate = true;
+                super.update(comp, object, bIncudeToolTip);
+            }
+            finally {
+                bInUpdate = false;
+            }
+        }
     }
-
+    protected boolean bInUpdate;
+    
     @Override
     public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
         Object obj = ((OATable) table).getObjectAt(row, col);
@@ -489,7 +512,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
             }
             
             // blink
-            OAJfcUtil.blink(this);
+            if (!bInUpdate) OAJfcUtil.blink(this);
         }
         invalidate();
     }

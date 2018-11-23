@@ -22,8 +22,6 @@ import com.viaoa.object.OAObject;
 
 public class OARadioButton extends JRadioButton implements OATableComponent, OAJfcComponent {
     OARadioButtonController control;
-    int columns;
-    int width;
     OATable table;
     String heading;
 
@@ -176,15 +174,10 @@ public class OARadioButton extends JRadioButton implements OATableComponent, OAJ
     }
 
     public int getColumns() {
-        return columns;            
+        return getController().getColumns();            
     }
     public void setColumns(int x) {
-        columns = x;
-        this.width = OAJfcUtil.getCharWidth(x);
-        if (table != null) table.setColumnWidth(table.getColumnIndex(this),width);
-        Dimension d = getPreferredSize();
-        d.width = this.width;
-        setPreferredSize(d);
+        getController().setColumns(x);
     }
     /*
     public void setPropertyPath(String path) {

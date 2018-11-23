@@ -63,6 +63,7 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJfcComp
     public OATextArea(Hub hub, String propertyPath, int rows, int cols) {
         super(rows, cols);
         control = new OATextAreaController(hub, propertyPath);
+        setColumns(cols);
         initialize();
     }
 
@@ -83,6 +84,7 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJfcComp
     */
     public OATextArea(OAObject hubObject, String propertyPath, int rows, int cols) {
         super(rows, cols);
+        setColumns(cols);
         control = new OATextAreaController(hubObject, propertyPath);
         initialize();
     }
@@ -124,9 +126,13 @@ public class OATextArea extends JTextArea implements OATableComponent, OAJfcComp
     public OATable getTable() {
         return table;
     }
+    @Override
+    protected int getColumnWidth() {
+        return OAJfcUtil.getCharWidth();
+    }
     public void setColumns(int x) {
         super.setColumns(x);
-        if (table != null) table.setColumnWidth(table.getColumnIndex(this),super.getPreferredSize().width);
+        getController().setColumns(x);
     }
 
     public String getPropertyPath() {

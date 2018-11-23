@@ -32,7 +32,6 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
     */
     public OAFormattedTextField(Hub hub, String propertyPath, int cols, String mask, String validChars, boolean bRightJustified, boolean bAllowSpaces) {
         super(mask, validChars, bRightJustified, bAllowSpaces);
-        setColumns(cols);
         control = new FormattedTextFieldController(hub, this, propertyPath) {
             @Override
             protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
@@ -59,6 +58,7 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
                 OAFormattedTextField.this.revalidate();
             }
         };
+        setColumns(cols);
         initialize();
     }
 
@@ -84,7 +84,7 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
     }
     public void setColumns(int x) {
         super.setColumns(x);
-        if (table != null) table.setColumnWidth(table.getColumnIndex(this),super.getPreferredSize().width);
+        getController().setColumns(x);
     }
     
     @Override
@@ -119,54 +119,60 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
         return x;
     }
     
-    public Dimension getMinimumSize() {
-        Dimension d = super.getPreferredSize();
-        return d;
-    }
-
     @Override
     public Dimension getPreferredSize() {
         Dimension d = super.getPreferredSize();
+        if (isPreferredSizeSet()) return d;
+        
+        int cols = getController().getCalcColumns();
+
+        String s = getText();
+        if (s == null) s = "";
+        int x = s.length();
+        if (x >= cols) {
+            int max = getMaximumColumns();
+            if (max > 0) {
+                if (x < max) cols = x+1;
+                else cols = max;
+            }
+        }
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
+        
+        d.width = OAJfcUtil.getCharWidth(cols) + inx;
         return d;
     }
-    
+    @Override
     public Dimension getMaximumSize() {
         Dimension d = super.getMaximumSize();
         if (isMaximumSizeSet()) return d;
-        
-        int maxCols = getMaximumColumns();
-        if (maxCols < 1)  {
-            //cols = control.getDataSourceMaxColumns();
-            //if (cols < 1) {
-                maxCols = control.getPropertyInfoMaxColumns();
-                if (maxCols < 1) {
-                    maxCols = 999;
-                    // cols = getColumns() * 2; 
-                }
-            //}
-        }
 
-        // 20181115 resize based on size of text        
+        // resize based on size of text        
+        int cols = getController().getCalcColumns();
         String s = getText();
         if (s == null) s = "";
-        int x = Math.min(s.length()+3, maxCols);
+        int x = Math.max(s.length(), cols);
         
-        int cols = getColumns();
-        x = Math.max(x, cols);
-        x = Math.max(x, 2);
-        cols = x;
-        
-        /*
-        x = s.length();
-        if (x + 5 > cols) {
-            cols = Math.min(maxCols, x+5);
+        int maxCols = getMaximumColumns();
+        if (maxCols < 1) {
+            maxCols = cols;
         }
-        */
+
+        cols = Math.min(x, maxCols);
         
         Insets ins = getInsets();
         int inx = ins == null ? 0 : ins.left + ins.right;
         
         d.width = OAJfcUtil.getCharWidth(cols) + inx;
+        return d;
+    }
+    public Dimension getMinimumSize() {
+        Dimension d = super.getMinimumSize();
+        if (isMinimumSizeSet()) return d;
+        int cols = getMinimumColumns();
+
+        if (cols < 1) return d;
+        d.width = OAJfcUtil.getCharWidth(cols);
         return d;
     }
 
@@ -182,6 +188,20 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
         invalidate();
     }
     public int getMinimumColumns() {
+        return control.getMinimumColumns();
+    }
+    public void setMaxColumns(int x) {
+        control.setMaximumColumns(x);
+        invalidate();
+    }
+    public int getMaxColumns() {
+        return control.getMaximumColumns();
+    }
+    public void setMinColumns(int x) {
+        control.setMinimumColumns(x);
+        invalidate();
+    }
+    public int getMinColumns() {
         return control.getMinimumColumns();
     }
     

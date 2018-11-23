@@ -38,8 +38,8 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
         Bind a PasswordField to a property path in the active object of a Hub.
     */  
     public OAPasswordField(Hub hub, String propertyPath, int cols) {
-        super(cols);
         control = new OAPasswordFieldController(hub, propertyPath);
+        setColumns(cols);
         initialize();
     }
     /**
@@ -53,8 +53,8 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
         Bind a component to a property path for an object.
     */  
     public OAPasswordField(OAObject oaObject, String propertyPath, int cols) {
-        super(cols);
         control = new OAPasswordFieldController(oaObject, propertyPath);
+        setColumns(cols);
         initialize();
     }
 
@@ -85,7 +85,7 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
     }
     public void setColumns(int x) {
         super.setColumns(x);
-        if (table != null) table.setColumnWidth(table.getColumnIndex(this),super.getPreferredSize().width);
+        getController().setColumns(x);
     }
     public String getPropertyPath() {
         return control.getPropertyPath();
@@ -207,11 +207,13 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
     public class OAPasswordFieldController extends TextFieldController {
         public OAPasswordFieldController(Hub hub, String propertyPath) {
             super(hub, OAPasswordField.this, propertyPath);
+            setColumns(OAPasswordField.this.getColumns());
             // passwords are not encrypted by default        
             // setConversion('P');
         }
         public OAPasswordFieldController(OAObject hubObject, String propertyPath) {
             super(hubObject, OAPasswordField.this, propertyPath);
+            setColumns(OAPasswordField.this.getColumns());
             // passwords are not encrypted by default        
             // setConversion('P');
         }        
@@ -260,6 +262,103 @@ public class OAPasswordField extends JPasswordField implements OATableComponent,
     }
     public String getToolTipTextTemplate() {
         return this.control.getToolTipTextTemplate();
+    }
+
+
+    public void setMaxColumns(int x) {
+        setMaximumColumns(x);
+    }
+    public void setMaximumColumns(int x) {
+        control.setMaximumColumns(x);
+        invalidate();
+    }
+    public int getMaxColumns() {
+        return control.getMaximumColumns();
+    }
+    public int getMaximumColumns() {
+        return control.getMaximumColumns();
+    }
+
+    public void setMinimumColumns(int x) {
+        control.setMinimumColumns(x);
+        invalidate();
+    }
+    public int getMinimumColumns() {
+        return control.getMinimumColumns();
+    }
+    public void setMinColumns(int x) {
+        control.setMinimumColumns(x);
+        invalidate();
+    }
+    public int getMinColumns() {
+        return control.getMinimumColumns();
+    }
+
+
+    // 20181120
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension d = super.getPreferredSize();
+        if (isPreferredSizeSet()) return d;
+        
+        int cols = getController().getCalcColumns();
+
+        String s = getText();
+        if (s == null) s = "";
+        int x = s.length();
+        if (x >= cols) {
+            int max = getMaximumColumns();
+            if (max > 0) {
+                if (x < max) cols = x+1;
+                else cols = max;
+            }
+        }
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
+        
+        d.width = OAJfcUtil.getCharWidth(cols) + inx;
+        return d;
+    }
+    @Override
+    public Dimension getMaximumSize() {
+        Dimension d = super.getMaximumSize();
+        if (isMaximumSizeSet()) return d;
+
+        // resize based on size of text        
+        int cols = getController().getCalcColumns();
+        String s = getText();
+        if (s == null) s = "";
+        int x = Math.max(s.length(), cols);
+        
+        int maxCols = getMaximumColumns();
+        if (maxCols < 1) maxCols = cols;
+
+        cols = Math.min(x, maxCols);
+        
+        Insets ins = getInsets();
+        int inx = ins == null ? 0 : ins.left + ins.right;
+        
+        d.width = OAJfcUtil.getCharWidth(cols) + inx;
+        return d;
+    }
+    public Dimension getMinimumSize() {
+        Dimension d = super.getMinimumSize();
+        if (isMinimumSizeSet()) return d;
+        int cols = getMinimumColumns();
+
+        if (cols < 1) return d;
+        d.width = OAJfcUtil.getCharWidth(cols);
+        return d;
+    }
+
+    /**
+     * Max columns to be displayed, used when calculating max size.
+     */
+    public void setMaxInput(int x) {
+        control.setMaxInput(x);
+    }
+    public int getMaxInput() {
+        return control.getCalcMaxInput();
     }
 }
 

@@ -801,13 +801,11 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         return table;
     }
     public void setColumns(int x) {
-        this.columns = x;
-        if (table != null) table.setColumnWidth(table.getColumnIndex(this),super.getPreferredSize().width);
+        getController().setColumns(x);
     }
-    private int columns;
     @Override
     public int getColumns() {
-        return columns;
+        return getController().getColumns();
     }    
 
     public String getPropertyPath() {

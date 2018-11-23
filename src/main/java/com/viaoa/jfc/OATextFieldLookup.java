@@ -10,19 +10,9 @@
 */
 package com.viaoa.jfc;
 
-import java.lang.reflect.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.event.*;
-
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
-import com.viaoa.jfc.table.*;
 
 /** 
     Used for binding a JTextField component to perform a select on a Hub.

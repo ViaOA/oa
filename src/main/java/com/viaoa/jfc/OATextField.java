@@ -26,7 +26,6 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
     protected TextFieldController control; // 20110408 was OATextFieldController (internally defined)
     private OATable table;
     private String heading = "";
-    public boolean DEBUG;
 
     public OATextField() {
         control = new OATextFieldController();
@@ -57,8 +56,8 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
         @param cols is the width
     */
     public OATextField(Hub hub, String propertyPath, int cols) {
-        super(cols);
         control = new OATextFieldController(hub, propertyPath);
+        setColumns(cols);
         setDisabledTextColor(Color.gray);
         initialize();
     }
@@ -79,8 +78,8 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
         @param cols is the width
     */
     public OATextField(OAObject hubObject, String propertyPath, int cols) {
-        super(cols);
         control = new OATextFieldController(hubObject, propertyPath);
+        setColumns(cols);
         setDisabledTextColor(Color.gray);
         initialize();
     }
@@ -151,20 +150,13 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
     }
     public void setColumns(int x) {
         super.setColumns(x);
-        if (table != null) {
-            int w = OAJfcUtil.getCharWidth(x);
-            table.setColumnWidth(table.getColumnIndex(this),w);
-        }
+        getController().setColumns(x);
+        invalidate();
     }
 
     public String getPropertyPath() {
         return control.getPropertyPath();
     }
-/*qqqqqqqqqqqq    
-    public String getEndPropertyName() {
-        return control.getEndPropertyName();
-    }
-*/    
     public String getTableHeading() { //zzzzz
         return heading;
     }
@@ -281,10 +273,33 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
     protected int getColumnWidth() {
         return OAJfcUtil.getCharWidth();
     }
+
+    /**
+     * Max columns to be displayed, used when calculating max size.
+     */
+    public void setMaxInput(int x) {
+        control.setMaxInput(x);
+    }
+    public int getMaxInput() {
+        return control.getCalcMaxInput();
+    }
     
+    
+    /**
+     * Max columns to be displayed, used when calculating max size.
+     */
+    public void setMaxCols(int x) {
+        setMaximumColumns(x);
+    }
+    public void setMaxColumns(int x) {
+        setMaximumColumns(x);
+    }
     public void setMaximumColumns(int x) {
         control.setMaximumColumns(x);
         invalidate();
+    }
+    public int getMaxColumns() {
+        return control.getMaximumColumns();
     }
     public int getMaximumColumns() {
         return control.getMaximumColumns();
@@ -296,64 +311,100 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
     public int getMinimumColumns() {
         return control.getMinimumColumns();
     }
-
+    public void setMinColumns(int x) {
+        control.setMinimumColumns(x);
+        invalidate();
+    }
+    public int getMinColumns() {
+        return control.getMinimumColumns();
+    }
+ 
     
+    @Override
+    public void setSize(Dimension d) {
+        super.setSize(d);
+    }
+        
+    
+    // 20181120
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension d = super.getPreferredSize();
+        if (isPreferredSizeSet()) return d;
+
+        String text = getText();
+        if (text == null) text = "";
+        final int textLen = text.length();
+        
+        // resize based on size of text        
+        int cols = getController().getCalcColumns();
+        int maxCols = getMaximumColumns();
+        if (cols < 1 && maxCols < 1) return d;
+        if (maxCols < 1) maxCols = cols;
+        else if (cols < 1) cols = 0;
+        
+        if (textLen >= cols && textLen > 0) {
+            FontMetrics fm = getFontMetrics(getFont());
+            if (textLen > maxCols) text = text.substring(0, maxCols);
+            d.width = fm.stringWidth(text) + 8;
+        }
+        else {
+            d.width = OAJfcUtil.getCharWidth(cols);
+        }
+
+        Insets ins = getInsets();
+        if (ins != null) d.width += ins.left + ins.right;
+        return d;
+    }
+    @Override
     public Dimension getMaximumSize() {
         Dimension d = super.getMaximumSize();
         if (isMaximumSizeSet()) return d;
-        
-        int maxCols = getMaximumColumns();
-        if (maxCols < 1)  {
-            //cols = control.getDataSourceMaxColumns();
-            //if (cols < 1) {
-                maxCols = control.getPropertyInfoMaxColumns();
-                if (maxCols < 1) {
-                    maxCols = 999;
-                    // cols = getColumns() * 2; 
-                }
-            //}
-        }
 
-        // 20181115 resize based on size of text        
-        String s = getText();
-        if (s == null) s = "";
-        int x = Math.min(s.length()+3, maxCols);
+        String text = getText();
+        if (text == null) text = "";
+        final int textLen = text.length();
         
-        int cols = getColumns();
-        x = Math.max(x, cols);
-        x = Math.max(x, 2);
-        cols = x;
-        
-        x = s.length();
-        if (x + 5 > cols) {
-            cols = Math.min(maxCols, x+5);
+        // resize based on size of text        
+        int cols = getController().getCalcColumns();
+        int maxCols = getMaximumColumns();
+        if (cols < 1 && maxCols < 1) return d;
+        if (maxCols < 1) maxCols = cols;
+        else if (cols < 1) cols = 0;
+
+        if (textLen >= cols && textLen > 0) {
+            FontMetrics fm = getFontMetrics(getFont());
+            if (textLen > maxCols) text = text.substring(0, maxCols);
+            d.width = fm.stringWidth(text) + 8;
         }
+        else d.width = OAJfcUtil.getCharWidth(cols);
         
         Insets ins = getInsets();
-        int inx = ins == null ? 0 : ins.left + ins.right;
-        
-        d.width = OAJfcUtil.getCharWidth(cols) + inx;
+        if (ins != null) d.width += ins.left + ins.right;
         return d;
     }
-    
     public Dimension getMinimumSize() {
         Dimension d = super.getMinimumSize();
         if (isMinimumSizeSet()) return d;
         int cols = getMinimumColumns();
+
         if (cols < 1) return d;
-        d.width = OAJfcUtil.getCharWidth(cols+1);
+        d.width = OAJfcUtil.getCharWidth(cols);
         return d;
     }
 
     class OATextFieldController extends TextFieldController {
         public OATextFieldController() {
             super(OATextField.this);
+            setColumns(OATextField.this.getColumns());
         }
         public OATextFieldController(Hub hub, String propertyPath) {
             super(hub, OATextField.this, propertyPath);
+            setColumns(OATextField.this.getColumns());
         }
         public OATextFieldController(OAObject hubObject, String propertyPath) {
             super(hubObject, OATextField.this, propertyPath);
+            setColumns(OATextField.this.getColumns());
         }        
         
         @Override

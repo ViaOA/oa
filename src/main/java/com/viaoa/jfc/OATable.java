@@ -257,7 +257,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         for (OATableColumn tc : getAllTableColumns()) {
             int w = tc.tc.getWidth();
             String s = (String) tc.tc.getHeaderValue();
-            int w2 = fm.stringWidth(s);
+            if (s == null) s = "";
+            int w2 = OAJfcUtil.getCharWidth(Math.max(s.length(),1));
             
             if (w < w2+12) {
                 tc.tc.setPreferredWidth(w2 + 12);
@@ -1676,9 +1677,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * @param width
      *            of column based on average character width.
      */
-    public OATableColumn addColumn(String heading, int width, OATableComponent comp) {
+    public OATableColumn addColumn(String heading, int columns, OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
-        return this.addColumnMain(heading, width, comp.getPropertyPath(), comp, c, -1, null);
+        return this.addColumnMain(heading, columns, comp.getPropertyPath(), comp, c, -1, null);
     }
 
     public OATableColumn addColumn(String heading, OATableComponent comp) {
@@ -1694,9 +1695,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * @param width
      *            of column based on average character width.
      */
-    public OATableColumn add(String heading, int width, OATableComponent comp) {
+    public OATableColumn add(String heading, int columns, OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
-        return this.addColumnMain(heading, width, comp.getPropertyPath(), comp, c, -1, null);
+        return this.addColumnMain(heading, columns, comp.getPropertyPath(), comp, c, -1, null);
     }
 
     /**
@@ -1710,9 +1711,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      *            Set the property path used to display values for a column. This could be necessary
      *            when it can not be determined by the columns OATableComponent.
      */
-    public OATableColumn addColumn(String heading, int width, String path, OATableComponent comp) {
+    public OATableColumn addColumn(String heading, int columns, String path, OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
-        OATableColumn tc = this.addColumnMain(heading, width, path, comp, c, -1, null);
+        OATableColumn tc = this.addColumnMain(heading, columns, path, comp, c, -1, null);
         return tc;
     }
 
@@ -1727,9 +1728,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      *            Set the property path used to display values for a column. This could be necessary
      *            when it can not be determined by the columns OATableComponent.
      */
-    public OATableColumn add(String heading, int width, String path, OATableComponent comp) {
+    public OATableColumn add(String heading, int columns, String path, OATableComponent comp) {
         TableCellEditor c = comp.getTableCellEditor();
-        OATableColumn tc = this.addColumnMain(heading, width, path, comp, c, -1, null);
+        OATableColumn tc = this.addColumnMain(heading, columns, path, comp, c, -1, null);
         return tc;
     }
 
@@ -1738,7 +1739,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * 
      * @param heading
      *            column heading
-     * @param width
+     * @param columns
      *            of column based on average character width.
      * @param path
      *            Set the property path used to display values for a column. This could be necessary
@@ -1746,9 +1747,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * @param index
      *            column number, -1 to append to existing columns
      */
-    public OATableColumn addColumn(String heading, int width, String path, OATableComponent comp, int index) {
+    public OATableColumn addColumn(String heading, int columns, String path, OATableComponent comp, int index) {
         TableCellEditor c = comp.getTableCellEditor();
-        OATableColumn tc = this.addColumnMain(heading, width, path, comp, c, index, comp.getFormat());
+        OATableColumn tc = this.addColumnMain(heading, columns, path, comp, c, index, comp.getFormat());
         return tc;
     }
 
@@ -1757,7 +1758,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * 
      * @param heading
      *            column heading
-     * @param width
+     * @param columns
      *            of column based on average character width.
      * @param path
      *            Set the property path used to display values for a column. This could be necessary
@@ -1765,9 +1766,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * @param index
      *            column number, -1 to append to existing columns
      */
-    public OATableColumn add(String heading, int width, String path, OATableComponent comp, int index) {
+    public OATableColumn add(String heading, int columns, String path, OATableComponent comp, int index) {
         TableCellEditor c = comp.getTableCellEditor();
-        return this.addColumnMain(heading, width, path, comp, c, index, null);
+        return this.addColumnMain(heading, columns, path, comp, c, index, null);
     }
 
     /**
@@ -1775,13 +1776,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * 
      * @param heading
      *            column heading
-     * @param width
+     * @param columns
      *            of column based on average character width.
      * @param path
      *            Set the property path used to display values for a column.
      */
-    public OATableColumn addColumn(String heading, int width, String path) {
-        return this.addColumnMain(heading, width, path, null, (TableCellEditor) null, -1, null);
+    public OATableColumn addColumn(String heading, int columns, String path) {
+        return this.addColumnMain(heading, columns, path, null, (TableCellEditor) null, -1, null);
     }
 
     /**
@@ -1789,13 +1790,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * 
      * @param heading
      *            column heading
-     * @param width
+     * @param columns
      *            of column based on average character width.
      * @param path
      *            Set the property path used to display values for a column.
      */
-    public OATableColumn addColumn(String heading, int width, String path, String fmt) {
-        return this.addColumnMain(heading, width, path, null, (TableCellEditor) null, -1, fmt);
+    public OATableColumn addColumn(String heading, int columns, String path, String fmt) {
+        return this.addColumnMain(heading, columns, path, null, (TableCellEditor) null, -1, fmt);
     }
 
     /**
@@ -1803,13 +1804,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * 
      * @param heading
      *            column heading
-     * @param width
+     * @param columns
      *            of column based on average character width.
      * @param path
      *            Set the property path used to display values for a column.
      */
-    public OATableColumn add(String heading, int width, String path) {
-        return this.addColumnMain(heading, width, path, null, (TableCellEditor) null, -1, null);
+    public OATableColumn add(String heading, int columns, String path) {
+        return this.addColumnMain(heading, columns, path, null, (TableCellEditor) null, -1, null);
     }
 
     /**
@@ -1817,13 +1818,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * 
      * @param heading
      *            column heading
-     * @param width
+     * @param columns
      *            of column based on average character width.
      * @param path
      *            Set the property path used to display values for a column.
      */
-    public OATableColumn add(String heading, int width, String path, String fmt) {
-        return this.addColumnMain(heading, width, path, null, (TableCellEditor) null, -1, fmt);
+    public OATableColumn add(String heading, int columns, String path, String fmt) {
+        return this.addColumnMain(heading, columns, path, null, (TableCellEditor) null, -1, fmt);
     }
 
     
@@ -1918,7 +1919,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     /**
      * Main method for adding a new Table Column.
      */
-    protected OATableColumn addColumnMain(String heading, int width, String path, OATableComponent oaComp, final TableCellEditor editComp, int index, String fmt) {
+    protected OATableColumn addColumnMain(String heading, int cols, String path, OATableComponent oaComp, final TableCellEditor editComp, int index, String fmt) {
         Font font;
 
         String ppTable = oaComp.getTablePropertyPath(this);
@@ -1958,27 +1959,32 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         else font = getFont();
 
-        if (width <= 0) {
+        if (cols <= 0) {
             if (comp != null) {
-                if (comp instanceof JTextField) {
-                    width = ((JTextField) comp).getColumns();
+                if (comp instanceof OAJfcComponent) {
+                    cols = ((OAJfcComponent) comp).getController().getColumns();
                 }
                 else {
-                    width = comp.getPreferredSize().width;
-                    width /= OAJfcUtil.getCharWidth(comp, font, 1);
+                    cols = comp.getPreferredSize().width;
+                    cols /= OAJfcUtil.getCharWidth(comp, font, 1);
                 }
             }
             else {
-                width = heading == null ? 3 : heading.length();
+                cols = heading == null ? 3 : heading.length();
             }
         }
-        int w = OAJfcUtil.getCharWidth(this, font, width);
-        w += 6; // borders, etc.
+        int width;
+        width = OAJfcUtil.getCharWidth(this, font, cols);
+        if (comp instanceof JComponent) {
+            Insets ins = ((JComponent) comp).getInsets();
+            if (ins != null) width += ins.left + ins.right;
+        }
+        width += 4; 
 
         TableCellRenderer rend = null;
 
         OATableColumn column = new OATableColumn(this, path, editComp, rend, oaComp, fmt);
-        column.defaultWidth = w;  // 20150927 was: width
+        column.defaultWidth = width;
         if (oaComp != null) oaComp.setTable(this);
 
         int col = index;
@@ -2001,8 +2007,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
         TableColumn tc = new TableColumn(col);
         
-        tc.setPreferredWidth(w);
-        tc.setWidth(w);
+        tc.setPreferredWidth(width);
+        tc.setWidth(width);
         tc.setCellEditor(editComp);
 
         tc.setCellRenderer(new OATableCellRenderer(column));

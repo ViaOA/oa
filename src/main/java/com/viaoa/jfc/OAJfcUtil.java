@@ -18,7 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 public class OAJfcUtil {
@@ -281,6 +283,7 @@ public class OAJfcUtil {
     }
 
     static int averageCharWidth = 0;
+    static double dAverageCharWidth; 
     static int averageCharHeight = 0;
     static int lastFontSize = 0;
 
@@ -293,10 +296,8 @@ public class OAJfcUtil {
         return getCharWidth(comp, comp.getFont(), columns);
     }
     public static int getCharWidth(int columns) {
-        if (averageCharWidth != 0) {
-            return averageCharWidth * columns;
-        }
-        return getCharWidth() * columns;
+        if (dAverageCharWidth == 0.0) getCharWidth();
+        return (int) (dAverageCharWidth * columns);
     }
     public static int getCharWidth() {
         if (averageCharWidth != 0) {
@@ -322,8 +323,10 @@ public class OAJfcUtil {
             // averageCharWidth = fm.charWidth('m');  // =11, same code used by JTextField.getColumnWidth 
 
             // 2018116
-            String s = "AaBbCcDdEeFfGgWwMmYyZz12345";
-            averageCharWidth = (int) Math.ceil(fm.stringWidth(s) / s.length());  // =7or8
+            String s = "AaBbCcDdEeFfGgMmOoWwYyZz012345";
+            dAverageCharWidth = fm.stringWidth(s);
+            dAverageCharWidth = ((double)dAverageCharWidth) / s.length();
+            averageCharWidth = (int) Math.ceil(dAverageCharWidth);  // =7or8
             //was: averageCharWidth = (int) (fm.stringWidth("9m0M123456") / 10);  // =7or8
 
             /* test
@@ -333,7 +336,7 @@ public class OAJfcUtil {
             */
         }
         
-        return (averageCharWidth * columns);
+        return (int) (dAverageCharWidth * columns);
     }
 
     public static int getCharHeight() {
@@ -352,5 +355,27 @@ public class OAJfcUtil {
         return (averageCharHeight);
     }
     
+    public static GridBagConstraints getGridBagConstraints() {
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.insets = new Insets(3, 3, 3, 3);
+        gc.anchor = gc.WEST;
+        gc.gridwidth = 1;
+
+        // helper
+        // gc.weightx = gc.weighty = 1.0;
+        // gc.gridwidth = gc.REMAINDER;
+        // gc.fill = gc.HORIZONTAL;
+        
+        // gc.weightx = gc.weighty = 0;
+        // gc.gridwidth = 1;
+        // gc.fill = gc.NONE;
+        
+        return gc;
+    }
+    private static final Border borderPanel = new EmptyBorder(10,10,5,5);
+    public static Border getPanelBorder() {
+        return borderPanel;
+    }
+
 }
 
