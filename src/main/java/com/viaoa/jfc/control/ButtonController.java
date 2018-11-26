@@ -1362,20 +1362,20 @@ public class ButtonController extends OAJfcController implements ActionListener 
         if (c == null) return;
 
         obj = OAObjectReflectDelegate.createNewObject(c);
-        if (hub.contains(obj)) return; // 20110925: the createNew added it to the hub, since it was a selectAll hub
-
-        if (insertFlag) {
-            int pos = hub.getPos();
-            if (pos < 0) pos = 0;
-            hub.insert(obj, pos);
-            if (bEnableUndo) {
-                OAUndoManager.add(OAUndoableEdit.createUndoableInsert(getUndoDescription(), hub, obj, pos));
+        if (!hub.contains(obj)) {
+            if (insertFlag) {
+                int pos = hub.getPos();
+                if (pos < 0) pos = 0;
+                hub.insert(obj, pos);
+                if (bEnableUndo) {
+                    OAUndoManager.add(OAUndoableEdit.createUndoableInsert(getUndoDescription(), hub, obj, pos));
+                }
             }
-        }
-        else {
-            hub.addElement(obj);
-            if (bEnableUndo) {
-                OAUndoManager.add(OAUndoableEdit.createUndoableAdd(getUndoDescription(), hub, obj));
+            else {
+                hub.addElement(obj);
+                if (bEnableUndo) {
+                    OAUndoManager.add(OAUndoableEdit.createUndoableAdd(getUndoDescription(), hub, obj));
+                }
             }
         }
         hub.setActiveObject(obj);

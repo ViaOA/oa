@@ -165,7 +165,7 @@ public class AutoCompleteTextFieldController extends OAJfcController {
                     else searchValue = obj.toString();
 
                     int pos = searchValue.toUpperCase().indexOf(text);
-                    if (pos < 0) continue;
+                    if (pos < 0 && !text.equals(" ")) continue;
                     
                     String displayValue;
                     if (!(obj instanceof OAObject) || getTemplateForDisplay()==null) {

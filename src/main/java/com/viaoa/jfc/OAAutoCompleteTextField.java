@@ -100,6 +100,15 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
         control.setColumns(x);
         invalidate();
     }
+    /**
+     * Max columns to be displayed, used when calculating max size.
+     */
+    public void setMaxCols(int x) {
+        setMaximumColumns(x);
+    }
+    public void setMaxColumns(int x) {
+        setMaximumColumns(x);
+    }
     public void setMaximumColumns(int x) {
         control.setMaximumColumns(x);
         invalidate();
@@ -107,70 +116,88 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
     public int getMaxColumns() {
         return control.getMaximumColumns();
     }
-    public void setMiniColumns(int x) {
+    public int getMaximumColumns() {
+        return control.getMaximumColumns();
+    }
+    public void setMinimumColumns(int x) {
         control.setMinimumColumns(x);
         invalidate();
     }
-    public int getMiniColumns() {
+    public int getMinimumColumns() {
+        return control.getMinimumColumns();
+    }
+    public void setMinColumns(int x) {
+        control.setMinimumColumns(x);
+        invalidate();
+    }
+    public int getMinColumns() {
         return control.getMinimumColumns();
     }
 
+    // 20181120
+    @Override
     public Dimension getPreferredSize() {
         Dimension d = super.getPreferredSize();
         if (isPreferredSizeSet()) return d;
-        int cols = getColumns();
-        if (cols <= 0) {
-            cols = control.getPropertyInfoDisplayColumns();
-        }
+
+        String text = getText();
+        if (text == null) text = "";
+        final int textLen = text.length();
         
-        if (cols > 0) {
-            Insets ins = getInsets();
-            int inx = ins == null ? 0 : ins.left + ins.right;
-            d.width = OAJfcUtil.getCharWidth(cols)+inx+2;
+        // resize based on size of text        
+        int cols = getController().getCalcColumns();
+        int maxCols = getMaximumColumns();
+        if (cols < 1 && maxCols < 1) return d;
+        if (maxCols < 1) maxCols = cols;
+        else if (cols < 1) cols = 0;
+        
+        if (textLen >= cols && textLen > 0) {
+            FontMetrics fm = getFontMetrics(getFont());
+            if (textLen > maxCols) text = text.substring(0, maxCols);
+            d.width = fm.stringWidth(text) + 8;
         }
-        return d;
-    }
-    
-    public Dimension getMaximumSize() {
-        Dimension d = super.getMaximumSize();
-        if (isMaximumSizeSet()) return d;
-        int cols = getMaxColumns();
-        if (cols < 1)  {
-            //maxCols = control.getDataSourceMaxColumns();
-            //if (maxCols < 1) {
-            cols = control.getPropertyInfoMaxLength();
-            
-            if (cols < 1) {
-                cols = getColumns() * 2; 
-            }
+        else {
+            d.width = OAJfcUtil.getCharWidth(cols);
         }
 
         Insets ins = getInsets();
-        int inx = ins == null ? 0 : ins.left + ins.right;
-        
-        if (cols > 0) d.width = OAJfcUtil.getCharWidth(cols) + inx;
-        else {
-            // also check size of text, so that label is not bigger then the text it needs to display
-            String s = getText();
-            if (s == null) s = " ";
-            
-            FontMetrics fm = getFontMetrics(getFont());
-            d.width = Math.min(d.width, fm.stringWidth(s)+inx+2);
-        }
-        
-        // dont size under pref size
-        Dimension dx = getPreferredSize();
-        d.width = Math.max(d.width, dx.width);
-
+        if (ins != null) d.width += ins.left + ins.right;
         return d;
     }
+    @Override
+    public Dimension getMaximumSize() {
+        Dimension d = super.getMaximumSize();
+        if (isMaximumSizeSet()) return d;
 
+        String text = getText();
+        if (text == null) text = "";
+        final int textLen = text.length();
+        
+        // resize based on size of text        
+        int cols = getController().getCalcColumns();
+        int maxCols = getMaximumColumns();
+        if (cols < 1 && maxCols < 1) return d;
+        if (maxCols < 1) maxCols = cols;
+        else if (cols < 1) cols = 0;
+
+        if (textLen >= cols && textLen > 0) {
+            FontMetrics fm = getFontMetrics(getFont());
+            if (textLen > maxCols) text = text.substring(0, maxCols);
+            d.width = fm.stringWidth(text) + 8;
+        }
+        else d.width = OAJfcUtil.getCharWidth(cols);
+        
+        Insets ins = getInsets();
+        if (ins != null) d.width += ins.left + ins.right;
+        return d;
+    }
     public Dimension getMinimumSize() {
         Dimension d = super.getMinimumSize();
         if (isMinimumSizeSet()) return d;
-        int cols = getMiniColumns();
+        int cols = getMinimumColumns();
+
         if (cols < 1) return d;
-        d.width = OAJfcUtil.getCharWidth(cols+1);
+        d.width = OAJfcUtil.getCharWidth(cols);
         return d;
     }
         

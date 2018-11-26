@@ -49,7 +49,7 @@ public class OAResizePanel extends JPanel {
     protected JComponent comp1, comp2;
 
 //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq    
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
     
     public OAResizePanel(JComponent comp) {
         comp1 = comp;

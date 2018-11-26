@@ -762,6 +762,13 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         Hub<T> hub = getHub();
         if (hub == null || bClosed) return;
         hub.add(obj);
+        if (bShareAO && hubMaster != null) {
+            if (obj == hubMaster.getAO()) {
+                bIgnoreSettingAO = true;
+                hub.setAO(obj);
+                bIgnoreSettingAO = false;
+            }
+        }
     }
     
     /**

@@ -214,6 +214,10 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         control.setMaximumColumns(x);
         invalidate();
     }
+    public void setMaxCols(int x) {
+        control.setMaximumColumns(x);
+        invalidate();
+    }
     public int getMaxColumns() {
         return control.getMaximumColumns();
     }
@@ -437,18 +441,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
             return bIsCurrentlyEnabled;
         }
-        @Override
-        public void update(JComponent comp, Object object, boolean bIncudeToolTip) {
-            try {
-                bInUpdate = true;
-                super.update(comp, object, bIncudeToolTip);
-            }
-            finally {
-                bInUpdate = false;
-            }
-        }
     }
-    protected boolean bInUpdate;
     
     @Override
     public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
@@ -512,7 +505,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
             }
             
             // blink
-            if (!bInUpdate) OAJfcUtil.blink(this);
+            OAJfcUtil.blink(this);
         }
         invalidate();
     }

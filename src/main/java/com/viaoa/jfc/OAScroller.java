@@ -103,9 +103,8 @@ public class OAScroller extends JComponent implements SwingConstants {
     @Override
     public Dimension getPreferredSize() {
         Dimension d = super.getPreferredSize();
-if (d.width > 900) {
-    d.width += 0;
-//qqqqqqqqqqqqqqqqqqqqqqqqq testing ... not sure if this could be returning a huge width    
+if (d.width > 400) {
+    d.width = 400;
 }
         return d;
     }

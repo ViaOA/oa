@@ -4440,7 +4440,8 @@ class TableController extends OAJfcController implements ListSelectionListener {
                     finally {
                         table.control.aiIgnoreValueChanged.decrementAndGet();
                     }
-                    if (!bIsAdd) rebuildListSelectionModel();
+                    rebuildListSelectionModel();  // 20181125 need to rebuild, since this is delayed
+                    //was: if (!bIsAdd) rebuildListSelectionModel();
                 }
             });
         }
