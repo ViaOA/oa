@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 
 import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.sync.OASync;
 
 /**
  * Main delegate that works with the HubData class.
@@ -185,7 +186,22 @@ public class HubDataDelegate {
         }
 
 	    if (pos >= 0) {
-	    	if ((thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()) && (obj instanceof OAObject)) {
+
+	        boolean b = (obj instanceof OAObject);	        
+            if (b) {
+                b = ((thisHub.datam.getTrackChanges() || thisHub.data.getTrackChanges()));
+                if (!b && OASync.isServer()) {
+                    if ( ((OAObject) obj).isChanged()) {
+                        if (thisHub.datam.getMasterObject() != null) {
+                            // could be ServerRoot
+                            b = true;
+                        }
+                    }
+                }
+            }
+            
+	        
+	    	if (b) {
 	            if (thisHub.data.getVecAdd() != null && thisHub.data.getVecAdd().removeElement(obj)) {
 	                // no-op
 	            }
@@ -711,5 +727,12 @@ public class HubDataDelegate {
             return (thisHub == thisHub.getRootHub());
         }
         return li.getReverseLinkInfo().getRecursive();
+    }
+    
+    public static void setTrackChanges(Hub thisHub, boolean b) {
+        thisHub.data.setTrackChanges(b);        
+    }
+    public static boolean getTrackChanges(Hub thisHub) {
+        return thisHub != null && thisHub.data.getTrackChanges();        
     }
 }

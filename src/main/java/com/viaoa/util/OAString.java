@@ -1900,9 +1900,10 @@ public class OAString {
         "Etiam ultricies nisl id lacus vulputate mattis. Nulla condimentum et metus vitae vestibulum. Aliquam ac risus eros. Vestibulum dignissim bibendum sapien, quis feugiat sapien lacinia nec. Mauris id justo pharetra, tincidunt est vel, varius libero. Ut efficitur nulla nec malesuada efficitur. Nulla luctus purus eu metus feugiat, eu semper metus viverra. Aliquam erat volutpat. Vivamus mollis turpis augue, eget maximus lorem convallis vel. Nam sed arcu vitae diam tempus malesuada id non nisl. Phasellus scelerisque nunc ut dapibus interdum.  " + 
         "Donec ornare elementum laoreet. Sed diam mauris, eleifend quis lacinia at, egestas eu tellus. Sed neque augue, vestibulum ut arcu non, accumsan aliquet enim. Aliquam fringilla neque a enim pellentesque hendrerit. Sed ac semper arcu, vitae porta purus. Curabitur sit amet faucibus augue. Praesent accumsan elit ut sem dictum vulputate. Praesent sed tempus mauris, ut ultrices dolor. Nunc congue, tortor sed lacinia pulvinar, mauris mi molestie lorem, at rutrum lorem est euismod magna. Suspendisse sagittis mauris in interdum gravida. Phasellus a ante hendrerit, pulvinar urna eget, scelerisque massa."; 
     
-    public static String getDummyText(final int normal, int min, int max) {
+    public static String getDummyText(int normal, int min, int max) {
         // adjust min/max based on normal
         if (normal > 0) {
+            if (normal > max) normal = max;
             if (normal > min) {
                 int diff = (normal - min);
                 if (Math.random() < .75) {
@@ -1919,7 +1920,6 @@ public class OAString {
                 }
                 max = (int) (normal + (Math.random() * diff));
             }
-            else max = normal;
         }
         int sampleSize = min;
         if (min < max) sampleSize += (int) (Math.random() * (max-min));

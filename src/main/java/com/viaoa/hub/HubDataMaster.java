@@ -64,6 +64,8 @@ class HubDataMaster implements java.io.Serializable {
         if (rli == null) return null; 
         return rli.getUniquePropertyGetMethod();
     }
+    
+    
     /**
      * True if there is a masterObject and it is not a calculated Hub.
      */
@@ -76,7 +78,9 @@ class HubDataMaster implements java.io.Serializable {
         }
         //was:  if (liDetailToMaster == null) return true;
         
-        if (liDetailToMaster.getCalculated()) return false;
+        if (liDetailToMaster.getCalculated()) {
+            return false;
+        }
 
         // 20160623 so that serverRoot wont store changes to objects
         if (!liDetailToMaster.getToObjectInfo().getUseDataSource()) return false;

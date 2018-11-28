@@ -66,7 +66,7 @@ public class HubSaveDelegate {
 	        }
         }
         
-    	HubDelegate._updateHubAddsAndRemoves(thisHub, cascade);
+    	HubDelegate._updateHubAddsAndRemoves(thisHub, iCascadeRule, cascade, true);
     	thisHub.setChanged(false); // removes all vecAdd, vecRemove objects
     	
         HubDelegate.setReferenceable(thisHub, false);

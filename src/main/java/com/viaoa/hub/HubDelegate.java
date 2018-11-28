@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import com.viaoa.object.*;
+import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.*;
 
@@ -317,7 +318,7 @@ public class HubDelegate {
 
 	
 	// called by deleteAll() and saveAll()
-	protected static void _updateHubAddsAndRemoves(Hub thisHub, OACascade cascade) {
+	protected static void _updateHubAddsAndRemoves(final Hub thisHub, final int iCascadeRule, final OACascade cascade, final boolean bIsSaving) {
         // removed Objects need to be saved if reference = null.
     	HubDataMaster dm = HubDetailDelegate.getDataMaster(thisHub);
     	boolean bM2M = (dm != null && dm.liDetailToMaster != null && dm.liDetailToMaster.getType() == OALinkInfo.MANY);
@@ -358,16 +359,18 @@ public class HubDelegate {
                     }
                 }
     		}
-    		else {
-    			if (dm != null && dm.liDetailToMaster != null && bHasMethod) {
-	        		Object ox = OAObjectReflectDelegate.getProperty(obj, dm.liDetailToMaster.getName());
-	    			if (ox == null) { // else property has been reassigned
-                        // 20120925
-                        OAObjectDSDelegate.removeReference(obj, dm.liDetailToMaster);
-	    			    //was: OAObjectSaveDelegate._saveObjectOnly(obj, cascade);
-	    			}
+    		else if (dm != null && dm.liDetailToMaster != null && bHasMethod) {
+        		Object ox = OAObjectReflectDelegate.getProperty(obj, dm.liDetailToMaster.getName());
+    			if (ox == null) { // else property has been reassigned
+                    // 20120925
+                    OAObjectDSDelegate.removeReference(obj, dm.liDetailToMaster);
+    			    //was: OAObjectSaveDelegate._saveObjectOnly(obj, cascade);
     			}
     		}
+            else if (bIsSaving && dm != null && dm.liDetailToMaster != null && !bHasMethod && OASync.isServer() && !obj.isDeleted()) {
+                // 20181126 if it is a removed object from ServerRoot, need to save now
+                OAObjectSaveDelegate.save(obj, iCascadeRule, cascade);
+            }
     	}
 	}
 	private static void updateMany2ManyLinks(Hub thisHub, HubDataMaster dm) {

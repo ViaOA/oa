@@ -82,13 +82,10 @@ public class OAMultiButtonSplitButton extends OASplitButton {
             }
         });
         
-//qqqqqqqqqqqqq        
         mainButton.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("enabled".equalsIgnoreCase(evt.getPropertyName())) {
-int xx = 4;
-xx++;
                 }
             }
         });
@@ -106,7 +103,10 @@ xx++;
         boolean bVisible = false;
         
         for (JButton button : buttons) {
-            popup.add(button, gc);
+            Container cx = button.getParent();
+            if (cx == null || cx == popup || cx == panHidden) {
+                popup.add(button, gc);
+            }
             bEnabled = bEnabled || button.isEnabled();
             bVisible = bVisible || button.isVisible();
         }
@@ -116,13 +116,19 @@ xx++;
             for (JButton button : buttons) {
                 if (button.isEnabled()) {
                     cmdSelected = button;
-                    panHidden.add(cmdSelected, gc);
+                    Container cx = button.getParent();
+                    if (cx == null || cx == popup || cx == panHidden) {
+                        panHidden.add(cmdSelected, gc);
+                    }
                     break;
                 }
             }
             if (cmdSelected == null && buttons.length > 0) {
                 cmdSelected = buttons[0];
-                panHidden.add(cmdSelected, gc);
+                Container cx = cmdSelected.getParent();
+                if (cx == null || cx == popup || cx == panHidden) {
+                    panHidden.add(cmdSelected, gc);
+                }
             }
         }
 

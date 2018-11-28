@@ -434,6 +434,7 @@ public class OAObjectEventDelegate {
 
     	oaObj.changedFlag = bChangeHold;
 	
+    	/*was: moved to below
         // 20160304
         if (!bIsLoading) {
             if (oi.getHasTriggers()) {
@@ -447,6 +448,7 @@ public class OAObjectEventDelegate {
                 }
             }
         }
+        */
     	
         // set to Changed
         if (!bIsChangeProp && bSetChanged && !bChangeHold && (calcInfo == null)) {
@@ -466,6 +468,23 @@ public class OAObjectEventDelegate {
         if (linkInfo != null) {
         	updateLink(oaObj, oi, linkInfo, oldObj, newObj);
         }
+        
+        
+        // 20181126 moved from above
+        if (!bIsLoading) {
+            if (oi.getHasTriggers()) {
+                HubEvent hubEvent = new HubEvent(oaObj, propertyName, oldObj, newObj);
+                try {
+                    OAThreadLocalDelegate.addHubEvent(hubEvent);
+                    oi.onChange(oaObj, propertyName, hubEvent);
+                }
+                finally {
+                    OAThreadLocalDelegate.removeHubEvent(hubEvent);
+                }
+            }
+        }
+        
+        
 	}
 
 	

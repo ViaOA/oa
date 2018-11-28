@@ -182,7 +182,7 @@ public class HubDeleteDelegate {
             }
         }
         */
-    	HubDelegate._updateHubAddsAndRemoves(thisHub, cascade);
+    	HubDelegate._updateHubAddsAndRemoves(thisHub, -1, cascade, false);
      	
     	thisHub.setChanged(false); // removes all vecAdd, vecRemove objects
     }
