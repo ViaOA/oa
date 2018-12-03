@@ -775,18 +775,21 @@ public class OAObjectInfoDelegate {
         propertyName = propertyName.toUpperCase();
         for (int i=0; i<ss.length; i++) {
             int x = propertyName.compareTo(ss[i]);
-            if (x == 0) {
-                int posByte = (i / 8);
-                int posBit = 7 - (i % 8);
-                if (posByte >= oaObj.nulls.length) return false;
-                byte b = oaObj.nulls[posByte];
-
-                byte b2 = 1;
-                b2 = (byte) (b2<<posBit);
-                b = (byte) ((byte)b & (byte)b2);
-                return b != 0;                   
-            }
             if (x < 0) break; // list is sorted
+            if (x != 0) continue;
+            int posByte = (i / 8);
+            int posBit = 7 - (i % 8);
+            if (posByte >= oaObj.nulls.length) return false;
+            byte b = oaObj.nulls[posByte];
+
+            byte b2 = 1;
+            b2 = (byte) (b2<<posBit);
+            b = (byte) ((byte)b & (byte)b2);
+            
+            if (b != 0 && !oi.getPropertyInfo(ss[i]).getTrackPrimitiveNull()) {
+                return false;
+            }
+            return b != 0;                   
         }
         return false;
     }
@@ -799,27 +802,27 @@ public class OAObjectInfoDelegate {
         String[] ss = oi.getPrimitiveProperties();
         for (int i=0; i<ss.length; i++) {
             int x = propertyName.compareTo(ss[i]);
-            if (x == 0) {
-                int posByte = (i / 8);
-                if (posByte >= oaObj.nulls.length) {
-                    continue;
-                }
-                
-                byte b = oaObj.nulls[posByte];
-                int posBit = 7 - (i % 8);
-
-                byte b2 = (byte) 1;
-                b2 = (byte) (b2 << posBit);
-                if (bSetToNull) {
-                    b |= b2; 
-                }
-                else {
-                    b &= ~b2; 
-                }
-                oaObj.nulls[posByte] = b;
-                break;
-            }
             if (x < 0) break; // list is sorted
+            if (x != 0) continue;
+            
+            int posByte = (i / 8);
+            if (posByte >= oaObj.nulls.length) {
+                continue;
+            }
+            
+            byte b = oaObj.nulls[posByte];
+            int posBit = 7 - (i % 8);
+
+            byte b2 = (byte) 1;
+            b2 = (byte) (b2 << posBit);
+            if (bSetToNull) {
+                b |= b2; 
+            }
+            else {
+                b &= ~b2; 
+            }
+            oaObj.nulls[posByte] = b;
+            break;
         }
     }
 

@@ -163,6 +163,8 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
             pi.setUnique(oaprop.isUnique());
             pi.setProcessed(oaprop.isProcessed());
             pi.setHtml(oaprop.isHtml());
+            pi.setTrackPrimitiveNull(oaprop.trackPrimitiveNull());
+
             pi.setClassType(m.getReturnType());
 
             OAColumn oacol = (OAColumn) m.getAnnotation(OAColumn.class);

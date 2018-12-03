@@ -54,6 +54,7 @@ public class OAPropertyInfo implements java.io.Serializable {
 
     private String[] userDependentProperties;
     private String[] viewDependentProperties;
+    private boolean trackPrimitiveNull=true;
     
     private OAProperty oaProperty;    
 	
@@ -259,12 +260,18 @@ public class OAPropertyInfo implements java.io.Serializable {
         userVisibleValue = b;
     }
     
-    
     public void setEditQueryMethod(Method m) {
         this.editQueryMethod = m;
     }
     public Method getEditQueryMethod() {
         return editQueryMethod;
+    }
+    
+    public boolean getTrackPrimitiveNull() {
+        return trackPrimitiveNull;
+    }
+    public void setTrackPrimitiveNull(boolean b) {
+        trackPrimitiveNull = b;
     }
 }
 

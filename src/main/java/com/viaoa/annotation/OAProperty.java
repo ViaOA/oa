@@ -82,9 +82,6 @@ public @interface OAProperty {
     boolean isNameValue() default false;
     
     boolean isUnicode() default false;
+    
+    boolean trackPrimitiveNull() default true;
 }
-
-
-
-
-

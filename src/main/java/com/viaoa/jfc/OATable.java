@@ -2005,7 +2005,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             }
         }
 
-        TableColumn tc = new TableColumn(col);
+        final TableColumn tc = new TableColumn(col);
         
         tc.setPreferredWidth(width);
         tc.setWidth(width);
@@ -2013,8 +2013,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
         tc.setCellRenderer(new OATableCellRenderer(column));
         tc.setHeaderValue(heading);
-// 20150927 removed, not positive what this does, but it apprears to set the width based on component. I want it based on columns, so I'm removing it        
-//        tc.sizeWidthToFit(); // 2006/12/26
+        // 20150927 removed, not positive what this does, but it apprears to set the width based on component. I want it based on columns, so I'm removing it        
+        // tc.sizeWidthToFit(); // 2006/12/26
         getColumnModel().addColumn(tc);
 
         column.headerRenderer = null;
@@ -2022,6 +2022,41 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         tc.setHeaderRenderer(headerRenderer); 
 
         calcPreferredSize();
+        
+        // 20181201 hide/show the column based on visible changeListener
+        if (comp instanceof OAJfcComponent) {
+            OAJfcComponent jc = (OAJfcComponent) comp;
+            final HubChangeListener hcl = jc.getController().getVisibleChangeListener();
+            HubChangeListener hclx = new HubChangeListener() {
+                boolean b=true;
+                int w, max, prefWidth;
+                @Override
+                protected void onChange() {
+                    boolean bx = hcl.getValue();
+                    if (bx) {
+                        if (w > 0) {
+                            tc.setResizable(true);
+                            tc.setMaxWidth(max);
+                            tc.setMinWidth(0);
+                            tc.setWidth(w);
+                            tc.setPreferredWidth(prefWidth);
+                        }
+                    }
+                    else {
+                        w = tc.getWidth();
+                        max = tc.getMaxWidth();
+                        prefWidth = tc.getPreferredWidth();
+                        tc.setMinWidth(0);
+                        tc.setWidth(0);
+                        tc.setPreferredWidth(0);
+                        tc.setMaxWidth(0);
+                        tc.setResizable(false);
+                    }
+                }
+            };
+            hcl.addHubChangeListener(hclx);
+        }
+        
         
         if (siblingHelper != null) {
             siblingHelper.add(column.getPathFromTableHub(hub));
@@ -3727,7 +3762,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         return comp;
     }
     protected Component _getRenderer(Component comp, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
-        JLabel lbl = null;
+        JLabel lbl = null; 
         // 1of3: set default settings
         if (!(comp instanceof JLabel)) {
             if (lblDummy == null) lblDummy = new JLabel();

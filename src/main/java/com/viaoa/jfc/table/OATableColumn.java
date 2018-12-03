@@ -207,9 +207,15 @@ public class OATableColumn {
      */
     public Object getObjectForTableObject(Object obj) {
         if (obj == null) return null;
-        Method[] ms;
-        if (methodsIntValue != null) ms = methodsIntValue;
-        else ms = methods;
+        
+        if (methodsIntValue != null) {
+            Object objx = OAReflect.getPropertyValue(obj, methodsIntValue);
+            int x = OAConv.toInt(objx);
+            objx = getOATableComponent().getHub().getAt(x);
+            return objx;
+        }
+        
+        Method[] ms = methods;
         
         if (ms == null || ms.length < 2) return obj;
         

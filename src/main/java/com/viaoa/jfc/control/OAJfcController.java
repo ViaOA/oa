@@ -410,7 +410,7 @@ public class OAJfcController extends HubListenerAdapter {
     }
     
     /**
-     * This will find the real object in this hub use, in cases where a comp is added to
+     * This will find the real object in this hub to use, in cases where a comp is added to
      * a table, and the table.hub is different then the comp.hub, which could be
      * a detail or link type relationship to the table.hub
      */
@@ -441,7 +441,6 @@ public class OAJfcController extends HubListenerAdapter {
             obj = OAObjectReflectDelegate.getProperty(getHub(), propertyPath);
         }
         else {
-            if (obj == null) return null;
             if (OAString.isEmpty(propertyPath)) return obj;
             if (!(obj instanceof OAObject)) return obj;
             obj = ((OAObject) obj).getProperty(propertyPath);
@@ -1078,14 +1077,53 @@ public class OAJfcController extends HubListenerAdapter {
         }
         
         if (component == null) return;
+        
         Object obj;
         if (hub != null) obj = hub.getAO();
         else obj = null;
         update(component, obj, true);
+        debug();
         updateEnabled();        
         updateVisible();      
         updateLabel(component, obj);
     }
+
+    public static boolean DEBUGUI = false;
+
+    protected void debug() {
+        if (!DEBUGUI || component == null) return;
+        component.setBorder(new LineBorder(Color.green, 2));
+        
+        Container cx = component.getParent();
+        for (int i=0 ; i<2 && cx != null; cx=cx.getParent()) {
+            if (cx instanceof JScrollPane) {
+                ((JScrollPane)cx).setBorder(new LineBorder(Color.blue, 1));
+                break;
+            }
+        }
+        if (label == null) return;
+        label.setBorder(new LineBorder(Color.yellow, 2));
+        
+        String tt = "1)Hub="+getHub();
+        tt += "<br>2)Prop="+propertyPath;
+        int cnt = 3;
+        
+        if (changeListener != null) {
+            String s = changeListener.getToolTipText();
+            if (OAString.isNotEmpty(s)) tt += "<br>"+(cnt++)+")hcl="+s;
+        }
+        if (changeListenerEnabled != null) {
+            String s = changeListenerEnabled.getToolTipText();
+            if (OAString.isNotEmpty(s)) tt += "<br>"+(cnt++)+")hclEnabed="+s;
+        }
+        if (changeListenerVisible != null) {
+            String s = changeListenerVisible.getToolTipText();
+            if (OAString.isNotEmpty(s)) tt += "<br>"+(cnt++)+")hclVisible="+s;
+        }
+        label.setToolTipText("<html>"+tt);
+    }
+
+
 
     public void updateLabel(final JComponent comp, Object object) {
         JLabel lbl = getLabel();

@@ -19,13 +19,11 @@ import java.awt.image.*;
 
 import com.viaoa.util.*;
 
-// save as PNG file
-// import javax.imageio.*;
-// ImageIO.write((BufferedImage) ic.getImage(),"PNG", new FileOutputStream("TEST.png"));
-
-// creates a gif or jpg out of an image
-
-
+/**
+ * creates a gif, jpg, or png out of an image
+ * @author vvia
+ *
+ */
 public class OAImageCreator {
     protected Dimension dimSize;
     protected BufferedImage image;
@@ -37,7 +35,8 @@ public class OAImageCreator {
             image = null;
             return null;
         }
-        image = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_RGB);
+        image = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
+        // BufferedImage.TYPE_INT_ARGB
         return image.getGraphics();
     }
 
@@ -90,6 +89,17 @@ public class OAImageCreator {
         fos.close();
         */
     }
+    
+    // save as PNG file
+    public void createPng(String fileName) throws Exception {
+        verify(fileName);
+        File f = new File(fileName);
+        FileOutputStream fos = new FileOutputStream(f);
+        ImageIO.write(image, "png", fos);
+        fos.close();
+    }
+    
+
 
 }
 

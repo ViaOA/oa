@@ -10,6 +10,8 @@
 */
 package com.viaoa.hub;
 
+import java.util.ArrayList;
+
 import com.viaoa.auth.OAAuthDelegate;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
@@ -359,7 +361,7 @@ public abstract class HubChangeListener {
         assignHubListener(newHubProp);
         
         hubProps = (HubProp[]) OAArray.add(HubProp.class, hubProps, newHubProp);
-        onChange();
+        callOnChange();
 
         Hub h = (hub == null) ? null : hub.getLinkHub();
         if (h != null) {
@@ -392,7 +394,7 @@ public abstract class HubChangeListener {
             public void afterChangeActiveObject(HubEvent e) {
                 if (e == lastHubEvent) return;
                 lastHubEvent = e;
-                onChange();
+                callOnChange();
             }
             @Override
             public void afterPropertyChange(HubEvent e) {
@@ -407,7 +409,7 @@ public abstract class HubChangeListener {
                     
                     if (!hp.bAoOnly || e.getObject() == newHubProp.hub.getAO()) {
                         if (s != null && s.equalsIgnoreCase(hp.listenToPropertyName)) {
-                            onChange();
+                            callOnChange();
                             break;
                         }
                     }
@@ -418,7 +420,7 @@ public abstract class HubChangeListener {
             public void onNewList(HubEvent e) {
                 if (e == lastHubEvent) return;
                 lastHubEvent = e;
-                onChange();
+                callOnChange();
             }
             @Override
             public void afterAdd(HubEvent e) {
@@ -428,7 +430,7 @@ public abstract class HubChangeListener {
                     if (hp.bIgnore) continue;
                     if (hp.hub != newHubProp.hub) continue;
                     if (!hp.bAoOnly || hp.propertyPath == null) {
-                        onChange();
+                        callOnChange();
                         break;
                     }
                 }
@@ -441,7 +443,7 @@ public abstract class HubChangeListener {
                     if (hp.bIgnore) continue;
                     if (hp.hub != newHubProp.hub) continue;
                     if (!hp.bAoOnly || hp.propertyPath == null) {
-                        onChange();
+                        callOnChange();
                         break;
                     }
                 }
@@ -454,7 +456,7 @@ public abstract class HubChangeListener {
                     if (hp.bIgnore) continue;
                     if (hp.hub != newHubProp.hub) continue;
                     if (!hp.bAoOnly || hp.propertyPath == null) {
-                        onChange();
+                        callOnChange();
                         break;
                     }
                 }
@@ -536,6 +538,18 @@ public abstract class HubChangeListener {
             if (!b) break;
         }
         return b;
+    }
+    
+    public String getToolTipText() {
+        String tt = "";
+        for (HubProp hp : hubProps) {
+            if (hp.bIgnore) continue;
+            String s = hp.getToolTipText();
+            if (OAString.isNotEmpty(s)) {
+                tt = OAString.append(tt, s, "<br>");
+            }
+        }
+        return tt;
     }
 
     public HubProp getFalseValue() {
@@ -624,6 +638,28 @@ public abstract class HubChangeListener {
             }
         }
         
+        public String getToolTipText() {
+            if (bIgnore) return null;
+            String tt = null;
+            /*
+            if (compareValue instanceof Type) {
+                tt = OAString.append(tt, compareValue.toString(), "<br>");
+            }
+            else if (compareValue == Type.EditQueryEnabled) {
+                tt = OAString.append(tt, "editQueryEnabled", "<br>");
+            }
+            else if (compareValue == Type.EditQueryVisible) {
+                tt = OAString.append(tt, "editQueryVisible", "<br>");
+            }
+            */
+            if (bUseCompareValue && compareValue != null && compareValue != Type.AlwaysTrue) {
+                tt = OAString.append(tt, "compareValue="+compareValue, "<br>");
+            }
+//todo:  see if you can figure out if editQueries exists or not qqqq            
+            return tt;
+        }
+        
+        
         @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof HubProp)) return false;
@@ -652,6 +688,25 @@ public abstract class HubChangeListener {
         public int hashCode() {
             if (hub == null) return super.hashCode();
             return hub.hashCode();
+        }
+    }
+    
+    protected ArrayList<HubChangeListener> alHubChangeListener;
+    /**
+     * Allows for chaining this HCL with other HCLs.
+     */
+    public void addHubChangeListener(HubChangeListener hcl) {
+        if (hcl == null) return;
+            
+        if (alHubChangeListener == null) alHubChangeListener = new ArrayList<>();
+        alHubChangeListener.add(hcl);
+        hcl.onChange();
+    }
+    protected void callOnChange() {
+        onChange();
+        if (alHubChangeListener == null) return;
+        for (HubChangeListener hcl : alHubChangeListener) {
+            hcl.callOnChange();
         }
     }
     

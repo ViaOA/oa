@@ -237,9 +237,11 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
             if (oaObject != null) {
                 obj = getValue(oaObject);
             }
+            
             if (obj == null) obj = valueNull;
+            
             if (obj == null && valueOn == null) b = true;
-            else if (obj == null || valueOn == null) b = false;
+            else if (obj == null || valueOff == null) b = false;
             else {
             	if (valueOff == null) b = true;  // 2006/10/26 if off is set to null, then any non-null is true
             	else b = obj.equals(valueOn);

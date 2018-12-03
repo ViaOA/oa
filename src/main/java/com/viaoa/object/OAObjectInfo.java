@@ -61,7 +61,7 @@ public class OAObjectInfo { //implements java.io.Serializable {
     // this is set by OAObjectInfoDelegate.initialize()
     // All primitive properties, in uppercase and sorted.
     // This is used by OAObject.nulls, to get the bit position for an objects primitive properties.
-    protected String[] primitiveProps;
+    protected String[] primitiveProps; //not used
     protected byte[] primitiveMask; // used to mask boolean to not default to null, instead false
     
 
