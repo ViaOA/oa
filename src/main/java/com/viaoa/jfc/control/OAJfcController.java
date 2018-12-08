@@ -1639,6 +1639,9 @@ public class OAJfcController extends HubListenerAdapter {
             if (OAString.isNotEmpty(s)) ttDefault = s;
         }
         
+        
+        Object objx = obj;
+        
         if (obj instanceof OAObject) {
             if (OAString.isNotEmpty(toolTipTextPropertyPath)) {
                 ttDefault = ((OAObject) obj).getPropertyAsString(toolTipTextPropertyPath);
@@ -1647,7 +1650,6 @@ public class OAJfcController extends HubListenerAdapter {
             String s = getToolTipTextTemplate();
             if (OAString.isNotEmpty(s)) ttDefault = s;
             
-            Object objx = obj;
             String prop;
             if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
                 objx = oaPropertyPath.getLastLinkValue(objx);
@@ -1660,11 +1662,11 @@ public class OAJfcController extends HubListenerAdapter {
             }
         }
 
-        if (ttDefault != null && ttDefault.indexOf("<%=") >= 0 && obj instanceof OAObject) {
+        if (ttDefault != null && ttDefault.indexOf("<%=") >= 0 && objx instanceof OAObject) {
             if (templateToolTipText == null || !ttDefault.equals(templateToolTipText.getTemplate())) {
                 templateToolTipText = new OATemplate(ttDefault);
             }
-            ttDefault = templateToolTipText.process((OAObject) obj);
+            ttDefault = templateToolTipText.process((OAObject) objx);
         }
         
         if (ttDefault != null && ttDefault.indexOf('<') >=0 && ttDefault.toLowerCase().indexOf("<html>") < 0) ttDefault = "<html>" + ttDefault;

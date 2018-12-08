@@ -2057,11 +2057,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             hcl.addHubChangeListener(hclx);
         }
         
-        
         if (siblingHelper != null) {
             siblingHelper.add(column.getPathFromTableHub(hub));
         }
-
+        
         return column;
     }
 

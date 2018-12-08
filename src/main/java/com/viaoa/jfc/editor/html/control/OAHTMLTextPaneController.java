@@ -2880,6 +2880,11 @@ public class OAHTMLTextPaneController extends OATextController {
         getInsertController().getInsertDialog().setVisible(true);
     }
     
+    public boolean getAllowSaveSource() {
+        boolean b = htmlEditor != null && htmlEditor.isEnabled() && htmlEditor.isEditable();
+        return b;
+    }
+    
     public void onEditSourceCode() {
         try {
 /*qqq
@@ -2895,8 +2900,7 @@ public class OAHTMLTextPaneController extends OATextController {
 //          dlgHtmlSource.setSource(sw.toString());
             dlgHtmlSource.setSource(s);
 
-            boolean b = htmlEditor != null && htmlEditor.isEnabled() && htmlEditor.isEditable();
-            dlgHtmlSource.getSaveButton().setEnabled(b);
+            dlgHtmlSource.getSaveButton().setEnabled(getAllowSaveSource());
             
             dlgHtmlSource.setVisible(true);
             if (!dlgHtmlSource.succeeded()) return;

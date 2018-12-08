@@ -615,7 +615,12 @@ public abstract class HubChangeListener {
             }
             if (compareValue == Type.EditQueryVisible) {
                 if (!bValid) return true;
-                if (!(value instanceof OAObject)) return true;
+                if (!(value instanceof OAObject)) {
+                    if (hub == null) return true;
+                    Class cx = hub.getObjectClass();
+                    if (!OAObject.class.isAssignableFrom(cx)) return true;
+                    return OAObjectEditQueryDelegate.getAllowVisible(cx, propertyPath);
+                }
                 return OAObjectEditQueryDelegate.getAllowVisible((OAObject) value, propertyPath);
             }
             

@@ -95,7 +95,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         OAObjectCacheDelegate.addListener(clazz, cacheListener);
         
         if (hub.getSize() == 0) {
-            refreshAndReselect();            
+            reselectAndRefresh();            
         }  // else the hub must have been preselected
     }
 
@@ -115,7 +115,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         
         if (filter != null) addFilter(filter, false);
         if (hub.getSize() == 0) {
-            refreshAndReselect();            
+            reselectAndRefresh();            
         }  // else the hub must have been preselected
     }
     
@@ -158,14 +158,21 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
     }
 
 
-    private void refreshAndReselect() {
-        refresh();
+    public void reselectAndRefresh() {
+        final Hub<T> hub = wrHub.get();
+        if (hub == null) {
+            close();
+            return;
+        }
+        hub.clear();
         if (changeRefresher != null && changeRefresher.hasChanged()) return;
         reselect();
+        if (changeRefresher != null && changeRefresher.hasChanged()) return;
+        refresh();
     }
     
     /**
-     * called internally so that data can be reselected from datasource.  Default is to call refresh()
+     * called internally so that data can be reselected from datasource.
      */
     protected void reselect() {
     }
@@ -262,7 +269,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                                     changeRefresher = new OAChangeRefresher() {
                                         @Override
                                         protected void process() throws Exception {
-                                            refreshAndReselect();            
+                                            reselectAndRefresh();            
                                         }
                                     };
                                     changeRefresher.start();
@@ -272,7 +279,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
                         changeRefresher.refresh();
                     }
                     else {
-                        refreshAndReselect();            
+                        reselectAndRefresh();            
                     }
                     
                     /* was:
