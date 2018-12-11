@@ -2850,15 +2850,15 @@ public class OAString {
     public static String hilite(String line, String search, String beginTag, String endTag, boolean bIgnoreCase) {
         if (line == null || search == null) return line;
 
-        int xs = search.length();
+        final int xs = search.length();
         if (xs == 0) return line;
         if (bIgnoreCase) search = search.toLowerCase();
         
-        int xl = line.length();
+        final int xl = line.length();
         StringBuilder sb = null;  // dont allocate until first match is found
         char c=0, origChar=0;
+        
         for (int i=0,j=0; ;i++) {
- 
             if (i < xl) {
                 origChar = c = line.charAt(i);
                 if (bIgnoreCase) c = Character.toLowerCase(c);
@@ -2886,7 +2886,7 @@ j:      12
                     continue;
                 }
             }
-            if (j > 0) {
+            if (j > 0) { 
                 if (sb != null) {
                     // go back to previously matched chars
                     int b = i-j;
@@ -2899,6 +2899,7 @@ j:      12
 */   
                     sb.append(line.substring(b,b+j));
                 }
+                i -= j;  // start at last checking point, loop with inc i by +1
                 j = 0;
             }
             if (i >= xl) break;

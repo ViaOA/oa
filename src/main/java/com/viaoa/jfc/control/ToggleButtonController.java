@@ -148,11 +148,11 @@ public class ToggleButtonController extends OAJfcController implements ItemListe
         if (hub2 != null) {
             hub2.addHubListener(new HubListenerAdapter() {
                 public @Override void afterChangeActiveObject(HubEvent e) {
-                    update();
+                    callUpdate();
                 }
             });
         }
-        update();
+        callUpdate();
     }
 
     /**

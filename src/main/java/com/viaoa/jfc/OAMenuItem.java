@@ -96,10 +96,10 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
                 protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
                     if (!bIsCurrentlyEnabled) {
                         if (hub != null) {
-                            if (hub.getLinkHub() != null) {
-                                Object objx = hub.getLinkHub().getAO();
+                            if (hub.getLinkHub(true) != null) {
+                                Object objx = hub.getLinkHub(true).getAO();
                                 if (!(objx instanceof OAObject)) return false;
-                                bIsCurrentlyEnabled = (((OAObject) objx).isEnabled(hub.getLinkPath())); 
+                                bIsCurrentlyEnabled = (((OAObject) objx).isEnabled(hub.getLinkPath(true))); 
                             }
                             else bIsCurrentlyEnabled = (hub.getSize() > 0);
                         }
@@ -113,9 +113,9 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
                 @Override
                 protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
                     if (hub == null) return bIsCurrentlyEnabled;
-                    Hub hubx = hub.getLinkHub();
+                    Hub hubx = hub.getLinkHub(true);
                     String prop = null;
-                    if (hubx != null) prop = hub.getLinkPath();
+                    if (hubx != null) prop = hub.getLinkPath(true);
                     else {
                         hubx = hub.getMasterHub();
                         if (hubx != null) {

@@ -2670,7 +2670,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         // if (!confirm(row)) row = hub.getPos();
         
         // 20181018 added validation/confirm
-        if (hub.getLinkHub() != null) {
+        if (hub.getLinkHub(true) != null) {
             Container cont = this.getParent();
             for (; cont!=null; cont = cont.getParent()) {
                 if (cont instanceof JPopupMenu) {
@@ -2702,11 +2702,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             }
         }
         
-        boolean b = getEnableUndo() && hub != null && hub.getLinkHub() != null;
+        boolean b = getEnableUndo() && hub != null && hub.getLinkHub(true) != null;
         if (b) {
             OAUndoableEdit ue = OAUndoableEdit.createUndoablePropertyChange(
                 "Change " + HubLinkDelegate.getLinkToProperty(hub), 
-                hub.getLinkHub().getAO(), 
+                hub.getLinkHub(true).getAO(), 
                 HubLinkDelegate.getLinkToProperty(hub), 
                 hub.getAO(), hub.getAt(row));
             
@@ -3877,7 +3877,7 @@ class TableController extends OAJfcController implements ListSelectionListener {
     volatile boolean _bIsRunningValueChanged; // flag set when valueChanged is running
 
     public TableController(Hub hub, OATable table) {
-        super(hub, null, null, table, HubChangeListener.Type.HubValid, ((hub!=null)?(hub.getLinkHub()!=null):false), false);
+        super(hub, null, null, table, HubChangeListener.Type.HubValid, ((hub!=null)?(hub.getLinkHub(true)!=null):false), false);
         this.table = table;
         table.getSelectionModel().addListSelectionListener(this);
         // getHub().addHubListener(this);

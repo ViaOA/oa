@@ -1609,7 +1609,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
             
             boolean bUseId = (bPropertyPathIsManyLink || bPropertyPathIsOneLink);
             if (!bUseId) {
-                if (hub == null || hub.getLinkPath() == null) {
+                if (hub == null || hub.getLinkPath(true) == null) {
                     bUseId = true;
                 }
             }

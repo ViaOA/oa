@@ -241,7 +241,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
 
 
     public @Override void afterPropertyChange() {
-        update();  // will update prevText if it is activeObject
+        callUpdate();  // will update prevText if it is activeObject
     }
 
     public void onAddNotify() {
@@ -344,7 +344,7 @@ public class TextFieldController extends OAJfcController implements FocusListene
             saveText();
         }
         focusActiveObject = null;
-        update();
+        callUpdate();
     }
 
     

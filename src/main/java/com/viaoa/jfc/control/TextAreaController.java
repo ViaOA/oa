@@ -136,7 +136,7 @@ public class TextAreaController extends OAJfcController implements FocusListener
     }
 
     public @Override void afterPropertyChange() {
-        update();
+        callUpdate();
     }
 
     protected String tabReplacement;
@@ -188,7 +188,7 @@ public class TextAreaController extends OAJfcController implements FocusListener
         if (focusActiveObject != null && focusActiveObject == activeObject) {
             saveText();
         }
-        update();
+        callUpdate();
         focusActiveObject = null;
         //was: update(); 
     }
@@ -327,6 +327,5 @@ public class TextAreaController extends OAJfcController implements FocusListener
                 bSettingText = bHold;
             }   
         }        
-        super.update();
     }
 }

@@ -69,7 +69,7 @@ public class OAUndoableEdit implements UndoableEdit {
             Class c = hub.getObjectClass();
             String s = OAString.convertHungarian(c.getSimpleName());
             
-            Hub h2 = hub.getLinkHub();
+            Hub h2 = hub.getLinkHub(true);
             if (h2 != null) {
                 c = h2.getObjectClass();
                 s = OAString.convertHungarian(c.getSimpleName());

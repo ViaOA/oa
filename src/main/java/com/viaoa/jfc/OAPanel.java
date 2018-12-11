@@ -18,6 +18,7 @@ import javax.swing.*;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.OAJfcController;
 import com.viaoa.jfc.control.OAJfcControllerFactory;
+import com.viaoa.jfc.editor.html.OAHTMLTextPane;
 
 /**
  *
@@ -25,6 +26,8 @@ import com.viaoa.jfc.control.OAJfcControllerFactory;
 public class OAPanel extends JPanel implements OAJfcComponent {
     private Hub hub;
     private OAJfcController control;
+    private OAJfcComponent jfccomp;
+    private OAHTMLTextPane htmlTextPane;
     
     public OAPanel(Hub h, LayoutManager lm) {
         super(lm);
@@ -39,8 +42,24 @@ public class OAPanel extends JPanel implements OAJfcComponent {
         super(lm);
     }
 
+    // wrapper
+    public OAPanel(OAJfcComponent comp) {
+        this.jfccomp = comp;
+    }
+    // wrapper
+    public OAPanel(OAJfcController control) {
+        this.control = control;
+    }
+    // wrapper
+    public OAPanel(OAHTMLTextPane htmlTextPane) {
+        this.htmlTextPane = htmlTextPane;
+    }
+    
+    
     protected void setup() {
-        control = OAJfcControllerFactory.createAoNotNull(hub, this);
+        if (control == null && jfccomp == null && htmlTextPane == null) {
+            control = OAJfcControllerFactory.createAoNotNull(hub, this);
+        }
     }
     
     public void setLabel(JLabel lbl) {
@@ -51,6 +70,8 @@ public class OAPanel extends JPanel implements OAJfcComponent {
     }
     @Override
     public OAJfcController getController() {
+        if (jfccomp != null) return jfccomp.getController();
+        if (htmlTextPane != null) return htmlTextPane.getController().getBindController();
         return control;
     }
     @Override

@@ -96,10 +96,12 @@ public class OATableColumn extends OAHtmlComponent {
             // get path from any link Hub
             Hub h = comp.getHub();
             for ( ; h != null;) {
-                Hub lh = h.getLinkHub();
+                Hub hx = HubLinkDelegate.getHubWithLink(h, true);
+                if (hx == null) break;
+                Hub lh = hx.getLinkHub(false);
                 if (lh == null) break;
                 if (path == null) path = "";
-                path = h.getLinkPath() + "." + path;
+                path = hx.getLinkPath(false) + "." + path;
                 h = lh;
             }
             // if path == null then getMethods() will use "toString"

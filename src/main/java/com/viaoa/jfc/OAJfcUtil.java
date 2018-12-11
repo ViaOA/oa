@@ -14,7 +14,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -22,6 +24,12 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.plaf.ColorUIResource;
+
+import com.viaoa.hub.Hub;
+import com.viaoa.jfc.border.CustomLineBorder;
+import com.viaoa.object.OACalcInfo;
+import com.viaoa.object.OAObjectInfo;
 
 public class OAJfcUtil {
 
@@ -377,5 +385,67 @@ public class OAJfcUtil {
         return borderPanel;
     }
 
+
+    
+    
+
+    private final static Color colorBackgroundLighter = new Color(248, 250, 252);
+    private final static Color colorBackground = new Color(240, 245, 249);
+    private final static Color colorBackgroundDarker = new Color(203, 220, 236);
+    
+    public static String setLookAndFeel(String laf) throws Exception {
+        if (laf == null || laf.trim().length() == 0) {
+            laf = UIManager.getCrossPlatformLookAndFeelClassName();
+            // laf = UIManager.getSystemLookAndFeelClassName();
+        }
+        
+        UIManager.setLookAndFeel(laf);
+
+        // change gray background to light blue'ish
+        // codes:  https://link.springer.com/content/pdf/bbm%3A978-1-4302-0033-8%2F1.pdf
+        
+        // google: "Java UIManager color keys"
+        //   https://alvinalexander.com/java/java-uimanager-color-keys-list
+        
+        ArrayList<String> al = new ArrayList<>();
+        UIDefaults uid = UIManager.getLookAndFeelDefaults();
+        for (Entry<Object, Object> entry : uid.entrySet()) {
+            Object idx = entry.getKey();
+            if (!(idx instanceof String)) continue;
+            String id = (String) idx;
+            if (id.toLowerCase().indexOf("background") >= 0) {
+                al.add(id);
+            }
+        }
+        ColorUIResource c = (ColorUIResource) UIManager.get("Panel.background");  // 238,238,238
+         
+        for (String id : al) {
+          Object objx = uid.get(id);
+          if (!(objx instanceof ColorUIResource)) continue;
+          if (objx.equals(c)) {
+              UIManager.put(id, new ColorUIResource(colorBackground));
+          }
+        }
+        UIManager.put("ComboBox.background", new ColorUIResource(Color.white));
+        UIManager.put("ComboBox.disabledBackground", new ColorUIResource(Color.white));
+        UIManager.put("Label.background", new ColorUIResource(Color.white));
+        UIManager.put("TextField.disabledBackground", new ColorUIResource(Color.white));
+        UIManager.put("TextField.inactiveBackground", new ColorUIResource(colorBackgroundLighter));  // txt.setEditable(false);
+            
+        return laf;
+    }
+    
+    // 20181210
+    public static void initializeLabel(JLabel lbl, boolean bIsCalc) {
+        if (lbl == null) return;
+        lbl.setOpaque(true); 
+
+        if (bIsCalc) {
+            Border border = lbl.getBorder();
+            border = new CompoundBorder(new CustomLineBorder(0, 3, 0, 0, colorBackgroundDarker), border); 
+            lbl.setBorder(border);
+        }
+    }
+    
 }
 

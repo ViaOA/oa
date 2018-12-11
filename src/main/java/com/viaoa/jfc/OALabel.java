@@ -74,16 +74,15 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
 
     @Override
     public void initialize() {
+        boolean bIsCalc = false;
         Hub h = getHub();
-        if (h == null) return;
-        OAObjectInfo oi = h.getOAObjectInfo();
-        String prop = control.getPropertyPath();
-        OACalcInfo ci = oi.getCalcInfo(prop);
-        if (ci == null) return;
-        
-        Border border = this.getBorder();
-        border = new CompoundBorder(new CustomLineBorder(0, 4, 0, 0, Color.LIGHT_GRAY), border); 
-        setBorder(border);
+        if (h != null) {
+            OAObjectInfo oi = h.getOAObjectInfo();
+            String prop = control.getPropertyPath();
+            OACalcInfo ci = oi.getCalcInfo(prop);
+            bIsCalc = (ci != null);
+        }
+        OAJfcUtil.initializeLabel(this, bIsCalc);
     }
     
     public OALabelController getController() {
@@ -564,6 +563,9 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     }
     public String getToolTipTextTemplate() {
         return this.control.getToolTipTextTemplate();
+    }
+    public void setToolTipTextPropertyPath(String pp) {
+        this.control.setToolTipTextPropertyPath(pp);
     }
     
     public void setHtml(boolean b) {

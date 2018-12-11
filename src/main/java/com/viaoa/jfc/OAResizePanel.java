@@ -18,6 +18,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.LineBorder;
 
+import com.viaoa.util.OAArray;
+
 
 /**
  * Panel that "lets" a UI component grow a percentage of the available space.
@@ -46,9 +48,9 @@ import javax.swing.border.LineBorder;
  
  */
 public class OAResizePanel extends JPanel {
-    protected JComponent comp1, comp2;
+    protected JComponent comp1;
+    protected Component[] comps;
 
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq    
     public static boolean DEBUG = false;
     
     public OAResizePanel(JComponent comp) {
@@ -66,16 +68,56 @@ public class OAResizePanel extends JPanel {
     }
     
     public OAResizePanel(JComponent comp, JComponent comp2, int percentage, boolean bBoth) {
-        this(null, comp,comp2, percentage, bBoth);
+        this(null, comp, comp2, percentage, bBoth);
     }
 
     public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2, int percentage) {
-        this(icon, comp,comp2, percentage, false);
+        this(icon, comp, comp2, percentage, false);
+    }
+    public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2) {
+        this(icon, comp, comp2, 100, false);
     }
 
     public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2, int percentage, boolean bBoth) {
-        comp1 = comp;
-        comp2 = comp2;
+        this(icon, new JComponent[] {comp, comp2}, percentage, bBoth);
+    }
+
+    public OAResizePanel(ImageIcon icon, JComponent comp) {
+        this(icon, new JComponent[] {comp}, 100, false);
+    }
+    
+    public OAResizePanel(JComponent comp, JComponent comp1, JComponent comp2, int percentage) {
+        this(null, comp, new JComponent[] {comp1, comp2}, percentage, false);
+    }
+    
+    
+    public OAResizePanel(ImageIcon icon, JComponent[] comps) {
+        this(icon, comps, 100, false);
+    }
+    public OAResizePanel(ImageIcon icon, JComponent[] comps, int percentage) {
+        this(icon, comps, percentage, false);
+    }
+    public OAResizePanel(ImageIcon icon, JComponent comp, JComponent[] comps) {
+        this(icon, (JComponent[]) OAArray.insert(JComponent.class, comps, comp, 0), 100, false);
+    }
+    
+    public OAResizePanel(ImageIcon icon, JComponent comp, JComponent[] comps, int percentage, boolean bBoth) {
+        this(icon, (JComponent[]) OAArray.insert(JComponent.class, comps, comp, 0), percentage, bBoth);
+    }
+
+    
+    public OAResizePanel(JComponent comp, JComponent[] comps) {
+        this(null, (JComponent[]) OAArray.insert(JComponent.class, comps, comp, 0), 100, false);
+    }
+    public OAResizePanel(JComponent comp, JComponent[] comps, int percentage) {
+        this(null, (JComponent[]) OAArray.insert(JComponent.class, comps, comp, 0), percentage, false);
+    }
+
+    
+    public OAResizePanel(ImageIcon icon, JComponent[] comps, int percentage, boolean bBoth) {
+        this.comps = comps;
+        comp1 = (comps != null && comps.length > 0) ? comps[0] : null;
+
         final JPanel panel = new JPanel();
 
         GridBagLayout gb = new GridBagLayout();
@@ -92,7 +134,7 @@ public class OAResizePanel extends JPanel {
             lbl.setOpaque(true);
             gc.insets = new Insets(0, 0, 0, 5);
             panel.add(lbl, gc);
-            lbl.setLabelFor(comp);
+            lbl.setLabelFor(comp1);
         }
         gc.insets = new Insets(0, 0, 0, 0);
         if (bBoth) {
@@ -108,11 +150,12 @@ public class OAResizePanel extends JPanel {
         JPanel panComp = new JPanel();
         BoxLayout box = new BoxLayout(panComp, BoxLayout.X_AXIS);
         panComp.setLayout(box);
-        panComp.add(comp);
+        panComp.add(comp1);
         
-        if (comp2 != null) {
+        for (int i=1; comps != null && i<comps.length; i++) {
+            if (comps[i] == null) continue;
             panComp.add(Box.createHorizontalStrut(2));
-            panComp.add(comp2);
+            panComp.add(comps[i]);
         }
         
         panel.add(panComp, gc);

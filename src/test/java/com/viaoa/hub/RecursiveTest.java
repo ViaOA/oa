@@ -323,6 +323,9 @@ public class RecursiveTest extends OAUnitTest {
         EmployeeAward ea = new EmployeeAward();
         hubEmployeeAward.add(ea);
         
+//qqqqqqqqqqqqqqqqqqqqq        
+Hub hxx = hubEmployee.getLinkHub(true); 
+
         hubEmployee.setLinkHub(hubEmployeeAward, EmployeeAward.P_Employee);
         assertNull(hubEmployee.getAO());
 

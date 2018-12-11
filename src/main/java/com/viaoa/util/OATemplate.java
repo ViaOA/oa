@@ -112,20 +112,30 @@ public class OATemplate<F extends OAObject> {
     }
 
     public String process(F objRoot) {
-        String s = process(objRoot, null, null);
+        String s = process(objRoot, null, null, null);
         return s;
     }
+
+    public String process(F objRoot1, F objRoot2) {
+        String s = process(objRoot1, objRoot2, null, null);
+        return s;
+    }
+    public String process(F objRoot1, F objRoot2, OAProperties props) {
+        String s = process(objRoot1, objRoot2, null, props);
+        return s;
+    }
+    
     public String process(F objRoot, OAProperties props) {
-        String s = process(objRoot, null, props);
+        String s = process(objRoot, null, null, props);
         return s;
     }
 
     public String process(Hub<F> hub, OAProperties props) {
-        String s = process(null, hub, props);
+        String s = process(null, null, hub, props);
         return s;
     }
     public String process(Hub<F> hub) {
-        String s = process(null, hub, null);
+        String s = process(null, null, hub, null);
         return s;
     }
     
@@ -147,7 +157,11 @@ public class OATemplate<F extends OAObject> {
         aiStopCalled.incrementAndGet();
     }
     
-    public String process(F objRoot, Hub<F> hubRoot, OAProperties props) {
+    // this is used to determine which object to use (objRoot1 or 2).
+    private Class classChoosen;
+    private String ppSample;
+    
+    public String process(F objRoot1, F objRoot2, Hub<F> hubRoot, OAProperties props) {
         final int cntStopCalled = aiStopCalled.get();
 
         setProperty("DATETIME", new OADateTime());
@@ -158,8 +172,34 @@ public class OATemplate<F extends OAObject> {
             rootTreeNode = createTree(template);
         }
         
+        // need to find out which object to use
+        OAObject obj;
+        if (objRoot1 == objRoot2) obj = objRoot1;
+        else if (objRoot2 == null) obj = objRoot1;
+        else if (objRoot1 == null) obj = objRoot2;
+        else if (classChoosen != null) {
+            if (objRoot1.getClass().equals(classChoosen)) obj = objRoot1;
+            else obj = objRoot2;
+        }
+        else {
+            // both are != null, need to know which one is needed by the template's properyPath(s)
+            if (ppSample == null) obj = objRoot1;
+            else {
+                try {
+                    OAPropertyPath pp = new OAPropertyPath<>(objRoot1.getClass(), ppSample);
+                    obj = objRoot1;
+                    classChoosen = objRoot1.getClass();
+                }
+                catch (Exception e) {
+                    obj = objRoot2;
+                    classChoosen = objRoot2.getClass();
+                }
+            }
+        }
+        
+        
         StringBuilder sb = new StringBuilder(1024 * 4);
-        boolean b = generate(rootTreeNode, objRoot, hubRoot, sb, props, cntStopCalled);
+        boolean b = generate(rootTreeNode, obj, hubRoot, sb, props, cntStopCalled);
         if (!b) return "cancelled";
         String s = new String(sb);
         sb = null;
@@ -238,6 +278,7 @@ public class OATemplate<F extends OAObject> {
     
     // descendant parser for html <%= xxx %> tags
     protected void parse(TreeNode root) {
+        ppSample = null;
         for (;;) {
             TreeNode node = new TreeNode();
             root.alChildren.add(node);
@@ -261,6 +302,7 @@ public class OATemplate<F extends OAObject> {
             node.tagType = TagType.GetProp;
             String s = OAString.field(tok.data, ",", 1).trim();
             node.arg1 = s;
+            if (ppSample == null && s != null && !s.startsWith("$")) ppSample = s;
             String fmt = OAString.field(tok.data, ",", 2, 99);
             if (!OAString.isEmpty(fmt)) {
                 fmt = fmt.trim();
