@@ -124,7 +124,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
     public ButtonController(Hub hub, AbstractButton button, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command) {
         super(hub, null, null, button, 
             enabledMode.getHubChangeListenerType(), 
-            ((command != null && hub != null && hub.getLinkHub() != null) ? command.getSetsAO() : false),
+            ((command != null && hub != null && hub.getLinkHub(true) != null) ? command.getSetsAO() : false),
             true
             //was:  (((enabledMode == ButtonEnabledMode.ActiveObjectNotNull) && (command == ButtonCommand.Other)) ? false : true)
         );
@@ -160,12 +160,12 @@ public class ButtonController extends OAJfcController implements ActionListener 
         if (command == null) command = OAButton.ButtonCommand.Other;        
         this.command = command;
         this.enabledMode = enabledMode;
-        update();
+        callUpdate();
     }
     
     public void setCommand(OAButton.ButtonCommand command) {
         this.command = command;
-        update();
+        callUpdate();
     }
     
     
@@ -175,7 +175,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
     */
     public void setMasterControl(boolean b) {
         bMasterControl = b;
-        update();
+        callUpdate();
     }
 
     public boolean getMasterControl() {
@@ -189,7 +189,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
         this.updateObject = object;
         this.updateProperty = property;
         this.updateValue = newValue;
-        update();
+        callUpdate();
     }
 
     /**
@@ -205,7 +205,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
         addEnabledEditQueryCheck(getHub(), property);
         addVisibleEditQueryCheck(getHub(), property);
         
-        update();
+        callUpdate();
     }
 
     public void setCompletedMessage(String msg) {
@@ -288,7 +288,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
         Hub event used to change status of button.
     */
     public @Override void afterChangeActiveObject(HubEvent e) {
-        update();
+        callUpdate();
     }
 
     @Override
@@ -342,8 +342,9 @@ public class ButtonController extends OAJfcController implements ActionListener 
             switch (command) {
             case ClearAO:
                 if (obj != null) {
-                    if (hub.getLinkHub() != null) {
-                        eq = OAObjectEditQueryDelegate.getConfirmPropertyChangeEditQuery( (OAObject) hub.getLinkHub().getAO(), hub.getLinkPath(), null, msg, title);
+                    Hub hx = HubLinkDelegate.getHubWithLink(hub, true);
+                    if (hx != null) {
+                        eq = OAObjectEditQueryDelegate.getConfirmPropertyChangeEditQuery( (OAObject) hx.getLinkHub(false).getAO(), hx.getLinkPath(false), null, msg, title);
                     }
                 }
                 break;
@@ -375,9 +376,12 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 eq = OAObjectEditQueryDelegate.getConfirmAddEditQuery(getHub(), null, msg, title);
                 break;
             case Search:
-                Hub hubx = hub.getLinkHub();
+                Hub hubx = HubLinkDelegate.getHubWithLink(hub, true);
                 String propx = null;
-                if (hubx != null) propx = hub.getLinkPath();
+                if (hubx != null) {
+                    propx = hubx.getLinkPath(false);
+                    hubx = hubx.getLinkHub(false);
+                }
                 else {
                     hubx = hub.getMasterHub();
                     if (hubx != null) {
@@ -450,8 +454,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
    
         switch (command) {
         case ClearAO:
-            if (hub.getLinkHub() != null) {
-                eq = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery((OAObject) hub.getLinkHub().getAO(), hub.getLinkPath(), obj, null);
+            if (hub.getLinkHub(true) != null) {
+                eq = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery((OAObject) hub.getLinkHub(true).getAO(), hub.getLinkPath(true), obj, null);
             }
             break;
         case Delete:
@@ -473,9 +477,12 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 eq = OAObjectEditQueryDelegate.getVerifyAddEditQuery(getHub(), (OAObject) obj);
             }
         case Search:
-            Hub hubx = hub.getLinkHub();
+            Hub hubx = HubLinkDelegate.getHubWithLink(hub, true);
             String propx = null;
-            if (hubx != null) propx = hub.getLinkPath();
+            if (hubx != null) {
+                propx = hubx.getLinkPath(false);
+                hubx = hubx.getLinkHub(false);
+            }
             else {
                 hubx = hub.getMasterHub();
                 if (hubx != null) {
@@ -984,7 +991,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     String msg = null;
                     try {
                         ((OAObject) ho).save();
-                        update(); // 20181006
+                        callUpdate(); // 20181006
                     }
                     catch (Exception e) {
                         msg = "Error while saving\n" + e;
@@ -1205,9 +1212,9 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 break;
             case Search:
                 if (objSearch == null) break;
-                Hub hubx = hub.getLinkHub();
+                Hub hubx = hub.getLinkHub(true);
                 String propx = null;
-                if (hubx != null) propx = hub.getLinkPath();
+                if (hubx != null) propx = hub.getLinkPath(true);
                 else {
                     hubx = hub.getMasterHub();
                     if (hubx != null) {
@@ -1559,7 +1566,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
             case ClearAO:
                 flag = obj != null;
                 if (oaObj != null) {
-                    if (hub.getLinkHub() != null) {
+                    if (hub.getLinkHub(true) != null) {
                        // flag = OAObjectEditQueryDelegate.getVerifyPropertyChange((OAObject)hub.getLinkHub().getAO(), hub.getLinkPath(), oaObj, null); 
                     }
                 }
@@ -1650,7 +1657,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
         flavorListener = new FlavorListener() {
             @Override
             public void flavorsChanged(FlavorEvent e) {
-                ButtonController.this.update();
+                ButtonController.this.callUpdate();
             }
         };
         cb.addFlavorListener(flavorListener);
@@ -1697,7 +1704,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
         cb.setContents(t, new ClipboardOwner() {
             @Override
             public void lostOwnership(Clipboard clipboard, Transferable contents) {
-                ButtonController.this.update();
+                ButtonController.this.callUpdate();
             }
         });
     }
@@ -1708,7 +1715,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
         cb.setContents(t, new ClipboardOwner() {
             @Override
             public void lostOwnership(Clipboard clipboard, Transferable contents) {
-                ButtonController.this.update();
+                ButtonController.this.callUpdate();
             }
         });
     }

@@ -363,7 +363,7 @@ public abstract class HubChangeListener {
         hubProps = (HubProp[]) OAArray.add(HubProp.class, hubProps, newHubProp);
         callOnChange();
 
-        Hub h = (hub == null) ? null : hub.getLinkHub();
+        Hub h = (hub == null) ? null : hub.getLinkHub(true);
         if (h != null) {
             if (HubLinkDelegate.isLinkAutoCreated(hub, true)) {
                 // need to listen for AO changes, newList, etc from the linkTo Hub
@@ -593,7 +593,6 @@ public abstract class HubChangeListener {
         public boolean getValue() {
             
             boolean bValid = hub != null && hub.isValid();
-
             if (bUseCompareValue && compareValue != null) {
                 if (compareValue == Type.HubValid) return bValid;
                 if (compareValue == Type.HubNotValid) return !bValid;

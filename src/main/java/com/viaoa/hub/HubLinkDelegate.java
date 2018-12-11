@@ -31,6 +31,14 @@ public class HubLinkDelegate {
         // 20110809 add bAutoCreateAllowDups
         if (linkToHub == thisHub) return;
 
+        // 20181211 verify that no other shared hub is linked
+        Hub hx = HubLinkDelegate.getHubWithLink(thisHub, true);
+        if (hx != null && hx != thisHub) {
+            String s = "Hub link failed, since another shared hub is already linked, thisHub="+thisHub+", linkToHub="+linkToHub+", propertyTo="+propertyTo;
+            throw new RuntimeException(s);
+        }
+        
+        
 	    if (thisHub.datau.getLinkToHub() != null) {
 	        if (thisHub.datau.getLinkToHub() == linkToHub) {
 	            if (thisHub.datau.isAutoCreate() == bAutoCreate && thisHub.datau.isAutoCreateAllowDups() == bAutoCreateAllowDups) {
@@ -380,7 +388,6 @@ public class HubLinkDelegate {
     
     public static Hub getLinkToHub(final Hub thisHub, boolean bIncludeCopiedHubs) {
         if (thisHub.datau.getLinkToHub() != null) return thisHub.datau.getLinkToHub();
-        if (!bIncludeCopiedHubs) return null;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
@@ -396,7 +403,6 @@ public class HubLinkDelegate {
     }
     public static Hub getHubWithLink(final Hub thisHub, boolean bIncludeCopiedHubs) {
         if (thisHub.datau.getLinkToHub() != null) return thisHub;
-        if (!bIncludeCopiedHubs) return null;
         Hub hubx = HubShareDelegate.getFirstSharedHub(thisHub, new OAFilter<Hub>() {
             @Override
             public boolean isUsed(Hub obj) {
@@ -537,6 +543,7 @@ public class HubLinkDelegate {
         updateLinkedToHub(fromHub, linkToHub, obj, changedPropName, true);
     }
     protected static void updateLinkedToHub(final Hub fromHub, Hub linkToHub, Object obj, String changedPropName, boolean bAdjustMaster) {
+        if (fromHub == null) return;
 		if (fromHub.datau.isAutoCreate()) return;
 
         obj = HubLinkDelegate.getPropertyValueInLinkedToHub(fromHub, obj);  // link property value
@@ -596,10 +603,10 @@ public class HubLinkDelegate {
 	                    int flag = 0;
 	                    for (int i=0; i < hubs.length && flag != 5; i++) {
 	                        if (hubs[i] == fromHub) continue;
-	                        if (hubs[i] == fromHub.getLinkHub()) {
+	                        if (hubs[i] == fromHub.getLinkHub(false)) {
 	                            flag = 5; // this hub is linked to hubs[i]
 	                        }
-	                        else if ( (hubs[i].getLinkHub() != null) || (hubs[i].datau.getVecHubDetail() != null && hubs[i].datau.getVecHubDetail().size() > 1)) {
+	                        else if ( (hubs[i].getLinkHub(false) != null) || (hubs[i].datau.getVecHubDetail() != null && hubs[i].datau.getVecHubDetail().size() > 1)) {
                                 if (hubs[i].datam == h.datam) flag = 5; // || (hubs[i] == h) flag = 5;
                                 else if (hubs[i].getMasterHub() == h.getMasterHub()) flag = 1;
 	                        }
@@ -641,7 +648,7 @@ public class HubLinkDelegate {
                 if (dm.getMasterHub() == h) break;
                 h = dm.getMasterHub();
                 if (h == null) break;
-                if (h == fromHub.getLinkHub()) bForce = true; // if this hub is linked to its masterHub
+                if (h == fromHub.getLinkHub(false)) bForce = true; // if this hub is linked to its masterHub
             }
 
             // 20110810 if fromHub AO=null and linkToHub.AO=null then fromHub.isValid

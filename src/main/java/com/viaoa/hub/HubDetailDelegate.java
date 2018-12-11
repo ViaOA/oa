@@ -437,8 +437,6 @@ public class HubDetailDelegate {
     protected static void updateDetailActiveObject(final Hub thisHub, final Hub hubDetailHub, final boolean bUpdateLink, final boolean bShareActiveObject) {
         boolean bUseCurrent = (bShareActiveObject && thisHub.dataa == hubDetailHub.dataa);  // if hubs are sharing active object then dont change it.
         if (!bUseCurrent || (thisHub == hubDetailHub)) {
-            
-            // 20181119 find shared hub with link
             Hub hubWithLink = HubLinkDelegate.getHubWithLink(thisHub, true);
             
             if (hubWithLink == null) {
@@ -458,7 +456,7 @@ public class HubDetailDelegate {
                 // if linkHub & !bUpdateLink, then retreive value from linked property
                 // and make that the activeObject in this Hub
                 try {
-                    Object obj = hubWithLink.getActiveObject();
+                    Object obj = hubWithLink.datau.getLinkToHub().getActiveObject();
                     if (obj != null) obj = hubWithLink.datau.getLinkToGetMethod().invoke(obj, null );
                     if (hubWithLink.datau.isLinkPos()) {
                         int x = -1;

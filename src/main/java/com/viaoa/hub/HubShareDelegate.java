@@ -192,9 +192,12 @@ public class HubShareDelegate {
         Hub h = getMainSharedHub(thisHub);
         return _getFirstSharedHub(h, thisHub, filter, bIncludeFilteredHubs, 0, bOnlyIfSharedAO, bIncludeFilteredHubs);
     }
-    private static Hub _getFirstSharedHub(final Hub thisHub, final Hub findHub, 
-            final OAFilter<Hub> filter, final boolean bIncludeFilteredHubs, 
-            final int cnter, boolean bOnlyIfSharedAO, boolean bIncludeHubShareAO) {
+    
+    private static Hub _getFirstSharedHub(
+        final Hub thisHub, final Hub findHub, 
+        final OAFilter<Hub> filter, final boolean bIncludeFilteredHubs, 
+        final int cnter, boolean bOnlyIfSharedAO, boolean bIncludeHubShareAO) {
+    
         if (filter == null) return thisHub;
         
         // first try a quickcheck on the main shared hub
@@ -332,7 +335,7 @@ public class HubShareDelegate {
 	           could fail when it sends out event.
 	        */
 	    	thisHub.dataa.activeObject = null;
-	        if (thisHub.getSize() == 0 || thisHub.getLinkHub() != null || thisHub.datau.isNullOnRemove()) {
+	        if (thisHub.getSize() == 0 || thisHub.getLinkHub(true) != null || thisHub.datau.isNullOnRemove()) {
 	            // 20120505 dont update a linked value that has already been set  
 	            HubAODelegate.setActiveObject(thisHub, -1, false, true, false); // bUpdateLink, bForce, bCalledByShareHub
                 // was: HubAODelegate.setActiveObject(thisHub, -1, true, true,false); // bUpdateLink,bForce,bCalledByShareHub
@@ -559,7 +562,7 @@ public class HubShareDelegate {
 	            */
 	        }
 	        else {
-	            if (thisHub.getLinkHub() != null) {  // 2003/04/25
+	            if (thisHub.getLinkHub(true) != null) {  // 2003/04/25
 	                shareActiveObject = false; // cant share since this hub is linked to a master hub
 	            }
 	        }

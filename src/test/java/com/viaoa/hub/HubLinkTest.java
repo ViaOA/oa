@@ -63,16 +63,15 @@ public class HubLinkTest extends OAUnitTest {
         ServerStatus st = new ServerStatus();
         server.setServerStatus(st);  // this will add st to the hubServerStatus
         
-        assertNotNull(hubServerStatus.getAO());
-        assertEquals(hubServerStatus.getAO(), st);
-        assertEquals(hubServerStatus.getSize(), cntServerStatus+1);
+        assertNull(hubServerStatus.getAO());
         
         hubServer.setPos(1);
         assertNull(hubServerStatus.getAO());
-        assertEquals(hubServerStatus.getSize(), cntServerStatus+1);
+        assertEquals(hubServerStatus.getSize(), cntServerStatus);
         
         hubServer.setPos(0);
-        assertEquals(hubServerStatus.getAO(), server.getServerStatus());
+        assertNull(hubServerStatus.getAO());
+        assertNotNull(server.getServerStatus());
         
         // change site AO, which will set server AO to null
         hubSite.setPos(1);
@@ -81,7 +80,6 @@ public class HubLinkTest extends OAUnitTest {
         
         hubServer.setAO(server);
         assertEquals(hubServer.getAO(), server);
-        assertEquals(hubServerStatus.getAO(), server.getServerStatus());
         
         reset();
     }

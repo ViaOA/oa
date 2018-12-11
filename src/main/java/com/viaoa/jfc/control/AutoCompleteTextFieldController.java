@@ -75,7 +75,7 @@ public class AutoCompleteTextFieldController extends OAJfcController {
     
 
     @Override
-    public void update() {
+    public void callUpdate() {
         try {
             if (autoCompleteList != null) autoCompleteList.bIgnorePopup = true;
             _update(); 
@@ -83,7 +83,7 @@ public class AutoCompleteTextFieldController extends OAJfcController {
         finally {
             if (autoCompleteList != null) autoCompleteList.bIgnorePopup = false;
         }
-        super.update();
+        super.callUpdate();
     }
     
     protected void _update() {
@@ -91,7 +91,7 @@ public class AutoCompleteTextFieldController extends OAJfcController {
 
         // only update the txt.text if the hub is link. 
         String text = null;
-        if (!OAString.isEmpty(getPropertyPath()) && hub != null && hub.getLinkHub() != null) {
+        if (!OAString.isEmpty(getPropertyPath()) && hub != null && hub.getLinkHub(true) != null) {
             Object obj = hub.getAO();
             if (obj != null || bIsHubCalc) {
                 text = getValueAsString(obj, getFormat());

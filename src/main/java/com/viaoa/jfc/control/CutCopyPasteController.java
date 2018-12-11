@@ -291,7 +291,7 @@ public class CutCopyPasteController {
         getCopyMenuItem().setEnabled(bManualCopy || (omiCopy != null && omiCopy.isEnabled()) );
         
         if (omiPaste != null) {
-            omiPaste.getController().update();
+            omiPaste.getController().callUpdate();
         }
         getPasteMenuItem().setEnabled(bManualPaste || (omiPaste != null && omiPaste.isEnabled()) );
 

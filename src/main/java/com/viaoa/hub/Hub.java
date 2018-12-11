@@ -1859,14 +1859,32 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     }
     */
 
-    /**
+    /** 20181211 removed, use getLinkHub(boolean) instead
      * Returns the Hub that this Hub is linked to.
      * 
      * @see HubLink
-     */
+     * @see #getLinkHub(boolean, boolean)
+     * @deprecated use {@link #getLinkHub(boolean)} instead
+
     public Hub getLinkHub() {
         return datau.getLinkToHub();
     }
+    */
+    
+    /**
+     * Find the linkHub for this hub or any of this hub's shared hubs that have a linkHub.
+     * @param bSearchOtherHubs also check any shared or copied/filtered hubs that use the same AO
+     * @see HubLinkDelegate#getHubWithLink(Hub, boolean) for other options
+     */
+    public Hub getLinkHub(boolean bSearchOtherHubs) {
+        if (!bSearchOtherHubs) {
+            return this.datau.getLinkToHub();
+        }
+        Hub hx = HubLinkDelegate.getHubWithLink(this, true);
+        if (hx == null) return null;
+        return hx.datau.getLinkToHub();
+    }
+    
 
     /**
      * Set the property in a Hub to the position of the active object in this
@@ -2051,8 +2069,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     /**
      * @return path that this hub is linked to.
      */
-    public String getLinkPath() {
-        return HubLinkDelegate.getLinkHubPath(this);
+    public String getLinkPath(boolean bSearchOtherHubs) {
+        return HubLinkDelegate.getLinkHubPath(this, bSearchOtherHubs);
     }
 
     public static OAObjectInfo getOAObjectInfo(Class c) {
@@ -2072,7 +2090,9 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
     }
 
     public void updateLinkProperty(Object obj, Object value) {
-        HubLinkDelegate.updateLinkedToHub(this, getLinkHub(), value);
+        Hub h = HubLinkDelegate.getHubWithLink(this, true);
+        if (h == null) return;
+        HubLinkDelegate.updateLinkedToHub(h, h.getLinkHub(false), value);
     }
 
     public int compareTo(Object obj) {

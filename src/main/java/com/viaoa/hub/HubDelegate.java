@@ -293,9 +293,9 @@ public class HubDelegate {
 	    return null;
 	}
 
-    /**
+    /** 20181211 removed, use hub.getLinkHub(true)
 	    Returns this or any shared hub that uses the same active object and is linked to another Hub.
-	*/
+	
 	public static Hub getAnyLinkHub(final Hub thisHub) {
 	    if (thisHub.getLinkHub() != null) return thisHub;
 	    
@@ -315,7 +315,7 @@ public class HubDelegate {
 	    }
 	    return null;
 	}
-
+*/
 	
 	// called by deleteAll() and saveAll()
 	protected static void _updateHubAddsAndRemoves(final Hub thisHub, final int iCascadeRule, final OACascade cascade, final boolean bIsSaving) {

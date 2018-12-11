@@ -488,7 +488,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
         Hub<T> hub = getHub();
         if (hub == null) return;
         if (hubLink != null) hubLink.removeHubListener(linkHubListener);
-        hubLink = hub.getLinkHub();
+        hubLink = hub.getLinkHub(true);
         if (hubLink == null) return;
 
         linkHubListener = new HubListenerAdapter() {
@@ -732,7 +732,7 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
             }
             hub.setAO(objx);
             if (bShareAO && hubMaster != null) {
-                if (hubMaster.getLinkHub() == null) hubMaster.setAO(objx);
+                if (hubMaster.getLinkHub(true) == null) hubMaster.setAO(objx);
             }
         }
         

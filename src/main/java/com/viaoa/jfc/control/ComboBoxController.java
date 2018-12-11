@@ -167,7 +167,7 @@ public class ComboBoxController extends OAJfcController implements FocusListener
             }
             myComboBoxModel.flag = false;
         }
-        ComboBoxController.this.update();
+        ComboBoxController.this.callUpdate();
         ComboBoxController.this.comboBox.repaint();
         super.afterChangeActiveObject(e);
     }
@@ -223,7 +223,7 @@ public class ComboBoxController extends OAJfcController implements FocusListener
             if (!flag && obj != getHub().getActiveObject()) {
                 Hub h = getHub();
                 Object activeObject = null;
-                Hub hubx = getHub().getLinkHub();
+                Hub hubx = getHub().getLinkHub(true);
                 if (hubx != null) {
                     activeObject = hubx.getAO();
                 }
@@ -240,7 +240,7 @@ public class ComboBoxController extends OAJfcController implements FocusListener
                     // no-op
                 }
                 else {
-                    boolean b = getEnableUndo() && hub != null && hub.getLinkHub() != null;
+                    boolean b = getEnableUndo() && hub != null && hub.getLinkHub(true) != null;
                     try {
                         if (b) {
                             OAUndoableEdit ue = OAUndoableEdit.createUndoablePropertyChange(
@@ -333,7 +333,7 @@ public class ComboBoxController extends OAJfcController implements FocusListener
 
         /*Object obj = h.getAO(); if (obj != null) return obj; */
 
-        Hub hx = h.getLinkHub();
+        Hub hx = h.getLinkHub(true);
         if (hx == null) return null;
 
         Object objx = HubLinkDelegate.getPropertyValueInLinkedToHub(h, hx.getAO());
@@ -373,6 +373,8 @@ public class ComboBoxController extends OAJfcController implements FocusListener
             if (hub != null && hub.getAO() != null) {
                 s = OAString.convert(s, "select", "clear current value");
             }
+            // 20181211
+            if (hub == null || !hub.isValid()) s = "";
         }
         else if (value instanceof String) {
             s = (String) value;

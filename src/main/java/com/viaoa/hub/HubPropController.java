@@ -163,8 +163,9 @@ throw new RuntimeException("HubPropertyController no longer used, replaced with 
         update();
 
         // 20110905 need to also listen to linked to hub (if any)
-        Hub h = hub.getLinkHub();
-        if (h != null) {
+        Hub hx = HubLinkDelegate.getHubWithLink(hub, true);
+        if (hx != null) {
+            Hub h = hx.getLinkHub(false);
             if (hub.datau.isAutoCreate()) {
                 // need to listen for AO changes, newList, etc from the linkTo Hub
                 add(h, null, OAAnyValueObject.instance);

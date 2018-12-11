@@ -79,7 +79,7 @@ public class CustomComboBoxController extends OAJfcController {
         if (evt != null) {
             comboBox.setSelectedItem(value);
         }
-        update();
+        callUpdate();
         comboBox.repaint();
         super.afterChangeActiveObject(evt);
     }
