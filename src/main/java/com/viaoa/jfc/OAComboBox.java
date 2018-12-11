@@ -609,7 +609,8 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
             String s;
             Object obj = value;
             // 20110116 when using linkFromProperty, dont get prop value. Ex: Breed.name linked to Pet.breed (string)
-            if (h2.getLinkHub() != null && HubLinkDelegate.getLinkFromProperty(h2) == null) {
+            Hub hx = HubLinkDelegate.getHubWithLink(h2, true);
+            if (hx != null && hx.getLinkHub(false) != null && HubLinkDelegate.getLinkFromProperty(hx) == null) {
             // was: if (h2.getLinkHub() != null) {
             	try {  // 20081010 add catch, in case the propertyPath for tableColumn is being used instead of using the link value
 	            	obj = HubLinkDelegate.getPropertyValueInLinkedToHub(h2, h.elementAt(row));

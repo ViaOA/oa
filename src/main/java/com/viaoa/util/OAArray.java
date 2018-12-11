@@ -142,7 +142,8 @@ public class OAArray {
     	newArray[x] = addValue;
     	return newArray;
     }
-    public static Object[] add(Class c, Object[] array, Object[] addValues) {
+
+	public static Object[] add(Class c, Object[] array, Object... addValues) {
         if (addValues == null || addValues.length == 0) return array;
         int x = (array == null) ? 0 : array.length;
         int x2 = addValues.length;

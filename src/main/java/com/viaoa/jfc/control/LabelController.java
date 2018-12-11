@@ -70,7 +70,7 @@ public class LabelController extends OAJfcController {
 
     public void setPassword(boolean b) {
         this.bIsPassword = b;
-        update();
+        callUpdate();
     }
     public boolean isPassword() {
         return bIsPassword;
@@ -110,14 +110,14 @@ public class LabelController extends OAJfcController {
             if (ca != null && ca.isHtml()) setHtml(true);
         }
         
-        update();
+        callUpdate();
     }
 
     /**
         Used to display property value in JLabel.
     */
     public @Override void afterPropertyChange() {
-    	update();
+    	callUpdate();
     	if (!(thisLabel instanceof OALabel)) return; 
         // label could be in a table
         OATable t = ((OALabel)thisLabel).getTable();
@@ -132,10 +132,10 @@ public class LabelController extends OAJfcController {
     }
 
     @Override
-    public void update() {
+    public void callUpdate() {
         boolean bx = (siblingHelper != null) && OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
         try {
-            super.update();
+            super.callUpdate();
             _update();
         }
         finally {

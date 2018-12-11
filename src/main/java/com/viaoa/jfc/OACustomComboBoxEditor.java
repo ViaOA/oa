@@ -27,7 +27,8 @@ class OACustomComboBoxEditor implements ComboBoxEditor,FocusListener, java.io.Se
     public OACustomComboBoxEditor(OACustomComboBox cbo, OATextField editor) {
         this.cbo = cbo;
         this.editor = editor;
-        editor.setBorder(null);
+        // 20181211 removed, so that combo will have a border around it.  Ex: DateCombo          
+        // editor.setBorder(null);
         editor.addFocusListener(this);
     }
 

@@ -86,7 +86,7 @@ public class OAComboBox extends OAHtmlComponent {
     public OAComboBox(Hub masterHub, Hub linkHub, String propertyPath, int columns) {
         if (masterHub != null && linkHub != null) {
             if (masterHub.getSharedHub() == null) masterHub = masterHub.createShared();
-            if (masterHub.getLinkHub() != linkHub) masterHub.setLink(linkHub);
+            if (masterHub.getLinkHub(false) != linkHub) masterHub.setLink(linkHub);
         }
         setHub(masterHub);
         setPropertyPath(propertyPath);

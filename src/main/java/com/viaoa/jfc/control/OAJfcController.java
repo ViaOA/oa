@@ -182,11 +182,23 @@ public class OAJfcController extends HubListenerAdapter {
     private Hub hubLast;
     private Object hubObjectLast; 
     private HubChangeListener.HubProp hubChangeListenerTypeLast; 
-
+    private boolean bIgnoreUpdate;
+    
+    protected void reset() {
+        try {
+            bIgnoreUpdate = true;
+            _reset();
+        }
+        finally {
+            bIgnoreUpdate = false;
+        }
+        update();
+    }
+    
     
     // called when hub, property, etc is changed.
     // does not include resetting HubChangeListeners (changeListener, visibleChangeListener, enabledChangeListener)
-    protected void reset() {
+    protected void _reset() {
         // note: dont call close, want to keep visibleChangeListener, enabledChangeListener
         if (hubLast != null) {
             hubLast.removeHubListener(this);
@@ -282,9 +294,10 @@ public class OAJfcController extends HubListenerAdapter {
             }
         }
         else {
-            hubLink = hub.getLinkHub();
+            hubLink = hub.getLinkHub(true);
+            
             if (hubLink != null) {
-                linkPropertyName = hub.getLinkPath();
+                linkPropertyName = hub.getLinkPath(true);
             }
             else {
                 Hub hubx = HubDetailDelegate.getMasterHub(hub);
@@ -305,7 +318,6 @@ public class OAJfcController extends HubListenerAdapter {
                 }
             }
         }
-        update();
     }
     
     public void bind(Hub hub, String propertyPath, boolean bUseLinkHub) {
@@ -615,6 +627,9 @@ public class OAJfcController extends HubListenerAdapter {
             }
         }
     }
+    public void setReadOnly(boolean b) {
+        setViewOnly(b);
+    }
     
     /**
      * Used to verify a property change.
@@ -700,7 +715,7 @@ public class OAJfcController extends HubListenerAdapter {
         this.format = fmt;
         bDefaultFormat = true;
         defaultFormat = null;
-        update();
+        callUpdate();
     }
 
     /**
@@ -725,7 +740,7 @@ public class OAJfcController extends HubListenerAdapter {
     
     public void setFont(Font font) {
         this.font = font;
-        update();
+        callUpdate();
     }
     public Font getFont() {
         return this.font;
@@ -733,7 +748,7 @@ public class OAJfcController extends HubListenerAdapter {
     public void setFontPropertyPath(String pp) {
         fontPropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
-        update();
+        callUpdate();
     }
     public String getFontProperty() {
         return fontPropertyPath;
@@ -752,7 +767,7 @@ public class OAJfcController extends HubListenerAdapter {
 
     public void setForegroundColor(Color c) {
         this.colorForeground = c;
-        update();
+        callUpdate();
     }
     public Color getForegroundColor() {
         return this.colorForeground;
@@ -760,7 +775,7 @@ public class OAJfcController extends HubListenerAdapter {
     public void setForegroundColorPropertyPath(String pp) {
         foregroundColorPropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
-        update();
+        callUpdate();
     }
     public String getForegroundColorPropertyPath() {
         return foregroundColorPropertyPath;
@@ -779,7 +794,7 @@ public class OAJfcController extends HubListenerAdapter {
     
     public void setBackgroundColor(Color c) {
         this.colorBackground = c;
-        update();
+        callUpdate();
     }
     public Color getBackgroundColor() {
         return this.colorBackground;
@@ -787,7 +802,7 @@ public class OAJfcController extends HubListenerAdapter {
     public void setBackgroundColorPropertyPath(String pp) {
         backgroundColorPropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
-        update();
+        callUpdate();
     }
     public String getBackgroundColorPropertyPath() {
         return backgroundColorPropertyPath;
@@ -807,7 +822,7 @@ public class OAJfcController extends HubListenerAdapter {
     
     public void setIconColor(Color c) {
         this.colorIcon = c;
-        update();
+        callUpdate();
     }
     public Color getIconColor() {
         return this.colorIcon;
@@ -815,7 +830,7 @@ public class OAJfcController extends HubListenerAdapter {
     public void setIconColorPropertyPath(String pp) {
         iconColorPropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
-        update();
+        callUpdate();
     }
     public String getIconColorPropertyPath() {
         return iconColorPropertyPath;
@@ -835,7 +850,7 @@ public class OAJfcController extends HubListenerAdapter {
     public void setToolTipTextPropertyPath(String pp) {
         toolTipTextPropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
-        update();
+        callUpdate();
     }
     public String getToolTipTextPropertyPath() {
         return toolTipTextPropertyPath;
@@ -851,7 +866,7 @@ public class OAJfcController extends HubListenerAdapter {
             s = OAString.convert(s, "//", "/");
         }
         this.imageDirectory = s;
-        update();
+        callUpdate();
     }
     /**
         Root directory path where images are stored.
@@ -865,11 +880,11 @@ public class OAJfcController extends HubListenerAdapter {
     public void setImageClassPath(Class root, String path) {
         this.rootImageClassPath = root;
         this.imageClassPath = path;
-        update();
+        callUpdate();
     }
     public void setImage(Image img) {
         this.image = img;
-        update();
+        callUpdate();
     }
     public Image getImage() {
         return this.image;
@@ -877,7 +892,7 @@ public class OAJfcController extends HubListenerAdapter {
     public void setImagePropertyPath(String pp) {
         imagePropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
-        update();
+        callUpdate();
     }
     public String getImagePropertyPath() {
         return imagePropertyPath;
@@ -972,7 +987,7 @@ public class OAJfcController extends HubListenerAdapter {
     }
     public void setNullDescription(String s) {
         nullDescription = s;
-        update();
+        callUpdate();
     }
 
     
@@ -987,7 +1002,7 @@ public class OAJfcController extends HubListenerAdapter {
         changeListener = new MyHubChangeListener() {
             @Override
             protected void onChange() {
-                OAJfcController.this.update();
+                OAJfcController.this.callUpdate();
             }
         };
         return changeListener;
@@ -998,7 +1013,7 @@ public class OAJfcController extends HubListenerAdapter {
         changeListenerEnabled = new MyHubChangeListener() {
             @Override
             protected void onChange() {
-                OAJfcController.this.update();
+                OAJfcController.this.callUpdate();
             }
         };
         return changeListenerEnabled;
@@ -1009,7 +1024,7 @@ public class OAJfcController extends HubListenerAdapter {
         changeListenerVisible = new MyHubChangeListener() {
             @Override
             protected void onChange() {
-                OAJfcController.this.update();
+                OAJfcController.this.callUpdate();
             }
         };
         return changeListenerVisible;
@@ -1049,15 +1064,20 @@ public class OAJfcController extends HubListenerAdapter {
     }
     
     
-    
     private HubEvent lastUpdateHubEvent;
 //qqq Test
 //int cntUpdate;    
+    
+    protected void callUpdate() {
+        if (bIgnoreUpdate) return;
+        update();
+    }
     
     /**
      *  Called to have component update itself.  
      */
     public void update() {
+        if (bIgnoreUpdate) return;
 /*qqqq Test        
     System.out.printf((++cntUpdate)+") %s %s %s\n", 
         hub!=null ? hub.getObjectClass().getSimpleName() : "", 
@@ -1441,7 +1461,7 @@ public class OAJfcController extends HubListenerAdapter {
         lbl.setLabelFor(component);
         this.hubForLabel = hubForLabel;
         this.bLabelAlwaysMatchesComponentEnabled = bAlwaysMatchEnabled;
-        update();
+        callUpdate();
     }
     public JLabel getLabel() {
         return this.label;
@@ -1487,7 +1507,7 @@ public class OAJfcController extends HubListenerAdapter {
     }
     public void setMaxImageHeight(int maxImageHeight) {
         this.maxImageHeight = maxImageHeight;
-        update();
+        callUpdate();
     }
 
     public int getMaxImageWidth() {
@@ -1495,7 +1515,7 @@ public class OAJfcController extends HubListenerAdapter {
     }
     public void setMaxImageWidth(int maxImageWidth) {
         this.maxImageWidth = maxImageWidth;
-        update();
+        callUpdate();
     }
 
     public void setHtml(boolean b) {
@@ -1524,23 +1544,23 @@ public class OAJfcController extends HubListenerAdapter {
 
     @Override
     public void afterAdd(HubEvent e) {
-        if (bIsHubCalc) update();
+        if (bIsHubCalc) callUpdate();
     }
     @Override
     public void afterRemove(HubEvent e) {
-        if (bIsHubCalc) update();
+        if (bIsHubCalc) callUpdate();
     }
     @Override
     public void afterRemoveAll(HubEvent e) {
-        if (bIsHubCalc) update();
+        if (bIsHubCalc) callUpdate();
     }
     @Override
     public void onNewList(HubEvent e) {
-        update();
+        callUpdate();
     }
     @Override
     public void afterInsert(HubEvent e) {
-        if (bIsHubCalc) update();
+        if (bIsHubCalc) callUpdate();
     }
     @Override
     public void afterChangeActiveObject(HubEvent e) {
@@ -1548,7 +1568,7 @@ public class OAJfcController extends HubListenerAdapter {
     }
     @Override
     public void afterNewList(HubEvent e) {
-        update();
+        callUpdate();
     }
     @Override
     public void afterPropertyChange(HubEvent e) {
@@ -1573,7 +1593,7 @@ public class OAJfcController extends HubListenerAdapter {
         }
         if (b) {
             OAJfcController.this.afterPropertyChange();
-            update();
+            callUpdate();
         }
     }
 
@@ -1581,7 +1601,7 @@ public class OAJfcController extends HubListenerAdapter {
     protected void afterPropertyChange() {
     }
     protected void afterChangeActiveObject() {
-        update();  
+        callUpdate();  
     }
 
     public void setDisplayTemplate(String s) {
@@ -1666,7 +1686,7 @@ public class OAJfcController extends HubListenerAdapter {
             if (templateToolTipText == null || !ttDefault.equals(templateToolTipText.getTemplate())) {
                 templateToolTipText = new OATemplate(ttDefault);
             }
-            ttDefault = templateToolTipText.process((OAObject) objx);
+            ttDefault = templateToolTipText.process((OAObject) obj, (OAObject) objx);
         }
         
         if (ttDefault != null && ttDefault.indexOf('<') >=0 && ttDefault.toLowerCase().indexOf("<html>") < 0) ttDefault = "<html>" + ttDefault;
@@ -1680,7 +1700,7 @@ public class OAJfcController extends HubListenerAdapter {
      * default is to call update().
      */
     protected void onVisibleListenerChange() {
-        update();
+        callUpdate();
     }
     
     private HashMap<Component, Object> hmVisibleListener;
@@ -1754,7 +1774,7 @@ public class OAJfcController extends HubListenerAdapter {
                                     @Override
                                     public void stateChanged(ChangeEvent e) {
                                         if (tp.getSelectedIndex() == pos) {
-                                            update();
+                                            callUpdate();
                                         }
                                     }
                                 });
@@ -1777,7 +1797,7 @@ public class OAJfcController extends HubListenerAdapter {
                         ComponentListener cl = new ComponentAdapter() {
                             @Override
                             public void componentShown(ComponentEvent e) {
-                                update();
+                                callUpdate();
                             }
                         };
                         win.addComponentListener(cl);
@@ -1841,22 +1861,25 @@ public class OAJfcController extends HubListenerAdapter {
                     continue;
                 }
                 
+                boolean b = false;
                 for (MyHubChangeListener mcl : mcls) {
                     if (mcl == null) continue;
                     if (mcl == this) continue;
-                    boolean b = false;
                     for (HubProp hpx : mcl.hubProps) {
                         if (hpx.hubListener == hp.hubListener) {
                             b = true;
                             break;
                         }
                     }
-                    if (!b && hp.hub != null) hp.hub.removeHubListener(hp.hubListener);
-                    for (HubProp hpx : hubProps) {
-                        if (hpx.hubListener == hp.hubListener) hpx.hubListener = null;
-                    }
-                    hp.hubListener = null;
                 }
+                if (!b && hp.hub != null) {
+                    hp.hub.removeHubListener(hp.hubListener);
+                }
+                for (HubProp hpx : hubProps) {
+                    if (hpx == hp) continue;
+                    if (hpx.hubListener == hp.hubListener) hpx.hubListener = null;
+                }
+                hp.hubListener = null;
             }
         }
         
@@ -1877,7 +1900,7 @@ public class OAJfcController extends HubListenerAdapter {
 
             Hub h = OAJfcController.this.hub;
             if (h != null) {
-                h = h.getLinkHub();
+                h = h.getLinkHub(true);
                 if (h != null && h == newHubProp.hub)  {
                     if (newHubProp.propertyPath == null) return true;
                 }

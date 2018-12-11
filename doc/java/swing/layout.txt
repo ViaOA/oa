@@ -1,5 +1,8 @@
 
 
+use Box(..) instead
+
+
 >> Panel w/ BoxLayout
 
     JPanel p = new JPanel();
@@ -20,6 +23,9 @@ see toolbar.txt
         box.add(Box.createHorizontalStrut(7));
         box.add(chk);
 
+    listPane.add(Box.createRigidArea(new Dimension(0,5)));
+    BorderFactory.createEmptyBorder(10,10,10,10));
+    buttonPane.add(Box.createHorizontalGlue());
 
 
 >> CardLayout

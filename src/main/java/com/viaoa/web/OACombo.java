@@ -171,7 +171,7 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
                 break;
             }
             if (!name.toUpperCase().startsWith(id.toUpperCase()+"_")) continue;
-            Hub hubLink = hub.getLinkHub();
+            Hub hubLink = hub.getLinkHub(true);
             if (hubLink == null) continue;
             
             if (name.toUpperCase().startsWith(id.toUpperCase()+"_")) {
@@ -372,7 +372,7 @@ sb.append("}\n");
         // todo: create script to only send change of selection
         
         String ids = id;
-        Hub hubLink = hub==null ? null : hub.getLinkHub();
+        Hub hubLink = hub==null ? null : hub.getLinkHub(true);
         if (hubLink != null) {
             Object objLink = hubLink.getAO();
             if (objLink != null) {
@@ -634,7 +634,7 @@ sb.append("}\n");
 
         if (OAString.isEmpty(enablePropertyPath)) return true;
         
-        Hub h = hub.getLinkHub();
+        Hub h = hub.getLinkHub(true);
         if (h == null) h = hub;
         
         OAObject obj = (OAObject) h.getAO();
@@ -671,7 +671,7 @@ sb.append("}\n");
 
         if (OAString.isEmpty(visiblePropertyPath)) return true;
         
-        Hub h = hub.getLinkHub();
+        Hub h = hub.getLinkHub(true);
         if (h == null) h = hub;
         
         OAObject obj = (OAObject) h.getAO();

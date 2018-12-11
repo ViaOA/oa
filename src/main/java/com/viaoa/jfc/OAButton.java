@@ -152,10 +152,11 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
                 protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
                     if (!bIsCurrentlyEnabled) {
                         if (hub != null) {
-                            if (hub.getLinkHub() != null) {
-                                Object objx = hub.getLinkHub().getAO();
+                            Hub hx = hub.getLinkHub(true);
+                            if (hx != null) {
+                                Object objx = hx.getAO();
                                 if (!(objx instanceof OAObject)) return false;
-                                bIsCurrentlyEnabled = (((OAObject) objx).isEnabled(hub.getLinkPath())); 
+                                bIsCurrentlyEnabled = (((OAObject) objx).isEnabled(hub.getLinkPath(true))); 
                             }
                             else bIsCurrentlyEnabled = (hub.getSize() > 0);
                         }
@@ -176,8 +177,8 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
             Hub hubx = null;
             String propx = null;
             if (hub != null) {
-                hubx = hub.getLinkHub();
-                if (hubx != null) propx = hub.getLinkPath();
+                hubx = hub.getLinkHub(true);
+                if (hubx != null) propx = hub.getLinkPath(true);
                 else {
                     hubx = hub.getMasterHub();
                     if (hubx != null) {

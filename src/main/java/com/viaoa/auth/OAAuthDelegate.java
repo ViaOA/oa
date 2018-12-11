@@ -67,6 +67,13 @@ public class OAAuthDelegate {
         return hub.getAO();
     }
 
+    public static void setUser(OAObject obj) {
+        Hub h = new Hub();
+        h.add(obj);
+        h.setAO(obj);
+        addUserHub(null, h);
+    }
+    
     /**
      * Used to know if the logged in user can edit processed data.
      */
