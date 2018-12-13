@@ -754,6 +754,9 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
             if (icon != null) d.width += (icon.getIconWidth() + 10);
         }
         d.width += 22;
+        
+        d.height = OATextField.getStaticPreferredHeight(); 
+        
         return d;
     }
     @Override
@@ -792,8 +795,12 @@ if (true || cols > 0) return; //qqqqqqqqqqqqqqq
             if (icon != null) d.width += (icon.getIconWidth() + 10);
         }
         d.width += 22;
+        
+        d.height = OATextField.getStaticPreferredHeight()+2; 
+        
         return d;
     }
+    
     @Override
     public Dimension getMinimumSize() {
         Dimension d = super.getMinimumSize();

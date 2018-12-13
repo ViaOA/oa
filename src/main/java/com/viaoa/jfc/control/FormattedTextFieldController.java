@@ -253,7 +253,7 @@ public class FormattedTextFieldController extends OAJfcController implements Foc
     }
     
     @Override
-    public void callUpdate() {
+    public void update() {
         if (textField == null) return;
         if (focusActiveObject == null) {
             String text = null;
@@ -271,7 +271,7 @@ public class FormattedTextFieldController extends OAJfcController implements Foc
             textField.setValue(text);
             bSettingValue = bHold;
         }        
-        super.callUpdate();
+        super.update();
     }
     
     protected Object getPropertyValue(Object obj) {

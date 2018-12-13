@@ -217,7 +217,8 @@ class DatePopup implements ComboPopup, MouseMotionListener, MouseListener, KeyLi
 	    this.comboBox = comboBox;
 	    calendar = Calendar.getInstance();
 	    // check Look and Feel
-	    background = UIManager.getColor("ComboBox.background");
+	    //background = UIManager.getColor("ComboBox.background");
+	    background = Color.white;
 	    foreground = UIManager.getColor("ComboBox.foreground");
 	    selectedBackground = UIManager.getColor("ComboBox.selectionBackground");
 	    selectedForeground = UIManager.getColor("ComboBox.selectionForeground");

@@ -2850,23 +2850,23 @@ public class OAString {
     public static String hilite(String line, String search, String beginTag, String endTag, boolean bIgnoreCase) {
         if (line == null || search == null) return line;
 
-        final int xs = search.length();
-        if (xs == 0) return line;
+        final int searchLength = search.length();
+        if (searchLength == 0) return line;
         if (bIgnoreCase) search = search.toLowerCase();
         
-        final int xl = line.length();
+        final int lineLength = line.length();
         StringBuilder sb = null;  // dont allocate until first match is found
         char c=0, origChar=0;
         
         for (int i=0,j=0; ;i++) {
-            if (i < xl) {
+            if (i < lineLength) {
                 origChar = c = line.charAt(i);
                 if (bIgnoreCase) c = Character.toLowerCase(c);
                 if (c == search.charAt(j)) {
                     j++;
-                    if (j == xs) {
+                    if (j == searchLength) {
                         if (sb == null) {
-                            sb = new StringBuilder(xl + (xl/10));
+                            sb = new StringBuilder(lineLength + (lineLength/10));
                             int e = (i - j) + 1;
                             if (e > 0) sb.append(line.substring(0,e));
                         }
@@ -2879,7 +2879,7 @@ i: 0123456789
 j:      12
 */   
                         int b = (i-j)+1;
-                        sb.append(line.substring(b,b+j));
+                        sb.append(line.substring(b, b+j));
                         sb.append(endTag);
                         j = 0;   
                     }
@@ -2897,13 +2897,15 @@ i: 0123456789
    VinceViNce   
 j:      12
 */   
-                    sb.append(line.substring(b,b+j));
+                    sb.append(line.substring(b, b+j));
                 }
                 i -= j;  // start at last checking point, loop with inc i by +1
                 j = 0;
             }
-            if (i >= xl) break;
-            if (sb != null) sb.append(origChar);
+            else {
+                if (i >= lineLength) break;
+                if (sb != null) sb.append(origChar);
+            }
         }
         if (sb == null) return line;
         return new String(sb);

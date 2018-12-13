@@ -294,7 +294,7 @@ public abstract class HTMLTextPaneController extends OAJfcController implements 
     }
 
     @Override
-    public void callUpdate() {
+    public void update() {
         if (editor == null) return;
         if (focusActiveObject != null) return;
 
@@ -321,7 +321,7 @@ public abstract class HTMLTextPaneController extends OAJfcController implements 
             _update(text);
         }
    
-        super.callUpdate();
+        super.update();
         super.update(editor, activeObject, true);
     }
     

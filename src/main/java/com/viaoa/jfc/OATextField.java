@@ -352,6 +352,8 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
             d.width = OAJfcUtil.getCharWidth(cols);
         }
 
+        d.height = OATextField.getStaticPreferredHeight(); 
+        
         Insets ins = getInsets();
         if (ins != null) d.width += ins.left + ins.right;
         return d;
@@ -378,11 +380,24 @@ public class OATextField extends JTextField implements OATableComponent, OAJfcCo
             d.width = fm.stringWidth(text) + 8;
         }
         else d.width = OAJfcUtil.getCharWidth(cols);
+
+        d.height = getStaticPreferredHeight()+2; 
         
         Insets ins = getInsets();
         if (ins != null) d.width += ins.left + ins.right;
         return d;
     }
+    
+    private static int preferredHeight;
+    protected static int getStaticPreferredHeight() {
+        if (preferredHeight == 0) {
+            JTextField jtxt = new JTextField("XxUIgpy");
+            preferredHeight = jtxt.getPreferredSize().height;
+        }
+        return preferredHeight;
+    }
+    
+    
     public Dimension getMinimumSize() {
         Dimension d = super.getMinimumSize();
         if (isMinimumSizeSet()) return d;

@@ -59,6 +59,7 @@ public class OAJfcController extends HubListenerAdapter {
     private static Logger LOG = Logger.getLogger(OAJfcController.class.getName());
     
     public boolean DEBUG;  // used for debugging a single component. ex: ((OALabel)lbl).setDebug(true)    
+    public static boolean DEBUGUI = false;  // used by debug() to show info
 
     protected final JComponent component;
     
@@ -1108,7 +1109,6 @@ public class OAJfcController extends HubListenerAdapter {
         updateLabel(component, obj);
     }
 
-    public static boolean DEBUGUI = false;
 
     protected void debug() {
         if (!DEBUGUI || component == null) return;

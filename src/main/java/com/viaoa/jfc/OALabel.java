@@ -264,18 +264,16 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         Insets ins = getInsets();
         if (ins != null) d.width += ins.left + ins.right;
         
-//qqqqq label specific
         if (control != null) {
             Icon icon = getIcon();
             if (icon != null) d.width += (icon.getIconWidth() + 10);
         }
         
-        if (d.height < 12) {
-            if (heightHold > 0) d.height = heightHold;
-            else d.height = lblStatic.getPreferredSize().height;
-        }
+        d.height = OATextField.getStaticPreferredHeight();
         return d;
     }
+    
+    
     @Override
     public Dimension getMaximumSize() {
         Dimension d = super.getMaximumSize();
@@ -302,21 +300,14 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         Insets ins = getInsets();
         if (ins != null) d.width += ins.left + ins.right;
         
-//qqqqq label specific
         if (control != null) {
             Icon icon = getIcon();
             if (icon != null) d.width += (icon.getIconWidth() + 10);
         }
         
-        if (OAString.isEmpty(text)) {
-            if (heightHold > 0) d.height = heightHold;
-            else d.height = lblStatic.getPreferredSize().height;
-        }
-        else heightHold = d.height;
+        d.height = OATextField.getStaticPreferredHeight()+2;
         return d;
     }
-    private int heightHold;
-    private static JLabel lblStatic = new JLabel("XXX"); 
     
     public Dimension getMinimumSize() {
         Dimension d = super.getMinimumSize();

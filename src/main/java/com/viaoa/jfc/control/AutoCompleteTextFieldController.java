@@ -75,7 +75,7 @@ public class AutoCompleteTextFieldController extends OAJfcController {
     
 
     @Override
-    public void callUpdate() {
+    public void update() {
         try {
             if (autoCompleteList != null) autoCompleteList.bIgnorePopup = true;
             _update(); 
@@ -83,7 +83,7 @@ public class AutoCompleteTextFieldController extends OAJfcController {
         finally {
             if (autoCompleteList != null) autoCompleteList.bIgnorePopup = false;
         }
-        super.callUpdate();
+        super.update();
     }
     
     protected void _update() {

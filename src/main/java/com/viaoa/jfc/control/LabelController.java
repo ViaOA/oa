@@ -132,10 +132,10 @@ public class LabelController extends OAJfcController {
     }
 
     @Override
-    public void callUpdate() {
+    public void update() {
         boolean bx = (siblingHelper != null) && OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
         try {
-            super.callUpdate();
+            super.update();
             _update();
         }
         finally {

@@ -160,6 +160,8 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
             d.width = OAJfcUtil.getCharWidth(cols);
         }
 
+        d.height = OATextField.getStaticPreferredHeight(); 
+        
         Insets ins = getInsets();
         if (ins != null) d.width += ins.left + ins.right;
         return d;
@@ -186,11 +188,14 @@ public class OAAutoCompleteTextField extends JTextField implements OATableCompon
             d.width = fm.stringWidth(text) + 8;
         }
         else d.width = OAJfcUtil.getCharWidth(cols);
+    
+        d.height = OATextField.getStaticPreferredHeight()+2; 
         
         Insets ins = getInsets();
         if (ins != null) d.width += ins.left + ins.right;
         return d;
     }
+    
     public Dimension getMinimumSize() {
         Dimension d = super.getMinimumSize();
         if (isMinimumSizeSet()) return d;

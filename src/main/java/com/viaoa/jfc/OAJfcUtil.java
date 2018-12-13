@@ -389,9 +389,10 @@ public class OAJfcUtil {
     
     
 
-    private final static Color colorBackgroundLighter = new Color(248, 250, 252);
-    private final static Color colorBackground = new Color(240, 245, 249);
-    private final static Color colorBackgroundDarker = new Color(203, 220, 236);
+    public final static Color colorBackgroundLighter = new Color(248, 250, 252);
+    public final static Color colorBackground = new Color(240, 245, 249);
+    public final static Color colorBackgroundDarker = new Color(203, 220, 236);
+    public final static Color colorBackgroundDarkest = new Color(94, 147, 212);
     
     public static String setLookAndFeel(String laf) throws Exception {
         if (laf == null || laf.trim().length() == 0) {

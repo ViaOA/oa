@@ -106,8 +106,8 @@ public class OAObjectEditQueryDelegate {
         return getVerifyRemoveAllEditQuery(hub).getAllowed();
     }
     
-    public static boolean getAllowDelete(OAObject obj, boolean bProcessedCheck) {
-        return getAllowDeleteEditQuery(obj, bProcessedCheck).getAllowed();
+    public static boolean getAllowDelete(Hub hub, OAObject obj, boolean bProcessedCheck) {
+        return getAllowDeleteEditQuery(hub, obj, bProcessedCheck).getAllowed();
     }
     public static boolean getVerifyDelete(OAObject obj) {
         return getVerifyDeleteEditQuery(obj).getAllowed();
@@ -366,13 +366,40 @@ public class OAObjectEditQueryDelegate {
         return editQuery;
     }
 
-    public static OAObjectEditQuery getAllowDeleteEditQuery(final OAObject oaObj, boolean bProcessedCheck) {
+    /*was
+    public static OAObjectEditQuery getAllowDeleteEditQuery(final Hub hub, final OAObject oaObj, boolean bProcessedCheck) {
         final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowDelete);
         editQuery.setValue(oaObj);
         
         processEditQuery(editQuery, null, oaObj, null, null, null, bProcessedCheck);
         return editQuery;
     }
+    */
+    public static OAObjectEditQuery getAllowDeleteEditQuery(final Hub hub, final OAObject oaObj, final boolean bProcessedCheck) {
+        final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowDelete);
+        editQuery.setValue(oaObj);
+        if (hub != null) {
+            OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
+            if (li == null || li.getPrivateMethod()) {
+                if (bProcessedCheck) {
+                    if (hub.getOAObjectInfo().getProcessed()) {
+                        updateEditProcessed(editQuery);
+                    }
+                }
+                processEditQueryForHubListeners(editQuery, hub, null, null, null, null);
+            }
+            else {
+                OAObject objMaster = hub.getMasterObject();
+                String propertyName = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+                editQuery.setName(propertyName);
+                processEditQuery(editQuery, null, objMaster, propertyName, null, null, bProcessedCheck);
+            }
+        }
+        processEditQuery(editQuery, null, oaObj, null, null, null, bProcessedCheck);
+        return editQuery;
+    }
+    
+    
     public static OAObjectEditQuery getVerifyDeleteEditQuery(final OAObject oaObj) {
         final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.VerifyDelete);
         editQuery.setValue(oaObj);

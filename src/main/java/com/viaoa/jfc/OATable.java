@@ -120,7 +120,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     public static final Color COLOR_Odd = UIManager.getColor("Table.background");
     public static final Color COLOR_Even = new Color(249, 255, 255);
     public static final Color COLOR_Focus = UIManager.getColor("Table.foreground");
-    public static final Color COLOR_MouseOver = new Color(0, 0, 110);
+    
+    public static final Color COLOR_MouseOver = OAJfcUtil.colorBackgroundDarkest;
+    // public static final Color COLOR_MouseOver = new Color(0, 0, 110);
+    
 
     public static final Color COLOR_Change_Foreground = Color.yellow;
     public static final Color COLOR_Change_Background = new Color(0, 0, 105);
@@ -1467,7 +1470,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             public void customizeTableRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
                 lbl.setText("" + (row + 1) + " ");
                 lbl.setHorizontalAlignment(SwingConstants.RIGHT);
-                if (!isSelected) lbl.setForeground(Color.gray);
+                if (wasMouseOver) lbl.setForeground(Color.white);
+                else if (!isSelected) lbl.setForeground(Color.gray);
             }
 
             @Override

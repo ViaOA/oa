@@ -174,13 +174,19 @@ public abstract class HubChangeListener {
         OAFilter filter = new OAFilter() {
             @Override
             public boolean isUsed(Object obj) {
-                boolean b = (obj instanceof OAObject) && OAObjectEditQueryDelegate.getAllowDelete((OAObject)obj, true);
+                boolean b = (obj instanceof OAObject) && OAObjectEditQueryDelegate.getAllowDelete(hub, (OAObject)obj, true);
                 return b;
             }
         };
         HubProp hp = add(hub, null, false, null, filter, false);
 
         OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, hub.getObjectClass(), null, null, this, true);
+
+        Hub hx = hub.getMasterHub();
+        if (hx != null) {
+            add(hx, Type.AoNotNull);
+            OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), null, null, this, true);
+        }
         
         return hp;
     }

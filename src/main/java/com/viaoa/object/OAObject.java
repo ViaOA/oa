@@ -768,7 +768,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     	OAObjectDeleteDelegate.delete(this);
     }
     public boolean canDelete() {
-        boolean b = OAObjectEditQueryDelegate.getAllowDelete(this, false);
+        boolean b = OAObjectEditQueryDelegate.getAllowDelete(null, this, false);
         return b;
     }
     /**
