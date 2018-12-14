@@ -12,7 +12,6 @@ package com.viaoa.object;
 
 import javax.swing.JLabel;
 
-import com.viaoa.annotation.OAEditQuery;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
 

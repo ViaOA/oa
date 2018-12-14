@@ -16,6 +16,7 @@ import com.viaoa.auth.OAAuthDelegate;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectDelegate;
+import com.viaoa.object.OAObjectEditQuery;
 import com.viaoa.object.OAObjectEditQueryDelegate;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.util.*;
@@ -33,6 +34,7 @@ public abstract class HubChangeListener {
     protected HubProp[] hubProps = new HubProp[0];
     public boolean DEBUG;
     private HubEvent lastHubEvent;
+    private String failureReason;
     
     /**
      * Specific types of comparisions.
@@ -78,7 +80,7 @@ public abstract class HubChangeListener {
      * Add an additional hub to base the check on.  
      */
     public HubProp add(Hub hub) {
-        return add(hub, null, true, Type.HubValid, null, false);
+        return add(hub, null, true, Type.HubValid, null, false, null);
     }    
 
     /**
@@ -90,7 +92,7 @@ public abstract class HubChangeListener {
     public HubProp add(Hub hub, String propertyPath) {
         if (propertyPath == null) return add(hub);
         else {
-            return add(hub, propertyPath, true, Type.AlwaysTrue, null, true);
+            return add(hub, propertyPath, true, Type.AlwaysTrue, null, true, null);
         }
     }
     
@@ -152,11 +154,13 @@ public abstract class HubChangeListener {
         OAFilter filter = new OAFilter() {
             @Override
             public boolean isUsed(Object obj) {
-                boolean b = OAObjectEditQueryDelegate.getAllowAdd(hub, true);
+                OAObjectEditQuery eq = OAObjectEditQueryDelegate.getAllowAddEditQuery(hub, true);
+                boolean b = eq.getAllowed();
+                if (!b) failureReason = eq.getDisplayResponse();
                 return b;
             }
         };
-        HubProp hp = add(hub, null, false, null, filter, false);
+        HubProp hp = add(hub, null, false, null, filter, false, "EditQuery.AllowAdd");
 
         OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, hub.getObjectClass(), null, null, this, true);
 
@@ -174,11 +178,15 @@ public abstract class HubChangeListener {
         OAFilter filter = new OAFilter() {
             @Override
             public boolean isUsed(Object obj) {
-                boolean b = (obj instanceof OAObject) && OAObjectEditQueryDelegate.getAllowDelete(hub, (OAObject)obj, true);
+                OAObjectEditQuery eq = (obj instanceof OAObject) ? OAObjectEditQueryDelegate.getAllowDeleteEditQuery(hub, (OAObject)obj, true) : null;
+                boolean b = eq != null && eq.getAllowed();
+                if (!b) {
+                    failureReason = eq.getDisplayResponse();
+                }
                 return b;
             }
         };
-        HubProp hp = add(hub, null, false, null, filter, false);
+        HubProp hp = add(hub, null, false, null, filter, false, "EditQuery.AllowDelete");
 
         OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, hub.getObjectClass(), null, null, this, true);
 
@@ -191,6 +199,7 @@ public abstract class HubChangeListener {
         return hp;
     }
 
+/* not used, OAObjectEditQueryDelegate._processEditQuery handles this    
     // uses ObjectInfo.isProcessed and OAAuth to determine if user has permission 
     public HubProp addProcessedEnabled(final Hub hub) {
         if (hub == null) return null;
@@ -209,6 +218,7 @@ public abstract class HubChangeListener {
         HubProp hp = add(hubUser, OAAuthDelegate.getAllowEditProcessedPropertyPath());
         return hp;
     }
+*/    
     
     public HubProp addRemoveEnabled(final Hub hub) {
         if (hub == null) return null;
@@ -223,7 +233,7 @@ public abstract class HubChangeListener {
                 return b;
             }
         };
-        HubProp hp = add(hub, null, false, null, filter, false);
+        HubProp hp = add(hub, null, false, null, filter, false, "Hub.canRemove");
         
         Hub hx = hub.getMasterHub();
         if (hx != null) {
@@ -283,10 +293,10 @@ public abstract class HubChangeListener {
     }
     
     public HubProp add(Hub hub, HubChangeListener.Type type) {
-        return add(hub, null, (type==null?false:true), type, null, (type==null?true:type.bUseAoOnly));
+        return add(hub, null, (type==null?false:true), type, null, (type==null?true:type.bUseAoOnly), null);
     }
     public HubProp add(Hub hub, String property, HubChangeListener.Type type) {
-        return add(hub, property, type==null?false:true, type, null, (type==null?true:type.bUseAoOnly));
+        return add(hub, property, type==null?false:true, type, null, (type==null?true:type.bUseAoOnly), null);
     }
     
     
@@ -296,11 +306,11 @@ public abstract class HubChangeListener {
      *      or any other value.  
      */
     public HubProp add(Hub hub, final String propertyPath, Object compareValue) {
-        return add(hub, propertyPath, true, compareValue, null, true);
+        return add(hub, propertyPath, true, compareValue, null, true, null);
     }
 
     public HubProp add(Hub hub, OAFilter filter) {
-        return add(hub, null, true, null, filter, true);
+        return add(hub, null, true, null, filter, true, "filter");
     }
     
     public HubProp add(Hub hub, final String propertyPath, boolean bUseCompareValue, Object compareValue) {
@@ -308,10 +318,10 @@ public abstract class HubChangeListener {
         if (bUseCompareValue && compareValue instanceof Type) {
             type = (Type) compareValue;
         }
-        return this.add(hub, propertyPath, bUseCompareValue, compareValue, null, (type==null?true:type.bUseAoOnly));
+        return this.add(hub, propertyPath, bUseCompareValue, compareValue, null, (type==null?true:type.bUseAoOnly), null);
     }
         
-    public HubProp add(Hub hub, final String propertyPath, boolean bUseCompareValue, Object compareValue, OAFilter filter, final boolean bAoOnly) {
+    public HubProp add(Hub hub, final String propertyPath, boolean bUseCompareValue, Object compareValue, OAFilter filter, final boolean bAoOnly, String description) {
         String newPropertyPath;
         String[] props;
         
@@ -324,7 +334,7 @@ public abstract class HubChangeListener {
             props = null;
         }
 
-        final HubProp newHubProp = new HubProp(hub, propertyPath, newPropertyPath, props, bUseCompareValue, compareValue, filter, bAoOnly);
+        final HubProp newHubProp = new HubProp(hub, propertyPath, newPropertyPath, props, bUseCompareValue, compareValue, filter, bAoOnly, description);
         
         // see if there is a listener with same hub - and one without a propertyName used
         for (HubProp hp : hubProps) {
@@ -482,7 +492,6 @@ public abstract class HubChangeListener {
         }
     }
     
-    
     public void clear() {
         close();
         hubProps = new HubProp[0];
@@ -533,6 +542,7 @@ public abstract class HubChangeListener {
      * Checks all of the compare values that are being listened to.  All must be true to return true, else returns false.
      */
     public boolean getValue() {
+        failureReason = null;
         boolean b = true;
         for (HubProp hp : hubProps) {
             if (hp.bIgnore) continue;
@@ -541,7 +551,10 @@ public abstract class HubChangeListener {
                 else b = hp.filter.isUsed(hp.hub.getAO());
             }
             else b = hp.getValue();
-            if (!b) break;
+            if (!b && failureReason == null) {
+                failureReason = hp.failureReason;
+                break;
+            }
         }
         return b;
     }
@@ -551,13 +564,19 @@ public abstract class HubChangeListener {
         for (HubProp hp : hubProps) {
             if (hp.bIgnore) continue;
             String s = hp.getToolTipText();
+            if (s == null) s = hp.description;
             if (OAString.isNotEmpty(s)) {
                 tt = OAString.append(tt, s, "<br>");
             }
         }
+        tt = OAString.append(tt, failureReason, "<br>Reason: ");
         return tt;
     }
 
+    public String getFailureReason() {
+        return failureReason;
+    }
+    
     public HubProp getFalseValue() {
         boolean b = true;
         for (HubProp hp : hubProps) {
@@ -584,8 +603,10 @@ public abstract class HubChangeListener {
         public OAFilter filter;
         public boolean bAoOnly;
         public boolean bIgnore; // flag used when another rule overrides this one
+        public String failureReason;
+        public String description;
 
-        public HubProp(Hub<?> h, String propertyPath, String listenPropertyName, String[] props, boolean bUseCompareValue, Object compareValue, OAFilter filter, boolean bAoOnly) {
+        public HubProp(Hub<?> h, String propertyPath, String listenPropertyName, String[] props, boolean bUseCompareValue, Object compareValue, OAFilter filter, boolean bAoOnly, String description) {
             this.hub = h;
             this.propertyPath = propertyPath;
             this.listenToPropertyName = listenPropertyName;
@@ -594,10 +615,11 @@ public abstract class HubChangeListener {
             this.compareValue = compareValue;
             this.filter = filter;
             this.bAoOnly = bAoOnly;
+            this.description = description;
         }
 
         public boolean getValue() {
-            
+            failureReason = null;
             boolean bValid = hub != null && hub.isValid();
             if (bUseCompareValue && compareValue != null) {
                 if (compareValue == Type.HubValid) return bValid;
@@ -607,7 +629,10 @@ public abstract class HubChangeListener {
                 if (compareValue == Type.AoNull) return (bValid && hub.getAO() == null);
                 if (compareValue == Type.AoNotNull) return (bValid && hub.getAO() != null);
                 if (compareValue == Type.AlwaysTrue) return true;
-                if (compareValue == Type.AlwaysFalse) return false;
+                if (compareValue == Type.AlwaysFalse) {
+                    failureReason = "always false";
+                    return false;
+                }
                 if (compareValue == Type.Unknown) return true;
             }
 
@@ -616,7 +641,13 @@ public abstract class HubChangeListener {
             if (compareValue == Type.EditQueryEnabled) {
                 if (!bValid) return false;
                 if (!(value instanceof OAObject)) return true;
-                return OAObjectEditQueryDelegate.getAllowEnabled((OAObject) value, propertyPath, true);
+                OAObjectEditQuery eq  = OAObjectEditQueryDelegate.getAllowEnabledEditQuery((OAObject) value, propertyPath, true);
+                boolean b = eq.getAllowed();
+                if (!b) {
+                    failureReason = eq.getDisplayResponse();
+                    if (OAString.isEmpty(failureReason)) failureReason = "edit query returned false";
+                }
+                return b;
             }
             if (compareValue == Type.EditQueryVisible) {
                 if (!bValid) return true;
@@ -624,9 +655,18 @@ public abstract class HubChangeListener {
                     if (hub == null) return true;
                     Class cx = hub.getObjectClass();
                     if (!OAObject.class.isAssignableFrom(cx)) return true;
-                    return OAObjectEditQueryDelegate.getAllowVisible(cx, propertyPath);
+                    OAObjectEditQuery eq = OAObjectEditQueryDelegate.getAllowVisibleEditQuery(cx, propertyPath);
+                    boolean b = eq.getAllowed();
+                    if (!b) failureReason = eq.getDisplayResponse();
+                    return b;
                 }
-                return OAObjectEditQueryDelegate.getAllowVisible((OAObject) value, propertyPath);
+                OAObjectEditQuery eq = OAObjectEditQueryDelegate.getAllowVisibleEditQuery((OAObject) value, propertyPath);
+                boolean b = eq.getAllowed();
+                if (!b) {
+                    failureReason = eq.getDisplayResponse();
+                    if (OAString.isEmpty(failureReason)) failureReason = "edit query returned false";
+                }
+                return b;
             }
             
             if (!bValid) return false;
@@ -640,12 +680,15 @@ public abstract class HubChangeListener {
                 if (compareValue == Type.PropertyNotNull) return (value != null);
             }
             
+            boolean b;
             if (bUseCompareValue) {
-                return OACompare.compare(compareValue, value) == 0;
+                b = OACompare.compare(compareValue, value) == 0;
             }
             else {
-                return OAConv.toBoolean(value);
+                b = OAConv.toBoolean(value);
             }
+            if (!b) failureReason = "compare value is false";
+            return b;
         }
         
         public String getToolTipText() {

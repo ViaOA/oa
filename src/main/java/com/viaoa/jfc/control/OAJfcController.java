@@ -1103,44 +1103,40 @@ public class OAJfcController extends HubListenerAdapter {
         if (hub != null) obj = hub.getAO();
         else obj = null;
         update(component, obj, true);
-        debug();
         updateEnabled();        
         updateVisible();      
         updateLabel(component, obj);
+        debug();
     }
 
 
     protected void debug() {
         if (!DEBUGUI || component == null) return;
-        component.setBorder(new LineBorder(Color.green, 2));
+
+        if (label != null) label.setBorder(new LineBorder(Color.green, 2));
+        else component.setBorder(new LineBorder(Color.green, 2));
         
-        Container cx = component.getParent();
-        for (int i=0 ; i<2 && cx != null; cx=cx.getParent()) {
-            if (cx instanceof JScrollPane) {
-                ((JScrollPane)cx).setBorder(new LineBorder(Color.blue, 1));
-                break;
-            }
-        }
-        if (label == null) return;
-        label.setBorder(new LineBorder(Color.yellow, 2));
+        String tt;
+        if (component != null) tt = "Comp="+component.getClass().getSimpleName();
+        else tt = "no component";
         
-        String tt = "1)Hub="+getHub();
-        tt += "<br>2)Prop="+propertyPath;
-        int cnt = 3;
+        tt += "<br>Hub="+OAString.trunc(getHub()+"", 80);
+        if (OAString.isNotEmpty(propertyPath)) tt += "<br>Prop="+propertyPath;
         
         if (changeListener != null) {
             String s = changeListener.getToolTipText();
-            if (OAString.isNotEmpty(s)) tt += "<br>"+(cnt++)+")hcl="+s;
+            if (OAString.isNotEmpty(s)) tt += "<br>"+"hcl="+s;
         }
         if (changeListenerEnabled != null) {
             String s = changeListenerEnabled.getToolTipText();
-            if (OAString.isNotEmpty(s)) tt += "<br>"+(cnt++)+")hclEnabed="+s;
+            if (OAString.isNotEmpty(s)) tt += "<br>"+"Enabed="+s;
         }
         if (changeListenerVisible != null) {
             String s = changeListenerVisible.getToolTipText();
-            if (OAString.isNotEmpty(s)) tt += "<br>"+(cnt++)+")hclVisible="+s;
+            if (OAString.isNotEmpty(s)) tt += "<br>"+"Visible="+s;
         }
-        label.setToolTipText("<html>"+tt);
+        if (label != null) label.setToolTipText("<html>"+tt);
+        else component.setToolTipText("<html>"+tt);
     }
 
 
@@ -1233,6 +1229,16 @@ public class OAJfcController extends HubListenerAdapter {
         }
     }
 
+    private String enabledMessage;
+    private String visibleMessage;
+    
+    public String getEnabledMessage() {
+        return enabledMessage;
+    }
+    public String getVisibleMessage() {
+        return visibleMessage;
+    }
+    
     private HubEvent lastUpdateEnabledHubEvent;
     private boolean bLastUpdateEnabled;
     public boolean updateEnabled() {
@@ -1245,6 +1251,7 @@ public class OAJfcController extends HubListenerAdapter {
     }
     public boolean updateEnabled(final JComponent comp, final Object object) {
         if (comp == null) return false;
+//qqqqqqqqqqqqqqq        
         boolean bEnabled = getEnabledChangeListener().getValue();
         bEnabled = isEnabled(bEnabled);
 

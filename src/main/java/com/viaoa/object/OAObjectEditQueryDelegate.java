@@ -776,7 +776,7 @@ public class OAObjectEditQueryDelegate {
                 bPassed = (b == OAConv.toBoolean(valx));
                 if (!bPassed) {
                     editQuery.setAllowed(false);
-                    String s = "Not visible, rule for "+oaObj.getClass().getSimpleName()+", "+pp+" must be "+b;
+                    String s = "Not visible, rule for "+oaObj.getClass().getSimpleName()+", "+pp+" != "+b;
                     editQuery.setResponse(s);
                 }
             }
@@ -793,7 +793,7 @@ public class OAObjectEditQueryDelegate {
                     editQuery.setAllowed(false);
                     String s = "Not visible, user rule for "+oaObj.getClass().getSimpleName()+", ";
                     if (user == null) s = "OAAuthDelegate.getUser returned null";
-                    else s = "User."+pp+" must be "+b;
+                    else s = "User."+pp+" != "+b;
                     editQuery.setResponse(s);
                 }
             }
@@ -814,7 +814,7 @@ public class OAObjectEditQueryDelegate {
                     bPassed = (b == OAConv.toBoolean(valx));
                     if (!bPassed) {
                         editQuery.setAllowed(false);
-                        String s = "Not visible, rule for "+oaObj.getClass().getSimpleName()+"."+propertyName+", "+pp+" must be "+b;
+                        String s = "Not visible, rule for "+oaObj.getClass().getSimpleName()+"."+propertyName+", "+pp+" != "+b;
                         editQuery.setResponse(s);
                     }
                 }
@@ -857,7 +857,7 @@ public class OAObjectEditQueryDelegate {
                 bPassed = (b == OAConv.toBoolean(valx));
                 if (!bPassed) {
                     editQuery.setAllowed(false);
-                    String s = "Not enabled, rule for "+oaObj.getClass().getSimpleName()+", "+pp+" must be "+b;
+                    String s = "Not enabled, rule for "+oaObj.getClass().getSimpleName()+", "+pp+" != "+b;
                     editQuery.setResponse(s);
                 }
             }
@@ -899,7 +899,7 @@ public class OAObjectEditQueryDelegate {
                     bPassed = (b == OAConv.toBoolean(valx));
                     if (!bPassed) {
                         editQuery.setAllowed(false);
-                        String s = "Not enabled, rule for "+oaObj.getClass().getSimpleName()+"."+propertyName+", "+pp+" must be "+b;
+                        String s = "Not enabled, rule for "+oaObj.getClass().getSimpleName()+"."+propertyName+", "+pp+" != "+b;
                         editQuery.setResponse(s);
                     }
                 }

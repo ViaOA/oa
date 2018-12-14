@@ -113,6 +113,10 @@ public class OAResizePanel extends JPanel {
         this(null, (JComponent[]) OAArray.insert(JComponent.class, comps, comp, 0), percentage, false);
     }
 
+    private JLabel lblIcon;
+    public JLabel getIconLabel() {
+        return lblIcon;
+    }
     
     public OAResizePanel(ImageIcon icon, JComponent[] comps, int percentage, boolean bBoth) {
         this.comps = comps;
@@ -130,11 +134,11 @@ public class OAResizePanel extends JPanel {
         gc.weightx = gc.weighty = 0.0; 
         
         if (icon != null) {
-            JLabel lbl = new JLabel(icon);
-            lbl.setOpaque(true);
+            lblIcon = new JLabel(icon);
+            lblIcon.setOpaque(true);
             gc.insets = new Insets(0, 0, 0, 5);
-            panel.add(lbl, gc);
-            lbl.setLabelFor(comp1);
+            panel.add(lblIcon, gc);
+            lblIcon.setLabelFor(comp1);
         }
         gc.insets = new Insets(0, 0, 0, 0);
         if (bBoth) {

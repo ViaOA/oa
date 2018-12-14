@@ -396,10 +396,8 @@ public class OAFunctionLabel extends JLabel implements OATableComponent, OAJfcCo
 
     public class OAFunctionLabelController extends LabelController {
         private Type type;
-        private String ppFunc;  // name of property that function is to use
         public OAFunctionLabelController(Hub hub, Type type, String propertyPath) {
             super(hub, OAFunctionLabel.this, propertyPath, HubChangeListener.Type.HubValid, false);  // false= listen to all objects in Hub 
-            ppFunc = propertyPath;
             //was: getChangeListener().add(hub, ppFunc, true, HubChangeListener.Type.HubValid, null, false);
         }
 
@@ -425,7 +423,7 @@ public class OAFunctionLabel extends JLabel implements OATableComponent, OAJfcCo
             if (hub == null) val = "";
             else if (!hub.isValid()) val = "";
             else {
-                double sum = OAFunction.sum(hub, ppFunc);
+                double sum = OAFunction.sum(hub, getPropertyPath());
                 val = OAConv.toString(sum, getFormat());
             }
             thisLabel.setText(val);
