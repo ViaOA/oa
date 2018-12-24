@@ -1410,10 +1410,10 @@ public class OAHTMLTextPane extends JTextPane implements OAPrintable {
     }
 
     protected void calcPreferredSize() {
-        int h = OAJfcUtil.getCharHeight(this, getFont());
+        int h = OAJfcUtil.getCharHeight();
         h *= prefRows;
 
-        int w = OAJfcUtil.getCharWidth(this, getFont(), prefCols);
+        int w = OAJfcUtil.getCharWidth(prefCols);
 
         // setPreferredScrollableViewportSize(new Dimension(w, h));
         setPreferredSize(new Dimension(w, h));

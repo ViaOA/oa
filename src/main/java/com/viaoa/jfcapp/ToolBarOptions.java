@@ -106,4 +106,9 @@ public class ToolBarOptions {
         return tbo;
     }
 
+    public static ToolBarOptions createCalendarToolBar() {
+        // bGoBack bIcon bLabel bGoto bCommands bSearch bFind bCustom bHubCalc bReport bTable bHubSearch bDownload
+        ToolBarOptions tbo = new ToolBarOptions(false, false, false, false, false, true, true, false, false, true, true, false, false);
+        return tbo;
+    }
 }

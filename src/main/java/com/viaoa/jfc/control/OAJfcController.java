@@ -713,10 +713,11 @@ public class OAJfcController extends HubListenerAdapter {
         see OAConverterNumber#OAConverterNumber
     */
     public void setFormat(String fmt) {
+        String old = this.format;
         this.format = fmt;
         bDefaultFormat = true;
         defaultFormat = null;
-        callUpdate();
+        if (OACompare.isNotEqual(this.format, old)) callUpdate();
     }
 
     /**
@@ -740,16 +741,18 @@ public class OAJfcController extends HubListenerAdapter {
 
     
     public void setFont(Font font) {
+        Font old = this.font;
         this.font = font;
-        callUpdate();
+        if (OACompare.isNotEqual(this.font, old)) callUpdate();
     }
     public Font getFont() {
         return this.font;
     }
     public void setFontPropertyPath(String pp) {
+        String old = this.fontPropertyPath;
         fontPropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
-        callUpdate();
+        if (OACompare.isNotEqual(this.fontPropertyPath, old)) callUpdate();
     }
     public String getFontProperty() {
         return fontPropertyPath;
@@ -767,16 +770,18 @@ public class OAJfcController extends HubListenerAdapter {
     }
 
     public void setForegroundColor(Color c) {
+        Color old = this.colorForeground;
         this.colorForeground = c;
-        callUpdate();
+        if (OACompare.isNotEqual(this.colorForeground, old)) callUpdate();
     }
     public Color getForegroundColor() {
         return this.colorForeground;
     }
     public void setForegroundColorPropertyPath(String pp) {
-        foregroundColorPropertyPath = pp;
+        String old = this.foregroundColorPropertyPath;
+        this.foregroundColorPropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
-        callUpdate();
+        if (OACompare.isNotEqual(this.foregroundColorPropertyPath, old)) callUpdate();
     }
     public String getForegroundColorPropertyPath() {
         return foregroundColorPropertyPath;
@@ -794,16 +799,18 @@ public class OAJfcController extends HubListenerAdapter {
     }
     
     public void setBackgroundColor(Color c) {
+        Color old = this.colorBackground;
         this.colorBackground = c;
-        callUpdate();
+        if (OACompare.isNotEqual(this.colorBackground, old)) callUpdate();
     }
     public Color getBackgroundColor() {
         return this.colorBackground;
     }
     public void setBackgroundColorPropertyPath(String pp) {
-        backgroundColorPropertyPath = pp;
+        String old = this.backgroundColorPropertyPath;
+        this.backgroundColorPropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
-        callUpdate();
+        if (OACompare.isNotEqual(this.backgroundColorPropertyPath, old)) callUpdate();
     }
     public String getBackgroundColorPropertyPath() {
         return backgroundColorPropertyPath;
@@ -822,16 +829,18 @@ public class OAJfcController extends HubListenerAdapter {
 
     
     public void setIconColor(Color c) {
+        Color old = this.colorIcon;
         this.colorIcon = c;
-        callUpdate();
+        if (OACompare.isNotEqual(this.colorIcon, old)) callUpdate();
     }
     public Color getIconColor() {
         return this.colorIcon;
     }
     public void setIconColorPropertyPath(String pp) {
+        String old = iconColorPropertyPath;
         iconColorPropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
-        callUpdate();
+        if (OACompare.isNotEqual(this.iconColorPropertyPath, old)) callUpdate();
     }
     public String getIconColorPropertyPath() {
         return iconColorPropertyPath;
@@ -849,9 +858,10 @@ public class OAJfcController extends HubListenerAdapter {
     }
     
     public void setToolTipTextPropertyPath(String pp) {
-        toolTipTextPropertyPath = pp;
+        String old = this.toolTipTextPropertyPath;
+        this.toolTipTextPropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
-        callUpdate();
+        if (OACompare.isNotEqual(this.toolTipTextPropertyPath, old)) callUpdate();
     }
     public String getToolTipTextPropertyPath() {
         return toolTipTextPropertyPath;
@@ -861,13 +871,14 @@ public class OAJfcController extends HubListenerAdapter {
         Root directory path where images are stored.
     */
     public void setImageDirectory(String s) {
+        String old = this.imageDirectory;
         if (s != null) {
             s += "/";
             s = OAString.convert(s, "\\", "/");
             s = OAString.convert(s, "//", "/");
         }
         this.imageDirectory = s;
-        callUpdate();
+        if (OACompare.isNotEqual(this.imageDirectory, old)) callUpdate();
     }
     /**
         Root directory path where images are stored.
@@ -879,21 +890,24 @@ public class OAJfcController extends HubListenerAdapter {
         Class path where images are stored.
     */
     public void setImageClassPath(Class root, String path) {
+        String old = this.imageClassPath;
         this.rootImageClassPath = root;
         this.imageClassPath = path;
-        callUpdate();
+        if (OACompare.isNotEqual(this.imageClassPath, old)) callUpdate();
     }
     public void setImage(Image img) {
+        Image old = this.image;
         this.image = img;
-        callUpdate();
+        if (OACompare.isNotEqual(this.image, old)) callUpdate();
     }
     public Image getImage() {
         return this.image;
     }
     public void setImagePropertyPath(String pp) {
-        imagePropertyPath = pp;
+        String old = this.imagePropertyPath;
+        this.imagePropertyPath = pp;
         if (OAString.isNotEmpty(pp)) getChangeListener().add(hub, pp);
-        callUpdate();
+        if (OACompare.isNotEqual(this.imagePropertyPath, old)) callUpdate();
     }
     public String getImagePropertyPath() {
         return imagePropertyPath;
@@ -987,13 +1001,10 @@ public class OAJfcController extends HubListenerAdapter {
         return nullDescription;
     }
     public void setNullDescription(String s) {
-        nullDescription = s;
-        callUpdate();
+        String old = this.nullDescription;
+        this.nullDescription = s;
+        if (OACompare.isNotEqual(this.nullDescription, old)) callUpdate();
     }
-
-    
-    
-    
     
     /**
      * Used to listen to additional changes that will then call this.update()
@@ -1066,30 +1077,35 @@ public class OAJfcController extends HubListenerAdapter {
     
     
     private HubEvent lastUpdateHubEvent;
-//qqq Test
-//int cntUpdate;    
+/*qqq Test
+int cntUpdate;    
+static int cntAllUpdate;
+*/
     
     protected void callUpdate() {
         if (bIgnoreUpdate) return;
         update();
     }
-    
+
     /**
      *  Called to have component update itself.  
      */
     public void update() {
         if (bIgnoreUpdate) return;
-/*qqqq Test        
-    System.out.printf((++cntUpdate)+") %s %s %s\n", 
+        final HubEvent he = OAThreadLocalDelegate.getCurrentHubEvent();
+        if (lastUpdateHubEvent != null &&  (he == lastUpdateHubEvent)) {
+            return;
+        }
+        
+/*qqqqqqqqqqqqq Test
+cntAllUpdate++;        
+    System.out.printf((++cntUpdate)+"/"+cntAllUpdate+") %s %s %s\n", 
         hub!=null ? hub.getObjectClass().getSimpleName() : "", 
         propertyPath, 
         component != null ? component.getClass().getSimpleName() : ""
     );
 */
-        final HubEvent he = OAThreadLocalDelegate.getCurrentHubEvent();
-        if (lastUpdateHubEvent != null &&  (he == lastUpdateHubEvent)) {
-            return;
-        }
+    
         lastUpdateHubEvent = he;
 
         if (hmVisibleListener != null) {
@@ -1513,16 +1529,18 @@ public class OAJfcController extends HubListenerAdapter {
         return maxImageHeight;
     }
     public void setMaxImageHeight(int maxImageHeight) {
+        int old = this.maxImageHeight;
         this.maxImageHeight = maxImageHeight;
-        callUpdate();
+        if (OACompare.isNotEqual(this.maxImageHeight, old)) callUpdate();
     }
 
     public int getMaxImageWidth() {
         return maxImageWidth;
     }
     public void setMaxImageWidth(int maxImageWidth) {
+        int old = this.maxImageWidth;
         this.maxImageWidth = maxImageWidth;
-        callUpdate();
+        if (OACompare.isNotEqual(this.maxImageWidth, old)) callUpdate();
     }
 
     public void setHtml(boolean b) {
@@ -1899,7 +1917,11 @@ public class OAJfcController extends HubListenerAdapter {
         protected boolean _assignHubListener(HubProp newHubProp) {
             if (OAJfcController.this.hub == newHubProp.hub) {
                 if (newHubProp.propertyPath == null) return true;
-                if (newHubProp.propertyPath.indexOf('.') < 0) return true;
+                if (newHubProp.propertyPath.indexOf('.') < 0) {
+                    if (newHubProp.hub.getOAObjectInfo().getCalcInfo(newHubProp.propertyPath) == null) {
+                        return true;
+                    }
+                }
                 if (newHubProp.propertyPath.equalsIgnoreCase(OAJfcController.this.propertyPath)) {
                     return true;
                 }
@@ -1925,8 +1947,10 @@ public class OAJfcController extends HubListenerAdapter {
                         return true;
                     }
                     if (newHubProp.propertyPath.indexOf('.') < 0) {
-                        newHubProp.hubListener = hp.hubListener;
-                        return true;
+                        if (newHubProp.hub != null && newHubProp.hub.getOAObjectInfo().getCalcInfo(newHubProp.propertyPath) == null) {
+                            newHubProp.hubListener = hp.hubListener;
+                            return true;
+                        }
                     }
                     if (!newHubProp.propertyPath.equalsIgnoreCase(hp.propertyPath)) continue; 
                     newHubProp.hubListener = hp.hubListener;

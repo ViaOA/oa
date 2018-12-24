@@ -4,12 +4,10 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.OAUnitTest;
 import com.viaoa.hub.Hub;
-import com.viaoa.util.OAFilter;
 import com.viaoa.util.filter.OANotEmptyFilter;
 
 import test.hifive.model.oa.Employee;
@@ -28,14 +26,18 @@ public class OAObjectCacheTriggerTest extends OAUnitTest {
                 ai.incrementAndGet();
             }
         };
+
         assertEquals(0, ai.get());
         Employee emp = new Employee();
         assertEquals(1, ai.get());
+
+        ai.set(0);
         emp = new Employee();
-        assertEquals(2, ai.get());
+        assertEquals(1, ai.get());
         
+        ai.set(0);
         emp = new Employee();
-        assertEquals(3, ai.get());
+        assertEquals(1, ai.get());
 
         objectCacheTrigger.close();
     }

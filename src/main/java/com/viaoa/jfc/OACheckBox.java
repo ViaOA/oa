@@ -17,6 +17,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 import com.viaoa.object.*;
+import com.viaoa.util.OAFilter;
 import com.viaoa.util.converter.OAConverterNumber;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
@@ -389,6 +390,9 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
     public void addEnabledCheck(Hub hub, String propPath, Object compareValue) {
         control.getEnabledChangeListener().add(hub, propPath, compareValue);
     }
+    public void addEnabledCheck(Hub hub, OAFilter filter) {
+        control.getEnabledChangeListener().add(hub, filter);
+    }
     protected boolean isEnabled(boolean defaultValue) {
         return defaultValue;
     }
@@ -400,6 +404,9 @@ public class OACheckBox extends JCheckBox implements OATableComponent, OAJfcComp
     }
     public void addVisibleCheck(Hub hub, String propPath, Object compareValue) {
         control.getVisibleChangeListener().add(hub, propPath, compareValue);
+    }
+    public void addVisibleCheck(Hub hub, OAFilter filter) {
+        control.getVisibleChangeListener().add(hub, filter);
     }
     protected boolean isVisible(boolean defaultValue) {
         return defaultValue;

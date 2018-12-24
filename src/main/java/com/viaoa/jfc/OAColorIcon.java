@@ -44,6 +44,7 @@ public class OAColorIcon implements Icon {
     public void paintIcon(Component c, Graphics graphic, int x, int y) {
         Graphics2D g = (Graphics2D) graphic;
         g.setColor(color);
-        g.fillRoundRect(x, y, w, h, 2, 2);
+        g.fillRect(x, y, w, h);
+        //was: g.fillRoundRect(x, y, w, h, 2, 2);
     }
 }

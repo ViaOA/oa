@@ -14,9 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.object.OALeftJoin;
 import com.viaoa.object.OAObject;
-import com.viaoa.object.OAThreadLocalDelegate;
-import com.viaoa.util.OANullObject;
-import com.viaoa.util.OAString;
 
 /**
  * Combines two hubs into a new single hub to create the equivalent of

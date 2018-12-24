@@ -28,33 +28,33 @@ public class HubAddRemoveDelegate {
 
     private static Logger LOG = Logger.getLogger(HubAddRemoveDelegate.class.getName());
     
-    public static void remove(final Hub thisHub, final Object obj) {
-        remove(thisHub, obj, false, true, false, true, true, false);
+    public static boolean remove(final Hub thisHub, final Object obj) {
+        return remove(thisHub, obj, false, true, false, true, true, false);
     }
 
-    public static void remove(final Hub thisHub, final int pos) {
-        remove(thisHub, pos, false);
+    public static boolean remove(final Hub thisHub, final int pos) {
+        return remove(thisHub, pos, false);
     }
     
-    protected static void remove(final Hub thisHub, final int pos, final boolean bForce) {
+    protected static boolean remove(final Hub thisHub, final int pos, final boolean bForce) {
         Object obj = HubDataDelegate.getObjectAt(thisHub, pos);
-        remove(thisHub, obj, bForce, true, false, true, true, false);
+        return remove(thisHub, obj, bForce, true, false, true, true, false);
     }
 
     
-    public static void remove(final Hub thisHub, Object obj, final boolean bForce, 
+    public static boolean remove(final Hub thisHub, Object obj, final boolean bForce, 
             final boolean bSendEvent, final boolean bDeleting, final boolean bSetAO, 
             final boolean bSetPropToMaster, final boolean bIsRemovingAll) 
     {
-        if (obj == null) return;
+        if (obj == null) return false;
         
         if (thisHub.datau.getSharedHub() != null) {
             remove(thisHub.datau.getSharedHub(), obj, bForce, bSendEvent, bDeleting, bSetAO, true, bIsRemovingAll);
-            return;
+            return false;
         }
 
         if (!bIsRemovingAll && !thisHub.contains(obj)) {
-            return;
+            return false;
         }
         
         if (!bIsRemovingAll && !thisHub.getEnabled()) {
@@ -69,7 +69,7 @@ public class HubAddRemoveDelegate {
         }
         if (!bIsRemovingAll) {
             obj = HubDelegate.getRealObject(thisHub, obj);
-            if (obj == null) return;
+            if (obj == null) return false;
         
             // check to see if this hub is a detail with LinkInfo.Type.ONE
             OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(thisHub);
@@ -106,7 +106,7 @@ public class HubAddRemoveDelegate {
         pos = HubDataDelegate._remove(thisHub, obj, bDeleting, bIsRemovingAll);
         if (!bIsRemovingAll && pos < 0) {
             LOG.finer("object not removed, obj="+obj);
-            return;
+            return false;
         }
         
         if (bSetAO) {
@@ -132,6 +132,7 @@ public class HubAddRemoveDelegate {
             HubEventDelegate.fireAfterRemoveEvent(thisHub, obj, pos);
         }
         HubDelegate.setReferenceable(thisHub, true);
+        return true;
     }
     
     public static boolean canRemove(final Hub thisHub, final Object obj) {

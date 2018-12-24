@@ -178,10 +178,12 @@ public abstract class HubChangeListener {
         OAFilter filter = new OAFilter() {
             @Override
             public boolean isUsed(Object obj) {
-                OAObjectEditQuery eq = (obj instanceof OAObject) ? OAObjectEditQueryDelegate.getAllowDeleteEditQuery(hub, (OAObject)obj, true) : null;
-                boolean b = eq != null && eq.getAllowed();
+                if (!(obj instanceof OAObject)) return false;
+                OAObjectEditQuery eq = OAObjectEditQueryDelegate.getAllowDeleteEditQuery(hub, (OAObject)obj, true);
+                boolean b = eq.getAllowed();
                 if (!b) {
                     failureReason = eq.getDisplayResponse();
+                    if (OAString.isEmpty(failureReason)) failureReason = "edit query returned false";
                 }
                 return b;
             }
@@ -675,19 +677,26 @@ public abstract class HubChangeListener {
                 if (value instanceof OAObject) value = ((OAObject)value).getProperty(propertyPath);
             }
             
-            if (bUseCompareValue && compareValue != null) {
-                if (compareValue == Type.PropertyNull) return (hub != null && hub.getAO() != null && value == null);
-                if (compareValue == Type.PropertyNotNull) return (value != null);
-            }
-            
             boolean b;
+            if (bUseCompareValue && compareValue != null) {
+                if (compareValue == Type.PropertyNull || (compareValue instanceof OANullObject)) {
+                    b = (hub != null && hub.getAO() != null && value == null);
+                    if (!b) failureReason = "compare != null";
+                    return b;
+                }
+                if (compareValue == Type.PropertyNotNull || (compareValue instanceof OANotNullObject)) {
+                    b = (value != null);
+                    if (!b) failureReason = "compare == null";
+                    return b;
+                }
+            }
             if (bUseCompareValue) {
                 b = OACompare.compare(compareValue, value) == 0;
             }
             else {
                 b = OAConv.toBoolean(value);
             }
-            if (!b) failureReason = "compare value is false";
+            if (!b) failureReason = "compare value did not match";
             return b;
         }
         

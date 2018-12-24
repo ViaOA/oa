@@ -112,6 +112,10 @@ public class OACompare {
         int x = compare(value, matchValue);
         return x == 0;
     }    
+    public static boolean isNotEqual(Object value, Object matchValue) {
+        int x = compare(value, matchValue);
+        return x != 0;
+    }    
     
     
     public static boolean isEqual(Object value, Object matchValue, boolean bIgnoreCase) {

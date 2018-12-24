@@ -1132,6 +1132,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         @return new OADateTime object.
     */
     public OADateTime addDays(int amount) {
+        if (amount == 0) return this;
         if (this instanceof OATime) {
             return new OATime(this);
         }
@@ -1153,6 +1154,9 @@ public class OADateTime implements java.io.Serializable, Comparable {
         }
 
         return dtNew;
+    }
+    public OADateTime addDay() {
+        return addDays(1);
     }
 
     /**

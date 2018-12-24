@@ -19,6 +19,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.*;
@@ -29,6 +32,8 @@ import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDetailDelegate;
 import com.viaoa.hub.HubSelectDelegate;
 import com.viaoa.hub.HubTemp;
+import com.viaoa.remote.multiplexer.OARemoteThread;
+import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAPropertyPath;
@@ -288,20 +293,6 @@ public class OAObjectCacheDelegate {
         }
     }
 
-	protected static void fireAfterAddEvent(Object obj) {
-        if (aiListenerCount.get() == 0) return;
-        if (obj == null) return;
-
-        final OAObjectCacheListener[] hl = getListeners(obj.getClass());
-        if (hl == null) return; 
-	    final int x = hl.length;
-	    if (x > 0) {
-            // LOG.finest("Hub="+thisHub+", object="+obj);
-	        for (int i=0; i<x; i++) { 
-	        	hl[i].afterAdd((OAObject) obj);
-	        }
-	    }
-	}
 
     protected static void fireAfterLoadEvent(Object obj) {
         if (aiListenerCount.get() == 0) return;
@@ -389,9 +380,15 @@ public class OAObjectCacheDelegate {
         if (tmh == null) return;
         
         try {
+            // 2081223 removed lock so that thisdoes not cause a deadlock
+            //      since the callback could be doing something that could cause one.
+            //was: tmh.rwl.readLock().lock();
+            
             tmh.rwl.readLock().lock();
             TreeMap tm = tmh.treeMap;
             Map.Entry me = tm.firstEntry();
+            tmh.rwl.readLock().unlock();
+            
             while (me != null) {
                 WeakReference ref = (WeakReference) me.getValue();
                 Object obj = ref.get();
@@ -402,7 +399,7 @@ public class OAObjectCacheDelegate {
             }
         }
         finally {
-            tmh.rwl.readLock().unlock();
+            //was: tmh.rwl.readLock().unlock();
         }
     }
 
@@ -541,15 +538,12 @@ public class OAObjectCacheDelegate {
         }
     }
 
-    
     public static OAObject add(OAObject obj, boolean bErrorIfExists, boolean bAddToSelectAll) {
+        return add(obj, bErrorIfExists, bAddToSelectAll, false);
+    }
+    public static OAObject add(OAObject obj, boolean bErrorIfExists, boolean bAddToSelectAll, boolean bSendAddEventInAnotherThread) {
         if (bDisableCache) return obj;
-        OAObject objx = _add(obj, bErrorIfExists, bAddToSelectAll);
-        /* removed, since serializer does this
-        if (objx != obj) {
-            OAObjectDelegate.dontFinalize(obj);
-        }
-        */ 
+        OAObject objx = _add(obj, bErrorIfExists, bAddToSelectAll, bSendAddEventInAnotherThread);
         return objx;
     }
     
@@ -563,7 +557,7 @@ public class OAObjectCacheDelegate {
     }
     
 
-    private static OAObject _add(final OAObject obj, final boolean bErrorIfExists, boolean bAddToSelectAll) {
+    private static OAObject _add(final OAObject obj, final boolean bErrorIfExists, boolean bAddToSelectAll, final boolean bSendAddEventInAnotherThread) {
         if (bDisableCache) return obj;
         // LOG.finer("obj="+obj);
         if (obj == null) return null;
@@ -634,11 +628,66 @@ public class OAObjectCacheDelegate {
         }
 
         if (bSendAddEvent) {
-            fireAfterAddEvent(obj);
+            fireAfterAddEvent(obj, bSendAddEventInAnotherThread);
         }
         return result;
     }        
+    
+    protected static void fireAfterAddEvent(Object obj, boolean bSendAddEventInAnotherThread) {
+        if (aiListenerCount.get() == 0) return;
+        if (obj == null) return;
 
+        final OAObjectCacheListener[] hls = getListeners(obj.getClass());
+        if (hls == null) return; 
+        final int x = hls.length;
+        if (x == 0) return;
+            
+        if (bSendAddEventInAnotherThread) {
+            if (threadCacheSendAddEvent == null) startCacheSendAddEventThread();
+            queCacheSendAddEvent.add(new SendAddEventInfo(hls, obj));
+        }
+        else {
+            for (int i=0; i<x; i++) { 
+                hls[i].afterAdd((OAObject) obj);
+            }
+        }
+    }
+    
+    private static class SendAddEventInfo {
+        OAObjectCacheListener[] hls;
+        Object obj;
+        public SendAddEventInfo(OAObjectCacheListener[] hls, Object obj) {
+            this.hls = hls;
+            this.obj = obj;
+        }
+    }
+    private final static LinkedBlockingQueue<SendAddEventInfo> queCacheSendAddEvent = new LinkedBlockingQueue<>();
+    private static volatile Thread threadCacheSendAddEvent;
+    
+    protected static synchronized void startCacheSendAddEventThread() {
+        if (threadCacheSendAddEvent != null) return;
+        threadCacheSendAddEvent = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                int cnt = 0;
+                for (;;) {
+                    try {
+                        SendAddEventInfo se = queCacheSendAddEvent.take();
+                        for (OAObjectCacheListener hl : se.hls) { 
+                            hl.afterAdd((OAObject) se.obj);
+                        }
+                    }
+                    catch (Exception e) {
+                        // TODO: handle exception
+                    }
+                }
+            }
+        }, "OAObjectCacheDelegate.SendAddEvent");
+        threadCacheSendAddEvent.setDaemon(true);
+        threadCacheSendAddEvent.start();
+    }
+    
+    
     
     public static void addToSelectAllHubs(OAObject obj) {
         Hub[] hs = getSelectAllHubs(obj.getClass());

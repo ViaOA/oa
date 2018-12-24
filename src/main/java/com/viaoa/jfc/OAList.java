@@ -120,7 +120,6 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         int inx = ins == null ? 0 : ins.left + ins.right;
         
         d.width = OAJfcUtil.getCharWidth(cols) + inx;
-
         return d;
     }
     
@@ -138,7 +137,6 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
         int inx = ins == null ? 0 : ins.left + ins.right;
         
         d.width = OAJfcUtil.getCharWidth(cols) + inx;
-
         return d;
     }
     

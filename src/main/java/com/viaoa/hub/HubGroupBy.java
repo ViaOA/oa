@@ -21,7 +21,7 @@ import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
 /**
- * Combines a hub into a new single hub to create the equivalent of a database groupBy.
+ * Creates a groupBy hub from a new single hub.  Equivalent of a database groupBy.
  * 
  * The combined Hub (see getCombinedHub) uses OAObject OAGroupBy&lt;F, G&gt;, where G is the same class as the
  * groupBy Hub and F is a hub of the from objects.

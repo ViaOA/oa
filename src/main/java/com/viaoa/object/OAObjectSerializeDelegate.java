@@ -99,7 +99,7 @@ public class OAObjectSerializeDelegate {
         
 		OAObjectInfo oi =  OAObjectInfoDelegate.getOAObjectInfo(oaObjRead);
 		if (oi.bAddToCache) {
-			oaObjUse = OAObjectCacheDelegate.add(oaObjRead, false, false);
+			oaObjUse = OAObjectCacheDelegate.add(oaObjRead, false, false, true);
 			bDup = (oaObjRead != oaObjUse);
 		}
 		else {

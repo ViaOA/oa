@@ -988,8 +988,8 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * This will remove an object from this collection and send a remove event
      * to all HubListeners.
      */
-    public void remove(Object obj) {
-        HubAddRemoveDelegate.remove(this, obj);
+    public boolean remove(Object obj) {
+        return HubAddRemoveDelegate.remove(this, obj);
     }
 
     /**

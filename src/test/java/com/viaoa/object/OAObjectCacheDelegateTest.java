@@ -63,10 +63,10 @@ public class OAObjectCacheDelegateTest extends OAUnitTest {
         reset();
     }
 
-    private int cnt1;
-    private int cnt2;
+    private volatile int cnt1;
+    private volatile int cnt2;
     @Test
-    public void listenerTest() {
+    public void listenerTest() throws Exception {
         reset();
         cnt1 = 0;
         cnt2 = 0;
@@ -100,7 +100,11 @@ public class OAObjectCacheDelegateTest extends OAUnitTest {
         assertEquals(cnt1, 0);
         Server server = new Server();
         hub.add(server);
-        assertEquals(cnt1, 1);
+        for (int i=0; i<3; i++) {
+            if (cnt1 == 1) break;
+            Thread.sleep(25);
+        }
+        assertEquals(1, cnt1);
 
         cnt2 = 0;
         server.setHostName("x.z");

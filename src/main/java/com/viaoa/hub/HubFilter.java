@@ -89,6 +89,9 @@ public class HubFilter<T> extends HubListenerAdapter<T> implements java.io.Seria
     public HubFilter(Hub<T> hubMaster, Hub<T> hub, boolean bShareAO, OAFilter filter) {
         this(hubMaster, hub, bShareAO, false, filter, null);
     }
+    public HubFilter(Hub<T> hubMaster, Hub<T> hub, boolean bShareAO, boolean bRefreshOnLinkChange, OAFilter filter) {
+        this(hubMaster, hub, bShareAO, bRefreshOnLinkChange, filter, null);
+    }
     public HubFilter(Hub<T> hubMaster, Hub<T> hub, boolean bShareAO, OAFilter filter, String... dependentPropertyPaths) {
         this(hubMaster, hub, bShareAO, false, filter, dependentPropertyPaths);
     }
