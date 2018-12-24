@@ -538,6 +538,8 @@ public class OAObjectCacheDelegate {
         }
     }
 
+    
+//qqqqqqqqqqqqqqqq    
     public static OAObject add(OAObject obj, boolean bErrorIfExists, boolean bAddToSelectAll) {
         return add(obj, bErrorIfExists, bAddToSelectAll, false);
     }
