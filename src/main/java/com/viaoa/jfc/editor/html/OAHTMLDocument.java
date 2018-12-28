@@ -23,6 +23,8 @@ import javax.swing.text.*;
 import javax.swing.text.html.*;
 import javax.swing.text.html.HTML.Tag;
 
+import com.viaoa.util.OAString;
+
 /**
  * Document class used for OAHTMLTextPane. This should not be created directly,
  * since it is created by OAHTMLEditorKit, which is installed automatically by
@@ -130,7 +132,7 @@ public class OAHTMLDocument extends HTMLDocument {
                         style += " ";
                     }
                     if (style.indexOf("-style:") < 0 && style.indexOf("border-") < 0) {
-                        style += "border-style: none";
+                        style = OAString.concat(style, "border-style: none", ";");
                         a.addAttribute(HTML.Attribute.STYLE, style);
                     }
                 }

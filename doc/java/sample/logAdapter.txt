@@ -1,5 +1,69 @@
 
 
+// setup consoles to show log messages 
+        Handler handler = new Handler() {
+            public void publish(LogRecord record) {
+                if (!isLoggable(record)) return;
+                Quickbook quickbook = hubQuickbook.getAt(0);
+                if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+                    if (quickbook != null) quickbook.setWarningConsole(record.getMessage());
+                }
+                if (quickbook != null) quickbook.setConsole(record.getMessage());
+            }
+            public void close() throws SecurityException {
+            }
+            public void flush() {
+            }
+        };
+        handler.setLevel(Level.FINE);
+        LOG.addHandler(handler);
+        LOG.setLevel(Level.FINER);
+
+        // qb console
+        handler = new Handler() {
+            public void publish(LogRecord record) {
+                if (!isLoggable(record)) return;
+                Quickbook quickbook = hubQuickbook.getAt(0);
+                if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+                    if (quickbook != null) quickbook.setWarningConsole(record.getMessage());
+                }
+                if (quickbook != null) quickbook.setQbwcConsole(record.getMessage());
+            }
+            public void close() throws SecurityException {
+            }
+            public void flush() {
+            }
+        };
+        handler.setLevel(Level.FINE);
+        Logger logx = Logger.getLogger("com.intuit.developer");
+        logx.setLevel(Level.FINER);
+        logx.addHandler(handler);
+        logx = Logger.getLogger("com.cdi.qbwc.dao");
+        logx.setLevel(Level.FINER);
+        logx.addHandler(handler);
+        
+        // finer console
+        handler = new Handler() {
+            public void publish(LogRecord record) {
+                if (!isLoggable(record)) return;
+                Quickbook quickbook = hubQuickbook.getAt(0);
+                if (quickbook != null) quickbook.setFinerConsole(record.getMessage());
+            }
+            public void close() throws SecurityException {
+            }
+            public void flush() {
+            }
+        };
+        handler.setLevel(Level.FINER);
+        LOG.addHandler(handler);
+        logx = Logger.getLogger("com.intuit.developer");
+        logx.addHandler(handler);
+        logx = Logger.getLogger("com.cdi.qbwc.dao");
+        logx.addHandler(handler);
+
+
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+
 
 public void javaLoggingAdapter() {
     

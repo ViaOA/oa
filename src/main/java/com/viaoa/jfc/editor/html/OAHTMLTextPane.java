@@ -111,6 +111,7 @@ import com.viaoa.util.OAString;
  * <img src='oaproperty:://classPath/propName?Id' alt=''>  
  * 
  *      ex:  <img src="oaproperty://com.cdi.model.oa.ImageStore/bytes?<%=item.imageStore.id%>">
+ *      ex:  <img src="classpath://com.cdi.report.html/custom/cdiLogo.jpg">
  * 
  * <li>width
  * <li>height
@@ -197,9 +198,55 @@ import com.viaoa.util.OAString;
  * OAScroller(contEditor.getToolBar());
  * tabExamVisit.getNotesPanel().add(scroller, BorderLayout.NORTH);
  * 
+
+
+Example:
+
+    <html>
+      <head>
+        <style type="text/css">
+          <!--
+            table { border-width: 0;}
+            table th, td { border-width: 0;}
+          -->
+        </style>
+      </head>
+      <body style="font-family:Arial; font-size:10pt">
+        <table cellpadding="0" cellspacing="0" width="100%">
+          <tr>
+            <td style="text-align:right">
+              <img src="classpath://com.cdi.report.html/custom/cdiLogo.jpg">
+            </td>
+            <td style="vertical-align:center">
+              Concrete Designs Inc.<br>
+              3650 S. Broadmont Dr.<br>
+              Tucson, AZ 85713<br>
+              Phone: (520) 624-6653<br>
+              Fax: (520) 624-3420<br>
+              <nobr>
+                <u>www.concrete-designs.com</u> 
+              </nobr>
+            </td>
+            
+            <td style="text-align:center; width:100%">
+              <nobr><b style="font-size: 14.5pt"><%=$HEADING%></b></nobr>
+            </td>
+            <td style="text-align:right">
+                <nobr><b>Sales Order:</b> <%=id%></nobr>
+                <br>
+                <b><%=$DATE%></b>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+
+
+
+
+
  * 
  * @see OAHTMLTextPaneController for binding, added features, usage and sample
- * 
  * @author vvia
  */
 public class OAHTMLTextPane extends JTextPane implements OAPrintable {

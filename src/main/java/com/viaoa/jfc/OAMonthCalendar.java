@@ -77,6 +77,7 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
 
     protected String displayTemplate;
     protected String toolTipTextTemplate;
+    protected String iconColorPropertyPath;
     
     protected static final Color colorSelected = (ColorUIResource) UIManager.get("TabbedPane.focus");
     protected static final Border borderSelected = new LineBorder(colorSelected, 2);
@@ -135,7 +136,6 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
      * @see #getEndDate()
      */
     protected void onNewMonth() {
-//qqqqq        
     }
     
     
@@ -457,6 +457,18 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
     public String getToolTipTextTemplate() {
         return this.toolTipTextTemplate;
     }
+
+    public void setIconColorProperty(String s) {
+        this.iconColorPropertyPath = s;
+        for (DayPanel dp : alDayPanel) {
+            dp.lst.setIconColorProperty(s);
+        }
+    }
+    public String getIconColorProperty() {
+        return this.iconColorPropertyPath;
+    }
+    
+    
     
     public void customizeRenderer(JLabel label, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
     }
@@ -479,6 +491,7 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
             };
             lst.setDisplayTemplate(getDisplayTemplate());
             lst.setToolTipTextTemplate(getDisplayTemplate());
+            lst.setIconColorProperty(getIconColorProperty());
                     
             lbl = new JLabel();
             lbl.setFont(lbl.getFont().deriveFont(Font.BOLD, 12.5f));

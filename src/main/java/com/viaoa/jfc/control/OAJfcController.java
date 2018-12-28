@@ -394,7 +394,7 @@ public class OAJfcController extends HubListenerAdapter {
             changeListenerVisible = null;
         }
         if (hierarchyListener != null) {
-            component.removeHierarchyListener(hierarchyListener);
+            if (component != null) component.removeHierarchyListener(hierarchyListener);
             hierarchyListener = null;
         }
 
@@ -558,6 +558,7 @@ public class OAJfcController extends HubListenerAdapter {
     }
 
     protected Window getWindow() {
+        if (component == null) return null;
         return OAJfcUtil.getWindow(component);
     }
     
@@ -1112,13 +1113,14 @@ cntAllUpdate++;
             // check to see if component is visible
             if (!isVisibleOnScreen()) return;
         }
-        
+
         if (component == null) return;
         
         Object obj;
         if (hub != null) obj = hub.getAO();
         else obj = null;
         update(component, obj, true);
+        
         updateEnabled();        
         updateVisible();      
         updateLabel(component, obj);

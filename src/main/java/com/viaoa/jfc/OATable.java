@@ -848,6 +848,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             if (hub == null) {
                 return;
             }
+            if (!isEnabled()) {
+                return;
+            }
+            
             // get object to move/copy
             Hub dragHub = (Hub) e.getTransferable().getTransferData(OATransferable.HUB_FLAVOR);
             Object dragObject = (Object) e.getTransferable().getTransferData(OATransferable.OAOBJECT_FLAVOR);

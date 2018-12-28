@@ -110,7 +110,7 @@ public class OAJfcUtil {
     public static void useDitto(JLabel lbl) {
         if (lbl == null) return;
         useGrayText(lbl);
-        lbl.setText("\"\"");
+        lbl.setText(" '' ");
         alignCenter(lbl);
     }
     public static void alignCenter(JLabel lbl) {
