@@ -93,11 +93,11 @@ public class OAHTMLDocument extends HTMLDocument {
 
             /**
              * This will clean up the attributeset to fix the following
-             * problems: 1: html <font size=x>, where x = 1 to 7, will convert
+             * problems: 
+             * 1: html <font size=x>, where x = 1 to 7, will convert
              * to pixel size 1-7. This is changed to convert to a
-             * syle=font-size: Xpt and the HTML.Attribue.SIZE is removed from
-             * attributeset. 2: Default will create CSS.Attribute.X attributes
-             * for all values. It will also create a
+             * syle=font-size: Xpt and the HTML.Attribue.SIZE is removed from attributeset. 
+             * 2: Default will create CSS.Attribute.X attributes for all values. It will also create a
              * StyleConstant.NAME=HTML.Tag.X for the type of HTML tag. Then
              * there is another attribute HTML.Tag.X=SimpleAttributeSet (sas)
              * where sas has a list of HTML.Attribute.X values. Some of these

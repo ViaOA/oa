@@ -2969,7 +2969,7 @@ public class OAHTMLTextPaneController extends OATextController {
     private OAImageEditor imageEditor;
     public OAImageEditor getImageEditor() {
         if (imageEditor != null) return imageEditor;
-        imageEditor = new OAImageEditor(null, null) {
+        imageEditor = new OAImageEditor(null, null, null) {
             
         };
         return imageEditor;

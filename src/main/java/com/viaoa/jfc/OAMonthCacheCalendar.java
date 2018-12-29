@@ -29,7 +29,7 @@ public class OAMonthCacheCalendar<F extends OAObject> extends OAMonthCalendar {
     public OAMonthCacheCalendar(Hub<F> hub, String propertyPath, String[] datePropertyPaths) {
         super(hub, propertyPath, datePropertyPaths);
         if (hub.getMasterHub() != null) throw new RuntimeException("can not use a detail hub for cache calendar");
-        setSelectedDate(new OADate());
+        onNewMonth();
     }
     
     @Override

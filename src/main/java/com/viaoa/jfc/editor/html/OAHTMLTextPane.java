@@ -247,6 +247,7 @@ Example:
 
  * 
  * @see OAHTMLTextPaneController for binding, added features, usage and sample
+ * @see OAHTMLDocument
  * @author vvia
  */
 public class OAHTMLTextPane extends JTextPane implements OAPrintable {

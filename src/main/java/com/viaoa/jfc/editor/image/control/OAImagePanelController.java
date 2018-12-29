@@ -50,6 +50,7 @@ public class OAImagePanelController extends OAJfcController {
     private BrightnessPanelController controlBrightnessPanel;
     private ContrastPanelController controlContrastPanel;
     
+    private final String origFileNameProperty;
     private OAImageEditor editor;
     private JToolBar toolBar;
     private OAImagePanel panImage;
@@ -58,13 +59,15 @@ public class OAImagePanelController extends OAJfcController {
     private File file;
     private JButton[] cmdOpens = new JButton[0];  // open buttons to add to open - creating a splitbutton dropdown
 
-    public OAImagePanelController(Hub hub, OAImageEditor editor, String property) {
-        super(hub, null, property, editor, HubChangeListener.Type.AoNotNull, false, true);
+    public OAImagePanelController(Hub hub, OAImageEditor editor, String bytesProperty, String origFileNameProperty) {
+        super(hub, null, bytesProperty, editor, HubChangeListener.Type.AoNotNull, false, true);
         editor = this.editor;
+        this.origFileNameProperty = origFileNameProperty;
         comps = new ImageComponents();
         setup();
         enableVisibleListener(true);
         updateCommands();
+        update();
     }
 
     private Object lastActiveObject;
@@ -73,9 +76,10 @@ public class OAImagePanelController extends OAJfcController {
     @Override
     public void update(JComponent comp, Object object, boolean bIncudeToolTip) {
         super.update(comp, object, bIncudeToolTip);
+        if (panImage == null) return;
         if (hub == null) return;
-        Object objao = hub.getAO();
         
+        Object objao = hub.getAO();
         if (lastActiveObject == objao) {
             return;        
         }
@@ -627,6 +631,12 @@ public class OAImagePanelController extends OAJfcController {
     }
     public void setImage(String imageName, Image image) {
         _setImage(image);
+        if (getHub() != null && OAString.isNotEmpty(origFileNameProperty)) {
+            Object objx = getHub().getAO();
+            if (objx instanceof OAObject) {
+                ((OAObject) objx).setProperty(origFileNameProperty, imageName); 
+            }                
+        }
     }
     
     /**

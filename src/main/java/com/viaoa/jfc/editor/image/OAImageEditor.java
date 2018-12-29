@@ -32,9 +32,9 @@ public class OAImageEditor extends JPanel implements OAJfcComponent {
      * Create a new ImagePanel that allows mouse control to select a crop
      * rectangle.
      */
-    public OAImageEditor(Hub hub, String property) {
+    public OAImageEditor(Hub hub, String bytesProperty, String originalFileNameProperty) {
         super(new BorderLayout());
-        control = new OAImagePanelController(hub, this, property);
+        control = new OAImagePanelController(hub, this, bytesProperty, originalFileNameProperty);
 
         add(new OAScroller(control.getToolBar()), BorderLayout.NORTH);
         add(new JScrollPane(control.getOAImagePanel()), BorderLayout.CENTER);
