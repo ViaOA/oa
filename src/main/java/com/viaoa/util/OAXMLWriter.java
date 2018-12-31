@@ -305,7 +305,7 @@ public class OAXMLWriter {
         return s;
     }
     /**
-     * Used internally when writing objects to show the objets that are being written.
+     * Used internally when writing objects to show the objects that are being written.
      * @see #getCurrentPropertyPath()
      */
     public void push(String name) {
