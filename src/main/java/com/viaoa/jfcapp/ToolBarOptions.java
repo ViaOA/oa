@@ -111,4 +111,19 @@ public class ToolBarOptions {
         ToolBarOptions tbo = new ToolBarOptions(false, false, false, false, false, true, true, false, false, true, true, false, false);
         return tbo;
     }
+    
+    public static ToolBarOptions createMainTableToolBar() {
+        // bGoBack bIcon bLabel 
+        // bGoto bCommands bSearch 
+        // bFind bCustom bHubCalc 
+        // bReport bTable bHubSearch bDownload
+        ToolBarOptions tbo = new ToolBarOptions(
+            false, true, false,
+            false, false, false,
+            true, false, false,
+            true, true, false, true);
+        return tbo;
+    }
+
+    
 }

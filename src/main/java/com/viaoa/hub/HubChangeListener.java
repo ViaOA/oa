@@ -256,7 +256,6 @@ public abstract class HubChangeListener {
      * */
     public HubProp addEditQueryEnabled(Hub hub, String prop) {
         OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, hub.getObjectClass(), prop, null, this, true);
-        
         // include master
         Hub hx = hub.getMasterHub();
         if (hx != null) {

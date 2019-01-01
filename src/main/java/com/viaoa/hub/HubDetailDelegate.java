@@ -1047,7 +1047,11 @@ public class HubDetailDelegate {
     }
     
     public static OALinkInfo getLinkInfoFromMasterObjectToDetail(Hub thisDetailHub) {
-        Hub h = HubShareDelegate.getMainSharedHub(thisDetailHub);
+        
+        // 20181231 needs to also ccheck copied hubs
+        Hub h = getHubWithMasterHub(thisDetailHub);
+        
+        if (h == null) h = HubShareDelegate.getMainSharedHub(thisDetailHub);
         
         if (h == null) {
             h = getHubWithMasterObject(thisDetailHub);
@@ -1070,8 +1074,10 @@ public class HubDetailDelegate {
         }
         
         Hub hubMaster = thisDetailHub.datam.getMasterHub();
+        
         // see if it can be found using detailHub info
         if (hubMaster == null) return null;
+
         int x = hubMaster.datau.getVecHubDetail() == null ? 0 : hubMaster.datau.getVecHubDetail().size();
         for (int i=0; i<x; i++) {
             HubDetail hd = (HubDetail) hubMaster.datau.getVecHubDetail().elementAt(i);
