@@ -260,7 +260,7 @@ public abstract class HubChangeListener {
         Hub hx = hub.getMasterHub();
         if (hx != null) {
             OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterObjectToDetail(hub);
-            if (li.getOwner()) {
+            if (li != null && li.getOwner()) {
                 String propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
                 OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, null, this, true);
             }
@@ -284,7 +284,7 @@ public abstract class HubChangeListener {
         Hub hx = hub.getMasterHub();
         if (hx != null) {
             OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterObjectToDetail(hub);
-            if (li.getOwner()) {
+            if (li != null && li.getOwner()) {
                 String propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
                 OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, null, this, false);
             }

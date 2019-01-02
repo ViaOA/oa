@@ -1048,7 +1048,7 @@ public class HubDetailDelegate {
     
     public static OALinkInfo getLinkInfoFromMasterObjectToDetail(Hub thisDetailHub) {
         
-        // 20181231 needs to also ccheck copied hubs
+        // 20181231 needs to also check copied hubs
         Hub h = getHubWithMasterHub(thisDetailHub);
         
         if (h == null) h = HubShareDelegate.getMainSharedHub(thisDetailHub);
