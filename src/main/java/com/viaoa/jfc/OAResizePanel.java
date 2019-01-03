@@ -327,4 +327,14 @@ public class OAResizePanel extends JPanel {
         }
         return d;
     }
+    
+//qqqqqqqqqqqqqqqqq
+    // 20190102 this fixed issue with "find:" autocomplete on toolbar taking up all available space
+    @Override
+    public Dimension getMaximumSize() {
+        Dimension d = super.getMaximumSize();
+        d.width = super.getPreferredSize().width;
+        return d;
+    }
+
 }

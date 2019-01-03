@@ -114,7 +114,7 @@ public class OAObjectEditQuery {
         return this.type;
     }
 
-    // set aresponse to the request.
+    // set a response to the request.
     public void setResponse(String response) {
         this.response = response;
     }

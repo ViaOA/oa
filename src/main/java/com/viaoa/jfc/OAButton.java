@@ -385,7 +385,7 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         boolean bText = false;// (getText() == null || getText().length() == 0);  
         boolean bTtt;
         if (control != null) {
-            bTtt = (control.getCommand() != ButtonCommand.Other) && (getToolTipText() == null || getToolTipText().length() == 0);
+            bTtt = (control.getCommand() != ButtonCommand.Other) && (super.getToolTipText() == null || super.getToolTipText().length() == 0);
         }
         else bTtt = false;
 
@@ -1034,14 +1034,28 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     public boolean getPasswordProtected() {
         return control.getPasswordProtected();
     }
-/*qqqqqqq    
+/*    
     public String getEndPropertyName() {
         return control.getEndPropertyName();
     }
 */
 
-  //qqqqqqqqqqqqqqqqqqqqq    
     public Object getSearchObject() {
         return null;
+    }
+    
+//qqqqqqqqqqqqq failureReason is null    
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq    
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        String tt = super.getToolTipText(event);
+        if (control != null && !this.isEnabled()) {
+            String s = control.getEnabledChangeListener().getFailureReason();
+            if (OAString.isNotEmpty(s)) {
+                if (tt != null && tt.toLowerCase().indexOf("<html>") < 0) tt = "<html>"+tt;
+                tt = OAString.concat(tt, s, "<br>");
+            }
+        }
+        return tt;
     }
 }

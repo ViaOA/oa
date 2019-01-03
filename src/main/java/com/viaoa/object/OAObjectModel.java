@@ -24,10 +24,11 @@ public class OAObjectModel {
     protected boolean bAllowHubSearch;
     protected boolean bAllowMultiSelect;
     protected boolean bAllowTableFilter;  // allow the table columns to include input filters
+    protected boolean bAllowTableSorting;
     
     protected boolean bAllowAdd;
     protected boolean bAllowNew;
-//    protected boolean bAllowAutoCreate;
+    // protected boolean bAllowAutoCreate;
 
     protected boolean bAllowSave;
     protected boolean bAllowRemove;
@@ -52,7 +53,7 @@ public class OAObjectModel {
     protected boolean bForJfc;
     
     public OAObjectModel() {
-//        if (isLoading()) return;
+        // if (isLoading()) return;
         setAllowGotoList(true);
         setAllowGotoEdit(true);
         setAllowSearch(true);
@@ -68,6 +69,7 @@ public class OAObjectModel {
         setAllowPaste(true);
         setAllowMultiSelect(false);
         setAllowTableFilter(true);
+        setAllowTableSorting(true);
         setAllowFilter(true);
         setAllowDownload(false);
         setCreateUI(true);
@@ -215,6 +217,13 @@ public class OAObjectModel {
         bAllowTableFilter = b;
     }
 
+    public boolean getAllowTableSorting() {
+        return bAllowTableSorting;
+    }
+    public void setAllowTableSorting(boolean b) {
+        bAllowTableSorting = b;
+    }
+    
     public boolean getAllowFilter() {
         return bAllowFilter;
     }

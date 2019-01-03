@@ -1269,7 +1269,7 @@ cntAllUpdate++;
     }
     public boolean updateEnabled(final JComponent comp, final Object object) {
         if (comp == null) return false;
-//qqqqqqqqqqqqqqq        
+        
         boolean bEnabled = getEnabledChangeListener().getValue();
         bEnabled = isEnabled(bEnabled);
 

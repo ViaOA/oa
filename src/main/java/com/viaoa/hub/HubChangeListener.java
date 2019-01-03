@@ -18,7 +18,6 @@ import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAObjectEditQuery;
 import com.viaoa.object.OAObjectEditQueryDelegate;
-import com.viaoa.object.OAObjectInfo;
 import com.viaoa.util.*;
 
 /**
@@ -156,7 +155,9 @@ public abstract class HubChangeListener {
             public boolean isUsed(Object obj) {
                 OAObjectEditQuery eq = OAObjectEditQueryDelegate.getAllowAddEditQuery(hub, true);
                 boolean b = eq.getAllowed();
-                if (!b) failureReason = eq.getDisplayResponse();
+                if (!b) {
+                    failureReason = eq.getDisplayResponse();
+                }
                 return b;
             }
         };
@@ -201,27 +202,6 @@ public abstract class HubChangeListener {
         return hp;
     }
 
-/* not used, OAObjectEditQueryDelegate._processEditQuery handles this    
-    // uses ObjectInfo.isProcessed and OAAuth to determine if user has permission 
-    public HubProp addProcessedEnabled(final Hub hub) {
-        if (hub == null) return null;
-        
-        OAObjectInfo oi = hub.getOAObjectInfo();
-        if (!oi.getProcessed()) return null;
-        
-        OAFilter filter = new OAFilter() {
-            @Override
-            public boolean isUsed(Object obj) {
-                boolean b = OAAuthDelegate.canEditProcessed();
-                return b;
-            }
-        };
-        Hub hubUser = OAAuthDelegate.getUserHub();
-        HubProp hp = add(hubUser, OAAuthDelegate.getAllowEditProcessedPropertyPath());
-        return hp;
-    }
-*/    
-    
     public HubProp addRemoveEnabled(final Hub hub) {
         if (hub == null) return null;
         
@@ -552,8 +532,8 @@ public abstract class HubChangeListener {
                 else b = hp.filter.isUsed(hp.hub.getAO());
             }
             else b = hp.getValue();
-            if (!b && failureReason == null) {
-                failureReason = hp.failureReason;
+            if (!b) {
+                if (failureReason == null) failureReason = hp.failureReason;
                 break;
             }
         }
