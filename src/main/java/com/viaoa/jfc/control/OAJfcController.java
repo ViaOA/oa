@@ -87,6 +87,7 @@ public class OAJfcController extends HubListenerAdapter {
     protected HubChangeListener.Type hubChangeListenerType;
     
     protected boolean bIsHubCalc;
+    protected boolean bListenToHubSize;
     protected boolean bEnableUndo=true;
     protected String undoDescription;
     
@@ -250,6 +251,7 @@ public class OAJfcController extends HubListenerAdapter {
         endPropertyName = (properties == null || properties.length == 0) ? null : properties[properties.length-1];
         
         if (hubChangeListenerType != null) { // else: this class already is listening to hub
+            if (hubChangeListenerType == HubChangeListener.Type.HubNotEmpty || hubChangeListenerType == HubChangeListener.Type.HubEmpty) bListenToHubSize = true; 
             hubChangeListenerTypeLast = getEnabledChangeListener().add(hub, hubChangeListenerType);
         }
         
@@ -1572,14 +1574,21 @@ cntAllUpdate++;
     @Override
     public void afterAdd(HubEvent e) {
         if (bIsHubCalc) callUpdate();
+        else if (bListenToHubSize) {
+            if (getHub().size() == 1) callUpdate();
+        }
     }
     @Override
     public void afterRemove(HubEvent e) {
         if (bIsHubCalc) callUpdate();
+        else if (bListenToHubSize) {
+            if (getHub().size() == 0) callUpdate();
+        }
     }
     @Override
     public void afterRemoveAll(HubEvent e) {
         if (bIsHubCalc) callUpdate();
+        else if (bListenToHubSize) callUpdate();
     }
     @Override
     public void onNewList(HubEvent e) {
@@ -1588,6 +1597,9 @@ cntAllUpdate++;
     @Override
     public void afterInsert(HubEvent e) {
         if (bIsHubCalc) callUpdate();
+        else if (bListenToHubSize) {
+            if (getHub().size() == 1) callUpdate();
+        }
     }
     @Override
     public void afterChangeActiveObject(HubEvent e) {
