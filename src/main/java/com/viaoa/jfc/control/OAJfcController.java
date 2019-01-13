@@ -31,6 +31,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 
+import com.viaoa.annotation.OAOne;
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
 import com.viaoa.hub.HubChangeListener.HubProp;
@@ -38,8 +39,10 @@ import com.viaoa.util.*;
 import com.viaoa.jfc.image.*;
 import com.viaoa.jfc.*;
 import com.viaoa.jfc.table.*;
+import com.viaoa.model.oa.VString;
 import com.viaoa.object.OAObjectEditQuery;
 import com.viaoa.object.OAObjectEditQueryDelegate;
+import com.viaoa.object.OAFinder;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectInfo;
@@ -68,6 +71,8 @@ public class OAJfcController extends HubListenerAdapter {
     protected String propertyPath;
     protected OAPropertyPath oaPropertyPath;
 
+    //protected Hub<String> hubNameValue;  // used by name/value properties to display value, use *.typeAsString as property 
+    
     protected Class endPropertyFromClass;  // oaObj class (same as hub, or class for pp end)
     protected String endPropertyName;
     protected Class endPropertyClass;
@@ -253,6 +258,18 @@ public class OAJfcController extends HubListenerAdapter {
         if (hubChangeListenerType != null) { // else: this class already is listening to hub
             if (hubChangeListenerType == HubChangeListener.Type.HubNotEmpty || hubChangeListenerType == HubChangeListener.Type.HubEmpty) bListenToHubSize = true; 
             hubChangeListenerTypeLast = getEnabledChangeListener().add(hub, hubChangeListenerType);
+        }
+        
+        // 20190112
+        if (oaPropertyPath.isLastPropertyLinkInfo() && properties != null && properties.length == 1) {
+            OAOne oaOne = oaPropertyPath.getOAOneAnnotation();
+            if (oaOne != null) {
+                if (OAString.isNotEmpty(oaOne.defaultPropertyPath())) {
+                    if (!oaOne.defaultPropertyPathCanBeChanged()) {
+                        getEnabledChangeListener().addPropertyNull(hub, properties[0]);
+                    }
+                }
+            }
         }
         
         Method[] ms = oaPropertyPath.getMethods();
@@ -517,7 +534,14 @@ public class OAJfcController extends HubListenerAdapter {
         super.beforePropertyChange(e);
     }
     
-    
+/*    
+    public void setNameValueHub(Hub<String> hub) {
+        this.hubNameValue = hub;
+    }
+    public Hub<String> getNameValueHub() {
+        return hubNameValue;
+    }
+*/    
     
     /**
      * confirm a new change.
@@ -1171,7 +1195,6 @@ cntAllUpdate++;
         }
     }
     
-    
     /**
      * @param comp can be used for this.component, or another, ex: an OAList renderer (label)
      */
@@ -1216,8 +1239,24 @@ cntAllUpdate++;
                     if (text != null && text.indexOf('<') >=0 && text.toLowerCase().indexOf("<html>") < 0) text = "<html>" + text; 
                 }
                 else {
-                    Object obj = getValue(object);
-                    text = OAConv.toString(obj, getFormat());
+                    if ((object instanceof OAObject) && oaPropertyPath != null && oaPropertyPath.getHasHubProperty()) {
+                        // 20190110 useFinder for pp with hubs
+                        VString vs = new VString();
+                        OAFinder finder = new OAFinder(oaPropertyPath.getPropertyPathLinksOnly()) {
+                            @Override
+                            protected void onFound(OAObject obj) {
+                                Object objx = obj.getProperty(oaPropertyPath.getLastPropertyName());
+                                String s = OAConv.toString(objx, getFormat());
+                                vs.setValue(OAString.concat(vs.getValue(), s, ", "));
+                            }
+                        };
+                        finder.find((OAObject) object);
+                        text = vs.getValue();
+                    }
+                    else {
+                        Object obj = getValue(object);
+                        text = OAConv.toString(obj, getFormat());
+                    }
                 }
                 if (text == null) {
                     String s = getFormat();
