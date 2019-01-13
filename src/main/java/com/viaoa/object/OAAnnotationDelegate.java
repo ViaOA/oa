@@ -297,6 +297,10 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
             //li.setRecursive(annotation.recursive());
             li.setOAOne(annotation);
 
+            li.setDefaultPropertyPath(annotation.defaultPropertyPath());
+            li.setDefaultPropertyPathIsHierarchy(annotation.defaultPropertyPathIsHierarchy());
+            li.setDefaultPropertyPathCanBeChanged(annotation.defaultPropertyPathCanBeChanged());
+            
             OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
             if (eq != null) {
                 li.setEnabledProperty(eq.enabledProperty());

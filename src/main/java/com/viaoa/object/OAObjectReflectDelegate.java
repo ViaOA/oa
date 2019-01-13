@@ -1475,7 +1475,7 @@ public class OAObjectReflectDelegate {
         
         if (objOriginal == null) {  // else !null or notExist
             // it is stored as null value
-            if (!li.getAutoCreateNew() && !li.getCalculated()) return null;
+            if (!li.getAutoCreateNew() && !li.getCalculated() && OAString.isEmpty(li.getDefaultPropertyPath())) return null;
         }
 
         boolean bDidNotExist = (objOriginal == OANotExist.instance);
@@ -1483,9 +1483,6 @@ public class OAObjectReflectDelegate {
             objOriginal = null;
         }
         else if (objOriginal == null) {
-            if (!li.getAutoCreateNew() && !li.getCalculated()) {
-                return null;
-            }            
         }
         else if (!(objOriginal instanceof OAObjectKey)) {
             return objOriginal; // found it
@@ -1518,11 +1515,33 @@ public class OAObjectReflectDelegate {
 
         if (!(obj instanceof OAObjectKey)) {
             if (obj != OANotExist.instance) {
-                // 20151117
                 if (obj != null) {
                     return obj;
                 }
-                else if (li.getAutoCreateNew()) {
+                
+                // 20190112                    
+                String pps = li.getDefaultPropertyPath();
+                if (OAString.isNotEmpty(pps)) {
+                    if (li.getDefaultPropertyPathIsHierarchy()) {
+                        if (pps.toUpperCase().endsWith("."+linkPropertyName.toUpperCase())) {
+                            pps = pps.substring(0, (pps.length() - linkPropertyName.length()) - 1);
+                        }
+                        OAHierFinder hf = new OAHierFinder(linkPropertyName, pps, false);
+                        obj = hf.findFirst(oaObj);
+                        if (obj != null) {
+                            OAObjectPropertyDelegate.setPropertyCAS(oaObj, linkPropertyName, obj, null);
+                            return obj;
+                        }
+                    }
+                    OAFinder hf = new OAFinder(pps);
+                    obj = hf.findFirst(oaObj);
+                    if (obj != null) {
+                        OAObjectPropertyDelegate.setPropertyCAS(oaObj, linkPropertyName, obj, null);
+                        return obj;
+                    }
+                }
+                
+                if (li.getAutoCreateNew()) {
                     if (OAObjectInfoDelegate.isOne2One(li)) return null; // will only be null if it was set to null on purpose. (ex: cascade delete)
                 }
                 else {

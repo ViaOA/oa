@@ -430,6 +430,13 @@ public class OAObjectEventDelegate {
                 sendHubPropertyChange(oaObj, propertyName, oldObj, newObj, linkInfo);
             }
     	    OAObjectCacheDelegate.fireAfterPropertyChange(oaObj, origKey, propertyName, oldObj, newObj, bLocalOnly, true);
+    	    
+    	    if (propInfo != null && propInfo.isNameValue()) {
+                if (OAObjectHubDelegate.isInHub(oaObj)) {  
+                    sendHubPropertyChange(oaObj, propertyName+"AsString", oldObj, newObj, linkInfo);
+                }
+                OAObjectCacheDelegate.fireAfterPropertyChange(oaObj, origKey, propertyName+"AsString", oldObj, newObj, bLocalOnly, true);
+    	    }
     	}
 
     	oaObj.changedFlag = bChangeHold;

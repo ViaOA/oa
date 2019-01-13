@@ -16,6 +16,7 @@ import java.lang.reflect.Modifier;
 
 import com.viaoa.annotation.OACalculatedProperty;
 import com.viaoa.annotation.OAClass;
+import com.viaoa.annotation.OAOne;
 import com.viaoa.annotation.OAProperty;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.CustomHubFilter;
@@ -121,6 +122,15 @@ public class OAPropertyPath<F> {
         revPropertyPath = new OAPropertyPath(c, pp); 
         return revPropertyPath;
     }
+    
+    public String getPropertyPathLinksOnly() {
+        if (linkInfos == null || linkInfos.length == 0) return null;
+        String s = "";
+        for (OALinkInfo li : linkInfos) {
+            s = OAString.concat(s, li.getName(), ".");
+        }
+        return s;
+    }
 
     public OAProperty getOAPropertyAnnotation() {
         if (methods == null || methods.length == 0) return null;
@@ -129,6 +139,10 @@ public class OAPropertyPath<F> {
     public OACalculatedProperty getOACalculatedPropertyAnnotation() {
         if (methods == null || methods.length == 0) return null;
         return methods[methods.length -1].getAnnotation(OACalculatedProperty.class);
+    }
+    public OAOne getOAOneAnnotation() {
+        if (methods == null || methods.length == 0) return null;
+        return methods[methods.length -1].getAnnotation(OAOne.class);
     }
 
     public boolean isLastPropertyLinkInfo() {
@@ -838,6 +852,22 @@ public class OAPropertyPath<F> {
         return format;
     }
     
+    private boolean bHasHubProperty;
+    private boolean bHasHubPropertyCheck;
+    
+    public boolean getHasHubProperty() {
+        if (bHasHubPropertyCheck) return bHasHubProperty;
+        if (linkInfos != null) {
+            for (OALinkInfo li : linkInfos) {
+                if (li.getType() == li.TYPE_MANY) {
+                    bHasHubProperty = true;
+                    break;
+                }
+            }
+        }
+        bHasHubPropertyCheck = true;
+        return bHasHubProperty;
+    }
     
 }
 

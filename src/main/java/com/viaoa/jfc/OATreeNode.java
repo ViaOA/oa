@@ -1165,6 +1165,10 @@ public class OATreeNode implements Cloneable {
     private ColoredLineUnderIcon myColorIcon;
     protected TNCheckIcon checkIcon;
     private MultiIcon myMultiIcon, myMultiIcon2;
+    public Component getTreeCellRendererComponent(Component comp, JTree tree,Object value,boolean selected,boolean expanded,boolean leaf,int row,boolean hasFocus, OATreeNodeData treeNodeData) {
+        return getTreeCellRendererComponent(comp, tree, value, selected, expanded, leaf, row, hasFocus);
+    }
+    
     public Component getTreeCellRendererComponent(Component comp, JTree tree,Object value,boolean selected,boolean expanded,boolean leaf,int row,boolean hasFocus) {
         if (!def.bUseIcon) ((JLabel)comp).setIcon(null);
 

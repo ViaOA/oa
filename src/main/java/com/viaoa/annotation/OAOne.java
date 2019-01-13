@@ -76,6 +76,12 @@ public @interface OAOne {
 
     /** flag to know if this is processed and will require User.editProcessed=true for it to be changed. */
     boolean isProcessed() default false;
+    
+    /** property path for default value */
+    String defaultPropertyPath() default "";
+    boolean defaultPropertyPathIsHierarchy() default false;
+    boolean defaultPropertyPathCanBeChanged() default false;
+    
 }
 
 /*  OALinkInfo

@@ -1092,7 +1092,9 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
         setCellRenderer( new TreeCellRenderer() {
             private int lastCntUpdateUI;
             public Component getTreeCellRendererComponent(JTree tree,Object value,boolean selected,boolean expanded,boolean leaf,int row,boolean hasFocus) {
-
+                OATreeNodeData treeNodeData;
+                if (value instanceof OATreeNodeData) treeNodeData = (OATreeNodeData) value;
+                else treeNodeData = null;
                 if (oldRenderer == null) {
                     oldRenderer = getCellRenderer();
                     if (oldRenderer == null) {
@@ -1130,7 +1132,7 @@ public class OATree extends JTree implements TreeExpansionListener, TreeSelectio
                 if (tn.def.colorForeground != null) lbl.setForeground(tn.def.colorForeground);
 
                 Component comp = lbl;
-                comp = tn.getTreeCellRendererComponent(comp,tree,value,selected,expanded,leaf,row,hasFocus);
+                comp = tn.getTreeCellRendererComponent(comp,tree,value,selected,expanded,leaf,row,hasFocus,treeNodeData);
 
                 OATreeListener[] l = tn.getListeners();
                 if (l != null) {

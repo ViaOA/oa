@@ -565,4 +565,13 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
     public boolean getHtml() {
         return control.getHtml();
     }
+
+    /*
+    public void setNameValueHub(Hub<String> hub) {
+        control.setNameValueHub(hub);
+    }
+    public Hub<String> getNameValueHub() {
+        return control.getNameValueHub();
+    }
+    */
 }

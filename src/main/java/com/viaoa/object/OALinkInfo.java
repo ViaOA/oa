@@ -72,6 +72,11 @@ public class OALinkInfo { //implements java.io.Serializable {
     private Method editQueryMethod;
     private String[] viewDependentProperties;
     private String[] userDependentProperties;
+
+    private String defaultPropertyPath;
+    private boolean defaultPropertyPathIsHierarchy;
+    private boolean defaultPropertyPathCanBeChanged;
+
     
     public OALinkInfo(String name, Class toClass, int type) {
         this(name, toClass, type, false, false, null, false);
@@ -478,6 +483,25 @@ public class OALinkInfo { //implements java.io.Serializable {
     }
     public Method getEditQueryMethod() {
         return editQueryMethod;
+    }
+
+    public String getDefaultPropertyPath() {
+        return defaultPropertyPath;
+    }
+    public void setDefaultPropertyPath(String pp) {
+        this.defaultPropertyPath = pp;
+    }
+    public boolean getDefaultPropertyPathIsHierarchy() {
+        return defaultPropertyPathIsHierarchy;
+    }
+    public void setDefaultPropertyPathIsHierarchy(boolean b) {
+        defaultPropertyPathIsHierarchy = b;;
+    }
+    public boolean getDefaultPropertyPathCanBeChanged() {
+        return defaultPropertyPathCanBeChanged;
+    }
+    public void setDefaultPropertyPathCanBeChanged(boolean b) {
+        defaultPropertyPathCanBeChanged = b;;
     }
 }
 

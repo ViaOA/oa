@@ -448,5 +448,58 @@ public class OAJfcUtil {
         }
     }
     
+    
+    private static Window window;
+    public static void setMainWindow(Window win) {
+        window = win;
+    }
+    public static void setMainWindow(Component... comps) {
+        for (int i=0; window==null && comps!=null && i<comps.length; i++) {
+            window = OAJfcUtil.getWindow(comps[i]);
+        }
+    }
+    public static Window getMainWindow() {
+        return window;
+    }
+    
+
+    private static JLabel lblStatusBar;
+    public static void setStatusBarLabel(JLabel lbl) {
+        lblStatusBar = lbl;
+    }
+    public static JLabel getStatusBarLabel() {
+        return lblStatusBar;
+    }
+    
+    
+    public static void showErrorMessage(String title, String msg) {
+        JOptionPane.showMessageDialog(getMainWindow(), 
+                msg, title, JOptionPane.ERROR_MESSAGE); 
+    }
+    public static void showWarningMessage(String title, String msg) {
+        JOptionPane.showMessageDialog(getMainWindow(), 
+                msg, title, JOptionPane.WARNING_MESSAGE); 
+    }
+    public static void showInformationMessage(String title, String msg) {
+        JOptionPane.showMessageDialog(getMainWindow(), 
+                msg, title, JOptionPane.INFORMATION_MESSAGE); 
+    }
+    public static boolean showConfirmMessage(String title, String msg) {
+        int i = JOptionPane.showConfirmDialog(getMainWindow(), 
+                msg,
+                title, 
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+    
+        return (i == JOptionPane.YES_OPTION);
+    }
+    
+    
+    public static void showMessage(String title, String errorMsg) {
+        JOptionPane.showMessageDialog(getMainWindow(), 
+                errorMsg, title, JOptionPane.INFORMATION_MESSAGE); 
+    }
+
+
 }
 

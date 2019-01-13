@@ -76,7 +76,6 @@ public class LabelController extends OAJfcController {
         return bIsPassword;
     }
     
-    
     /**
         Bind a label.
     */
@@ -174,5 +173,7 @@ public class LabelController extends OAJfcController {
             if (OAString.isNotEmpty(thisLabel.getText())) thisLabel.setText("******");
         }
     }
+
     
 }
+
