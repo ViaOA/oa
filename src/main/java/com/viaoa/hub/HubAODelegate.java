@@ -274,6 +274,7 @@ public class HubAODelegate {
                 thisHub.setPos(0);
             }
         });
+        thisHub.setPos(0);
     }
     
 }

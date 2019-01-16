@@ -457,7 +457,9 @@ public class OAReflect {
                 else if (s.startsWith("is")) {
                     s = s.substring(2);
                 }
-                if (((OAObject) object).isNull(s)) return null;
+                if (((OAObject) object).isNull(s)) {
+                    return null;
+                }
             }
         }       
         

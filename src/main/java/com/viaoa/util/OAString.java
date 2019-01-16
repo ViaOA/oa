@@ -88,6 +88,18 @@ public class OAString {
         return convertToXML(value, false, true);
     }
 
+    public static String convertTextToHTML(String value, boolean bAddHTMLTag) {
+        if (value == null) return "";
+        String s2 = value.toLowerCase();
+        if (s2.indexOf("<html") >= 0) return value;
+        if (s2.indexOf("<br>") >= 0) return value;
+        value = convertToXML(value, false, true, true);
+        
+        if (bAddHTMLTag) value = "<html>" + value + "</html>";
+        return value;
+    }
+    
+    
     /**
         converts null to "" and does other xml/html conversions for &lt;, &gt; &amp; &quot; &#39; 
       <pre>
@@ -151,13 +163,19 @@ public class OAString {
     public static String convertToXML(String value, boolean bCData) {
         return convertToXML(value, bCData, false);
     }
+
     public static String convertToXML(String value, boolean bCData, boolean bIsHtml) {
+        return convertToXML(value, bCData, bIsHtml, !bIsHtml);
+    }
+    public static String convertToXML(String value, boolean bCData, boolean bIsHtml, boolean bLeaveCRLF) {
         if (value == null) return "";
 
         int x = value.length();
         StringBuilder sb = new StringBuilder(x);
         for (int i=0; i<x ;i++) {
             char ch = value.charAt(i);
+            char chNext = (i+1 == x) ? 0 : value.charAt(i+1);
+            char chPrev = (i == 0) ? 0 : value.charAt(i-1);
 
             if (!bCData) {
                 switch (ch) {
@@ -166,16 +184,18 @@ public class OAString {
                     case '\'': sb.append("&apos;"); continue;
                     case '<': sb.append("&lt;"); continue;
                     case '>': sb.append("&gt;"); continue;
-                    case '\n':  // 20171021
+                    case '\n':
                         if (bIsHtml) {
-                            sb.append("<br>"); 
-                            continue;  
+                            if (chPrev != '\r') sb.append("<br>"); 
                         }
+                        if (!bLeaveCRLF) continue;
                         break;
-                    case '\r': { // 20171021
-                        if (bIsHtml) {
-                            continue;  
+                    case '\r': {
+                        if (bIsHtml && chNext == '\n') {
+                            sb.append("<br>"); 
                         }
+                        if (!bLeaveCRLF) continue;
+                        break;
                     }
                 }
             }

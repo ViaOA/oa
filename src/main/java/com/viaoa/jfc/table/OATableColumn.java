@@ -22,6 +22,7 @@ import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 import com.viaoa.jfc.*;
+import com.viaoa.jfc.control.OAJfcController;
 
 /**
  * Class used to <i>wrap</i> a Table column to work with an OATableComponent.
@@ -53,6 +54,7 @@ public class OATableColumn {
     boolean allowSorting=true;
     protected OATableColumnCustomizer columnCustomizer;
     public OATemplate templateToolTip;
+    public String format;
     
     public boolean getAllowSorting() {
         return allowSorting;
@@ -65,6 +67,7 @@ public class OATableColumn {
         this.table = t;
     }
 
+    
     public OATableFilterComponent compFilter;
     public void setFilterComponent(OATableFilterComponent comp) {
         compFilter = comp;
@@ -80,6 +83,16 @@ public class OATableColumn {
     public HubListener hubListener; // 20101219 for columns that use a
                                     // propertyPath
 
+    
+    public void setFormat(String fmt) {
+        if (oaComp instanceof OAJfcComponent) ((OAJfcComponent)oaComp).getController().setFormat(fmt);
+        this.format = fmt;
+    }
+    public String getFormat() {
+        return this.format;
+    }
+    
+    
     public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
         if (oaComp != null) {
             return oaComp.getTableToolTipText(table, row, col, defaultValue);

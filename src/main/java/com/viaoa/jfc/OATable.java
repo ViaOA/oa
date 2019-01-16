@@ -445,6 +445,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
     }
 
+    private boolean bIgnoreRefresh;
     // 2006/10/12
     private void _performSort() {
         if (!bAllowSorting) return;
@@ -520,10 +521,21 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             hub.sort(s);
         }
         else {
-            hub.cancelSort();
+            if (hub.isSorted()) hub.cancelSort();
+            if (hubFilter != null && !bIgnoreRefresh) {
+                try {
+                    bIgnoreRefresh = true;
+                    Object objx = getHub().getAO();
+                    hubFilter.refresh();
+                    getHub().setAO(objx);
+                }
+                finally {
+                    bIgnoreRefresh = false;
+                }
+            }
         }
         // 20150810 dont keep sorted
-        if (!getKeepSorted()) hub.cancelSort();
+        if (hub.isSorted() && !getKeepSorted()) hub.cancelSort();
 
         if (hubSelect != null) {
             control.rebuildListSelectionModel();

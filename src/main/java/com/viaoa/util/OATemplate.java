@@ -288,11 +288,14 @@ public class OATemplate<F extends OAObject> {
         }
     }
 
+private int errorCnt = 0;//qqqqqqqqq    
     private void parseA(Token tok, TreeNode node) {
         if (tok.hasEndToken()) {
             Token tokB = parseB(tok, node);
             if (tokB == null || tokB.tagType == null || tokB.tagType != TagType.End) {
                 node.errorMsg = "Error: missing end tag for " + tok.data;
+//qqqqqqqqq
+if(errorCnt++ < 10) LOG.warning(node.errorMsg+", Template="+getTemplate());                
             }
         }
         else if (tok.tagType == null) {
