@@ -62,8 +62,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
     private static Logger LOG = Logger.getLogger(ButtonController.class.getName());
     private AbstractButton button;
     
-    private OAButton.ButtonEnabledMode enabledMode;
     protected OAButton.ButtonCommand command;
+    protected OAButton.ButtonEnabledMode enabledMode;
 
     private boolean bMasterControl = true;
     private String completedMessage;
@@ -1157,12 +1157,21 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 }
                 break;
             case Cut:
-                ho = hub.getActiveObject();
-                if (ho instanceof OAObject) addToClipboard((OAObject) ho, true);
+                if (mhub != null && mhub.getSize() > 0) {
+                    Hub hubx = new Hub(mhub.getObjectClass());
+                    hubx.add(mhub);
+                    addToClipboard(hubx, true);
+                }
+                else {
+                    ho = hub.getActiveObject();
+                    if (ho instanceof OAObject) addToClipboard((OAObject) ho, true);
+                }
                 break;
             case Copy:
                 if (mhub != null && mhub.getSize() > 0) {
-                    addToClipboard(mhub);
+                    Hub hubx = new Hub(mhub.getObjectClass());
+                    hubx.add(mhub);
+                    addToClipboard(hubx, false);
                 }
                 else {
                     ho = hub.getActiveObject();
@@ -1199,14 +1208,23 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     hub.setAO(obj);
                 }
                 else {
-                    Hub hx = getClipboardHub();
+                    // 20190117 todo: add undo support qqqqqqqqqqqqq                    
+                    Hub hx = getClipboardHub(false);
                     if (hx != null) {
                         for (Object objx : hx) {
                             if (!objx.getClass().equals(hub.getObjectClass())) break;
-                            if (!hub.contains(objx)) {
-                                hub.add(objx);
-                            }
+                            objx = OAObjectEditQueryDelegate.getCopy((OAObject) objx);
+                            hub.add(objx);
                         }
+                        break;
+                    }
+                    hx = getClipboardHub(true);
+                    if (hx != null) {
+                        for (Object objx : hx) {
+                            if (!objx.getClass().equals(hub.getObjectClass())) break;
+                            hub.add(objx);
+                        }
+                        break;
                     }
                 }
                 break;
@@ -1594,7 +1612,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 break;
             case Cut: // 20100111
             case Copy:
-                flag = (obj != null);
+                flag = ((hubSelect != null && hubSelect.getSize() > 0) || (obj != null));
                 break;
             case Paste:
                 flag = false;
@@ -1604,8 +1622,16 @@ public class ButtonController extends OAJfcController implements ActionListener 
                         if (!hub.contains(objx) && objx.getClass().equals(hub.getObjectClass())) flag = true;
                     }
                     else {
-                        objx = getClipboardObject(false); // from "copy" 
-                        flag = (objx != null && objx.getClass().equals(hub.getObjectClass()));
+                        objx = getClipboardObject(false); // from "copy"
+                        if (objx != null) {
+                            flag = (objx != null && objx.getClass().equals(hub.getObjectClass()));
+                        }
+                        else {
+                            Hub hubx = getClipboardHub(true);
+                            if (hubx != null) {
+                                flag = hubx.getObjectClass().equals(hub.getObjectClass());
+                            }
+                        }
                     }
                 }
                 if (flag && !HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
@@ -1684,11 +1710,12 @@ public class ButtonController extends OAJfcController implements ActionListener 
         return oaObj;
     }
 
-    protected Hub getClipboardHub() {
+    protected Hub getClipboardHub(boolean bFromCut) {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
         Hub hub;
         try {
-            Object objx = cb.getData(OATransferable.HUB_FLAVOR);
+            Object objx = cb.getData(bFromCut ? OATransferable.HUB_CUT_FLAVOR : OATransferable.HUB_COPY_FLAVOR);
+//was            Object objx = cb.getData(OATransferable.HUB_FLAVOR);
             if (objx instanceof Hub) hub = (Hub) objx;
             else hub = null;
         }
@@ -1709,9 +1736,9 @@ public class ButtonController extends OAJfcController implements ActionListener 
         });
     }
 
-    protected void addToClipboard(Hub hub) {
+    protected void addToClipboard(Hub hub, boolean bFromCut) {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-        OATransferable t = new OATransferable(getHub(), hub, false);
+        OATransferable t = new OATransferable(getHub(), hub, bFromCut);
         cb.setContents(t, new ClipboardOwner() {
             @Override
             public void lostOwnership(Clipboard clipboard, Transferable contents) {

@@ -32,6 +32,16 @@ public class OATransferable implements Transferable {
             return false; //was true - if true then a DND will serialize the Hub, which will create a new Hub     
         }
     };
+    public static DataFlavor HUB_CUT_FLAVOR = new DataFlavor(Hub.class, "TransferableCutHub") {
+        public boolean isFlavorSerializedObjectType() {
+            return false;     
+        }
+    };
+    public static DataFlavor HUB_COPY_FLAVOR = new DataFlavor(Hub.class, "TransferableCopyHub") {
+        public boolean isFlavorSerializedObjectType() {
+            return false;     
+        }
+    };
 
     /** 
         Create new DND Data Flavor that supports OAObject.
@@ -60,10 +70,10 @@ public class OATransferable implements Transferable {
         }
     };
     
-    static final DataFlavor[] flavors = { HUB_FLAVOR, OAOBJECT_FLAVOR, OAOBJECT_CUT_FLAVOR, OAOBJECT_COPY_FLAVOR };
+    static final DataFlavor[] flavors = { HUB_FLAVOR, HUB_CUT_FLAVOR, HUB_COPY_FLAVOR, OAOBJECT_FLAVOR, OAOBJECT_CUT_FLAVOR, OAOBJECT_COPY_FLAVOR };
 
     /**
-        Creates a new transferable object to <i>wrap</i> a Hub or OAObject.
+        Creates a new transferable object to <i>wrap</i> a Hub and/or OAObject.
         @param bReferenceOnly if the object is from a clipbord "cut"
     */
     public OATransferable(Hub hub, Object obj, boolean bFromCut) {
@@ -72,7 +82,7 @@ public class OATransferable implements Transferable {
         this.bFromCut = bFromCut;
     }
     public OATransferable(Hub hub, Object obj) {
-        this(hub, obj, true);
+        this(hub, obj, true); // true, since the default is used by DND (moving object=cutting)
     }
     
     /**
@@ -88,8 +98,25 @@ public class OATransferable implements Transferable {
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         if (flavor == null) return null;
         if (flavor.equals(HUB_FLAVOR)) {
+            if (object instanceof Hub) return (Hub) object;
             return hub;
         }
+        if (flavor.equals(HUB_COPY_FLAVOR)) {
+            if (bFromCut) return null;
+            if (object instanceof Hub) {
+                return (Hub) object;
+            }
+            return hub;
+        }
+        if (flavor.equals(HUB_CUT_FLAVOR)) {
+            if (!bFromCut) return null;
+            if (object instanceof Hub) {
+                return (Hub) object;
+            }
+            return hub;
+        }
+        
+        
         if (flavor.equals(OAOBJECT_CUT_FLAVOR) && flavor.getHumanPresentableName().equals(OAOBJECT_CUT_FLAVOR.getHumanPresentableName())) {
             if (bFromCut) return object;
             else return null;

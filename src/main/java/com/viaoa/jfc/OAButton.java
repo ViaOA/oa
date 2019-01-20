@@ -28,6 +28,7 @@ import com.viaoa.jfc.table.OATableComponent;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectDelegate;
+import com.viaoa.object.OAObjectEditQueryDelegate;
 import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
 import com.viaoa.hub.HubChangeListener.HubProp;
@@ -212,12 +213,21 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         else if (command == ButtonCommand.ClearAO) {
             control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
         }
+        else if (command == ButtonCommand.Copy) {
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, false, false);
+            control.getEnabledChangeListener().addCopyEnabled(hub);
+        }
+        else if (command == ButtonCommand.Paste) {
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, false, false);
+            control.getEnabledChangeListener().addPasteEnabled(hub);
+        }
         else {
             control = new OAButtonController(hub, enabledMode, command);
         }
-        
         if (bCallSetup) setup();
     }
+    
+    
     
     public static ButtonEnabledMode getDefaultEnabledMode(Hub hub, ButtonCommand command) {
         ButtonEnabledMode enabledMode = ButtonEnabledMode.HubIsValid;
@@ -992,6 +1002,16 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         }
         protected OAObject _createCopy(OAObject obj) {
             return super.createCopy(obj);
+        }
+        
+        @Override
+        public void setSelectHub(Hub newHub) {
+            super.setSelectHub(newHub);
+            if (command == ButtonCommand.Copy) {
+                enabledMode = OAButton.ButtonEnabledMode.HubIsValid;
+                getEnabledChangeListener().clear();
+                getEnabledChangeListener().addHubNotEmpty(newHub);
+            }
         }
     }
 
