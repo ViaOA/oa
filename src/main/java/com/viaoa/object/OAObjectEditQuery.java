@@ -71,7 +71,7 @@ public class OAObjectEditQuery {
         VerifySave(false, false),        // dont check parent(s) or if enabled.  Need to be able to save a disabled object
         VerifyCommand(true, true),
         
-        GetCopy(false),     // can set allowed(..), or setVale(newObj), or nothing to have OAObject.createCopy(..) called.
+        GetCopy(false),     // can set allowed(..), or setValue(newObj), or nothing to have OAObject.createCopy(..) called.
         AfterCopy(false),   // value=newObject
         
         SetConfirmForPropertyChange(false),
@@ -83,8 +83,8 @@ public class OAObjectEditQuery {
         SetConfirmForCommand(false), //todo: qqqq
         
         GetToolTip(false),      // use: toolTip
-        RenderLabel(false),     // use: label and update it's props
-        UpdateLabel(false),      // update the label that belongs to a component
+        RenderLabel(false),     // use: update the label used to render a component
+        UpdateLabel(false),      // update the jlabel that belongs to a component
         GetFormat(false);       // use: format
         
         public boolean checkOwner;

@@ -153,6 +153,14 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
         else if (command == ButtonCommand.ClearAO) {
             control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
         }
+        else if (command == ButtonCommand.Copy) {
+            control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, false, false);
+            control.getEnabledChangeListener().addCopyEnabled(hub);
+        }
+        else if (command == ButtonCommand.Paste) {
+            control = new OAMenuItemController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, false, false);
+            control.getEnabledChangeListener().addPasteEnabled(hub);
+        }
         else {
             control = new OAMenuItemController(hub, enabledMode, command);
         }
@@ -773,6 +781,18 @@ public class OAMenuItem extends JMenuItem implements OAJfcComponent {
         protected OAObject _createCopy(OAObject obj) {
             return super.createCopy(obj);
         }
+        
+        
+        @Override
+        public void setSelectHub(Hub newHub) {
+            super.setSelectHub(newHub);
+            if (command == ButtonCommand.Copy) {
+                enabledMode = OAButton.ButtonEnabledMode.HubIsValid;
+                getEnabledChangeListener().clear();
+                getEnabledChangeListener().addHubNotEmpty(newHub);
+            }
+        }
+
     }
 
     public void setDisplayComponent(JComponent comp) {

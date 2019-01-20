@@ -134,6 +134,22 @@ public class OAJfcUtil {
         if (lbl == null) return;
         lbl.setForeground(Color.GRAY);
     }
+    public static void useItalics(JLabel lbl) {
+        if (lbl == null) return;
+        lbl.setFont(lbl.getFont().deriveFont(Font.ITALIC));
+    }
+    public static void useItalic(JLabel lbl) {
+        if (lbl == null) return;
+        lbl.setFont(lbl.getFont().deriveFont(Font.ITALIC));
+    }
+    public static void usePlain(JLabel lbl) {
+        if (lbl == null) return;
+        lbl.setFont(lbl.getFont().deriveFont(Font.PLAIN));
+    }
+    public static void useBold(JLabel lbl) {
+        if (lbl == null) return;
+        lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
+    }
 
     public static void useColorIcon(JLabel lbl, Color color1) {
         useColorIcon(lbl, color1, null);
@@ -222,8 +238,8 @@ public class OAJfcUtil {
         component.setOpaque(true);
         
         Blinker blinkerx;
+        boolean bFound;
         synchronized (hmBlinker) {
-            boolean bFound;
             blinkerx = hmBlinker.get(component);
             if (blinkerx == null) {
                 bFound = false;
@@ -235,38 +251,39 @@ public class OAJfcUtil {
             else {
                 bFound = true;
             }
-            synchronized (blinkerx) {
-                blinkerx.cnt = 0;
-                blinkerx.tot = numberOfTimes;
-                blinkerx.colorFg = fgColor;
-                blinkerx.colorBg = bgColor;
-            }
-            if (bFound) return;
             hmBlinker.put(component, blinkerx);
         }
+        synchronized (blinkerx) {
+            blinkerx.cnt = 0;
+            blinkerx.tot = numberOfTimes;
+            blinkerx.colorFg = fgColor;
+            blinkerx.colorBg = bgColor;
+        }
+        if (bFound) return;
         
         final Blinker blinker = blinkerx;
         final Timer timer = new Timer(msDelay, null);
         
         ActionListener al = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                boolean b;
                 synchronized (blinker) {
-                    boolean b = (blinker.cnt++ % 2 == 0);
+                    b = (blinker.cnt++ % 2 == 0);
                     Color c;
                     c = (b ? blinker.colorFg : blinker.colorFgOrig);
                     blinker.component.setForeground(c);
 
                     c = (b ? blinker.colorBg : blinker.colorBgOrig);
                     blinker.component.setBackground(c);
-
-                    if (!b && ((blinker.cnt / 2) >= blinker.tot) ) {
-                        synchronized (hmBlinker) {
-                            hmBlinker.remove(component);
-                        }
-                        timer.stop();
-                    }
+                    
+                    b = (!b && ((blinker.cnt / 2) >= blinker.tot));
                 }
-                
+                if (b) {
+                    synchronized (hmBlinker) {
+                        hmBlinker.remove(component);
+                    }
+                    timer.stop();
+                }
             }
         };                 
         timer.addActionListener(al);

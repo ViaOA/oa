@@ -1138,7 +1138,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
         }
 
         OADateTime dtNew;
-        GregorianCalendar c = _getCal();
+        final GregorianCalendar c = _getCal();
         try {
             c.add(Calendar.DATE, amount);
 
