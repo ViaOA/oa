@@ -230,6 +230,44 @@ public abstract class HubChangeListener {
         HubProp hp = add(hub, OAObjectDelegate.WORD_Changed, true);
         return hp;
     }
+
+    public HubProp addCopyEnabled(final Hub hub) {
+        if (hub == null) return null;
+        
+        addAoNotNull(hub);
+        OAFilter filter = new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                OAObjectEditQuery eq = OAObjectEditQueryDelegate.getAllowCopyEditQuery((OAObject) obj);
+                boolean b = eq.getAllowed();
+                if (!b) {
+                    failureReason = eq.getDisplayResponse();
+                }
+                return b;
+            }
+        };
+        HubProp hp = add(hub, null, false, null, filter, false, "EditQuery.AllowCopy");
+        return hp;
+    }
+
+    
+    public HubProp addPasteEnabled(final Hub hub) {
+        if (hub == null) return null;
+        
+        OAFilter filter = new OAFilter() {
+            @Override
+            public boolean isUsed(Object obj) {
+                OAObjectEditQuery eq = OAObjectEditQueryDelegate.getAllowEnabledEditQuery(hub);
+                boolean b = eq.getAllowed();
+                if (!b) {
+                    failureReason = eq.getDisplayResponse();
+                }
+                return b;
+            }
+        };
+        HubProp hp = add(hub, null, false, null, filter, false, "EditQuery.AllowPaste");
+        return hp;
+    }
     
     
     /** add a rule to check the return value for an EditQuery isEnabled 
@@ -621,8 +659,8 @@ public abstract class HubChangeListener {
             
             if (compareValue == Type.EditQueryEnabled) {
                 if (!bValid) return false;
-                if (!(value instanceof OAObject)) return true;
-                OAObjectEditQuery eq  = OAObjectEditQueryDelegate.getAllowEnabledEditQuery((OAObject) value, propertyPath, true);
+                if (value != null && !(value instanceof OAObject)) return true;
+                OAObjectEditQuery eq  = OAObjectEditQueryDelegate.getAllowEnabledEditQuery(hub, (OAObject) value, propertyPath, true);
                 boolean b = eq.getAllowed();
                 if (!b) {
                     failureReason = eq.getDisplayResponse();
@@ -632,7 +670,7 @@ public abstract class HubChangeListener {
             }
             if (compareValue == Type.EditQueryVisible) {
                 if (!bValid) return true;
-                if (!(value instanceof OAObject)) {
+                if (value != null && !(value instanceof OAObject)) {
                     if (hub == null) return true;
                     Class cx = hub.getObjectClass();
                     if (!OAObject.class.isAssignableFrom(cx)) return true;
@@ -641,7 +679,7 @@ public abstract class HubChangeListener {
                     if (!b) failureReason = eq.getDisplayResponse();
                     return b;
                 }
-                OAObjectEditQuery eq = OAObjectEditQueryDelegate.getAllowVisibleEditQuery((OAObject) value, propertyPath);
+                OAObjectEditQuery eq = OAObjectEditQueryDelegate.getAllowVisibleEditQuery(hub, (OAObject) value, propertyPath);
                 boolean b = eq.getAllowed();
                 if (!b) {
                     failureReason = eq.getDisplayResponse();

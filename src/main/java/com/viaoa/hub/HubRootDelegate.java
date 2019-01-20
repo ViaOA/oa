@@ -29,7 +29,7 @@ public class HubRootDelegate {
 	    If this is a recursive hub with an owner, then the root hub will be returned, else null.
 	*/
 	public static Hub getRootHub(final Hub thisHub) {
-		
+		if (thisHub == null) return null;
 		OALinkInfo liRecursive = OAObjectInfoDelegate.getRecursiveLinkInfo(thisHub.data.getObjectInfo(), OALinkInfo.ONE);
 	    // 1: must be recursive
 	    if (liRecursive == null) return null;
