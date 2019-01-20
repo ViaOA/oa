@@ -55,13 +55,12 @@ public class HubListenerTree {
         //   note: if an object is deleted, it is done on the server and the removed object's parent reference will be null during the remove.
         Object lastRemoveObject;  // object from last hub.remove event
         Object lastRemoveMasterObject;  // master object from last hub.remove event
-        
         /*
          *  This allows getting all of the root objects that need to be notified when a change is made to an object "down" the tree from it.
         */
         Object[] getRootValues(Object obj) {
             // 20171212 reworked to include option to use a finder
-            long ts = System.currentTimeMillis();//qqqqqqqq
+            long ts = System.currentTimeMillis();
             String spp = null;
             HubListenerTreeNode tn = this;
             for ( ;tn != null && tn.parent != null; ) {
@@ -112,7 +111,6 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                 objs = getRootValues_ORIG(obj, (spp != null));
             }
             else objs = null;
-            
             if (objs == null && spp != null) {
                 OAFinder finder = new OAFinder();
                 finder.addEqualFilter(spp, obj);
@@ -182,7 +180,8 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                     if (alNewObjects.indexOf(lastRemoveMasterObject) < 0) {
                         alNewObjects.add(lastRemoveMasterObject);
                     }
-                    lastRemoveObject = null;
+                    // 20190120 removed,could be called more than once during a remove                    
+                    // lastRemoveObject = null;
                 }
                 else if (m == null) {
                     // method might not exist (or is private - from a reference that is not made accessible)
@@ -567,7 +566,6 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                                 }
                                 @Override
                                 protected void afterAddRealHub(HubEvent e) {
-                                    newTreeNode.lastRemoveObject = null; // in case it has not been cleared yet
                                     super.afterAddRealHub(e);
                                     onEvent(e);
                                     
@@ -707,7 +705,6 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                         hl = new HubListenerAdapter() {
                             @Override
                             public void afterAdd(HubEvent e) {
-                                nodeThis.lastRemoveObject = null; // in case it was not cleared
                                 if (!OAThreadLocalDelegate.isHubMergerChanging()) {
                                     Hub h = HubListenerTree.this.root.hub;
                                     if (bUseAll) {
@@ -725,15 +722,13 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                                 }
                             }
                             @Override
-                            public void afterPropertyChange(HubEvent e) {
-                                nodeThis.lastRemoveObject = null; // in case it was not cleared
-                            }
-                            @Override
                             public void afterInsert(HubEvent e) {
                                 afterAdd(e);
                             }
+
+                            // 20190120
                             @Override
-                            public void afterRemove(HubEvent e) {
+                            public void beforeRemove(HubEvent e) {
                                 Hub h = HubListenerTree.this.root.hub;
                                 // get the parent reference object from the Hub.masterObject, since the 
                                 //    reference in the object could be null
@@ -743,6 +738,10 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                                     nodeThis.lastRemoveObject = e.getObject();
                                     nodeThis.lastRemoveMasterObject = objx;
                                 }
+                            }
+                            
+                            @Override
+                            public void afterRemove(HubEvent e) {
                                 // ignore if masterHub is adding, removing (newList, clear)                                
                                 if (!OAThreadLocalDelegate.isHubMergerChanging()) {
                                     if (bUseAll) {
