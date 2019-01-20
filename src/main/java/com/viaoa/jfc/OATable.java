@@ -211,9 +211,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         int x = getRowHeight();
         setRowHeight(x+2);
         
-
-
-
+        getTableHeader().setReorderingAllowed(false);
+        
         dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
         dropTarget = new DropTarget(this, this);
 
@@ -957,11 +956,15 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * Separate Hub that can contain selected objects. This will allow for a multi-select table.
      */
     public void setSelectHub(Hub hub) {
+        setSelectHub(hub, true);
+    }
+    public void setSelectHub(Hub hub, boolean bAllowRemovingFromSelectHub) {
         this.hubSelect = hub;
         int x = (hub == null) ? ListSelectionModel.SINGLE_SELECTION : ListSelectionModel.MULTIPLE_INTERVAL_SELECTION;
         getSelectionModel().setSelectionMode(x);
-        control.setSelectHub(hubSelect);
-        bMultiSelectControlKey = (hub != null);
+        control.setSelectHub(hubSelect, bAllowRemovingFromSelectHub);
+        // 20190117 this should be turned on by calliing setMultiSelectControlKey(true)
+        //bMultiSelectControlKey = (hub != null);
     }
 
     /**
@@ -1524,8 +1527,11 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * @param width
      */
     public void addSelectionColumn(Hub hubSelect, String heading, int width) {
+        addSelectionColumn(hubSelect, heading, width, true);
+    }
+    public void addSelectionColumn(Hub hubSelect, String heading, int width, boolean bAllowRemovingFromSelectHub) {
         if (hubSelect == null) return;
-        setSelectHub(hubSelect);
+        setSelectHub(hubSelect, bAllowRemovingFromSelectHub);
         chkSelection = new OACheckBox(hub, hubSelect) {
             @Override
             public String getTableToolTipText(JTable table, int row, int col, String defaultValue) {
@@ -3329,7 +3335,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         this.tableRight = table;
 
         setSelectionModel(table.getSelectionModel());
-        setSelectHub(table.hubSelect);
+        setSelectHub(table.hubSelect, control.getAllowRemovingFromSelectHub());
         this.chkSelection = table.chkSelection;
         this.bMultiSelectControlKey = table.bMultiSelectControlKey;
 
@@ -3780,16 +3786,22 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         return comp;
     }
+    private static Icon iconFake;
     protected Component _getRenderer(Component comp, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
         JLabel lbl = null; 
         // 1of3: set default settings
         if (!(comp instanceof JLabel)) {
             if (lblDummy == null) lblDummy = new JLabel();
             lbl = lblDummy;
+            /*
             lbl.setBackground(Color.cyan);
             lbl.setForeground(Color.cyan);
             if (borderDummy == null) borderDummy = new LineBorder(Color.red);
             lbl.setBorder(borderDummy);
+            */
+            if (iconFake == null) iconFake = new OAColorIcon(Color.white, 0, 0);
+            lbl.setIcon(iconFake);
+            lbl.setText("xqz");
         }
         else lbl = (JLabel) comp;
 
@@ -3842,7 +3854,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         // 20181004   
         final Object objx = getObjectAt(row, column);
         if (oacomp instanceof OAJfcComponent) {
-            ((OAJfcComponent) oacomp).getController().update(lbl, objx, false);
+            ((OAJfcComponent) oacomp).getController().update((JComponent) oacomp, objx, false);  // was: lbl
         }
         
         // 2of4: allow component to customize
@@ -3864,6 +3876,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
 
         
         if (lbl == lblDummy && comp != null) {
+            /*
             Color c = lblDummy.getBackground();
             if (!Color.cyan.equals(c)) comp.setBackground(c);
             c = lblDummy.getForeground();
@@ -3873,8 +3886,13 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                     ((JComponent) comp).setBorder(lbl.getBorder());
                 }
             }
+            */
+            // custom code wants to change the rendering comp 
+            if (!"xqz".equals(lblDummy.getText()) || lbl.getIcon() != iconFake) {
+                if ("xqz".equals(lblDummy.getText())) lbl.setText("");
+                comp = lbl;
+            }
         }
-        
         return comp;
     }
 
@@ -3934,9 +3952,9 @@ class TableController extends OAJfcController implements ListSelectionListener {
     }
 
     @Override
-    public void setSelectHub(Hub hubSelect) {
+    public void setSelectHub(Hub hubSelect, boolean bAllowRemovingFromSelectHub) {
         if (this.hubSelect == hubSelect) return;
-        super.setSelectHub(hubSelect);
+        super.setSelectHub(hubSelect, bAllowRemovingFromSelectHub);
 
         if (this.hubSelect != null && hlSelect != null) {
             this.hubSelect.removeHubListener(hlSelect);
@@ -4061,10 +4079,9 @@ class TableController extends OAJfcController implements ListSelectionListener {
                 Hub h = table.hubFilterMaster;
                 if (h == null && table.tableRight != null) h = table.tableRight.hubFilterMaster;
                 if (h != null) pos = h.indexOf(obj);
-                if (pos < 0) {
-// 20180525 other components (ex: treeNode) could be adding to the hubSelect                    
-//                    hubSelect.removeAt(i);
-//                    i--;
+                if (pos < 0 && getAllowRemovingFromSelectHub()) {
+                    hubSelect.removeAt(i);
+                    i--;
                 }
             }
             else {
@@ -4073,6 +4090,7 @@ class TableController extends OAJfcController implements ListSelectionListener {
         }
     }
 
+    
     public synchronized void valueChanged(ListSelectionEvent e) {
         if (e.getValueIsAdjusting()) {
             return;

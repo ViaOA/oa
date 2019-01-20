@@ -428,10 +428,22 @@ public class OAJfcController extends HubListenerAdapter {
     public Hub getSelectHub() {
         return hubSelect;
     }
+    public boolean getAllowRemovingFromSelectHub() {
+        return bAllowRemovingFromSelectHub;
+    }
+    
+    
+    /* 
+     * flag to know if components can remove objects from selectHub, default: true
+     * 
+     *  
+     */
+    private boolean bAllowRemovingFromSelectHub;
     /**
         Sets the MultiSelect that this component will work with. 
     */
-    public void setSelectHub(Hub newHub) {
+    public void setSelectHub(Hub newHub, boolean bAllowRemovingFromSelectHub) {
+        this.bAllowRemovingFromSelectHub = bAllowRemovingFromSelectHub;
         if (hubSelect != null) {
             getChangeListener().remove(hubSelect);
         }
@@ -439,6 +451,9 @@ public class OAJfcController extends HubListenerAdapter {
         if (hubSelect != null) {
             getChangeListener().add(hubSelect);
         }
+    }
+    public void setSelectHub(Hub newHub) {
+        setSelectHub(newHub, true);
     }
     
     /**
