@@ -27,7 +27,8 @@ public abstract class OAPool<TYPE> {
     private Class<TYPE> classType;
     private int min;
     private int max;
-    private ArrayList<Pool> alResource = new ArrayList<Pool>();
+    private int waitCnt;
+    private final ArrayList<Pool> alResource = new ArrayList<Pool>();
     private volatile int currentUsed;
     private volatile int highMark;
     private volatile long msHighMarkValid;  // msTime that highMark is valid
@@ -122,7 +123,7 @@ public abstract class OAPool<TYPE> {
         }
         if (al.size() > 0) {
             synchronized (alResource) {
-                alResource.notifyAll();
+                if (waitCnt > 0) alResource.notifyAll();
             }            
         }
     }
@@ -148,9 +149,13 @@ public abstract class OAPool<TYPE> {
 
                 // need to wait
                 try {
+                    waitCnt++;
                     alResource.wait();
                 }
                 catch (Exception e) {
+                }
+                finally {
+                    waitCnt--;
                 }
             }
             pool.used = true;
@@ -185,7 +190,7 @@ public abstract class OAPool<TYPE> {
                 if (p.used) currentUsed--;
                 p.used = false;
                 alResource.remove(p);
-                alResource.notifyAll();
+                if (waitCnt > 0) alResource.notifyAll();
                 bFound = true;
                 break;
             }
@@ -206,7 +211,7 @@ public abstract class OAPool<TYPE> {
                 if (x > min) {
                     long msNow = System.currentTimeMillis();
                     int mark = (msNow > msHighMarkValid) ? min : highMark;
-                    if (mark < x) {
+                    if (x > mark) {
                         bRelease = true;
                         if (msNow > msHighMarkValid) {
                             highMark = Math.max(currentUsed, highMark-1);
@@ -219,7 +224,7 @@ public abstract class OAPool<TYPE> {
                     alResource.remove(p);
                 }
                 else {
-                    alResource.notifyAll();
+                    if (waitCnt > 0) alResource.notifyAll();
                 }
                 break;
             }
@@ -250,7 +255,7 @@ public abstract class OAPool<TYPE> {
             Pool p = new Pool();
             p.used = false;
             alResource.add(p);
-            alResource.notifyAll();
+            if (waitCnt > 0) alResource.notifyAll();
         }
     }
     

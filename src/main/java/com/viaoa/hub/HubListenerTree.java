@@ -121,7 +121,7 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
 
             long ts2 = System.currentTimeMillis();//qqqqqqqqq
             if ((ts2 - ts) > 1000) {  //qqqqqqqq should not happen, can be removed
-                OAPerformance.LOG.warning("fyi: getRootValues took "+(ts2-ts)+"ms, rootHub="+HubListenerTree.this.root.hub+", propPath="+spp);
+                OAPerformance.LOG.fine("fyi: getRootValues took "+(ts2-ts)+"ms, rootHub="+HubListenerTree.this.root.hub+", propPath="+spp);
             }
             return objs;
         }

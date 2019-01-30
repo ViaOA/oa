@@ -2,7 +2,6 @@ package com.viaoa.jfc;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -10,6 +9,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
@@ -19,6 +20,7 @@ import java.util.Calendar;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -33,6 +35,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.plaf.ColorUIResource;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.HubAODelegate;
 import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubListenerAdapter;
 import com.viaoa.jfc.OAButton;
@@ -43,27 +46,24 @@ import com.viaoa.jfc.OAList;
 import com.viaoa.jfc.OATextField;
 import com.viaoa.model.oa.VDate;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.util.OADate;
 import com.viaoa.util.OAString;
 
 /**
  * UI for displaying items in a Calendar.
- * Given a hub and date properties to use, this will then display them by day. 
- * @author vvia
+ * Given a hub and date properties to use, this will then display them by day.
  * 
- 
-    public JScrollPane createCalendarScrollPane() {
-        String[] dateProperties = new String[] { WorkOrderPP.deliveryDate() }; 
-        OACalendarPanel<WorkOrder> panCalendar = new OACalendarPanel(getHub(), WorkOrder.P_CalcSalesOrderNumber, dateProperties);
-        JScrollPane sp = new JScrollPane(panCalendar);
-        sp.setColumnHeaderView(panCalendar.getHeaderPanel());
-        return sp;
-    }
- 
+ * If the date property is unique (only one) then another property (many) can be used for this display of objects
+ * for that day, and an optional create command can be added for days that dont have an object that exists.
+ * 
+ * If date is not unique, then they will be combined by day.
+ * 
  */
-public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
+public class OAMonthCalendar<F extends OAObject, T extends OAObject> extends JScrollPane {
     
     protected Hub<F> hub;
+    protected Hub<T> hubDetail;
     protected String propertyPath;  // list display pp
     protected String[] datePropertyPaths; 
     
@@ -87,8 +87,12 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
 
     protected Icon iconSquare = new OAColorIcon(colorUnselected, 8, 8);
 
-    protected boolean bIgnoreSetSelecteDate;
+    protected boolean bAllowCreateNew;
     
+    
+    /**
+     * Used to display 0+ objetcts by date.
+     */
     public OAMonthCalendar(Hub<F> hub, String propertyPath, String[] datePropertyPaths) {
         this.hub = hub;
         this.propertyPath = propertyPath;
@@ -97,12 +101,42 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
         setSelectedDate(new OADate());
     }
 
+    /**
+     * Used when there is only one object with date (unique), and want to display another detail hub.
+     */
+    public OAMonthCalendar(Hub<F> hub, String datePropertyPath, Hub<T> hubDetail) {
+        this.hub = hub;
+        this.hubDetail = hubDetail;
+        this.datePropertyPaths = new String[] { datePropertyPath };
+        setup();
+        setSelectedDate(new OADate());
+    }
+    public OAMonthCalendar(Hub<F> hub, String datePropertyPath, Hub<T> hubDetail, String propertyPath) {
+        this.hub = hub;
+        this.hubDetail = hubDetail;
+        this.datePropertyPaths = new String[] { datePropertyPath };
+        this.propertyPath = propertyPath;
+        setup();
+        setSelectedDate(new OADate());
+    }
+    
+
+    public void setAllowCreateNew(boolean b) {
+        this.bAllowCreateNew = b;
+    }
+    public boolean getAllowCreateNew() {
+        return this.bAllowCreateNew;
+    }
+    
     public void setSelectedDate(OADate dx) {
         setSelectedDate(dx, false);
     }
     
     public Hub<F> getHub() {
         return hub;
+    }
+    public Hub<T> getDetailHub() {
+        return hubDetail;
     }
 
     /**
@@ -124,8 +158,11 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
      * @param date 
      * @param hub used to find the AO that was selected
      */
-    protected void onDaySelected(OADate date, Hub<F> hub) {
+    protected void onDaySelected(OADate date, Hub<F> hub, Hub<T> hubDetail) {
         getHub().setAO(hub.getAO());
+        if (hubDetail != null && getDetailHub() != null) {
+            getDetailHub().setAO(hubDetail.getAO());
+        }
     }
     
     
@@ -137,7 +174,8 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
      */
     protected void onNewMonth() {
     }
-    
+
+    private OADate lastSelectedDate;
     
     /**
      * called by UI or manually, to display the new day.  If the month is not currently displayed, then onNewMonth will also be called.
@@ -146,11 +184,12 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
      */
     protected void setSelectedDate(OADate dx, boolean bFromDayPanel) {
         if (dx == null) return;
+        dx = new OADate(dx);
 
-        if (bIgnoreSetSelecteDate) return;
-        bIgnoreSetSelecteDate = true;
+        if (dx.equals(lastSelectedDate)) return;
+        lastSelectedDate = new OADate(dx);
+        
         vdCalendar.setValue(new OADate(dx));
-        bIgnoreSetSelecteDate = false;
         
         final int month = bFromDayPanel ? alDayPanel.get(20).date.getMonth() :dx.getMonth(); 
         boolean bNewMonth;
@@ -171,62 +210,68 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
         
         int i = 0;
         boolean bVis = true;
-        for (DayPanel dp : alDayPanel) {
-            if (!bFromDayPanel) {
+        if (bNewMonth) {
+            for (DayPanel dp : alDayPanel) {
                 dp.date = dx;
                 dp.lbl.setText(dx.toString());
-                dp.setSelected(dp.date.equals(vdCalendar.getValue()));
                 
                 if (i++ == 35) {
                     if (dx.getDay() < 20) bVis = false;
                 }
                 dp.setVisible(bVis);
                 dx = (OADate) dx.addDay();
-            }            
-            boolean b = dp.date.equals(vdCalendar.getValue());
-            dp.setSelected(b);
+
+                dp.hub.clear();
+            }
+        
+            // reload
+            for (F obj : hub) {
+                for (String pp : datePropertyPaths) {
+                    dx = (OADate) obj.getProperty(pp);
+                    if (dx == null) continue;
+        
+                    for (DayPanel dp : alDayPanel) {
+                        int x = dp.date.compare(dx);
+                        if (x == 0) {
+                            dp.hub.add(obj);
+                            break;
+                        }
+                        if (x > 0) break;
+                    }
+                }
+            }
+        }        
+        
+        for (DayPanel dp : alDayPanel) {
+            //dp.spLst.setVisible(dp.hub.getSize() > 0);
+            dp.panCmd.setVisible(bAllowCreateNew && dp.hub.getSize() == 0);
+            if (dp.hub.getSize() == 0) dp.lbl.setText(dp.date.toString());
+            
+            final boolean b = dp.date.equals(vdCalendar.getValue());
+            
             if (b) {
-                dp.lbl.setIcon(null);
+                // if (dp.bLabelSetText || dp.hub.getSize() == 0) dp.lbl.setIcon(null);
                 dp.lst.setBackground(Color.WHITE);
                 dp.scrollRectToVisible(new Rectangle(0, 0, 10, dp.getHeight()));
             }
             else {
                 if (dp.date.getMonth() != month) {
                     dp.lbl.setForeground(Color.GRAY);
-                    dp.lbl.setIcon(null);
+                    if (dp.bLabelSetText || dp.hub.getSize() == 0) {
+                        // dp.lbl.setIcon(null);
+                    }
                     dp.lst.setBackground(new Color(245,245,245));
                 }
                 else {
-                    dp.lbl.setIcon(iconSquare);
+                    if (dp.bLabelSetText || dp.hub.getSize() == 0 || dp.lbl.getIcon() == null) {
+                        dp.lbl.setIcon(iconSquare);
+                    }
                     dp.lst.setBackground(Color.WHITE);
                 }
             }
+            dp.setSelected(b);
         }
-        
-        if (!bNewMonth) return;
-        
-        onNewMonth();
-
-        // reload
-        for (DayPanel dp : alDayPanel) {
-            dp.hub.clear();
-        }
-        
-        for (F obj : hub) {
-            for (String pp : datePropertyPaths) {
-                dx = (OADate) obj.getProperty(pp);
-                if (dx == null) continue;
-    
-                for (DayPanel dp : alDayPanel) {
-                    int x = dp.date.compare(dx);
-                    if (x == 0) {
-                        dp.hub.add(obj);
-                        break;
-                    }
-                    if (x > 0) break;
-                }
-            }
-        }
+        if (bNewMonth) onNewMonth();
     }
     
 
@@ -234,38 +279,69 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
         if (vdCalendar != null) return;
         // used to manage selected date 
         vdCalendar = new VDate();
-        vdCalendar.setValue(new OADate());
-
+        
         // create daily lists
         alDayPanel = new ArrayList<>();
-        for (int i=0; i<42; i++) {  // 6rows of 7cols
+        for (int i=0; i<42; i++) {  // 6 rows of 7 cols
             final DayPanel dp = new DayPanel() {
                 @Override
                 protected void onMouseClick() {
-                    onDaySelected(date, hub);
-                    setSelectedDate(date, true);
+                    setSelectedDate(this.date, true);
+                    onDaySelected(this.date, this.hub, hubDetail);
                 }
             };
             alDayPanel.add(dp);
-            dp.hub.addHubListener(new HubListenerAdapter() {
-                public void afterChangeActiveObject(HubEvent e) {
-                    if (dp.hub.getAO() != null) {
-                        onDaySelected(dp.date, dp.hub);
-                        setSelectedDate(dp.date, true);
+            
+            if (OAMonthCalendar.this.hubDetail != null) {
+                dp.hubDetail.addHubListener(new HubListenerAdapter() {
+                    public void afterChangeActiveObject(HubEvent e) {
+                        if (dp.hubDetail.getAO() != null) {
+                            setSelectedDate(dp.date, true);
+                            onDaySelected(dp.date, dp.hub, dp.hubDetail);
+                        }
                     }
-                }
-            });
+                });
+            }
+            else {
+                dp.hub.addHubListener(new HubListenerAdapter() {
+                    public void afterChangeActiveObject(HubEvent e) {
+                        if (dp.hub.getAO() != null) {
+                            setSelectedDate(dp.date, true);
+                            onDaySelected(dp.date, dp.hub, dp.hubDetail);
+                        }
+                    }
+                });
+            }
         }
         
-        setupHub();
+        setupHubs();
         setViewportView(getDaysPanel());
         setColumnHeaderView(getHeaderPanel());
     }        
 
-    protected void setupHub() {
+    protected void setupHubs() {
+
+        if (hubDetail != null) {
+            hubDetail.addHubListener(new HubListenerAdapter<T>() {
+                @Override
+                public void afterChangeActiveObject(HubEvent<T> e) {
+                    T obj = e.getObject();
+                    if (obj == null) return;
+                    OADate d = vdCalendar.getValue();
+                    if (d == null) return;
+                    
+                    for (DayPanel dp : alDayPanel) {
+                        if (!d.equals(dp.date)) continue;
+                        dp.hubDetail.setAO(obj);
+                        break;
+                    }
+                    
+                }            
+            });
+        }
+        
         // hub for storing all workorders with deliveryDate for the selected month
         final String propNamex = "calcCalendarProp";
-        
         hub.addHubListener(new HubListenerAdapter<F>() {
             @Override
             public void afterChangeActiveObject(HubEvent<F> e) {
@@ -273,13 +349,19 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
                 if (obj == null) return;
                 OADate dx = (OADate) obj.getProperty(datePropertyPaths[0]);
                 if (dx == null) return;
-                for (DayPanel dp : alDayPanel) {
-                    int x = dp.date.compare(dx);
-                    if (x == 0) {
-                        dp.hub.setAO(obj);
-                        break;
+                
+                if (!dx.equals(OAMonthCalendar.this.vdCalendar.getValue())) {
+                    setSelectedDate(dx, false);
+                }
+                if (OAMonthCalendar.this.hubDetail == null) {
+                    for (DayPanel dp : alDayPanel) {
+                        int x = dp.date.compare(dx);
+                        if (x == 0) {
+                            dp.hub.setAO(obj);
+                            break;
+                        }
+                        if (x > 0) break;
                     }
-                    if (x > 0) break;
                 }
             }
             
@@ -295,12 +377,22 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
             void remove(F obj) {
                 if (obj == null) return;
                 for (DayPanel dp : alDayPanel) {
-                    if (dp.lst.getHub().remove(obj)) break;
+                    if (dp.hub.remove(obj)) {
+                        if (OAMonthCalendar.this.hubDetail != null) {
+                            //dp.spLst.setVisible(false);
+                            if (bAllowCreateNew) dp.panCmd.setVisible(true);
+                        }
+                        break;
+                    }
                 }
             }
             public void afterNewList(HubEvent<F> e) {
                 for (DayPanel dp : alDayPanel) {
                     dp.hub.clear();
+                    if (OAMonthCalendar.this.hubDetail != null) {
+                        //dp.spLst.setVisible(false);
+                        if (bAllowCreateNew) dp.panCmd.setVisible(true);
+                    }
                 }
                 for (F obj : hub) {
                     add(obj);
@@ -322,6 +414,10 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
                         int x = dp.date.compare(dx);
                         if (x == 0) {
                             dp.hub.add(obj);
+                            if (OAMonthCalendar.this.hubDetail != null) {
+                                //dp.spLst.setVisible(true);
+                                if (bAllowCreateNew) dp.panCmd.setVisible(false);
+                            }
                             break;
                         }
                         if (x > 0) break;
@@ -473,36 +569,96 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
     public void customizeRenderer(JLabel label, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
     }
     
+    public OAList createList(Hub<T> hub) {
+        OAList lst = new OAList(hub, propertyPath, 4, 12) {
+            @Override
+            public void customizeRenderer(JLabel label, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                OAMonthCalendar.this.customizeRenderer(label, list, value, index, isSelected, cellHasFocus);
+            }
+        };
+        lst.setDisplayTemplate(getDisplayTemplate());
+        lst.setToolTipTextTemplate(getDisplayTemplate());
+        lst.setIconColorProperty(getIconColorProperty());
+        
+        return lst;
+    }
+    
+    public JLabel createLabel(Hub<F> hub) {
+        return null;
+    }
+    
     
     class DayPanel extends JPanel {
         OADate date;
         JLabel lbl;
         OAList lst;
         Hub<F> hub;
+        Hub<T> hubDetail;
+        boolean bLabelSetText;
+        JButton cmd;
+        JPanel panCmd;
+        JScrollPane spLst;
         
         public DayPanel() {
             setLayout(new BorderLayout());
+            
             this.hub = new Hub(OAMonthCalendar.this.getHub().getObjectClass());
-            lst = new OAList(hub, propertyPath, 4, 12) {
+            
+            cmd = new JButton("create");
+            cmd.setFont(cmd.getFont().deriveFont(9.5f));
+            cmd.setForeground(Color.gray);
+            cmd.setToolTipText("this day is empty, click to create a new day");
+            // URL url = OAButton.class.getResource("icons/new.gif");
+            // if (url != null) cmd.setIcon(new ImageIcon(url));
+
+            cmd.addActionListener(new ActionListener() {
                 @Override
-                public void customizeRenderer(JLabel label, JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                    OAMonthCalendar.this.customizeRenderer(label, list, value, index, isSelected, cellHasFocus);
+                public void actionPerformed(ActionEvent e) {
+                    Class c = hub.getObjectClass();
+                    if (c == null) return;
+                    OAObject obj = (OAObject) OAObjectReflectDelegate.createNewObject(c);
+                    obj.setProperty(OAMonthCalendar.this.datePropertyPaths[0], date);
+                    obj.save();
+                    OAMonthCalendar.this.hub.add((F) obj);
+                    onDaySelected(date, hub, hubDetail);
+                    setSelectedDate(date, true);
                 }
-            };
-            lst.setDisplayTemplate(getDisplayTemplate());
-            lst.setToolTipTextTemplate(getDisplayTemplate());
-            lst.setIconColorProperty(getIconColorProperty());
-                    
-            lbl = new JLabel();
+            });
+            OAButton.setup(cmd);
+            panCmd = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+            panCmd.add(cmd);
+            panCmd.setForeground(Color.lightGray);
+            add(panCmd, BorderLayout.SOUTH);
+
+            
+            if (OAMonthCalendar.this.hubDetail != null) {
+                lbl = createLabel(hub);
+                if (lbl instanceof OALabel) {
+                    ((OALabel) lbl).setAllowSetTextBlink(false);
+                }
+            }
+            if (lbl == null) {
+                lbl = new JLabel();
+                //lbl.setOpaque(true);
+                bLabelSetText = true;
+            }
             lbl.setFont(lbl.getFont().deriveFont(Font.BOLD, 12.5f));
             lbl.setHorizontalAlignment(SwingConstants.CENTER);
-            //lbl.setOpaque(true);
-            
             add(lbl, BorderLayout.NORTH);
+            
+            Hub hubx = hub;
+            if (OAMonthCalendar.this.getDetailHub() != null) {
+                HubAODelegate.keepActiveObject(this.hub);
+                
+                hubDetail = hub.getDetailHub(OAMonthCalendar.this.getDetailHub().getObjectClass()).createSharedHub();
+                hubx = hubDetail;
+            }
+            lst = createList(hubx);
+            lst.setVisibleRows(5);
 
             // hack to let scrollwheel work for panel, and not list
             //   https://stackoverflow.com/questions/12911506/why-jscrollpane-does-not-react-to-mouse-wheel-events
-            JScrollPane sp = new JScrollPane(lst) {
+            spLst = new JScrollPane(lst) {
                 @Override
                 protected void processMouseWheelEvent(MouseWheelEvent e) {
                     boolean b = getVerticalScrollBar().isVisible();
@@ -515,9 +671,9 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
             };
             // sp.setWheelScrollingEnabled(false);
             
-            sp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-            add(sp, BorderLayout.CENTER);
-            
+            spLst.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+            add(spLst, BorderLayout.CENTER);
+
             lst.addMouseListener(new MouseListener() {
                 @Override
                 public void mouseReleased(MouseEvent e) {
@@ -554,8 +710,6 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
                 }
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    int xx = 4;
-                    xx++;
                 }
             });
         }
@@ -569,13 +723,16 @@ public class OAMonthCalendar<F extends OAObject> extends JScrollPane {
                 lbl.setBackground(colorSelected);
                 lbl.setForeground(Color.white);
                 setBorder(borderSelected);
-                
             }
             else {
                 lbl.setOpaque(false);
                 lbl.setForeground(Color.black);
                 setBorder(borderUnselected);
-                hub.setAO(null);
+               if (hubDetail != null) hubDetail.setAO(null);
+               else hub.setAO(null);
+            }
+            if (lbl instanceof OALabel) {
+                ((OALabel) lbl).customizeRenderer(lbl, hub.getAO(), date, b, b, 0, false, false);
             }
         }
     }

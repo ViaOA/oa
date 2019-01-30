@@ -272,7 +272,7 @@ public class OAJfcUtil {
                     Color c;
                     c = (b ? blinker.colorFg : blinker.colorFgOrig);
                     blinker.component.setForeground(c);
-
+                    
                     c = (b ? blinker.colorBg : blinker.colorBgOrig);
                     blinker.component.setBackground(c);
                     

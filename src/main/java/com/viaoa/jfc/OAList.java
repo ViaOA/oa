@@ -96,13 +96,6 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
     
     @Override
     public void setSize(Dimension d) {
-        // TODO Auto-generated method stub
-if (d.height < 55) {
-    int xx = 4;
-    xx++;
-}
-Dimension dx = getSize();
-
         super.setSize(d);
     }
     

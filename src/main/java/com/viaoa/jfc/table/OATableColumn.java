@@ -159,6 +159,7 @@ public class OATableColumn {
     }
     public void setCustomizer(OATableColumnCustomizer tcc) {
         this.columnCustomizer = tcc;
+        tcc.setup(this);
     }
     
     private Hub hubMethodHub; // 2006/12/11
@@ -241,8 +242,53 @@ public class OATableColumn {
         }
         return obj;
     }
-    
 
+    // 20190128
+    /**
+     * Find the last OAObject value for this components propertyPath.
+     */
+    public OAObject getLastOAObject(OAObject objStart) {
+        if (objStart == null) return null;
+        OAObject oaObj = objStart;
+        Method[] ms = methods;
+        if (ms == null || ms.length < 2) return oaObj;
+        int x = ms.length;
+        
+        for (int i=0; i<(x-1); i++) {
+            Object objx = OAReflect.getPropertyValue(oaObj, ms[i]);
+            if (objx instanceof OAObject) oaObj = (OAObject) objx;
+            else {
+                oaObj = null;
+                if (oaObj == null) break; 
+            }
+        }
+        return oaObj;
+    }
+    
+    public OAObject getColumnObject(OAObject objStart, final Class endClass) {
+        if (objStart == null) return null;
+        OAObject oaObj = objStart;
+        Method[] ms = methods;
+        if (ms == null || ms.length < 2) {
+            if (oaObj.getClass().equals(endClass)) return oaObj;
+            return null;
+        }
+        int x = ms.length;
+        
+        for (int i=0; i<(x-1); i++) {
+            if (oaObj.getClass().equals(endClass)) break;
+            Object objx = OAReflect.getPropertyValue(oaObj, ms[i]);
+            if (objx instanceof OAObject) oaObj = (OAObject) objx;
+            else {
+                oaObj = null;
+                break; 
+            }
+        }
+        return oaObj;
+    }
+
+    
+    
     public String getPathFromTableHub(Hub hubTable) {
         getMethods(hubTable);
         return path;
@@ -260,6 +306,21 @@ public class OATableColumn {
         }
         return _getMethods(hubTable);
     }    
+    
+    private String pathBetweenHubs; // stored, not used anywhere
+    private int betweenHubPropertyPathCount; // number of properties to get from table.hub to the hub that this component is based on.
+    
+    // used by tableCustomizer to be able to get the correct object that this column is expecting for the row
+    //    see: OATableColumnCustomizer.getRow(..)
+    public Object getNormalizedRow(Object tableRowObject) {
+        if (methods == null) return tableRowObject;
+        if (betweenHubPropertyPathCount == 0) return tableRowObject;
+        
+        Object obj = OAReflect.getPropertyValue(tableRowObject, methods, betweenHubPropertyPathCount);
+        return obj;
+    }
+    
+    
     public Method[] _getMethods(Hub hubTable) {
         if (methods != null && hubTable == hubMethodHub) return methods;
         hubMethodHub = hubTable;
@@ -272,14 +333,27 @@ public class OATableColumn {
             bLinkOnPos = HubLinkDelegate.getLinkedOnPos(oaComp.getHub(), true);
             path = origPath;
             if (!bIsAlreadyExpanded) {
-                String s = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, oaComp.getHub());
+                pathBetweenHubs = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, oaComp.getHub());
+                betweenHubPropertyPathCount = OAString.dcount(pathBetweenHubs, ".");
+                
+                // adjust the number of properties to get from table hub to "base" hub for this column
+                if (betweenHubPropertyPathCount > 0) {
+                    Hub hx = oaComp.getHub().getLinkHub(true);
+                    if (hx != null) {
+                        if (hx == hubTable || hx == table.getMasterFilterHub()) {
+                            betweenHubPropertyPathCount--; 
+                        }
+                    }
+                }
+                
                 if (!bLinkOnPos) {
-                    if (s != null) {
-                        if (path == null) path = s;
-                        else path = s + "." + path;
+                    if (pathBetweenHubs != null) {
+                        if (path == null) path = pathBetweenHubs;
+                        else path = pathBetweenHubs + "." + path;
                     }
                 }
                 else {
+                    String s = pathBetweenHubs; 
                     if (s == null) s = "";
                     else s += ".";
                     pathIntValue = s + HubLinkDelegate.getLinkToProperty(oaComp.getHub());

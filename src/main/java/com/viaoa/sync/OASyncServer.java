@@ -559,7 +559,7 @@ public class OASyncServer {
     }
     // loops to log all requests that are added to the queue
     private void _runRequestStatsLogger() {
-        LOG.config("Request logger thread is now running");
+        LOG.fine("Request logger thread is now running");
         int errorCnt = 0;
         long tsLastError = 0;
         for (int i=0;;i++) {

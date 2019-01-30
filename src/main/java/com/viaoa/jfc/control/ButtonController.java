@@ -1208,21 +1208,25 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     hub.setAO(obj);
                 }
                 else {
-                    // 20190117 todo: add undo support qqqqqqqqqqqqq                    
+// 20190117 todo: add undo support qqqqqq                    
                     Hub hx = getClipboardHub(false);
                     if (hx != null) {
+                        int x = 0;
                         for (Object objx : hx) {
                             if (!objx.getClass().equals(hub.getObjectClass())) break;
                             objx = OAObjectEditQueryDelegate.getCopy((OAObject) objx);
-                            hub.add(objx);
+                            if (pos < 0) hub.add(objx);
+                            else hub.insert(objx, pos+(x++));
                         }
                         break;
                     }
                     hx = getClipboardHub(true);
                     if (hx != null) {
+                        int x = 0;
                         for (Object objx : hx) {
                             if (!objx.getClass().equals(hub.getObjectClass())) break;
-                            hub.add(objx);
+                            if (pos < 0) hub.add(objx);
+                            else hub.insert(objx, pos+(x++));
                         }
                         break;
                     }
@@ -1616,6 +1620,27 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 break;
             case Paste:
                 flag = false;
+                // 20190121 dont get clipboard object, too much overhead  
+                Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
+                DataFlavor[] dfs;
+                try {
+                    dfs = cb == null ? null : cb.getAvailableDataFlavors();
+                }
+                catch (Exception ex) {
+                    dfs = null;
+                }
+                if (dfs != null) {
+                    for (DataFlavor df : dfs) {
+                        if (df == null) continue;
+                        if (df.equals(OATransferable.OAOBJECT_CUT_FLAVOR)) flag = true;
+                        else if (df.equals(OATransferable.OAOBJECT_COPY_FLAVOR)) flag = true;
+                        else if (df.equals(OATransferable.HUB_CUT_FLAVOR)) flag = true;
+                        else if (df.equals(OATransferable.HUB_COPY_FLAVOR)) flag = true;
+                        if (flag) break;
+                    }
+                }
+                
+                /* was: changed so that it did not get object from clipboard everytime
                 if (hub != null) {
                     OAObject objx = getClipboardObject(true);
                     if (objx != null) {  // from "cut"
@@ -1634,6 +1659,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                         }
                     }
                 }
+                */
                 if (flag && !HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
                     flag = (hub.getSize() == 0);
                     break;
@@ -1678,6 +1704,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
     // 20110111 used for Paste
     private FlavorListener flavorListener;
 
+
+    /*not used
     protected void setupPasteCommand() {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
         flavorListener = new FlavorListener() {
@@ -1688,6 +1716,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
         };
         cb.addFlavorListener(flavorListener);
     }
+    */
 
     // this can be overwritten to customize an object copy.
     protected OAObject createCopy(OAObject obj) {
@@ -1715,7 +1744,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
         Hub hub;
         try {
             Object objx = cb.getData(bFromCut ? OATransferable.HUB_CUT_FLAVOR : OATransferable.HUB_COPY_FLAVOR);
-//was            Object objx = cb.getData(OATransferable.HUB_FLAVOR);
+            //was: Object objx = cb.getData(OATransferable.HUB_FLAVOR);
             if (objx instanceof Hub) hub = (Hub) objx;
             else hub = null;
         }

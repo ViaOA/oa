@@ -3867,12 +3867,12 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
             OATableColumnCustomizer tcc = tc.getCustomizer();
             if (tcc != null) {
                 // Object obj = getObjectAt(row, column);
-                tcc.customizeRenderer(lbl, this, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
+                tcc.customizeRenderer(lbl, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
             }
         }        
         
         // 4of4: allow App to customize
-        customizeRenderer(lbl, table, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
+        customizeRenderer(lbl, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
 
         
         if (lbl == lblDummy && comp != null) {
@@ -3899,6 +3899,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     /**
      * This is called by getRenderer(..) after the default settings have been set.
      */
+    public void customizeRenderer(JLabel lbl, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
+        customizeRenderer(lbl, this, value, isSelected, hasFocus, row, column, wasChanged, wasMouseOver);
+        // to be overwritten
+    }
     public void customizeRenderer(JLabel lbl, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column, boolean wasChanged, boolean wasMouseOver) {
         // to be overwritten
     }

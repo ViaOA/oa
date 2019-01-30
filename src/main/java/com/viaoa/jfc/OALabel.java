@@ -479,7 +479,7 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         if (text == null) text = "";
         super.setText(text);
         
-        if (!b) {
+        if (!b && bAllowSetTextBlink) {
             Hub hx = getHub();
             if (hx == null) return;
             Object objx = hx.getAO();
@@ -500,6 +500,11 @@ public class OALabel extends JLabel implements OATableComponent, OAJfcComponent 
         invalidate();
     }
     
+    
+    private boolean bAllowSetTextBlink=true;
+    public void setAllowSetTextBlink(boolean b) {
+        bAllowSetTextBlink = b;
+    }
     
     
 /* moved to OAJfcUtil    

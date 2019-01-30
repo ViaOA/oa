@@ -26,7 +26,7 @@
 	</target>
 
     <target name="Sign">
-        <signjar jar="dist/${FileName}.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" />
+        <signjar jar="dist/${FileName}.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" tsaurl="http://sha256timestamp.ws.symantec.com/sha256/timestamp"/>
     </target>
 	
 
@@ -118,7 +118,7 @@
         <jar basedir="/temp/javahelp" manifest="manifest.mf" destfile="dist/jh.jar" casesensitive="true" update="false"  />
     </target>
     <target name="SignHelp" depends="JarHelp">
-        <signjar jar="dist/jh.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" />
+        <signjar jar="dist/jh.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" tsaurl="http://sha256timestamp.ws.symantec.com/sha256/timestamp"/>
     </target>
 
     
@@ -131,19 +131,19 @@
         <jar basedir="/temp/itext" destfile="dist/itext.jar" manifest="manifest.mf" casesensitive="true" update="false"  />
     </target>
     <target name="SignItext" depends="">
-        <signjar jar="dist/itext.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" />
+        <signjar jar="dist/itext.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" tsaurl="http://sha256timestamp.ws.symantec.com/sha256/timestamp"/>
     </target>
 
     <target name="JarBallonTip" depends="" description="Jar BallonTip files">
         <jar basedir="/temp/ballontip" destfile="dist/ballontip.jar" manifest="manifest.mf" casesensitive="true" update="false"  />
     </target>
     <target name="SignBallonTip" depends="">
-        <signjar jar="dist/ballontip.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" />
+        <signjar jar="dist/ballontip.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" tsaurl="http://sha256timestamp.ws.symantec.com/sha256/timestamp"/>
     </target>
     
     
     <target name="SignSizeOf" depends="">
-        <signjar jar="dist/sizeof.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" />
+        <signjar jar="dist/sizeof.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" tsaurl="http://sha256timestamp.ws.symantec.com/sha256/timestamp"/>
     </target>
 	
 	

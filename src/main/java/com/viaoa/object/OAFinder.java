@@ -327,6 +327,7 @@ public class OAFinder<F extends OAObject, T extends OAObject> {
      *  use the canFindFirst method instead.
      */
     public T findFirst(F objectRoot) {
+        if (objectRoot == null) return null;
         int holdMax = getMaxFound();
         setMaxFound(1);
         ArrayList<T> al = find(objectRoot);

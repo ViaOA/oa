@@ -138,7 +138,7 @@ public class OADateTime implements java.io.Serializable, Comparable {
     }
 
     // use a pool of GregorianCalendar since they are so heavy
-    private static OAPool<GregorianCalendar> poolGregorianCalendar = new OAPool<GregorianCalendar>(GregorianCalendar.class, 20, 50) {
+    private static final OAPool<GregorianCalendar> poolGregorianCalendar = new OAPool<GregorianCalendar>(GregorianCalendar.class, 20, 50) {
         @Override
         protected GregorianCalendar create() {
             GregorianCalendar cal = new GregorianCalendar();
@@ -1011,6 +1011,10 @@ public class OADateTime implements java.io.Serializable, Comparable {
         }
     }
 
+    @Override
+    public int hashCode() {
+        return (int) (_time % Integer.MAX_VALUE);
+    }
 
     /**
         Compares this OADateTime with any object.  If object is not an OADateTime, it will be converted and then compared.
@@ -1728,5 +1732,26 @@ public class OADateTime implements java.io.Serializable, Comparable {
             return s;
         }
         return null;
+    }
+    
+    public static void main(String[] args) {
+        for (int i=0; i<80;i++) {
+            final int id = i;
+            Thread t = new Thread() {
+                @Override
+                public void run() {
+                    test(id);
+                }
+            };
+            t.start();
+        }
+        test(777);
+    }
+    public static void test(int id) {
+        OADate dx = new OADate();
+        for (int i=0; ;i++) {
+            dx = (OADate) dx.addMilliSeconds(1);
+            if (i % 25000 == 0) System.out.println(id+") "+i);
+        }
     }
 }

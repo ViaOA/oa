@@ -32,6 +32,13 @@ public class OAMonthCacheCalendar<F extends OAObject> extends OAMonthCalendar {
         onNewMonth();
     }
     
+    public OAMonthCacheCalendar(Hub<F> hub, String datePropertyPath, Hub hubDetail) {
+        super(hub, datePropertyPath, hubDetail);
+        setAllowCreateNew(true);
+        onNewMonth();
+    }
+    
+    
     @Override
     protected void setup() {
         super.setup();
@@ -60,6 +67,7 @@ public class OAMonthCacheCalendar<F extends OAObject> extends OAMonthCalendar {
     protected void onNewMonth() {
         // create finders for each pp
         if (hub == null || alFinder == null) return;
+        hub.clear();
         alFinder.clear();
         OAFinder finder;
 
@@ -74,17 +82,22 @@ public class OAMonthCacheCalendar<F extends OAObject> extends OAMonthCalendar {
             finder.addLessOrEqualFilter(pp, d2);
             alFinder.add(finder);
         }
+        final String q = query;
 
-        String q = query;
-        
+        final Object[] params = new Object[datePropertyPaths.length * 2];
+        for (int i=0; i<datePropertyPaths.length*2; i+=2) {
+            params[i] = d1;
+            params[i+1] = d2;
+        }
+
         SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
             ArrayList al = new ArrayList();
             @Override
             protected Void doInBackground() throws Exception {
                 try {
                     aiSelectCnt.incrementAndGet();
-                    OASelect sel = new OASelect(getHub().getObjectClass(), q, new Object[] {d1, d2}, "");
-                    for (; ; ) {
+                    OASelect sel = new OASelect(getHub().getObjectClass(), q, params, "");
+                    for (; ;) {
                         Object objx = sel.next();
                         if (objx == null) break;
                         al.add(objx);

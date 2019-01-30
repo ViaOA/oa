@@ -490,7 +490,7 @@ public class OAJfcController extends HubListenerAdapter {
         else {
             if (OAString.isEmpty(propertyPath)) return obj;
             if (!(obj instanceof OAObject)) return obj;
-            obj = ((OAObject) obj).getProperty(propertyPath);
+            if (obj instanceof OAObject) obj = ((OAObject) obj).getProperty(propertyPath);
         }
         return obj;
     }
@@ -576,9 +576,11 @@ public class OAJfcController extends HubListenerAdapter {
                 }
                 else prop = propertyPath;
             }
-            OAObjectEditQuery em = OAObjectEditQueryDelegate.getConfirmPropertyChangeEditQuery((OAObject)objx, prop, newValue, confirmMessage, confirmTitle);
-            confirmMessage = em.getConfirmMessage();
-            confirmTitle = em.getConfirmTitle();
+            if (objx instanceof OAObject) {
+                OAObjectEditQuery em = OAObjectEditQueryDelegate.getConfirmPropertyChangeEditQuery((OAObject)objx, prop, newValue, confirmMessage, confirmTitle);
+                confirmMessage = em.getConfirmMessage();
+                confirmTitle = em.getConfirmTitle();
+            }
         }
         
         boolean result = true;
@@ -696,21 +698,22 @@ public class OAJfcController extends HubListenerAdapter {
             }
             else prop = propertyPath;
         }
-        OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery((OAObject)objx, prop, null, newValue);
-
         String result = null;
-        if (!em.getAllowed()) {
-            result = em.getResponse();
-            Throwable t = em.getThrowable();
-            if (OAString.isEmpty(result)) {
-                if (t != null) {
-                    for (; t!=null; t=t.getCause()) {
-                        result = t.getMessage();
-                        if (OAString.isNotEmpty(result)) break;
+        if (objx instanceof OAObject) {
+            OAObjectEditQuery em = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery((OAObject)objx, prop, null, newValue);
+            if (!em.getAllowed()) {
+                result = em.getResponse();
+                Throwable t = em.getThrowable();
+                if (OAString.isEmpty(result)) {
+                    if (t != null) {
+                        for (; t!=null; t=t.getCause()) {
+                            result = t.getMessage();
+                            if (OAString.isNotEmpty(result)) break;
+                        }
+                        if (OAString.isEmpty(result)) result = em.getThrowable().toString();
                     }
-                    if (OAString.isEmpty(result)) result = em.getThrowable().toString();
+                    else result = "invalid value";
                 }
-                else result = "invalid value";
             }
         }
         return result;
@@ -742,7 +745,9 @@ public class OAJfcController extends HubListenerAdapter {
                 if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
                     objx = oaPropertyPath.getLastLinkValue(objx);
                 }
-                return OAObjectEditQueryDelegate.getFormat((OAObject)objx, endPropertyName, defaultFormat);
+                if (objx instanceof OAObject) {
+                    return OAObjectEditQueryDelegate.getFormat((OAObject)objx, endPropertyName, defaultFormat);
+                }
             }
         }
         return defaultFormat;
@@ -1288,7 +1293,7 @@ cntAllUpdate++;
                             if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
                                 objx = oaPropertyPath.getLastLinkValue(objx);
                             }
-                            OAObjectEditQueryDelegate.renderLabel((OAObject)objx, endPropertyName, lblThis);
+                            if (objx instanceof OAObject) OAObjectEditQueryDelegate.renderLabel((OAObject)objx, endPropertyName, lblThis);
                         }
                     }
                     catch (Exception e) {
@@ -1767,7 +1772,7 @@ cntAllUpdate++;
             if (oaPropertyPath != null && oaPropertyPath.hasLinks()) {
                 objx = oaPropertyPath.getLastLinkValue(objx);
             }
-            ttDefault = OAObjectEditQueryDelegate.getToolTip((OAObject) objx, endPropertyName, ttDefault);
+            if (objx instanceof OAObject) ttDefault = OAObjectEditQueryDelegate.getToolTip((OAObject) objx, endPropertyName, ttDefault);
         }
         else {
             if (OAString.isNotEmpty(toolTipTextPropertyPath) || OAString.isNotEmpty(getToolTipTextTemplate())) {
