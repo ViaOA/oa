@@ -266,7 +266,7 @@ public class ResultSetIterator implements OADataSourceIterator {
             hsObjectWasLoaded = new HashSet<>(25, .75f);
         }
 
-        hubReadAhead.remove(0);  // remove last one that was returned from next().  It needs to stay in hubReadAhead in case getSiblings is called
+        hubReadAhead.remove(0);  // remove last one that was returned from next().  It stayed in hubReadAhead in case getSiblings is called
         for (int i=hubReadAhead.size(); bMore && i<100; i++) {
             _next();
         }
@@ -288,6 +288,10 @@ public class ResultSetIterator implements OADataSourceIterator {
         return obj;
     }
     
+    @Override
+    public OASiblingHelper getSiblingHelper() {
+        return siblingHelper;
+    }
     protected boolean _next() {
         if (!bInit) init();
         if (rs == null) return false;
@@ -500,6 +504,9 @@ public class ResultSetIterator implements OADataSourceIterator {
         if (hubReadAhead != null) {
             hubReadAhead.clear();
             hubReadAhead = null;
+        }
+        if (siblingHelper != null) {
+            siblingHelper = null;
         }
         bClosed = true;
         bMore = false;

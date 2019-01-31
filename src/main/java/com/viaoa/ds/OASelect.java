@@ -656,7 +656,16 @@ public class OASelect<TYPE extends OAObject> implements Iterable<TYPE> {
             obj = _next();
             if (obj == null) break;
             if (oaFilter == null || finder != null) break;
-            if (oaFilter.isUsed(obj)) break;
+            
+            // 20190130 
+            OASiblingHelper siblingHelper = query == null ? null : query.getSiblingHelper(); 
+            boolean bx = ((siblingHelper != null) && OAThreadLocalDelegate.addSiblingHelper(siblingHelper)); 
+            try {
+                if (oaFilter.isUsed(obj)) break;
+            }
+            finally {
+                if (bx) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
+            }
         }
         return obj;
     }

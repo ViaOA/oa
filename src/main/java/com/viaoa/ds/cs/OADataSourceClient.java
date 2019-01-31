@@ -18,6 +18,7 @@ import com.viaoa.sync.remote.RemoteClientInterface;
 import com.viaoa.util.OAFilter;
 import com.viaoa.ds.*;
 import com.viaoa.ds.objectcache.ObjectCacheIterator;
+import com.viaoa.hub.Hub;
 
 
 /**
@@ -332,6 +333,8 @@ public class OADataSourceClient extends OADataSource {
         Object[] cache;
         int cachePos = 0;
         OAFilter filter;
+        private OASiblingHelper siblingHelper;
+        private Hub hubReadAhead;
 
         public MyIterator(Class c, Object id, OAFilter filter) {
             this.clazz = c;
@@ -344,6 +347,11 @@ public class OADataSourceClient extends OADataSource {
             this.bKey = true;
         }
 
+        @Override
+        public OASiblingHelper getSiblingHelper() {
+            return siblingHelper;
+        }
+        
         public synchronized boolean hasNext() {
             if (key != null) return (bKey);
             
@@ -362,14 +370,25 @@ public class OADataSourceClient extends OADataSource {
         protected synchronized void getMoreFromServer() {
             cachePos = 0;
             cache = (Object[]) getRemoteClient().datasource(IT_NEXT, new Object[] {id} );
-            if (cache != null && cache.length == 0) cache = null;
-            if (cache == null) return;
+            if (cache == null || cache.length == 0) {
+                cache = null;
+//20190130
+                close();
+                return;
+            }
+//20190130             
+            if (siblingHelper == null) {
+                this.hubReadAhead = new Hub();
+                siblingHelper = new OASiblingHelper(this.hubReadAhead);
+            }
+            
             for (Object obj : cache) {
                 if (obj == null) break;
                 // the server will add the object to the session cache (server side) if it is not in a hub w/master 
                 if (OAObjectHubDelegate.isInHubWithMaster((OAObject) obj)) {
                     OAObjectCSDelegate.removeFromServerSideCache((OAObject) obj);
                 }
+                hubReadAhead.add(obj);
             }
         }
 
@@ -392,6 +411,7 @@ public class OADataSourceClient extends OADataSource {
 
         public void remove() {
             getRemoteClient().datasourceNoReturn(IT_REMOVE, new Object[] {id} );
+            close();
         }
         @Override
         public String getQuery() {
@@ -403,6 +423,25 @@ public class OADataSourceClient extends OADataSource {
             // TODO Auto-generated method stub
             return null;
         }
+        
+
+        public void close() {
+// 20190130 qqqqqqqqqqqqqqqq        
+            if (hubReadAhead != null) {
+                hubReadAhead.clear();
+                hubReadAhead = null;
+            }
+            if (siblingHelper != null) {
+                siblingHelper = null;
+            }
+        }
+        
+        
+        public void finalize() throws Throwable {
+            super.finalize();
+            close();
+        }
+
     }
 
 	public @Override void updateMany2ManyLinks(OAObject masterObject, OAObject[] adds, OAObject[] removes, String propertyNameFromMaster) {

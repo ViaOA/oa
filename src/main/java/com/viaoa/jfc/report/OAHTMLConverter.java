@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.*;
@@ -145,6 +146,8 @@ public class OAHTMLConverter {
         aiStopCalled.incrementAndGet();
     }
     
+    private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+    
     protected String getHtml(OAObject objRoot, Hub hubRoot, OAProperties props) {
         final int cntStopCalled = aiStopCalled.get();
 
@@ -153,7 +156,13 @@ public class OAHTMLConverter {
         setProperty("TIME", new OATime());
 
         if (rootTreeNode == null) {
-            rootTreeNode = createTree(htmlTemplate);
+            try {
+                rwLock.writeLock().lock();
+                rootTreeNode = createTree(htmlTemplate);
+            }
+            finally {
+                rwLock.writeLock().unlock();
+            }
         }
         
         StringBuilder sb = new StringBuilder(1024 * 4);
