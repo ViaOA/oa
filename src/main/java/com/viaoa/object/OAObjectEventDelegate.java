@@ -141,7 +141,7 @@ public class OAObjectEventDelegate {
             if (revLinkInfo != null && revLinkInfo.getOwner()) {
                 String s = "FYI (no exception), owner is being reassigned, object="+oaObj.getClass().getSimpleName()+", property="+propertyName+", new value="+newObj;
                 RuntimeException e = new RuntimeException(s);
-                LOG.log(Level.WARNING, s, e);
+                LOG.log(Level.FINE, s, e);
                 // throw e;
             }
         }

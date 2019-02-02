@@ -1166,7 +1166,6 @@ cntAllUpdate++;
         if (hub != null) obj = hub.getAO();
         else obj = null;
         update(component, obj, true);
-        
         updateEnabled();        
         updateVisible();      
         updateLabel(component, obj);

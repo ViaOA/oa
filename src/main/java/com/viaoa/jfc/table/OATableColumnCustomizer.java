@@ -15,6 +15,7 @@ import javax.swing.JLabel;
 import com.viaoa.hub.Hub;
 import com.viaoa.jfc.OATable;
 import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectReflectDelegate;
 
 /** 
     Used by OATableColumn for customizing table column
@@ -24,6 +25,12 @@ import com.viaoa.object.OAObject;
 public class OATableColumnCustomizer {
     
     private OATableColumn tc;
+    private Hub hubLocal;
+    
+    public OATableColumnCustomizer(Hub hubLocal) {
+        this.hubLocal = hubLocal;
+    }
+    
     
     public OATable getTable() {
         if (tc == null) return null;
@@ -33,10 +40,14 @@ public class OATableColumnCustomizer {
     /**
      * Table hub
      */
-    public Hub getHub() {
+    public Hub getTableHub() {
         if (tc != null && tc.table != null) return tc.table.getHub();
         return null;
     }
+    public Hub getLocalHub() {
+        return hubLocal;
+    }
+    
     
     public OATableColumn getTableColumn() {
         return tc;
@@ -47,7 +58,7 @@ public class OATableColumnCustomizer {
     }
 
     
-    /**
+    /*
      * get the "normalized" table row that this column is based on.
      * This is usually table.hub(row), but it could be that this column
      * uses a hub that is a detail hub from the table.hub, or a linked hub to the table.hub
@@ -56,10 +67,36 @@ public class OATableColumnCustomizer {
      *          where: dept.name could be a label used directly from hubEmps as lbl(hubEmps, "dept.name") => getRow(.) should will an Emp
      *              or:  created using a detail hub, hubDept = emps.getDetails("dept"), and then lbl(hubDept, "name")  => getRow(.) will return a Dept
      */
-    public Object getRow(int row) {
+
+    public Object getTableRow(int row) {
+        if (tc == null || tc.table == null) return null;
+        return tc.table.getHub().getAt(row);
+    }
+    
+    private String pathBetweenHubs;
+    public Object getLocalRow(int row) {
+        if (hubLocal == null) return null;
+        Object obj = getTableRow(row);
+        if (!(obj instanceof OAObject)) return null;
+        if (tc == null || tc.table == null) return obj;
+        
+        Hub hx = tc.table.getMasterFilterHub();
+        if (hx == null) hx = tc.table.getHub();
+        
+        if (hx == hubLocal) return obj;
+        
+        if (pathBetweenHubs == null) {
+            pathBetweenHubs = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hx, hubLocal);
+            if (pathBetweenHubs == null) return obj;
+        }
+        Object objx = ((OAObject) obj).getProperty(pathBetweenHubs);
+        return objx;
+    }
+    
+    public Object getColumnRow(int row) {
         if (row < 0) return null;
         if (tc == null) return null;
-        Object obj = getHub().getAt(row);
+        Object obj = getTableRow(row);
         obj = tc.getNormalizedRow(obj);
         return obj;
     }

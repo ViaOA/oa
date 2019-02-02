@@ -17,8 +17,53 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.*;
+import com.viaoa.model.oa.VString;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
+
+/*
+
+* can now use propertyPaths with hubs in them, the results will be comma seperated string
+
+        <%=ifnot CustomItem%>
+            <%=item.name%>
+        <%=ifnotend CustomItem%>
+
+        <%=if description%>
+            <%=description, "38L."%>
+        <%=ifend description%>
+        <%=ifnot description%>
+            <%=item.description, "38L."%>
+        <%=ifnotend description%>
+
+
+      <%=if item.imageStore.bytes%>
+      <tr valign="top">
+        <td>
+            &nbsp;
+        </td>        
+        <td>
+            &nbsp;
+        </td>        
+        <td colspan=5>
+            <img src="oaproperty://com.cdi.model.oa.ImageStore/bytes?id=<%=item.imageStore.id%>&mh=1100&mw=1100&x=<%=$seq%>">
+        </td>        
+      </tr>        
+      <%=ifend item.imageStore.bytes%>
+
+
+      <%=foreach SalesOrderItems%>
+      <%=foreachend SalesOrderItems%>
+      
+        <td style="text-align:right">
+            <%=count$, "R,"%>
+        </td>
+      
+        <!-- this is intercepted by callback -->
+        <nobr><%=split$location%></nobr>
+
+
+*/
 
 /*  
     <br>Tags that are supported:
@@ -941,6 +986,24 @@ if(errorCnt++ < 10) LOG.warning(node.errorMsg+", Template="+getTemplate());
      */
     protected Object getProperty(OAObject oaObj, String propertyName) {
         if (oaObj == null) return null;
+        
+        if (OAString.isNotEmpty(propertyName) && propertyName.indexOf('.') >= 0) {
+            OAPropertyPath pp = new OAPropertyPath(oaObj.getClass(), propertyName);
+            if (pp.getHasHubProperty()) {
+                // 20190131 useFinder for pp with hubs
+                final VString vs = new VString();
+                OAFinder finder = new OAFinder(pp.getPropertyPathLinksOnly()) {
+                    @Override
+                    protected void onFound(OAObject obj) {
+                        Object objx = obj.getProperty(pp.getLastPropertyName());
+                        String s = OAConv.toString(objx);
+                        vs.setValue(OAString.concat(vs.getValue(), s, ", "));
+                    }
+                };
+                finder.find(oaObj);
+                return vs.getValue();
+            }
+        }
         return oaObj.getProperty(propertyName);
     }
 }

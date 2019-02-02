@@ -50,10 +50,21 @@ public class TabbedPaneController {
         this.hub = hub;
         this.tabbedPane = tp;
         if (tp != null && hub != null) {
-            control = OAJfcControllerFactory.createOnlyAoNotNull(hub, tp);
+            // 20190131 dont change visible, since this could be inside of another tabpane and it's visible is controlled when 
+            //    an outer tab is selected.
+            OAJfcController jc = new OAJfcController(hub, null, null, tp, HubChangeListener.Type.AoNotNull, false, false) {
+                @Override
+                public boolean updateVisible(JComponent comp, Object object) {
+                    // no-op
+                    return true;
+                }
+            };
+            //was: control = OAJfcControllerFactory.createOnlyAoNotNull(hub, tp);
+            
         }
         if (tp != null) setup();
     }
+    
     private void setup() {
         final JPopupMenu pmenu = new JPopupMenu();
 
@@ -307,4 +318,5 @@ public class TabbedPaneController {
             lbl.setIcon(tabbedPane.getIconAt(i));
         }
     }
+    
 }

@@ -97,18 +97,19 @@ public class OATransferable implements Transferable {
     */
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         if (flavor == null) return null;
-        if (flavor.equals(HUB_FLAVOR)) {
+        
+        if (flavor == HUB_FLAVOR || (flavor.equals(HUB_FLAVOR) && flavor.getHumanPresentableName().equals(HUB_FLAVOR.getHumanPresentableName()))) {
             if (object instanceof Hub) return (Hub) object;
             return hub;
         }
-        if (flavor.equals(HUB_COPY_FLAVOR)) {
+        if (flavor == HUB_COPY_FLAVOR || (flavor.equals(HUB_COPY_FLAVOR) && flavor.getHumanPresentableName().equals(HUB_COPY_FLAVOR.getHumanPresentableName()))) {
             if (bFromCut) return null;
             if (object instanceof Hub) {
                 return (Hub) object;
             }
             return hub;
         }
-        if (flavor.equals(HUB_CUT_FLAVOR)) {
+        if (flavor == HUB_CUT_FLAVOR || (flavor.equals(HUB_CUT_FLAVOR) && flavor.getHumanPresentableName().equals(HUB_CUT_FLAVOR.getHumanPresentableName()))) {
             if (!bFromCut) return null;
             if (object instanceof Hub) {
                 return (Hub) object;
@@ -116,12 +117,11 @@ public class OATransferable implements Transferable {
             return hub;
         }
         
-        
-        if (flavor.equals(OAOBJECT_CUT_FLAVOR) && flavor.getHumanPresentableName().equals(OAOBJECT_CUT_FLAVOR.getHumanPresentableName())) {
+        if (flavor == OAOBJECT_CUT_FLAVOR || (flavor.equals(OAOBJECT_CUT_FLAVOR) && flavor.getHumanPresentableName().equals(OAOBJECT_CUT_FLAVOR.getHumanPresentableName()))) {
             if (bFromCut) return object;
             else return null;
         }
-        if (flavor.equals(OAOBJECT_COPY_FLAVOR) && flavor.getHumanPresentableName().equals(OAOBJECT_COPY_FLAVOR.getHumanPresentableName())) {
+        if (flavor == OAOBJECT_COPY_FLAVOR || (flavor.equals(OAOBJECT_COPY_FLAVOR) && flavor.getHumanPresentableName().equals(OAOBJECT_COPY_FLAVOR.getHumanPresentableName()))) {
             if (!bFromCut) return object;
             else return null;
         }
@@ -132,10 +132,15 @@ public class OATransferable implements Transferable {
         Returns true if Hub or OAObject Flavor.
     */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
-        if (flavor.equals(HUB_FLAVOR)) return true;
+
+        if (flavor == HUB_FLAVOR || (flavor.equals(HUB_FLAVOR) && flavor.getHumanPresentableName().equals(HUB_FLAVOR.getHumanPresentableName()))) return true;
+        if (flavor == HUB_COPY_FLAVOR || (flavor.equals(HUB_COPY_FLAVOR) && flavor.getHumanPresentableName().equals(HUB_COPY_FLAVOR.getHumanPresentableName()))) return true;
+        if (flavor == HUB_CUT_FLAVOR || (flavor.equals(HUB_CUT_FLAVOR) && flavor.getHumanPresentableName().equals(HUB_CUT_FLAVOR.getHumanPresentableName()))) return true;
+        
+        if (flavor == OAOBJECT_CUT_FLAVOR || (flavor.equals(OAOBJECT_CUT_FLAVOR) && flavor.getHumanPresentableName().equals(OAOBJECT_CUT_FLAVOR.getHumanPresentableName()))) return true;
+        if (flavor == OAOBJECT_COPY_FLAVOR || (flavor.equals(OAOBJECT_COPY_FLAVOR) && flavor.getHumanPresentableName().equals(OAOBJECT_COPY_FLAVOR.getHumanPresentableName()))) return true;
+        
         if (flavor.equals(OAOBJECT_FLAVOR)) return true;
-        if (flavor.equals(OAOBJECT_CUT_FLAVOR)) return true;
-        if (flavor.equals(OAOBJECT_COPY_FLAVOR)) return true;
         return false;
     }
     

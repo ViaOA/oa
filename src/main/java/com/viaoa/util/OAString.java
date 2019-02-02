@@ -92,7 +92,11 @@ public class OAString {
         if (value == null) return "";
         String s2 = value.toLowerCase();
         if (s2.indexOf("<html") >= 0) return value;
-        if (s2.indexOf("<br>") >= 0) return value;
+        if (s2.indexOf("<") >= 0 && s2.indexOf(">") >= 0) return value;
+        // if (s2.indexOf("<br>") >= 0) return value;
+        if (s2.indexOf("&amp;") >= 0) return value;
+        
+        
         value = convertToXML(value, false, true, true);
         
         if (bAddHTMLTag) value = "<html>" + value + "</html>";

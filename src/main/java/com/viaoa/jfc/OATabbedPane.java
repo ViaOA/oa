@@ -63,7 +63,7 @@ public class OATabbedPane extends JTabbedPane {
                 JComponent comp = (JComponent) getTabComponentAt(i);
                 if (comp != null) comp.setEnabled(enabled);
             }        
-        }        
+        }  
     }
     
     @Override
