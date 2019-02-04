@@ -51,6 +51,8 @@ public class OAObjectEditQuery {
     public enum Type {   // properies to use based on type:
         Unknown(false),
 
+        //========= AllowX - to see if the command/option is available
+        //     set/getAllowed(b) is used to set/get 
         // set: confirmeTitle/Message to have UI interact with user
         AllowEnabled(true, false),    // use: allowEnabled  NOTE: this is also called for all types that have checkEnabledFirst=true
         
@@ -63,8 +65,9 @@ public class OAObjectEditQuery {
         AllowSave(false, false),     // dont check parent(s) or if enabled.  Need to be able to save a disabled object
         AllowCopy(false),
         
+        // verify command before calling
         VerifyPropertyChange(true, false),// use: value to get new value, name, response, throwable - set allowEnablede=false, or throwable!=null to cancel
-        VerifyAdd(true, true),           // use: value to get added object, allowAdd, throwable - set allowAdd=false, or throwable!=null to cancel
+        VerifyAdd(true, true),           // use: value to get added object, allowAdd, throwable - set allowed=false, or throwable!=null to cancel
         VerifyRemove(true, true),        // use: value to get removed object, allowRemove, throwable - set allowRemove=false, or throwable!=null to cancel
         VerifyRemoveAll(true, true),     // use: allowRemoveAll, response, throwable - set allowRemoveAll=false, or throwable!=null to cancel
         VerifyDelete(true, true),        // use: value to get deleted object, allowDelete, throwable - set allowDelete=false, or throwable!=null to cancel
@@ -73,7 +76,9 @@ public class OAObjectEditQuery {
         
         GetCopy(false),     // can set allowed(..), or setValue(newObj), or nothing to have OAObject.createCopy(..) called.
         AfterCopy(false),   // value=newObject
+       
         
+        // set ConfirmMessage, Title
         SetConfirmForPropertyChange(false),
         SetConfirmForAdd(false),
         SetConfirmForRemove(false),

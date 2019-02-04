@@ -82,30 +82,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
     private boolean bUseSwingWorker;
     public String processingTitle, processingMessage;
 
-    /*qqqqqq    
-    public static ButtonController createHubValid(AbstractButton button, Hub hub) {
-        ButtonController bc = new ButtonController(hub, button, OAButton.ButtonEnabledMode.ActiveObjectNotNull, null);
-        return bc;
-    }
-    public static ButtonController createAoNotNull(AbstractButton button, Hub hub) {
-        ButtonController bc = new ButtonController(hub, button, OAButton.ButtonEnabledMode.HubIsValid, null);
-        return bc;
-    }
-    public static ButtonController createHubNotEmpty(AbstractButton button, Hub hub) {
-        ButtonController bc = new ButtonController(hub, button, OAButton.ButtonEnabledMode.HubIsNotEmpty, null);
-        return bc;
-    }
-    public static ButtonController createAlwaysTrue(AbstractButton button, Hub hub) {
-        ButtonController bc = new ButtonController(hub, button, OAButton.ButtonEnabledMode.Always, null);
-        return bc;
-    }
-    */    
-    
-
-// 20181010    
-//qqqqqqqqqqqq NEW: to match OAJfcController    
-// (Hub hub, Object object, String propertyPath, JComponent comp, HubChangeListener.Type type, final boolean bDirectlySetsAO, final boolean bIncludeExtendedChecks)    
-    
     public ButtonController(Hub hub, AbstractButton button, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command, HubChangeListener.Type type, boolean bDirectlySetsAO, boolean bIncludeExtendedChecks) {
         super(hub, null, null, button, 
             type, 
@@ -119,7 +95,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
     
     /**
         Used to bind an AbstractButton to a Hub, with built in support for a command.
-        <p>
     */
     public ButtonController(Hub hub, AbstractButton button, OAButton.ButtonEnabledMode enabledMode, OAButton.ButtonCommand command) {
         super(hub, null, null, button, 
@@ -128,15 +103,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
             true
             //was:  (((enabledMode == ButtonEnabledMode.ActiveObjectNotNull) && (command == ButtonCommand.Other)) ? false : true)
         );
-        
-        
-//        super(hub, null, button, enabledMode.getHubChangeListenerType(), (command != null ? command.getSetsAO() : false));
-        
-//new OAJfcController(hub, null, null, comp, HubChangeListener.Type.AoNotNull, false, false);
-        
-        
-//was:        super(hub, button, enabledMode.getHubChangeListenerType() );
-        
         create(button, enabledMode, command);
     }
 
@@ -337,6 +303,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
         String title = "Confirm";
         
         OAObjectEditQuery eq = null;
+        final Hub mhub = getSelectHub();
+        Object objx;
                 
         if (obj != null) {
             switch (command) {
@@ -349,19 +317,47 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 }
                 break;
             case Delete:
-                eq = OAObjectEditQueryDelegate.getConfirmDeleteEditQuery(obj, msg, title);
-                // also have remove checked
-            case Remove:
-                OAObjectEditQuery eqHold = eq;
-                eq = OAObjectEditQueryDelegate.getVerifyRemoveEditQuery(getHub(), obj);
-                if (!eq.getAllowed()) {
-                    String s = eq.getDisplayResponse();
-                    if (s == null) s = "Remove is not allowed";
-                    JOptionPane.showMessageDialog(button, s, "Warning", JOptionPane.WARNING_MESSAGE);
-                    return false;
+//qqqqqqqqqqqqqqqqqqq
+                for (int i=0; ;i++) {
+                    objx = null;
+                    if (i == 0) {
+                        if (hub != null && (mhub == null || mhub.size() == 0)) {
+                            objx = hub.getAO();
+                        }
+                    }
+                    else {
+                        if (mhub != null) {
+                            objx = mhub.getAt(i-1);
+                        }
+                    }
+                    if (!(objx instanceof OAObject)) {
+                        if (i > 0) break;
+                        continue;
+                    }
+                
+                    eq = OAObjectEditQueryDelegate.getConfirmDeleteEditQuery((OAObject)objx, msg, title);
                 }
-                if (eqHold != null) eq = eqHold;
-                else eq = OAObjectEditQueryDelegate.getConfirmRemoveEditQuery(getHub(), obj, msg, title);
+                // also, need to check remove
+            case Remove:
+//qqqqqqqqqqqqqqqqqqqqq
+                for (int i=0; ;i++) {
+                    objx = null;
+                    if (i == 0) {
+                        if (hub != null && (mhub == null || mhub.size() == 0)) {
+                            objx = hub.getAO();
+                        }
+                    }
+                    else {
+                        if (mhub != null) {
+                            objx = mhub.getAt(i-1);
+                        }
+                    }
+                    if (!(objx instanceof OAObject)) {
+                        if (i > 0) break;
+                        continue;
+                    }
+                    eq = OAObjectEditQueryDelegate.getConfirmRemoveEditQuery(getHub(), (OAObject) objx, msg, title);
+                }
                 break;
             case Add:
             case Insert:
@@ -389,23 +385,36 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     }
                 }
                 if (hubx == null || propx == null) break;
-                Object objx = hubx.getAO();
+                objx = hubx.getAO();
                 if (!(objx instanceof OAObject)) break;
                 eq = OAObjectEditQueryDelegate.getConfirmPropertyChangeEditQuery( (OAObject) objx, propx, objSearch, msg, title);
                 break;
             case Save:
-                if (hub != null) {
-                    objx = hub.getAO();
-                    if (objx instanceof OAObject) {
-                        eq = OAObjectEditQueryDelegate.getVerifySaveEditQuery((OAObject) objx);
-                        if (!eq.getAllowed()) {
-                            String s = eq.getDisplayResponse();
-                            if (s == null) s = "Save is not allowed";
-                            JOptionPane.showMessageDialog(button, s, "Warning", JOptionPane.WARNING_MESSAGE);
-                            return false;
+//qqqqqqqqqqqqqqqqqqq
+                for (int i=0; ;i++) {
+                    objx = null;
+                    if (i == 0) {
+                        if (hub != null && (mhub == null || mhub.size() == 0)) {
+                            objx = hub.getAO();
                         }
-                        eq = OAObjectEditQueryDelegate.getConfirmSaveEditQuery( (OAObject) objx, msg, title);
                     }
+                    else {
+                        if (mhub != null) {
+                            objx = mhub.getAt(i-1);
+                        }
+                    }
+                    if (!(objx instanceof OAObject)) {
+                        if (i > 0) break;
+                        continue;
+                    }
+                    eq = OAObjectEditQueryDelegate.getVerifySaveEditQuery((OAObject) objx);
+                    if (!eq.getAllowed()) {
+                        String s = eq.getDisplayResponse();
+                        if (s == null) s = "Save is not allowed";
+                        JOptionPane.showMessageDialog(button, s, "Warning", JOptionPane.WARNING_MESSAGE);
+                        return false;
+                    }
+                    eq = OAObjectEditQueryDelegate.getConfirmSaveEditQuery( (OAObject) objx, msg, title);
                 }
                 break;
             }            
@@ -451,7 +460,10 @@ public class ButtonController extends OAJfcController implements ActionListener 
     }
     protected OAObjectEditQuery _isValid(Object obj) {
         OAObjectEditQuery eq = null;
-   
+
+        final Hub mhub = getSelectHub();
+        Object objx;
+        
         switch (command) {
         case ClearAO:
             if (hub.getLinkHub(true) != null) {
@@ -459,16 +471,49 @@ public class ButtonController extends OAJfcController implements ActionListener 
             }
             break;
         case Delete:
-            if (obj instanceof OAObject) {
-                eq = OAObjectEditQueryDelegate.getVerifyDeleteEditQuery((OAObject)obj);
+//qqqqqqqqqqqqqqqqqqqqqqqqq
+            for (int i=0; ;i++) {
+                objx = null;
+                if (i == 0) {
+                    if (hub != null && (mhub == null || mhub.size() == 0)) {
+                        objx = hub.getAO();
+                    }
+                }
+                else {
+                    if (mhub != null) {
+                        objx = mhub.getAt(i-1);
+                    }
+                }
+                if (!(objx instanceof OAObject)) {
+                    if (i > 0) break;
+                    continue;
+                }
+                
+                eq = OAObjectEditQueryDelegate.getVerifyDeleteEditQuery((OAObject)objx);
+                if (eq != null && !eq.getAllowed()) break;
             }
             // needs to also check remove
         case Remove:
-            OAObjectEditQuery eqHold = eq;
-            if (obj instanceof OAObject) {
-                eq = OAObjectEditQueryDelegate.getVerifyRemoveEditQuery(getHub(), (OAObject) obj);
+//qqqqqqqqqq            
+            for (int i=0; ;i++) {
+                objx = null;
+                if (i == 0) {
+                    if (hub != null && (mhub == null || mhub.size() == 0)) {
+                        objx = hub.getAO();
+                    }
+                }
+                else {
+                    if (mhub != null) {
+                        objx = mhub.getAt(i-1);
+                    }
+                }
+                if (!(objx instanceof OAObject)) {
+                    if (i > 0) break;
+                    continue;
+                }
+                eq = OAObjectEditQueryDelegate.getVerifyRemoveEditQuery(getHub(), (OAObject) objx);
+                if (!eq.getAllowed()) break;
             }
-            if (eqHold != null) eq = eqHold;
             break;
         case Add:
         case Insert:
@@ -490,7 +535,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 }
             }
             if (hubx == null || propx == null) return null;
-            Object objx = hubx.getAO();
+            objx = hubx.getAO();
             if (!(objx instanceof OAObject)) return null;
             eq = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery((OAObject) objx, propx, null, obj);
             break;
@@ -933,6 +978,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
         if (hub == null) return true;
         ho = hub.getActiveObject();
         if (bManual) return true;
+        Object objx;
+        final Hub mhub = getMultiSelectHub();
 
         /*was:
         if (confirmMessage != null) {
@@ -941,7 +988,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
         }
         */
         Object currentAO = hub.getAO();
-        Hub mhub = getSelectHub();
 
         if (hub != null) {
             OAObject oaObj;
@@ -976,22 +1022,27 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 break;
 
             case Save:
-                if (ho == null) break;
-                if (ho instanceof OAObject) {
-                    /*was
-                    if (hub == null || (!hub.isMasterNew() && !hub.isOwned()) ) {
-                        String msg = ((OAObject)ho).getCantSaveMessage();
-                        if (msg != null) {
-                            JOptionPane.showMessageDialog(null, msg, "", JOptionPane.ERROR_MESSAGE,null);
-                            break;
+//qqqqqqqqqqqqqqqqqq  
+                for (int i=0; ;i++) {
+                    objx = null;
+                    if (i == 0) {
+                        if (hub != null && (mhub == null || mhub.size() == 0)) {
+                            objx = hub.getAO();
                         }
-                        ((OAObject)ho).save();
                     }
-                    */
+                    else {
+                        if (mhub != null) {
+                            objx = mhub.getAt(i-1);
+                        }
+                    }
+                    if (!(objx instanceof OAObject)) {
+                        if (i > 0) break;
+                        continue;
+                    }
+
                     String msg = null;
                     try {
-                        ((OAObject) ho).save();
-                        callUpdate(); // 20181006
+                        ((OAObject) objx).save();
                     }
                     catch (Exception e) {
                         msg = "Error while saving\n" + e;
@@ -1001,20 +1052,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                         break;
                     }
                 }
-                if (mhub != null) {
-                    Object[] objs = mhub.toArray();
-                    for (Object obj : objs) {
-                        if (obj instanceof OAObject) {
-                            String msg = null;
-                            try {
-                                ((OAObject) obj).save();
-                            }
-                            catch (Exception e) {
-                                msg = "Error while saving\n" + e;
-                            }
-                        }
-                    }
-                }
+                callUpdate();
                 break;
             case Delete:
                 if (ho == null && mhub == null) break;
@@ -1026,21 +1064,25 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     if (mhub != null && mhub.getSize() > 0) {
                         Object[] objs = mhub.toArray();
                         for (Object obj : objs) {
-                            if (obj instanceof OAObject) {
-                                int posx = hub.getPos(obj);
-                                if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
-                                    getHub().remove(obj); // keep "noise" down
-                                }
-                                if (bEnableUndo) {
-                                    OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoDescription(), hub, ho, posx));
-                                }
-                                String msg = null;
-                                try {
-                                    ((OAObject) obj).delete();
-                                }
-                                catch (Exception e) {
-                                    msg = "Error while deleting\n" + e;
-                                }
+                            if (!(obj instanceof OAObject)) continue;
+                            int posx = hub.getPos(obj);
+                            if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
+                                getHub().remove(obj); // keep "noise" down
+                            }
+                            if (bEnableUndo) {
+                                OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoDescription(), hub, obj, posx));
+                            }
+
+                            if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) { 
+                                getHub().remove(obj); // remove first, so that cascading deletes are not so "noisy"
+                            }
+                            
+                            String msg = null;
+                            try {
+                                ((OAObject) obj).delete();
+                            }
+                            catch (Exception e) {
+                                msg = "Error while deleting\n" + e;
                             }
                         }
                         ho = null;
@@ -1051,13 +1093,11 @@ public class ButtonController extends OAJfcController implements ActionListener 
                         }
                         else oaObj = null;
 
-                        // 20131220
                         if (oaObj != null) {
-                        //was: if (oaObj != null && (hub == null || (!hub.isOwned() || OAObjectHubDelegate.getHubReferenceCount(oaObj) > 1))) {
                             if (bEnableUndo) {
                                 OAUndoManager.add(OAUndoableEdit.createUndoableRemove(getUndoDescription(), hub, ho, hub.getPos()));
                             }
-                            if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) { // 20120720
+                            if (HubAddRemoveDelegate.isAllowAddRemove(getHub())) { 
                                 getHub().remove(ho); // 20110215 remove first, so that cascading deletes are not so "noisy"
                             }
                             // else it can only be removed when delete is called (ex: a detail hub that is from a linkOne)
@@ -1212,21 +1252,21 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     Hub hx = getClipboardHub(false);
                     if (hx != null) {
                         int x = 0;
-                        for (Object objx : hx) {
-                            if (!objx.getClass().equals(hub.getObjectClass())) break;
-                            objx = OAObjectEditQueryDelegate.getCopy((OAObject) objx);
-                            if (pos < 0) hub.add(objx);
-                            else hub.insert(objx, pos+(x++));
+                        for (Object objxx : hx) {
+                            if (!objxx.getClass().equals(hub.getObjectClass())) break;
+                            objxx = OAObjectEditQueryDelegate.getCopy((OAObject) objxx);
+                            if (pos < 0) hub.add(objxx);
+                            else hub.insert(objxx, pos+(x++));
                         }
                         break;
                     }
                     hx = getClipboardHub(true);
                     if (hx != null) {
                         int x = 0;
-                        for (Object objx : hx) {
-                            if (!objx.getClass().equals(hub.getObjectClass())) break;
-                            if (pos < 0) hub.add(objx);
-                            else hub.insert(objx, pos+(x++));
+                        for (Object objxx : hx) {
+                            if (!objxx.getClass().equals(hub.getObjectClass())) break;
+                            if (pos < 0) hub.add(objxx);
+                            else hub.insert(objxx, pos+(x++));
                         }
                         break;
                     }
@@ -1244,13 +1284,14 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     }
                 }
                 if (hubx == null || propx == null) break;
-                Object objx = hubx.getAO();
+                objx = hubx.getAO();
                 if (!(objx instanceof OAObject)) break;
                 ((OAObject)objx).setProperty(propx, objSearch);
                 break;
             }
             
             
+//qqqqqqqqqq review this qqqqqqqqq            
             if (methodName != null) {
                 // Method[] method = OAReflect.getMethods(hub.getObjectClass(), methodName);
                 
@@ -1261,7 +1302,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     Method method = OAReflect.getMethod(hub.getObjectClass(), methodName, new Object[] {mhub});
                     if (method != null) {
                         try {
-                            Object objx = method.invoke(null, mhub);
+                            objx = method.invoke(null, mhub);
                         }
                         catch (Exception e) {
                             String msgx = "Error calling Method "+method+", using hub="+mhub;
@@ -1275,7 +1316,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                         Object[] objs = mhub.toArray();
                         for (Object obj : objs) {
                             if (obj instanceof OAObject) {
-                                Object objx = OAReflect.executeMethod(obj, methodName);
+                                objx = OAReflect.executeMethod(obj, methodName);
                                 if (msg != null && objx instanceof String) {
                                     msg = (String) objx;
                                     msg = msg + " (total " + objs.length + ")";
@@ -1288,7 +1329,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     }
                 }
                 else {
-                    Object objx = OAReflect.executeMethod(hub.getAO(), methodName);
+                    objx = OAReflect.executeMethod(hub.getAO(), methodName);
                     if (objx instanceof String) {
                         msg = (String) objx;
                     }
@@ -1430,11 +1471,19 @@ public class ButtonController extends OAJfcController implements ActionListener 
     */
     public void setMethodName(String methodName) {
         this.methodName = methodName;
+        if (OAString.isEmpty(methodName)) return;
         
-        // 20181015
-        addEnabledCheck(getHub(), HubChangeListener.Type.AoNotNull);
+        // 20190203: allow it to work on select many
+        //was: addEnabledCheck(getHub(), HubChangeListener.Type.AoNotNull);
         addEnabledEditQueryCheck(getHub(), methodName);
         addVisibleEditQueryCheck(getHub(), methodName);
+
+        // 20190293 select hub
+        if (getSelectHub() != null) {
+            // listen to all of the selectHub to see if it's enabled
+            getChangeListener().addEditQueryEnabled(getSelectHub(), methodName, true);
+        }
+        
     }
 
     /**
@@ -1456,6 +1505,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
 
         boolean flag = (hub != null && hub.isValid());
         boolean bAnyTime = false;
+        final Hub mhub = getMultiSelectHub();
+        Object objx;
         
         if (enabledMode != null) {
             switch (enabledMode) {
@@ -1557,11 +1608,33 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 }
                 break;
             case Save:
-                flag = (obj != null);
-                if (oaObj != null) {
-                    flag = bAnyTime || oaObj.getChanged();
-                    if (flag && hub != null && !bAnyTime && oaObj.isNew()) {  // 20180429 dont use save button if master is new and owns child hub 
-                        Object objx = hub.getMasterObject();
+//qqqqqqqqqqqqqqqqq
+                flag = (obj != null || (mhub != null && mhub.size() > 0));
+                for (int i=0; ; i++) {
+                    objx = null;
+                    if (i == 0) {
+                        if (mhub == null || mhub.size() == 0) {
+                            objx = obj;
+                        }
+                    }
+                    else {
+                        if (mhub != null) {
+                            objx = mhub.getAt(i-1);
+                        }
+                    }
+                    if (!(objx instanceof OAObject)) {
+                        if (i > 0) break;
+                        continue;
+                    }
+
+                    if (!((OAObject)objx).canSave()) {
+                        flag = false;
+                        break;
+                    }
+                    
+                    flag = bAnyTime || ((OAObject)objx).getChanged();
+                    if (flag && hub != null && !bAnyTime && ((OAObject)objx).isNew()) { 
+                        objx = hub.getMasterObject();
                         if (objx instanceof OAObject) {
                             if ( ((OAObject) objx).isNew()) {
                                 OALinkInfo li = HubDetailDelegate.getLinkInfoFromMasterHubToDetail(hub);
@@ -1584,6 +1657,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 if (flag && !HubAddRemoveDelegate.isAllowAddRemove(getHub())) {
                     flag = false;
                 }
+                flag = flag && OAObjectEditQueryDelegate.getAllowRemove(hub, true);
+
                 break;
             case ClearAO:
                 flag = obj != null;
@@ -1594,8 +1669,27 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 }
                 break;
             case Delete:
-                //was: flag = (obj != null && hub.getAllowDelete());
-                flag = (obj != null);
+//qqqqqqqqqqqqq
+                flag = (obj != null || (mhub != null && mhub.size() > 0));
+                for (int i=0; flag; i++) {
+                    objx = null;
+                    if (i == 0) {
+                        if (mhub == null || mhub.size() == 0) {
+                            objx = obj;
+                        }
+                    }
+                    else {
+                        if (mhub != null) {
+                            objx = mhub.getAt(i-1);
+                        }
+                    }
+                    if (!(objx instanceof OAObject)) {
+                        if (objx != null) flag = false;
+                        if (i > 0) break;
+                        continue;
+                    }
+                    flag = ((OAObject)objx).canDelete();
+                }
                 break;
             case New:
             case Insert:
@@ -1614,9 +1708,34 @@ public class ButtonController extends OAJfcController implements ActionListener 
             case Down:
                 flag = (obj != null && (hub.isMoreData() || hub.getPos() < (hub.getSize() - 1)));
                 break;
-            case Cut: // 20100111
+            case Cut:
+//qqqqqqq                
+                OAObjectEditQuery eq = OAObjectEditQueryDelegate.getAllowRemoveEditQuery(hub, true);
+                flag = eq.getAllowed();
+                if (!flag) break;
             case Copy:
+//qqqqqqqqqqqqqqqqqqqq                
                 flag = ((hubSelect != null && hubSelect.getSize() > 0) || (obj != null));
+                for (int i=0; flag; i++) {
+                    objx = null;
+                    if (i == 0) {
+                        if (mhub == null || mhub.size() == 0) {
+                            objx = obj;
+                        }
+                    }
+                    else {
+                        if (mhub != null) {
+                            objx = mhub.getAt(i-1);
+                        }
+                    }
+                    if (!(objx instanceof OAObject)) {
+                        if (objx != null) flag = false;
+                        if (i > 0) break;
+                        continue;
+                    }
+                    eq = OAObjectEditQueryDelegate.getAllowCopyEditQuery((OAObject) objx);                
+                    flag = eq.getAllowed();
+                }
                 break;
             case Paste:
                 flag = false;
@@ -1665,6 +1784,9 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     break;
                 }
                 break;
+            case Other:
+                // 20190203 added support for hubSelect.size > 0
+                flag = flag && ((hubSelect != null && hubSelect.getSize() > 0) || (obj != null));
             default:
             }
             if (flag && !HubDelegate.isValid(hub)) flag = false;
@@ -1675,20 +1797,10 @@ public class ButtonController extends OAJfcController implements ActionListener 
             OAObjectEditQuery eq;
             switch (command) {
             case Delete:
-                if (oaObj != null) {
-                    flag = flag && oaObj.canDelete();
-                    flag = flag && hub.canRemove();
-                }
                 break;
             case Save:
-                if (oaObj != null) {
-                    flag = flag && oaObj.canSave();
-                }
                 break;
             case Remove:
-                if (hub != null) {
-                    flag = flag && hub.canRemove();
-                }
                 break;
             case Add:
             case Insert:

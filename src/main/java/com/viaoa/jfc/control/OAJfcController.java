@@ -428,6 +428,9 @@ public class OAJfcController extends HubListenerAdapter {
     public Hub getSelectHub() {
         return hubSelect;
     }
+    public Hub getMultiSelectHub() {
+        return hubSelect;
+    }
     public boolean getAllowRemovingFromSelectHub() {
         return bAllowRemovingFromSelectHub;
     }
@@ -453,6 +456,9 @@ public class OAJfcController extends HubListenerAdapter {
         }
     }
     public void setSelectHub(Hub newHub) {
+        setSelectHub(newHub, true);
+    }
+    public void setMultiSelectHub(Hub newHub) {
         setSelectHub(newHub, true);
     }
     
@@ -1124,10 +1130,6 @@ public class OAJfcController extends HubListenerAdapter {
     
     
     private HubEvent lastUpdateHubEvent;
-/*qqq Test
-int cntUpdate;    
-static int cntAllUpdate;
-*/
     
     protected void callUpdate() {
         if (bIgnoreUpdate) return;
@@ -1329,7 +1331,6 @@ cntAllUpdate++;
     }
     public boolean updateEnabled(final JComponent comp, final Object object) {
         if (comp == null) return false;
-        
         boolean bEnabled = getEnabledChangeListener().getValue();
         bEnabled = isEnabled(bEnabled);
 

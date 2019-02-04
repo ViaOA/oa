@@ -28,7 +28,9 @@ import com.viaoa.jfc.table.OATableComponent;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectDelegate;
+import com.viaoa.object.OAObjectEditQuery;
 import com.viaoa.object.OAObjectEditQueryDelegate;
+import com.viaoa.util.OAFilter;
 import com.viaoa.util.OAString;
 import com.viaoa.hub.*;
 import com.viaoa.hub.HubChangeListener.HubProp;
@@ -191,7 +193,8 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
             }
         }
         else if (command == ButtonCommand.Save) {
-            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, false, false);
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, false, false);
+            //was: control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, false, false);
             control.getEnabledChangeListener().add(hub, OAObjectDelegate.WORD_Changed, true);
         }
         else if (command == ButtonCommand.New) {
@@ -203,22 +206,28 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
             control.getEnabledChangeListener().addAddEnabled(hub);
         }
         else if (command == ButtonCommand.Delete) {
-            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
-            control.getEnabledChangeListener().addDeleteEnabled(hub);
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, true, true);
+            //was: control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
+            //was: control.getEnabledChangeListener().addDeleteEnabled(hub, true);
         }
         else if (command == ButtonCommand.Remove) {
-            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
-            control.getEnabledChangeListener().addRemoveEnabled(hub);
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, true, true);
+            //was: control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
+            //was: control.getEnabledChangeListener().addRemoveEnabled(hub);
         }
         else if (command == ButtonCommand.ClearAO) {
             control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, true, true);
         }
         else if (command == ButtonCommand.Copy) {
-            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, false, false);
-            control.getEnabledChangeListener().addCopyEnabled(hub);
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, false, false);
+            //was: control = new OAButtonController(hub, OAButton.ButtonEnabledMode.ActiveObjectNotNull, command, HubChangeListener.Type.AoNotNull, false, false);
+            //was: control.getEnabledChangeListener().addCopyEnabled(hub);
+        }
+        else if (command == ButtonCommand.Cut) {
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, false, true);
         }
         else if (command == ButtonCommand.Paste) {
-            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, false, false);
+            control = new OAButtonController(hub, OAButton.ButtonEnabledMode.HubIsValid, command, HubChangeListener.Type.HubValid, false, true);
             control.getEnabledChangeListener().addPasteEnabled(hub);
         }
         else {
@@ -234,10 +243,9 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         switch (command) {
         case GoTo:
         case Other:
-            if (hub != null) {
-                enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
-            }
-            else enabledMode = ButtonEnabledMode.UsesIsEnabled;
+            // 20190203 changed to use HubIsValid, so that hubSelect can be used, and not just AO
+            //was: if (hub != null) enabledMode = ButtonEnabledMode.ActiveObjectNotNull;
+            //was: else enabledMode = ButtonEnabledMode.UsesIsEnabled;
             break;
         case First:
         case Last:
@@ -496,6 +504,10 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         control.setSelectHub(hubMultiSelect);        
     }
     public Hub getSelectHub() {
+        if (control == null) return null;
+        return control.getSelectHub();
+    }
+    public Hub getMultiSelectHub() {
         if (control == null) return null;
         return control.getSelectHub();
     }
@@ -842,11 +854,13 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
     }
 
     protected boolean isEnabled(boolean bIsCurrentlyEnabled) {
+/*20190202 removed, it needs to verify first        
         if (!bIsCurrentlyEnabled) {
             if (getSelectHub() != null && getSelectHub().size() > 0) {
                 if (getHub() == null || getHub().getAO() == null) bIsCurrentlyEnabled = true; 
             }
         }
+*/        
         return bIsCurrentlyEnabled;
     }
     
@@ -1007,11 +1021,20 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         @Override
         public void setSelectHub(Hub newHub) {
             super.setSelectHub(newHub);
+            
+            if (newHub != null) {
+                // listen to all of the selectHub to see if it's enabled
+                String s = getMethodName();
+                if (OAString.isNotEmpty(s)) getChangeListener().addEditQueryEnabled(newHub, s, true);
+            }
+            
+            /* 20190203 remove, since this is alredy taken care of at setup
             if (command == ButtonCommand.Copy) {
                 enabledMode = OAButton.ButtonEnabledMode.HubIsValid;
                 getEnabledChangeListener().clear();
                 getEnabledChangeListener().addHubNotEmpty(newHub);
             }
+            */
         }
     }
 
@@ -1064,8 +1087,6 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         return null;
     }
     
-//qqqqqqqqqqqqq failureReason is null    
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq    
     @Override
     public String getToolTipText(MouseEvent event) {
         String tt = super.getToolTipText(event);

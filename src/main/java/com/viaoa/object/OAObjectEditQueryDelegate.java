@@ -526,9 +526,11 @@ public class OAObjectEditQueryDelegate {
      */
     protected static void _processEditQuery(final boolean bFollowLink, final OAObjectEditQuery editQuery, final Hub hubThis, Class<? extends OAObject> clazz, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue, final boolean bProcessedCheck) {
         if (clazz == null) {
-            if (oaObj == null) return;
-            clazz = oaObj.getClass();
+            if (oaObj != null) clazz = oaObj.getClass();
+            else if (hubThis == null) return;
+            else clazz = hubThis.getObjectClass();
         }
+        
         
 //qqqqqAAAAAAAAAAAAAAAAAAAA
         // 20190116 follow the first link (if any)
@@ -792,6 +794,7 @@ public class OAObjectEditQueryDelegate {
         _recursiveProcess(editQuery, oaObj, propertyName, null);
     }
     protected static void _recursiveProcess(OAObjectEditQuery editQuery, final OAObject oaObj, final String propertyName, final OALinkInfo li) {
+        if (oaObj == null) return;
         // recursive, goto top owner first
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(oaObj);
         

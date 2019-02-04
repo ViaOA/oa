@@ -173,7 +173,7 @@ public abstract class HubChangeListener {
         return hp;
     }
 
-    public HubProp addDeleteEnabled(final Hub hub) {
+    public HubProp addDeleteEnabled(final Hub hub, boolean bAoOnly) {
         if (hub == null) return null;
         
         OAFilter filter = new OAFilter() {
@@ -189,7 +189,7 @@ public abstract class HubChangeListener {
                 return b;
             }
         };
-        HubProp hp = add(hub, null, false, null, filter, false, "EditQuery.AllowDelete");
+        HubProp hp = add(hub, null, false, null, filter, bAoOnly, "EditQuery.AllowDelete");
 
         OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, hub.getObjectClass(), null, null, this, true);
 
@@ -273,6 +273,9 @@ public abstract class HubChangeListener {
     /** add a rule to check the return value for an EditQuery isEnabled 
      * */
     public HubProp addEditQueryEnabled(Hub hub, String prop) {
+        return addEditQueryEnabled(hub, prop, true);
+    }
+    public HubProp addEditQueryEnabled(Hub hub, String prop, boolean bAoOnly) {
         OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, hub.getObjectClass(), prop, null, this, true);
         // include master
         Hub hx = hub.getMasterHub();
@@ -283,9 +286,13 @@ public abstract class HubChangeListener {
                 OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, null, this, true);
             }
         }
-        return add(hub, prop, true, Type.EditQueryEnabled);
+        
+        HubProp hp = add(hub, prop, true, Type.EditQueryEnabled, null, bAoOnly, "EditQueryEnabled");
+        //was: return add(hub, prop, true, Type.EditQueryEnabled);
+        return hp;
     }
     public HubProp addEditQueryEnabled(Hub hub, Class cz, String prop, String ppPrefix) {
+        // ?? not used
         OAObjectEditQueryDelegate.addEditQueryChangeListeners(hub, cz, prop, ppPrefix, this, true);
         return add(hub, prop, true, Type.EditQueryEnabled);
     }
@@ -330,6 +337,10 @@ public abstract class HubChangeListener {
 
     public HubProp add(Hub hub, OAFilter filter) {
         return add(hub, null, true, null, filter, true, "filter");
+    }
+
+    public HubProp add(OAFilter filter) {
+        return add(null, null, true, null, filter, true, "filter");
     }
     
     public HubProp add(Hub hub, final String propertyPath, boolean bUseCompareValue, Object compareValue) {
@@ -657,9 +668,31 @@ public abstract class HubChangeListener {
 
             Object value = (bValid) ? hub.getAO() : null;
             
+//qqqqqqqqqqqqqqq 20190203 if !bAoOnly, then check all objects qqqqqqqqqqqqq
             if (compareValue == Type.EditQueryEnabled) {
                 if (!bValid) return false;
                 if (value != null && !(value instanceof OAObject)) return true;
+                
+                boolean b = false;
+                for (int i=0; ;i++) {
+                    if (!bAoOnly) {
+                        value = hub.getAt(i);
+                        if (!(value instanceof OAObject)) break;
+                    }
+           
+                    OAObjectEditQuery eq  = OAObjectEditQueryDelegate.getAllowEnabledEditQuery(hub, (OAObject) value, propertyPath, true);
+                    b = eq.getAllowed();
+                    if (!b) {
+                        failureReason = eq.getDisplayResponse();
+                        if (OAString.isEmpty(failureReason)) failureReason = "edit query returned false";
+                        break;
+                    }
+                    if (bAoOnly) break;
+                }
+                return b;
+
+//qqqqqqqqq                
+                /*was:
                 OAObjectEditQuery eq  = OAObjectEditQueryDelegate.getAllowEnabledEditQuery(hub, (OAObject) value, propertyPath, true);
                 boolean b = eq.getAllowed();
                 if (!b) {
@@ -667,6 +700,7 @@ public abstract class HubChangeListener {
                     if (OAString.isEmpty(failureReason)) failureReason = "edit query returned false";
                 }
                 return b;
+                */
             }
             if (compareValue == Type.EditQueryVisible) {
                 if (!bValid) return true;
