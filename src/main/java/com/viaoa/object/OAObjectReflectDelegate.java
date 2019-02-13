@@ -65,6 +65,7 @@ public class OAObjectReflectDelegate {
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
         Object obj = null;
 
+/** 20190205 create on client        
         if (!oi.getLocalOnly()) {
             RemoteSessionInterface rc = OASyncDelegate.getRemoteSession(clazz);
             if (rc != null) {
@@ -72,6 +73,7 @@ public class OAObjectReflectDelegate {
                 return obj;
             }
         }
+**/
 
         try {
             Constructor constructor = clazz.getConstructor(new Class[] {});

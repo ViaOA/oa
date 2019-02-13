@@ -11,13 +11,8 @@
 package com.viaoa.object;
 
 import java.lang.reflect.*;
-import java.util.HashSet;
-import java.util.List;
-
 import com.viaoa.annotation.OAMany;
 import com.viaoa.annotation.OAOne;
-import com.viaoa.ds.OADataSource;
-import com.viaoa.hub.CustomHubFilter;
 
 /** 
     Defines reference properties between OAObjects.
@@ -71,12 +66,13 @@ public class OALinkInfo { //implements java.io.Serializable {
     private OAMany oaMany;
     private Method editQueryMethod;
     private String[] viewDependentProperties;
-    private String[] userDependentProperties;
+    private String[] contextDependentProperties;
 
     private String defaultPropertyPath;
     private boolean defaultPropertyPathIsHierarchy;
     private boolean defaultPropertyPathCanBeChanged;
 
+    private String defaultContextPropertyPath;
     
     public OALinkInfo(String name, Class toClass, int type) {
         this(name, toClass, type, false, false, null, false);
@@ -371,11 +367,11 @@ public class OALinkInfo { //implements java.io.Serializable {
         viewDependentProperties = props;
     }
 
-    public String[] getUserDependentProperties() {
-        return userDependentProperties;
+    public String[] getContextDependentProperties() {
+        return contextDependentProperties;
     }
-    public void setUserDependentProperties(String[] props) {
-        userDependentProperties = props;
+    public void setContextDependentProperties(String[] props) {
+        contextDependentProperties = props;
     }
     
     public String getMergerPropertyPath() {
@@ -448,33 +444,33 @@ public class OALinkInfo { //implements java.io.Serializable {
         visibleValue = b;
     }
 
-    private String userEnabledProperty;
-    private boolean userEnabledValue;
-    private String userVisibleProperty;
-    private boolean userVisibleValue;
-    public String getUserEnabledProperty() {
-        return userEnabledProperty;
+    private String contextEnabledProperty;
+    private boolean contextEnabledValue;
+    private String contextVisibleProperty;
+    private boolean contextVisibleValue;
+    public String getContextEnabledProperty() {
+        return contextEnabledProperty;
     }
-    public void setUserEnabledProperty(String s) {
-        userEnabledProperty = s;
+    public void setContextEnabledProperty(String s) {
+        contextEnabledProperty = s;
     }
-    public boolean getUserEnabledValue() {
-        return userEnabledValue;
+    public boolean getContextEnabledValue() {
+        return contextEnabledValue;
     }
-    public void setUserEnabledValue(boolean b) {
-        userEnabledValue = b;
+    public void setContextEnabledValue(boolean b) {
+        contextEnabledValue = b;
     }
-    public String getUserVisibleProperty() {
-        return userVisibleProperty;
+    public String getContextVisibleProperty() {
+        return contextVisibleProperty;
     }
-    public void setUserVisibleProperty(String s) {
-        userVisibleProperty = s;
+    public void setContextVisibleProperty(String s) {
+        contextVisibleProperty = s;
     }
-    public boolean getUserVisibleValue() {
-        return userVisibleValue;
+    public boolean getContextVisibleValue() {
+        return contextVisibleValue;
     }
-    public void setUserVisibleValue(boolean b) {
-        userVisibleValue = b;
+    public void setContextVisibleValue(boolean b) {
+        contextVisibleValue = b;
     }
     
     
@@ -502,6 +498,13 @@ public class OALinkInfo { //implements java.io.Serializable {
     }
     public void setDefaultPropertyPathCanBeChanged(boolean b) {
         defaultPropertyPathCanBeChanged = b;;
+    }
+
+    public String getDefaultContextPropertyPath() {
+        return defaultContextPropertyPath;
+    }
+    public void setDefaultContextPropertyPath(String pp) {
+        this.defaultContextPropertyPath = pp;
     }
 }
 

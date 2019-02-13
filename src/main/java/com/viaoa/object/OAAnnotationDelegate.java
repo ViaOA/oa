@@ -80,12 +80,12 @@ public class OAAnnotationDelegate {
                 oi.setEnabledValue(eq.enabledValue());
                 oi.setVisibleProperty(eq.visibleProperty());
                 oi.setVisibleValue(eq.visibleValue());
-                oi.setUserEnabledProperty(eq.userEnabledProperty());
-                oi.setUserEnabledValue(eq.userEnabledValue());
-                oi.setUserVisibleProperty(eq.userVisibleProperty());
-                oi.setUserVisibleValue(eq.userVisibleValue());
+                oi.setContextEnabledProperty(eq.contextEnabledProperty());
+                oi.setContextEnabledValue(eq.contextEnabledValue());
+                oi.setContextVisibleProperty(eq.contextVisibleProperty());
+                oi.setContextVisibleValue(eq.contextVisibleValue());
                 oi.setViewDependentProperties(eq.viewDependentProperties());
-                oi.setUserDependentProperties(eq.userDependentProperties());
+                oi.setContextDependentProperties(eq.contextDependentProperties());
             }
         }
         // prop ids
@@ -213,12 +213,12 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                 pi.setEnabledValue(eq.enabledValue());
                 pi.setVisibleProperty(eq.visibleProperty());
                 pi.setVisibleValue(eq.visibleValue());
-                pi.setUserEnabledProperty(eq.userEnabledProperty());
-                pi.setUserEnabledValue(eq.userEnabledValue());
-                pi.setUserVisibleProperty(eq.userVisibleProperty());
-                pi.setUserVisibleValue(eq.userVisibleValue());
+                pi.setContextEnabledProperty(eq.contextEnabledProperty());
+                pi.setContextEnabledValue(eq.contextEnabledValue());
+                pi.setContextVisibleProperty(eq.contextVisibleProperty());
+                pi.setContextVisibleValue(eq.contextVisibleValue());
                 pi.setViewDependentProperties(eq.viewDependentProperties());
-                pi.setUserDependentProperties(eq.userDependentProperties());
+                pi.setContextDependentProperties(eq.contextDependentProperties());
             }
         }
       
@@ -256,12 +256,12 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                 ci.setEnabledValue(eq.enabledValue());
                 ci.setVisibleProperty(eq.visibleProperty());
                 ci.setVisibleValue(eq.visibleValue());
-                ci.setUserEnabledProperty(eq.userEnabledProperty());
-                ci.setUserEnabledValue(eq.userEnabledValue());
-                ci.setUserVisibleProperty(eq.userVisibleProperty());
-                ci.setUserVisibleValue(eq.userVisibleValue());
+                ci.setContextEnabledProperty(eq.contextEnabledProperty());
+                ci.setContextEnabledValue(eq.contextEnabledValue());
+                ci.setContextVisibleProperty(eq.contextVisibleProperty());
+                ci.setContextVisibleValue(eq.contextVisibleValue());
                 ci.setViewDependentProperties(eq.viewDependentProperties());
-                ci.setUserDependentProperties(eq.userDependentProperties());
+                ci.setContextDependentProperties(eq.contextDependentProperties());
             }
             ci.setEditQueryMethod(m);
         }
@@ -300,6 +300,8 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
             li.setDefaultPropertyPath(annotation.defaultPropertyPath());
             li.setDefaultPropertyPathIsHierarchy(annotation.defaultPropertyPathIsHierarchy());
             li.setDefaultPropertyPathCanBeChanged(annotation.defaultPropertyPathCanBeChanged());
+
+            li.setDefaultContextPropertyPath(annotation.defaultContextPropertyPath());
             
             OAEditQuery eq = (OAEditQuery) m.getAnnotation(OAEditQuery.class);
             if (eq != null) {
@@ -307,12 +309,12 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                 li.setEnabledValue(eq.enabledValue());
                 li.setVisibleProperty(eq.visibleProperty());
                 li.setVisibleValue(eq.visibleValue());
-                li.setUserEnabledProperty(eq.userEnabledProperty());
-                li.setUserEnabledValue(eq.userEnabledValue());
-                li.setUserVisibleProperty(eq.userVisibleProperty());
-                li.setUserVisibleValue(eq.userVisibleValue());
+                li.setContextEnabledProperty(eq.contextEnabledProperty());
+                li.setContextEnabledValue(eq.contextEnabledValue());
+                li.setContextVisibleProperty(eq.contextVisibleProperty());
+                li.setContextVisibleValue(eq.contextVisibleValue());
                 li.setViewDependentProperties(eq.viewDependentProperties());;
-                li.setUserDependentProperties(eq.userDependentProperties());;
+                li.setContextDependentProperties(eq.contextDependentProperties());;
             }
         }
         // Manys
@@ -384,12 +386,12 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                 li.setEnabledValue(eq.enabledValue());
                 li.setVisibleProperty(eq.visibleProperty());
                 li.setVisibleValue(eq.visibleValue());
-                li.setUserEnabledProperty(eq.userEnabledProperty());
-                li.setUserEnabledValue(eq.userEnabledValue());
-                li.setUserVisibleProperty(eq.userVisibleProperty());
-                li.setUserVisibleValue(eq.userVisibleValue());
+                li.setContextEnabledProperty(eq.contextEnabledProperty());
+                li.setContextEnabledValue(eq.contextEnabledValue());
+                li.setContextVisibleProperty(eq.contextVisibleProperty());
+                li.setContextVisibleValue(eq.contextVisibleValue());
                 li.setViewDependentProperties(eq.viewDependentProperties());;
-                li.setUserDependentProperties(eq.userDependentProperties());;
+                li.setContextDependentProperties(eq.contextDependentProperties());;
             }
         }
 
@@ -415,12 +417,12 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                 mi.setEnabledValue(eq.enabledValue());
                 mi.setVisibleProperty(eq.visibleProperty());
                 mi.setVisibleValue(eq.visibleValue());
-                mi.setUserEnabledProperty(eq.userEnabledProperty());
-                mi.setUserEnabledValue(eq.userEnabledValue());
-                mi.setUserVisibleProperty(eq.userVisibleProperty());
-                mi.setUserVisibleValue(eq.userVisibleValue());
+                mi.setContextEnabledProperty(eq.contextEnabledProperty());
+                mi.setContextEnabledValue(eq.contextEnabledValue());
+                mi.setContextVisibleProperty(eq.contextVisibleProperty());
+                mi.setContextVisibleValue(eq.contextVisibleValue());
                 mi.setViewDependentProperties(eq.viewDependentProperties());
-                mi.setUserDependentProperties(eq.userDependentProperties());
+                mi.setContextDependentProperties(eq.contextDependentProperties());
             }
         }
         
@@ -517,18 +519,18 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                         pi.setVisibleProperty(s);
                         pi.setVisibleValue(eq.visibleValue());
                     }
-                    s = eq.userEnabledProperty();
+                    s = eq.contextEnabledProperty();
                     if (OAString.isNotEmpty(s)) {
-                        pi.setUserEnabledProperty(s);
-                        pi.setUserEnabledValue(eq.userEnabledValue());
+                        pi.setContextEnabledProperty(s);
+                        pi.setContextEnabledValue(eq.contextEnabledValue());
                     }
-                    s = eq.userVisibleProperty();
+                    s = eq.contextVisibleProperty();
                     if (OAString.isNotEmpty(s)) {
-                        pi.setUserVisibleProperty(s);
-                        pi.setUserVisibleValue(eq.userVisibleValue());
+                        pi.setContextVisibleProperty(s);
+                        pi.setContextVisibleValue(eq.contextVisibleValue());
                     }
                     pi.setViewDependentProperties(eq.viewDependentProperties());
-                    pi.setUserDependentProperties(eq.userDependentProperties());
+                    pi.setContextDependentProperties(eq.contextDependentProperties());
                 }
             }
             else {
@@ -545,18 +547,18 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                             oi.setVisibleProperty(s);
                             oi.setVisibleValue(eq.visibleValue());
                         }
-                        s = eq.userEnabledProperty();
+                        s = eq.contextEnabledProperty();
                         if (OAString.isNotEmpty(s)) {
-                            oi.setUserEnabledProperty(s);
-                            oi.setUserEnabledValue(eq.userEnabledValue());
+                            oi.setContextEnabledProperty(s);
+                            oi.setContextEnabledValue(eq.contextEnabledValue());
                         }
-                        s = eq.userVisibleProperty();
+                        s = eq.contextVisibleProperty();
                         if (OAString.isNotEmpty(s)) {
-                            oi.setUserVisibleProperty(s);
-                            oi.setUserVisibleValue(eq.userVisibleValue());
+                            oi.setContextVisibleProperty(s);
+                            oi.setContextVisibleValue(eq.contextVisibleValue());
                         }
                         oi.setViewDependentProperties(eq.viewDependentProperties());
-                        oi.setUserDependentProperties(eq.userDependentProperties());
+                        oi.setContextDependentProperties(eq.contextDependentProperties());
                     }
                 }
                 else {
@@ -574,18 +576,18 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                                 li.setVisibleProperty(s);
                                 li.setVisibleValue(eq.visibleValue());
                             }
-                            s = eq.userEnabledProperty();
+                            s = eq.contextEnabledProperty();
                             if (OAString.isNotEmpty(s)) {
-                                li.setUserEnabledProperty(s);
-                                li.setUserEnabledValue(eq.userEnabledValue());
+                                li.setContextEnabledProperty(s);
+                                li.setContextEnabledValue(eq.contextEnabledValue());
                             }
-                            s = eq.userVisibleProperty();
+                            s = eq.contextVisibleProperty();
                             if (OAString.isNotEmpty(s)) {
-                                li.setUserVisibleProperty(s);
-                                li.setUserVisibleValue(eq.userVisibleValue());
+                                li.setContextVisibleProperty(s);
+                                li.setContextVisibleValue(eq.contextVisibleValue());
                             }
                             li.setViewDependentProperties(eq.viewDependentProperties());
-                            li.setUserDependentProperties(eq.userDependentProperties());
+                            li.setContextDependentProperties(eq.contextDependentProperties());
                         }
                     }
                     else {
@@ -603,18 +605,18 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                                     ci.setVisibleProperty(s);
                                     ci.setVisibleValue(eq.visibleValue());
                                 }
-                                s = eq.userEnabledProperty();
+                                s = eq.contextEnabledProperty();
                                 if (OAString.isNotEmpty(s)) {
-                                    ci.setUserEnabledProperty(s);
-                                    ci.setUserEnabledValue(eq.userEnabledValue());
+                                    ci.setContextEnabledProperty(s);
+                                    ci.setContextEnabledValue(eq.contextEnabledValue());
                                 }
-                                s = eq.userVisibleProperty();
+                                s = eq.contextVisibleProperty();
                                 if (OAString.isNotEmpty(s)) {
-                                    ci.setUserVisibleProperty(s);
-                                    ci.setUserVisibleValue(eq.userVisibleValue());
+                                    ci.setContextVisibleProperty(s);
+                                    ci.setContextVisibleValue(eq.contextVisibleValue());
                                 }
                                 ci.setViewDependentProperties(eq.viewDependentProperties());
-                                ci.setUserDependentProperties(eq.userDependentProperties());
+                                ci.setContextDependentProperties(eq.contextDependentProperties());
                             }
                         }
                         else {
@@ -633,16 +635,16 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                                         mi.setVisibleValue(eq.visibleValue());
                                     }
                                     if (OAString.isNotEmpty(s)) {
-                                        mi.setUserEnabledProperty(s);
-                                        mi.setUserEnabledValue(eq.userEnabledValue());
+                                        mi.setContextEnabledProperty(s);
+                                        mi.setContextEnabledValue(eq.contextEnabledValue());
                                     }
-                                    s = eq.userVisibleProperty();
+                                    s = eq.contextVisibleProperty();
                                     if (OAString.isNotEmpty(s)) {
-                                        mi.setUserVisibleProperty(s);
-                                        mi.setUserVisibleValue(eq.userVisibleValue());
+                                        mi.setContextVisibleProperty(s);
+                                        mi.setContextVisibleValue(eq.contextVisibleValue());
                                     }
                                     mi.setViewDependentProperties(eq.viewDependentProperties());
-                                    mi.setUserDependentProperties(eq.userDependentProperties());
+                                    mi.setContextDependentProperties(eq.contextDependentProperties());
                                 }
                             }
                             else {

@@ -21,12 +21,10 @@ import javax.swing.SwingUtilities;
 
 import com.viaoa.ds.OADataSource;
 import com.viaoa.hub.*;
-import com.viaoa.remote.multiplexer.OARemoteThread;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.sync.OASync;
 import com.viaoa.util.OAArray;
 import com.viaoa.util.OACompare;
-import com.viaoa.util.OAInteger;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
@@ -81,16 +79,16 @@ public class OAObjectInfo { //implements java.io.Serializable {
     private Method editQueryMethod;
     
     private String[] viewDependentProperties;
-    private String[] userDependentProperties;
+    private String[] contextDependentProperties;
     
     private String enabledProperty;
     private boolean enabledValue;
     private String visibleProperty;
     private boolean visibleValue;
-    private String userEnabledProperty;
-    private boolean userEnabledValue;
-    private String userVisibleProperty;
-    private boolean userVisibleValue;
+    private String contextEnabledProperty;
+    private boolean contextEnabledValue;
+    private String contextVisibleProperty;
+    private boolean contextVisibleValue;
     
     public OAObjectInfo() {
         this(new String[] { });
@@ -983,11 +981,11 @@ public class OAObjectInfo { //implements java.io.Serializable {
     public String[] getViewDependentProperties() {
         return this.viewDependentProperties;
     }
-    public void setUserDependentProperties(String[] ss) {
-        this.userDependentProperties = ss;
+    public void setContextDependentProperties(String[] ss) {
+        this.contextDependentProperties = ss;
     }
-    public String[] getUserDependentProperties() {
-        return this.userDependentProperties;
+    public String[] getContextDependentProperties() {
+        return this.contextDependentProperties;
     }
     
     
@@ -1017,29 +1015,29 @@ public class OAObjectInfo { //implements java.io.Serializable {
         visibleValue = b;
     }
 
-    public String getUserEnabledProperty() {
-        return userEnabledProperty;
+    public String getContextEnabledProperty() {
+        return contextEnabledProperty;
     }
-    public void setUserEnabledProperty(String s) {
-        userEnabledProperty = s;
+    public void setContextEnabledProperty(String s) {
+        contextEnabledProperty = s;
     }
-    public boolean getUserEnabledValue() {
-        return userEnabledValue;
+    public boolean getContextEnabledValue() {
+        return contextEnabledValue;
     }
-    public void setUserEnabledValue(boolean b) {
-        userEnabledValue = b;
+    public void setContextEnabledValue(boolean b) {
+        contextEnabledValue = b;
     }
-    public String getUserVisibleProperty() {
-        return userVisibleProperty;
+    public String getContextVisibleProperty() {
+        return contextVisibleProperty;
     }
-    public void setUserVisibleProperty(String s) {
-        userVisibleProperty = s;
+    public void setContextVisibleProperty(String s) {
+        contextVisibleProperty = s;
     }
-    public boolean getUserVisibleValue() {
-        return userVisibleValue;
+    public boolean getContextVisibleValue() {
+        return contextVisibleValue;
     }
-    public void setUserVisibleValue(boolean b) {
-        userVisibleValue = b;
+    public void setContextVisibleValue(boolean b) {
+        contextVisibleValue = b;
     }
     
     public void setEditQueryMethod(Method m) {

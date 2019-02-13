@@ -30,12 +30,12 @@ public @interface OAEditQuery {
     String visibleProperty() default "";
     boolean visibleValue() default true;
     
-    String userEnabledProperty() default "";
-    boolean userEnabledValue() default true;
-    String userVisibleProperty() default "";
-    boolean userVisibleValue() default true;
+    String contextEnabledProperty() default "";
+    boolean contextEnabledValue() default true;
+    String contextVisibleProperty() default "";
+    boolean contextVisibleValue() default true;
 
     // any properties that affect visiblity, enabled, or rendering
     String[] viewDependentProperties() default {};
-    String[] userDependentProperties() default {};
+    String[] contextDependentProperties() default {};
 }

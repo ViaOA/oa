@@ -251,6 +251,10 @@ public class HubAODelegate {
         if (thisHub == null) return;
         thisHub.addHubListener(new HubListenerAdapter() {
             @Override
+            public void afterChangeActiveObject(HubEvent e) {
+                update();
+            }
+            @Override
             public void afterNewList(HubEvent e) {
                 update();
             }

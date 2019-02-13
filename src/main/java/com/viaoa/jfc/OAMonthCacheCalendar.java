@@ -31,6 +31,9 @@ public class OAMonthCacheCalendar<F extends OAObject> extends OAMonthCalendar {
         if (hub.getMasterHub() != null) throw new RuntimeException("can not use a detail hub for cache calendar");
         onNewMonth();
     }
+    public OAMonthCacheCalendar(Hub<F> hub, String propertyPath, String datePropertyPaths) {
+        this(hub, propertyPath, new String[] {datePropertyPaths});
+    }
     
     public OAMonthCacheCalendar(Hub<F> hub, String datePropertyPath, Hub hubDetail) {
         super(hub, datePropertyPath, hubDetail);

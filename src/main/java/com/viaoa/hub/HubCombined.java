@@ -20,7 +20,7 @@ public class HubCombined<T> {
     private static Logger LOG = Logger.getLogger(HubCombined.class.getName());
     private static final long serialVersionUID = 1L;
 
-    protected Hub<T> hubMaster;
+    protected final Hub<T> hubMaster;
     protected final ArrayList<Hub<T>> alHub = new ArrayList<>();
     protected ArrayList<HubListener<T>> alHubListener;
     protected final HubListener<T> hlMaster;

@@ -12,7 +12,6 @@ package com.viaoa.hub;
 
 import java.util.ArrayList;
 
-import com.viaoa.auth.OAAuthDelegate;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectDelegate;

@@ -77,6 +77,9 @@ public class OAResizePanel extends JPanel {
     public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2) {
         this(icon, comp, comp2, 100, false);
     }
+    public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2, JComponent comp3, int percentage) {
+        this(icon, comp, new JComponent[] {comp2, comp3}, percentage, false);
+    }
 
     public OAResizePanel(ImageIcon icon, JComponent comp, JComponent comp2, int percentage, boolean bBoth) {
         this(icon, new JComponent[] {comp, comp2}, percentage, bBoth);

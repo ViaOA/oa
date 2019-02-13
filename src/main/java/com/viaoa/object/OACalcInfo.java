@@ -67,17 +67,17 @@ public class OACalcInfo implements java.io.Serializable {
     private boolean isHtml;
 
     private String[] viewDependentProperties;
-    private String[] userDependentProperties;
+    private String[] contextDependentProperties;
 
     private String enabledProperty;
     private boolean enabledValue;
     private String visibleProperty;
     private boolean visibleValue;
 
-    private String userEnabledProperty;
-    private boolean userEnabledValue;
-    private String userVisibleProperty;
-    private boolean userVisibleValue;
+    private String contextEnabledProperty;
+    private boolean contextEnabledValue;
+    private String contextVisibleProperty;
+    private boolean contextVisibleValue;
     
     /** 
      Create new Calculated Property.  
@@ -143,11 +143,11 @@ public class OACalcInfo implements java.io.Serializable {
         return this.viewDependentProperties;
     }
 
-    public void setUserDependentProperties(String[] ss) {
-        this.userDependentProperties = ss;
+    public void setContextDependentProperties(String[] ss) {
+        this.contextDependentProperties = ss;
     }
-    public String[] getUserDependentProperties() {
-        return this.userDependentProperties;
+    public String[] getContextDependentProperties() {
+        return this.contextDependentProperties;
     }
     
     public String getEnabledProperty() {
@@ -175,29 +175,29 @@ public class OACalcInfo implements java.io.Serializable {
         visibleValue = b;
     }
 
-    public String getUserEnabledProperty() {
-        return userEnabledProperty;
+    public String getContextEnabledProperty() {
+        return contextEnabledProperty;
     }
-    public void setUserEnabledProperty(String s) {
-        userEnabledProperty = s;
+    public void setContextEnabledProperty(String s) {
+        contextEnabledProperty = s;
     }
-    public boolean getUserEnabledValue() {
-        return userEnabledValue;
+    public boolean getContextEnabledValue() {
+        return contextEnabledValue;
     }
-    public void setUserEnabledValue(boolean b) {
-        userEnabledValue = b;
+    public void setContextEnabledValue(boolean b) {
+        contextEnabledValue = b;
     }
-    public String getUserVisibleProperty() {
-        return userVisibleProperty;
+    public String getContextVisibleProperty() {
+        return contextVisibleProperty;
     }
-    public void setUserVisibleProperty(String s) {
-        userVisibleProperty = s;
+    public void setContextVisibleProperty(String s) {
+        contextVisibleProperty = s;
     }
-    public boolean getUserVisibleValue() {
-        return userVisibleValue;
+    public boolean getContextVisibleValue() {
+        return contextVisibleValue;
     }
-    public void setUserVisibleValue(boolean b) {
-        userVisibleValue = b;
+    public void setContextVisibleValue(boolean b) {
+        contextVisibleValue = b;
     }
 
     public void setEditQueryMethod(Method m) {

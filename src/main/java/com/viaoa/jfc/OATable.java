@@ -211,7 +211,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         int x = getRowHeight();
         setRowHeight(x+2);
         
-        getTableHeader().setReorderingAllowed(false);
+// 20190207 changed back to true        
+        getTableHeader().setReorderingAllowed(true);
         
         dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
         dropTarget = new DropTarget(this, this);
@@ -1527,7 +1528,9 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      * @param width
      */
     public void addSelectionColumn(Hub hubSelect, String heading, int width) {
-        addSelectionColumn(hubSelect, heading, width, true);
+        // 20190206 added b
+        boolean b = hubSelect != null && hubSelect.getMasterHub() == null;  // default
+        addSelectionColumn(hubSelect, heading, width, b); // b was true
     }
     public void addSelectionColumn(Hub hubSelect, String heading, int width, boolean bAllowRemovingFromSelectHub) {
         if (hubSelect == null) return;

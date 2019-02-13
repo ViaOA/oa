@@ -100,6 +100,9 @@ public class OAMonthCalendar<F extends OAObject, T extends OAObject> extends JSc
         setup();
         setSelectedDate(new OADate());
     }
+    public OAMonthCalendar(Hub<F> hub, String propertyPath, String datePropertyPaths) {
+        this(hub, propertyPath, new String[] {datePropertyPaths});
+    }
 
     /**
      * Used when there is only one object with date (unique), and want to display another detail hub.
@@ -547,7 +550,7 @@ public class OAMonthCalendar<F extends OAObject, T extends OAObject> extends JSc
     public void setToolTipTextTemplate(String s) {
         toolTipTextTemplate = s;
         for (DayPanel dp : alDayPanel) {
-            dp.lst.setToolTipTextTemplate(toolTipTextTemplate);
+            if (dp.lbl instanceof OALabel) ((OALabel)dp.lbl).setToolTipTextTemplate(toolTipTextTemplate);
         }
     }
     public String getToolTipTextTemplate() {
@@ -577,7 +580,7 @@ public class OAMonthCalendar<F extends OAObject, T extends OAObject> extends JSc
             }
         };
         lst.setDisplayTemplate(getDisplayTemplate());
-        lst.setToolTipTextTemplate(getDisplayTemplate());
+        //lst.setToolTipTextTemplate(getDisplayTemplate());
         lst.setIconColorProperty(getIconColorProperty());
         
         return lst;
@@ -635,6 +638,7 @@ public class OAMonthCalendar<F extends OAObject, T extends OAObject> extends JSc
                 lbl = createLabel(hub);
                 if (lbl instanceof OALabel) {
                     ((OALabel) lbl).setAllowSetTextBlink(false);
+                    ((OALabel) lbl).setToolTipTextTemplate(getToolTipTextTemplate());
                 }
             }
             if (lbl == null) {
@@ -675,6 +679,26 @@ public class OAMonthCalendar<F extends OAObject, T extends OAObject> extends JSc
             add(spLst, BorderLayout.CENTER);
 
             lst.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                }
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    onMouseClick();
+                }
+                @Override
+                public void mouseExited(MouseEvent e) {
+                }
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                }
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    onMouseClick();
+                }
+            });
+
+            lbl.addMouseListener(new MouseListener() {
                 @Override
                 public void mouseReleased(MouseEvent e) {
                 }

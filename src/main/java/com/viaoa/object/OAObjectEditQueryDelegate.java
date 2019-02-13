@@ -4,7 +4,8 @@ import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import javax.swing.JLabel;
-import com.viaoa.auth.OAAuthDelegate;
+
+import com.viaoa.context.OAContext;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubChangeListener;
 import com.viaoa.hub.HubDetailDelegate;
@@ -249,13 +250,13 @@ public class OAObjectEditQueryDelegate {
     
     protected static void updateEditProcessed(OAObjectEditQuery editQuery) {
         if (editQuery == null) return;
-        OAObject user = OAAuthDelegate.getUser();
+        OAObject user = OAContext.getContext();
         if (user == null) {
             editQuery.setResponse("processed=true, and user=null");
             editQuery.setAllowed(false);
         }
-        else if (!OAAuthDelegate.canEditProcessed()) {
-            String sx = OAAuthDelegate.getAllowEditProcessedPropertyPath();
+        else if (!OAContext.canEditProcessed()) {
+            String sx = OAContext.getAllowEditProcessedPropertyPath();
             editQuery.setResponse("User."+sx+"=false");
             editQuery.setAllowed(false);
         }
@@ -501,8 +502,13 @@ public class OAObjectEditQueryDelegate {
             editQuery.setThrowable(null);
             editQuery.setAllowed(true);
         }
-        
+        else if (OAContext.canAdminEdit()) {
+            editQuery.setThrowable(null);
+            editQuery.setAllowed(true);
+        }
     }
+    
+    
     private static boolean DEMO_AllowAllToPass;
     public static void demoAllowAllToPass(boolean b) {
         String msg = "WARNING: OAObjectEditQueryDelegate.demoAllowAllToPass="+b;
@@ -623,32 +629,32 @@ public class OAObjectEditQueryDelegate {
             bx = true;
             pi = oi.getPropertyInfo(propertyName);
             if (pi != null) {
-                sx = pi.getUserVisibleProperty();
-                bx = pi.getUserVisibleValue();
+                sx = pi.getContextVisibleProperty();
+                bx = pi.getContextVisibleValue();
             }
             else {
                 OALinkInfo li = oi.getLinkInfo(propertyName);
                 if (li != null) {
-                    sx = li.getUserVisibleProperty();
-                    bx = li.getUserVisibleValue();
+                    sx = li.getContextVisibleProperty();
+                    bx = li.getContextVisibleValue();
                 }
                 else {
                     OACalcInfo ci = oi.getCalcInfo(propertyName);
                     if (ci != null) {
-                        sx = ci.getUserVisibleProperty();
-                        bx = ci.getUserVisibleValue();
+                        sx = ci.getContextVisibleProperty();
+                        bx = ci.getContextVisibleValue();
                     }
                     else {
                         OAMethodInfo mi = oi.getMethodInfo(propertyName);
                         if (mi != null) {
-                            sx = mi.getUserVisibleProperty();
-                            bx = mi.getUserVisibleValue();
+                            sx = mi.getContextVisibleProperty();
+                            bx = mi.getContextVisibleValue();
                         }
                     }
                 }
             }
             if (editQuery.getAllowed() && OAString.isNotEmpty(sx)) {
-                OAObject user = OAAuthDelegate.getUser();
+                OAObject user = OAContext.getContext();
                 if (user == null) editQuery.setAllowed(false);
                 else {
                     Object valx = OAObjectReflectDelegate.getProperty(user, sx);
@@ -714,32 +720,32 @@ public class OAObjectEditQueryDelegate {
             enabledValue = true;
             pi = oi.getPropertyInfo(propertyName);
             if (pi != null) {
-                enabledName = pi.getUserEnabledProperty();
-                enabledValue = pi.getUserEnabledValue();
+                enabledName = pi.getContextEnabledProperty();
+                enabledValue = pi.getContextEnabledValue();
             }
             else {
                 OALinkInfo li = oi.getLinkInfo(propertyName);
                 if (li != null) {
-                    enabledName = li.getUserEnabledProperty();
-                    enabledValue = li.getUserEnabledValue();
+                    enabledName = li.getContextEnabledProperty();
+                    enabledValue = li.getContextEnabledValue();
                 }
                 else {
                     OACalcInfo ci = oi.getCalcInfo(propertyName);
                     if (ci != null) {
-                        enabledName = ci.getUserEnabledProperty();
-                        enabledValue = ci.getUserEnabledValue();
+                        enabledName = ci.getContextEnabledProperty();
+                        enabledValue = ci.getContextEnabledValue();
                     }
                     else {
                         OAMethodInfo mi = oi.getMethodInfo(propertyName);
                         if (mi != null) {
-                            enabledName = mi.getUserEnabledProperty();
-                            enabledValue = mi.getUserEnabledValue();
+                            enabledName = mi.getContextEnabledProperty();
+                            enabledValue = mi.getContextEnabledValue();
                         }
                     }
                 }
             }
             if (editQuery.getAllowed() && OAString.isNotEmpty(enabledName)) {
-                OAObject user = OAAuthDelegate.getUser();
+                OAObject user = OAContext.getContext();
                 if (user == null) editQuery.setAllowed(false);
                 else {
                     Object valx = OAObjectReflectDelegate.getProperty(user, enabledName);
@@ -825,10 +831,10 @@ public class OAObjectEditQueryDelegate {
                     editQuery.setResponse(s);
                 }
             }
-            pp = oi.getUserVisibleProperty();
+            pp = oi.getContextVisibleProperty();
             if (bPassed && OAString.isNotEmpty(pp)) {
-                b = oi.getUserVisibleValue();
-                OAObject user = OAAuthDelegate.getUser();
+                b = oi.getContextVisibleValue();
+                OAObject user = OAContext.getContext();
                 if (user == null) bPassed = false;
                 else {
                     valx = OAObjectReflectDelegate.getProperty(user, pp);
@@ -865,10 +871,10 @@ public class OAObjectEditQueryDelegate {
                 }
             }
             if (bPassed && li != null) {
-                pp = li.getUserVisibleProperty();
+                pp = li.getContextVisibleProperty();
                 if (OAString.isNotEmpty(pp)) {
-                    b = li.getUserVisibleValue();
-                    OAObject user = OAAuthDelegate.getUser();
+                    b = li.getContextVisibleValue();
+                    OAObject user = OAContext.getContext();
                     if (user == null) bPassed = false;
                     else {
                         valx = OAObjectReflectDelegate.getProperty(user, pp);
@@ -906,10 +912,10 @@ public class OAObjectEditQueryDelegate {
                     editQuery.setResponse(s);
                 }
             }
-            pp = oi.getUserEnabledProperty();
+            pp = oi.getContextEnabledProperty();
             if (bPassed && OAString.isNotEmpty(pp)) {
-                b = oi.getUserEnabledValue();
-                OAObject user = OAAuthDelegate.getUser();
+                b = oi.getContextEnabledValue();
+                OAObject user = OAContext.getContext();
                 if (user == null) bPassed = false;
                 else {
                     valx = OAObjectReflectDelegate.getProperty(user, pp);
@@ -951,10 +957,10 @@ public class OAObjectEditQueryDelegate {
             }
             
             if (li != null && bPassed) {
-                pp = li.getUserEnabledProperty();
+                pp = li.getContextEnabledProperty();
                 if (OAString.isNotEmpty(pp)) {
-                    b = li.getUserEnabledValue();
-                    OAObject user = OAAuthDelegate.getUser();
+                    b = li.getContextEnabledValue();
+                    OAObject user = OAContext.getContext();
                     if (user == null) bPassed = false;
                     else {
                         valx = OAObjectReflectDelegate.getProperty(user, pp);
@@ -1137,14 +1143,14 @@ public class OAObjectEditQueryDelegate {
         // dependent properties
         addDependentProps(hub, ppPrefix, 
             bEnabled ? null : oi.getViewDependentProperties(), 
-            bEnabled ? oi.getUserDependentProperties() : null, 
+            bEnabled ? oi.getContextDependentProperties() : null, 
             (OAString.isEmpty(prop) && oi.getProcessed()),
             changeListener
         );
         
-        final Hub hubUser = OAAuthDelegate.getUserHub();
-        if (bEnabled) s = oi.getUserEnabledProperty();
-        else s = oi.getUserVisibleProperty();
+        final Hub hubUser = OAContext.getContextHub();
+        if (bEnabled) s = oi.getContextEnabledProperty();
+        else s = oi.getContextVisibleProperty();
         if (OAString.isNotEmpty(s)) changeListener.add(hubUser, s);
         
         if (OAString.isEmpty(prop)) return;
@@ -1154,10 +1160,10 @@ public class OAObjectEditQueryDelegate {
             if (bEnabled) s = pi.getEnabledProperty();
             else s = pi.getVisibleProperty();
             if (OAString.isNotEmpty(s)) changeListener.add(hub, ppPrefix+s);
-            addDependentProps(hub, ppPrefix, pi.getViewDependentProperties(), pi.getUserDependentProperties(), (bEnabled && pi.getProcessed()), changeListener);
+            addDependentProps(hub, ppPrefix, pi.getViewDependentProperties(), pi.getContextDependentProperties(), (bEnabled && pi.getProcessed()), changeListener);
             
-            if (bEnabled) s = pi.getUserEnabledProperty();
-            else s = pi.getUserVisibleProperty();
+            if (bEnabled) s = pi.getContextEnabledProperty();
+            else s = pi.getContextVisibleProperty();
             if (OAString.isNotEmpty(s)) changeListener.add(hubUser, s);
         }
         else {
@@ -1166,10 +1172,10 @@ public class OAObjectEditQueryDelegate {
                 if (bEnabled) s = li.getEnabledProperty();
                 else s = li.getVisibleProperty();
                 if (OAString.isNotEmpty(s)) changeListener.add(hub, ppPrefix+s);
-                addDependentProps(hub, ppPrefix, li.getViewDependentProperties(), li.getUserDependentProperties(), (bEnabled && li.getProcessed()), changeListener);
+                addDependentProps(hub, ppPrefix, li.getViewDependentProperties(), li.getContextDependentProperties(), (bEnabled && li.getProcessed()), changeListener);
 
-                if (bEnabled) s = li.getUserEnabledProperty();
-                else s = li.getUserVisibleProperty();
+                if (bEnabled) s = li.getContextEnabledProperty();
+                else s = li.getContextVisibleProperty();
                 if (OAString.isNotEmpty(s)) changeListener.add(hubUser, s);
             }
             else {
@@ -1178,10 +1184,10 @@ public class OAObjectEditQueryDelegate {
                     if (bEnabled) s = ci.getEnabledProperty();
                     else s = ci.getVisibleProperty();
                     if (OAString.isNotEmpty(s)) changeListener.add(hub, ppPrefix+s);
-                    addDependentProps(hub, ppPrefix, ci.getViewDependentProperties(), ci.getUserDependentProperties(), false, changeListener);
+                    addDependentProps(hub, ppPrefix, ci.getViewDependentProperties(), ci.getContextDependentProperties(), false, changeListener);
                     
-                    if (bEnabled) s = ci.getUserEnabledProperty();
-                    else s = ci.getUserVisibleProperty();
+                    if (bEnabled) s = ci.getContextEnabledProperty();
+                    else s = ci.getContextVisibleProperty();
                     if (OAString.isNotEmpty(s)) changeListener.add(hubUser, s);
                 }
                 else {
@@ -1190,10 +1196,10 @@ public class OAObjectEditQueryDelegate {
                         if (bEnabled) s = mi.getEnabledProperty();
                         else s = mi.getVisibleProperty(); 
                         if (OAString.isNotEmpty(s)) changeListener.add(hub, ppPrefix+s);
-                        addDependentProps(hub, ppPrefix, mi.getViewDependentProperties(), mi.getUserDependentProperties(), false, changeListener);
+                        addDependentProps(hub, ppPrefix, mi.getViewDependentProperties(), mi.getContextDependentProperties(), false, changeListener);
                         
-                        if (bEnabled) s = mi.getUserEnabledProperty();
-                        else s = mi.getUserVisibleProperty();
+                        if (bEnabled) s = mi.getContextEnabledProperty();
+                        else s = mi.getContextVisibleProperty();
                         if (OAString.isNotEmpty(s)) changeListener.add(hubUser, s);
                     }
                 }
@@ -1201,27 +1207,27 @@ public class OAObjectEditQueryDelegate {
         }
     }
     
-    protected static void addDependentProps(Hub hub, String prefix,  String[] viewDependentProperties, String[] userDependentProperties, boolean bProcessed, HubChangeListener changeListener) {
+    protected static void addDependentProps(Hub hub, String prefix,  String[] viewDependentProperties, String[] contextDependentProperties, boolean bProcessed, HubChangeListener changeListener) {
         if (viewDependentProperties != null) {
             for (String s : viewDependentProperties) {
                 changeListener.add(hub, prefix+s);
             }
         }
-        if (userDependentProperties != null) {
-            Hub hubUser = OAAuthDelegate.getUserHub();
-            if (userDependentProperties.length > 0 && hubUser == null) {
+        if (contextDependentProperties != null) {
+            Hub hubUser = OAContext.getContextHub();
+            if (contextDependentProperties.length > 0 && hubUser == null) {
                 changeListener.addAlwaysFalse(hub);
             }
-            for (String s : userDependentProperties) {
+            for (String s : contextDependentProperties) {
                 changeListener.add(hubUser, s);
             }
         }
         if (bProcessed) {
-            Hub hubUser = OAAuthDelegate.getUserHub();
+            Hub hubUser = OAContext.getContextHub();
             if (hubUser == null) {
                 changeListener.addAlwaysFalse(hub);
             }
-            changeListener.add(hubUser, OAAuthDelegate.getAllowEditProcessedPropertyPath());
+            changeListener.add(hubUser, OAContext.getAllowEditProcessedPropertyPath());
         }
     }
 }

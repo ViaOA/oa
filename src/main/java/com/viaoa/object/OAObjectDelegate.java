@@ -15,9 +15,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.*;
 
+import com.viaoa.context.OAContext;
 import com.viaoa.hub.*;
 import com.viaoa.sync.OASync;
 import com.viaoa.sync.OASyncDelegate;
+import com.viaoa.util.OAString;
 
 /**
  * This is the central Delegate class that performs services for OAObjects.
@@ -116,8 +118,20 @@ public class OAObjectDelegate {
                 }
                 // 20140409 added check for 1to1, in which case one side will not have an
                 //    fkey, since it uses it's own pkey as the fkey
-                if (!OAObjectInfoDelegate.isOne2One(li)) {
-                    OAObjectPropertyDelegate.unsafeAddProperty(oaObj, li.getName(), null);
+                
+                // 20190205 set default linkOne 
+                if (li.getType() == li.TYPE_ONE && OAString.isNotEmpty(li.getDefaultContextPropertyPath())) {
+                    OAObject objx = OAContext.getContext();
+                    if (objx != null) {
+                        OAFinder hf = new OAFinder(li.getDefaultContextPropertyPath());
+                        objx = hf.findFirst(objx);
+                        OAObjectPropertyDelegate.unsafeAddProperty(oaObj, li.getName(), objx);
+                    }
+                }
+                else {
+                    if (!OAObjectInfoDelegate.isOne2One(li)) {
+                        OAObjectPropertyDelegate.unsafeAddProperty(oaObj, li.getName(), null);
+                    }
                 }
             }
             

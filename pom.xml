@@ -163,7 +163,9 @@
                     <keystore>${keystore.path}</keystore>
                     <alias>${keystore.alias}</alias>
                     <storepass>${keystore.store.password}</storepass>
+<!--                     
                     <tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
+ -->                    
                 </configuration>
             </plugin>
 

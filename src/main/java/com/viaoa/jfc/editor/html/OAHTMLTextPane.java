@@ -442,8 +442,7 @@ public class OAHTMLTextPane extends JTextPane implements OAPrintable {
         Clipboard clipboard = getToolkit().getSystemClipboard();
         Transferable content = clipboard.getContents(this);
         MyTransferable newContent = new MyTransferable(content);
-        // newContent.bUsePlain = true; // qqqqqqqqqq dont try to use html in VP
-        // qqqqqqq
+        // newContent.bUsePlain = true; // dont try to use html for now
         clipboard.setContents(newContent, null);
         for (;;) {
             try {
