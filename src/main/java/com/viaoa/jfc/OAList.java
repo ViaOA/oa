@@ -629,6 +629,11 @@ public class OAList extends JList implements OATableComponent, DragGestureListen
 
             Hub newHub = getDropHub();
             if (newHub == null) return;
+            
+            // 20190215
+            if (!HubAddRemoveDelegate.isAllowAddRemove(newHub)) return;
+            if (!newHub.isValid()) return;
+            
             Object toObject = newHub.elementAt(row);
 
             if ( newHub.getObjectClass().isAssignableFrom(dragObject.getClass()) ) {

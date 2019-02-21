@@ -100,6 +100,7 @@ public class DBMetaDataDelegate {
 	        	dbmd.setUseBracket(false);
 	        	dbmd.setName("ORACLE Database");
                 dbmd.setMaxVarcharLength(4000);
+                dbmd.setSupportsAutoAssign(true);
 	            break;
 	        case DBMetaData.ACCESS:
 	        	dbmd.setName("Access Database");
@@ -112,6 +113,8 @@ public class DBMetaDataDelegate {
 	        	dbmd.setName("MySql Database");
 	        	dbmd.setUseBracket(false);
 	        	dbmd.setDatesIncludeTime(false);
+                dbmd.setFkeysAutoCreateIndex(true);
+                dbmd.setSupportsAutoAssign(true);
                 // ??? dbmd.setMaxVarcharLength();
 	            // bUseExists = false; // prior to MySQL 4, now supports subqueries and EXISTS
 	            break;

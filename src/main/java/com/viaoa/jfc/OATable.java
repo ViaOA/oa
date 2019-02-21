@@ -3302,10 +3302,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
         }
         else {
             if (headerRenderer.buttonHeight > 0 && pt.y > headerRenderer.buttonHeight) {
-                s = "no filter for "+s;
+                if (s.indexOf("html") < 0) s = "no filter for "+s;
             }
             else if (tableRight != null && pt.y > tableRight.headerRenderer.buttonHeight) {
-                s = "no filter for "+s;
+                if (s.indexOf("html") < 0) s = "no filter for "+s;
             }
         }
         

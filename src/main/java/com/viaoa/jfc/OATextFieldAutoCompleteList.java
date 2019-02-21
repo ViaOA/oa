@@ -97,31 +97,38 @@ public abstract class OATextFieldAutoCompleteList extends JTextField implements 
         
         if (hub != null) {
             hub.addHubListener(new HubListenerAdapter() {
-                
                 @Override
                 public void afterChangeActiveObject(HubEvent evt) {
-                    if (OATextFieldAutoCompleteList.this.hasFocus()) {
-                        if (editObject != null) {
-                            String t = getText();
-                            Object val = getPropertyValueForText(t);
-                            OAObjectReflectDelegate.setProperty(editObject, updatePropertyPath, val, null);
-                        }
-                    }
-
-                    String s = null;
-                    OAObject oaObj = (OAObject) hub.getAO();
-                    if (oaObj != null) {
-                        s = OAConv.toString(OAObjectReflectDelegate.getProperty(oaObj, displayPropertyPath));
-                    }
-                    if (s == null) s = "";
-                    bSettingText = true;
-                    setText(s);
-                    bSettingText = false;
-                    editObject = oaObj;
+                    OATextFieldAutoCompleteList.this.afterChangeActiveObject();
                 }
             });
-        }        
+        }
+        afterChangeActiveObject();
     }
+
+    private void afterChangeActiveObject() {
+        if (hub == null) return;
+        if (OATextFieldAutoCompleteList.this.hasFocus()) {
+            if (editObject != null) {
+                String t = getText();
+                Object val = getPropertyValueForText(t);
+                OAObjectReflectDelegate.setProperty(editObject, updatePropertyPath, val, null);
+            }
+        }
+
+        String s = null;
+        OAObject oaObj = (OAObject) hub.getAO();
+        if (oaObj != null) {
+            s = OAConv.toString(OAObjectReflectDelegate.getProperty(oaObj, displayPropertyPath));
+        }
+        if (s == null) s = "";
+        bSettingText = true;
+        setText(s);
+        bSettingText = false;
+        editObject = oaObj;
+    }
+    
+    
     private OAObject editObject;
 
     public void setShowOne(boolean b) {

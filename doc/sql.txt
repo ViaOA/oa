@@ -3,7 +3,6 @@
 select salesorderid,count(*) count from salescustomer group by salesorderid having count(*) > 1;
 
 
-
 -- comment
 
 

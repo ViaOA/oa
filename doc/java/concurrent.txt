@@ -1,5 +1,36 @@
 
 
+    public static void main(String[] args) throws Exception {
+        final int max = 100;
+        final CyclicBarrier barrier = new CyclicBarrier(max);
+        final CountDownLatch cd = new CountDownLatch(max);
+        
+        for (int i=0; i<max; i++) {
+            final int id = i;
+            Thread t = new Thread(new Runnable() {
+               @Override
+                public void run() {
+                   try {
+                       barrier.await();  // wait for all threads to get to this point
+                   }
+                   catch (Throwable e) {
+                   }
+
+                   OADate d = new OADate(1900, 0, 1);
+                   for (int cnt=0; cnt<100000; cnt++) {
+                       d = (OADate) d.addDays(1);
+                       System.out.println(id+") "+d);            
+                       int dow = d.getDayOfWeek();
+                       if (dow == Calendar.SATURDAY || dow == Calendar.SUNDAY) continue;
+                   }
+                   cd.countDown();
+                } 
+            });
+            t.start();
+        }
+        cd.await();
+    }
+
 
 
 >> sample

@@ -1508,7 +1508,7 @@ public class OAObjectReflectDelegate {
     // note: this acquired a lock before calling
     private static Object _getReferenceObject(final OAObject oaObj, final String linkPropertyName, final OAObjectInfo oi, final OALinkInfo li) {
         if (linkPropertyName == null) return null;
-
+        
         boolean bIsServer = OASyncDelegate.isServer(oaObj);
         boolean bIsCalc = li != null && li.bCalculated;
 
@@ -1680,6 +1680,9 @@ public class OAObjectReflectDelegate {
             else {
                 ref = OAObjectReflectDelegate.createNewObject(li.getToClass());
                 setProperty(oaObj, linkPropertyName, ref, null); // need to do this so oaObj.changed=true, etc.
+                if (b) { // 20190220
+                    setProperty((OAObject) ref, li.getReverseLinkInfo().getName(), oaObj, null);
+                }
             }
         }
         return ref;

@@ -58,6 +58,7 @@ public class AutoCompleteTextFieldController extends OAJfcController {
     protected void init() {
         getAutoCompleteList();
         // txt.addFocusListener(this);
+        _update();
     }
 
     public void setMaxResults(int x) {

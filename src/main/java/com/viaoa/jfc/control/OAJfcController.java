@@ -1136,6 +1136,8 @@ public class OAJfcController extends HubListenerAdapter {
         update();
     }
 
+//static int cntAllUpdate;
+//int cntUpdate;
     /**
      *  Called to have component update itself.  
      */
@@ -1194,7 +1196,7 @@ cntAllUpdate++;
         }
         if (changeListenerEnabled != null) {
             String s = changeListenerEnabled.getToolTipText();
-            if (OAString.isNotEmpty(s)) tt += "<br>"+"Enabed="+s;
+            if (OAString.isNotEmpty(s)) tt += "<br>"+"Enabled="+s;
         }
         if (changeListenerVisible != null) {
             String s = changeListenerVisible.getToolTipText();
@@ -1872,7 +1874,13 @@ cntAllUpdate++;
                                     @Override
                                     public void stateChanged(ChangeEvent e) {
                                         if (tp.getSelectedIndex() == pos) {
-                                            callUpdate();
+                                            // 20190215 need to wait until focus changes, so that any pending component processing is completed 
+                                            SwingUtilities.invokeLater(new Runnable() {
+                                                public void run() {
+                                                    callUpdate();
+                                                }
+                                            });
+                                            //was: callUpdate();
                                         }
                                     }
                                 });
@@ -1895,7 +1903,13 @@ cntAllUpdate++;
                         ComponentListener cl = new ComponentAdapter() {
                             @Override
                             public void componentShown(ComponentEvent e) {
-                                callUpdate();
+                                // 20190215 need to wait until focus changes, so that any pending component processing is completed 
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        callUpdate();
+                                    }
+                                });
+                                //callUpdate();
                             }
                         };
                         win.addComponentListener(cl);

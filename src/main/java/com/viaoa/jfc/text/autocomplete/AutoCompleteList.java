@@ -170,11 +170,16 @@ public abstract class AutoCompleteList extends AutoCompleteBase {
         }
 
         Object obj = list.getSelectedValue();
+        
         if (obj == null) {
-            return false; // nothing selected, user hit [enter]
+            if (list.getModel().getSize() != 1) { 
+                return false; // nothing selected, user hit [enter]
+            }
         }
 
         int pos = list.getSelectedIndex();
+        if (pos < 0 && list.getModel().getSize() == 1) pos = 0;
+        
         String s = getTextForSelectedValue(pos, (String) obj);
         if (s == null) s = "";
 

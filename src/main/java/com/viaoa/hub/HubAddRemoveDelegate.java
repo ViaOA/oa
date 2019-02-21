@@ -153,7 +153,7 @@ public class HubAddRemoveDelegate {
     }
     
     public static void clear(final Hub thisHub, final boolean bSetAOtoNull, final boolean bSendNewList) {
-        if (!OARemoteThreadDelegate.isRemoteThread()) {
+        if (!OARemoteThreadDelegate.isRemoteThread() && bSendNewList) {
             OAObjectEditQuery eq = OAObjectEditQueryDelegate.getVerifyRemoveAllEditQuery(thisHub);
             if (!eq.getAllowed()) {
                 String s = eq.getResponse();

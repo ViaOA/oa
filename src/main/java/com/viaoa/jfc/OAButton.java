@@ -934,6 +934,10 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         if (control == null) return false;
         return control.default_onActionPerformed();
     }
+    protected boolean onActionGetInput() {
+        return true;
+    }
+    
     public void afterActionPerformed() {
         control.default_afterActionPerformed();
     }
@@ -995,6 +999,10 @@ public class OAButton extends JButton implements OATableComponent, OAJfcComponen
         @Override
         protected boolean onActionPerformed() {
             return OAButton.this.onActionPerformed();
+        }
+        @Override
+        protected boolean onActionGetInput() {
+            return OAButton.this.onActionGetInput();
         }
         @Override
         public void afterActionPerformed() {

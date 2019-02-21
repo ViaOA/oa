@@ -763,7 +763,9 @@ public class ButtonController extends OAJfcController implements ActionListener 
             if (window != null) {
                 window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             }
-            b = runActionPerformed2();
+            
+            b = onActionGetInput();
+            if (b) b = runActionPerformed2();
         }
         finally {
             if (window != null) {
@@ -774,6 +776,10 @@ public class ButtonController extends OAJfcController implements ActionListener 
     }
     
     private OAWaitDialog dlgWait;
+    
+    protected boolean onActionGetInput() {
+        return true;
+    }
     
     protected boolean runActionPerformed2() throws Exception {
         Hub mhub = getSelectHub();
@@ -1022,7 +1028,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 break;
 
             case Save:
-//qqqqqqqqqqqqqqqqqq  
                 for (int i=0; ;i++) {
                     objx = null;
                     if (i == 0) {
@@ -1688,7 +1693,9 @@ public class ButtonController extends OAJfcController implements ActionListener 
                         if (i > 0) break;
                         continue;
                     }
-                    flag = ((OAObject)objx).canDelete();
+                    // 20190220
+                    flag = OAObjectEditQueryDelegate.getAllowDelete(hub, (OAObject)objx, true);
+                    //was: flag = ((OAObject)objx).canDelete();
                 }
                 break;
             case New:
@@ -1700,7 +1707,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     flag = (hub.getSize() == 0);
                     break;
                 }
-                flag = flag && getHub().canAdd();
+                flag = flag && OAObjectEditQueryDelegate.getAllowAdd(getHub(), true);
+                //was: flag = flag && getHub().canAdd();
                 break;
             case Up:
                 flag = (obj != null && hub.getPos() > 0);
@@ -1806,7 +1814,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
             case Insert:
             case New:
                 if (hub != null) {
-                    flag = hub.canAdd();
+                    //already done: flag = OAObjectEditQueryDelegate.getAllowAdd(getHub(), true);
+                    //was: flag = hub.canAdd();
                 }
             }            
         }
