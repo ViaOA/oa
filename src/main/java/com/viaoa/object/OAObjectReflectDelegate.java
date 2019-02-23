@@ -81,10 +81,10 @@ public class OAObjectReflectDelegate {
         }
         catch (InvocationTargetException te) {
             throw new RuntimeException("OAObject.createNewObject() cant get constructor() for class " + clazz.getName() + " "
-                    + te.getCause());
+                    + te.getCause(), te);
         }
         catch (Exception e) {
-            throw new RuntimeException("OAObject.createNewObject() cant get constructor() for class " + clazz.getName() + " " + e);
+            throw new RuntimeException("OAObject.createNewObject() cant get constructor() for class " + clazz.getName() + " " + e, e);
         }
         return obj;
     }

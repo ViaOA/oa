@@ -890,7 +890,10 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
                 int pos = hub.getPos(dragObject);
                 if (pos == row) return;
                 //if (pos+1 == row || pos-1 == row) return;
-                int x = JOptionPane.showOptionDialog(OAJfcUtil.getWindow(OATable.this), "Ok to move?", "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
+                int x = row;
+                if (row < pos) x++;
+                if (pos + 1 == x) return;
+                x = JOptionPane.showOptionDialog(OAJfcUtil.getWindow(OATable.this), "Ok to move row "+(pos+1)+" to row "+x+"?", "Confirmation", 0, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "Yes");
                 if (x != 0) return;
             }
             
