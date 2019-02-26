@@ -496,11 +496,11 @@ public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
         
         template = new OATemplate() {
             @Override
-            protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props) {
+            protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, boolean bUseFormat) {
                 String s;
                 OAJspComponent comp = hmChildren.get(propertyName);
                 if (comp == null) {
-                    s = super.getValue(obj, propertyName, width, fmt, props);
+                    s = super.getValue(obj, propertyName, width, fmt, props, bUseFormat);
                     String s1 = getTemplateValue(obj, propertyName, width, fmt, props, s);
                     if (OAString.isEqual(s,s1)) {
                         s = OAJspUtil.convertToHtml(s);

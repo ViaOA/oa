@@ -759,11 +759,11 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         
         template = new OATemplate() {
             @Override
-            protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props) {
+            protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, boolean bUseFormat) {
                 String s;
                 OAJspComponent comp = hmChildren.get(propertyName);
                 if (comp == null) {
-                    s = super.getValue(obj, propertyName, width, fmt, props);
+                    s = super.getValue(obj, propertyName, width, fmt, props, bUseFormat);
                 }
                 else {
                     s = comp.getRenderHtml(obj);

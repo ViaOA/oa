@@ -75,7 +75,7 @@ public class OAHTMLReport<F extends OAObject> extends OAReport {
     
     protected PageFormat pageFormat;
     
-    private F obj;
+    private volatile F obj;
     private Hub<F> hub;
     
     /**
@@ -163,8 +163,8 @@ public class OAHTMLReport<F extends OAObject> extends OAReport {
     protected OAHTMLConverter createHTMLConverter() {
         OAHTMLConverter htmlConverter = new OAHTMLConverter() {
             @Override
-            protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props) {
-                String value = super.getValue(obj, propertyName, width, fmt, props);
+            protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, boolean bUseFormat) {
+                String value = super.getValue(obj, propertyName, width, fmt, props, bUseFormat);
                 return OAHTMLReport.this.getValue(value, obj, propertyName, width, fmt, props);
             }
             @Override

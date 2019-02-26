@@ -81,6 +81,9 @@ public class OAPropertyPath<F> {
         this.propertyPath = propertyPath;
     }
     public OAPropertyPath(Class<F> fromClass, String propertyPath) {
+        this(fromClass, propertyPath, false);
+    }
+    public OAPropertyPath(Class<F> fromClass, String propertyPath, boolean bIgnoreError) {
         this.propertyPath = propertyPath;
         this.fromClass = fromClass;
 
@@ -94,7 +97,7 @@ public class OAPropertyPath<F> {
             catch (Exception e2) {
                 // TODO: handle exception
             }
-            throw new IllegalArgumentException("cant setup, fromClass="+fromClass+", propertyPath="+propertyPath, e);
+            if (!bIgnoreError) throw new IllegalArgumentException("cant setup, fromClass="+fromClass+", propertyPath="+propertyPath, e);
         }
     }
  

@@ -61,7 +61,7 @@ public class OAButton<T extends OAObject> implements OAJspComponent, OAJspRequir
     protected boolean bSubmit;
     protected boolean bSpinner;
     protected String toolTip;
-    protected OATemplate templateToolTip;
+    protected com.viaoa.util.OATemplate templateToolTip;
     private boolean bHadToolTip;
     protected String confirmMessage;
     protected OATemplate templateConfirmMessage;

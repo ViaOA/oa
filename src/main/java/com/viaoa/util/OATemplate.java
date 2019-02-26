@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 import com.viaoa.hub.*;
 import com.viaoa.model.oa.VString;
 import com.viaoa.object.*;
-import com.viaoa.util.*;
 
 /*
 
@@ -205,6 +204,10 @@ public class OATemplate<F extends OAObject> {
     // this is used to determine which object to use (objRoot1 or 2).
     private Class classChoosen;
     private String ppSample;
+
+    public String process(F objRoot1, Hub<F> hubRoot, OAProperties props) {
+        return process(objRoot1, null, hubRoot, props);
+    }
     
     public String process(F objRoot1, F objRoot2, Hub<F> hubRoot, OAProperties props) {
         final int cntStopCalled = aiStopCalled.get();
@@ -717,7 +720,7 @@ if(errorCnt++ < 10) LOG.warning(node.errorMsg+", Template="+getTemplate());
                 bNot = true;
             case If:
                 // if not null, blank or 0.0
-                s = getValue(obj, rootNode.arg1, 0, null, props);
+                s = getValue(obj, rootNode.arg1, 0, null, props, false);
 
                 bProcessChildren = false;
                 if (s != null) {
@@ -741,13 +744,13 @@ if(errorCnt++ < 10) LOG.warning(node.errorMsg+", Template="+getTemplate());
                 break;
 
             case IfEquals:
-                s = getValue(obj, rootNode.arg1, 0, null, props);
+                s = getValue(obj, rootNode.arg1, 0, null, props, false);
 
                 bProcessChildren = OAString.isEqual(s, rootNode.arg2);
                 break;
 
             case IfGt:
-                s = getValue(obj, rootNode.arg1, 0, null, props);
+                s = getValue(obj, rootNode.arg1, 0, null, props, false);
                 if (OAString.isNumber(s) && OAString.isNumber(rootNode.arg2)) {
                     double d1 = OAConv.toDouble(s);
                     double d2 = OAConv.toDouble(rootNode.arg2);
@@ -756,7 +759,7 @@ if(errorCnt++ < 10) LOG.warning(node.errorMsg+", Template="+getTemplate());
                 else bProcessChildren = false;
                 break;
             case IfGte:
-                s = getValue(obj, rootNode.arg1, 0, null, props);
+                s = getValue(obj, rootNode.arg1, 0, null, props, false);
                 if (OAString.isNumber(s) && OAString.isNumber(rootNode.arg2)) {
                     double d1 = OAConv.toDouble(s);
                     double d2 = OAConv.toDouble(rootNode.arg2);
@@ -766,7 +769,7 @@ if(errorCnt++ < 10) LOG.warning(node.errorMsg+", Template="+getTemplate());
                 break;
 
             case IfLt:
-                s = getValue(obj, rootNode.arg1, 0, null, props);
+                s = getValue(obj, rootNode.arg1, 0, null, props, false);
                 if (OAString.isNumber(s) && OAString.isNumber(rootNode.arg2)) {
                     double d1 = OAConv.toDouble(s);
                     double d2 = OAConv.toDouble(rootNode.arg2);
@@ -776,7 +779,7 @@ if(errorCnt++ < 10) LOG.warning(node.errorMsg+", Template="+getTemplate());
                 break;
 
             case IfLte:
-                s = getValue(obj, rootNode.arg1, 0, null, props);
+                s = getValue(obj, rootNode.arg1, 0, null, props, false);
                 if (OAString.isNumber(s) && OAString.isNumber(rootNode.arg2)) {
                     double d1 = OAConv.toDouble(s);
                     double d2 = OAConv.toDouble(rootNode.arg2);
@@ -892,9 +895,11 @@ if(errorCnt++ < 10) LOG.warning(node.errorMsg+", Template="+getTemplate());
      * @param propertyName name of property parsed between <%=XX%> parameters.
      * @return
      */
+/*qqqqqqqqqqqqqq    
     protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props) {
         return getValue(obj, propertyName, width, fmt, props, false);
     }
+*/    
     protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, boolean bUseFormat) {
         if (propertyName == null) return "";
         String result = null;
@@ -947,7 +952,7 @@ if(errorCnt++ < 10) LOG.warning(node.errorMsg+", Template="+getTemplate());
                     String fmtx = null;
                     if (bUseFormat && OAString.isEmpty(fmt) && obj instanceof OAObject) {
                         bFmt = false;
-                        OAPropertyPath pp = new OAPropertyPath(obj.getClass(), propertyName);
+                        OAPropertyPath pp = new OAPropertyPath(obj.getClass(), propertyName, true);
                         fmtx = pp.getFormat();
                     }                    
                     
@@ -988,7 +993,7 @@ if(errorCnt++ < 10) LOG.warning(node.errorMsg+", Template="+getTemplate());
         if (oaObj == null) return null;
         
         if (OAString.isNotEmpty(propertyName) && propertyName.indexOf('.') >= 0) {
-            OAPropertyPath pp = new OAPropertyPath(oaObj.getClass(), propertyName);
+            OAPropertyPath pp = new OAPropertyPath(oaObj.getClass(), propertyName, true);
             if (pp.getHasHubProperty()) {
                 // 20190131 useFinder for pp with hubs
                 final VString vs = new VString();

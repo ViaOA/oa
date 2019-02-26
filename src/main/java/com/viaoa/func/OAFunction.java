@@ -1,7 +1,6 @@
 package com.viaoa.func;
 
 import com.viaoa.hub.*;
-import com.viaoa.jsp.OATemplate;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
 

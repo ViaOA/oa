@@ -839,8 +839,8 @@ sb.append("}\n");
         
         template = new OATemplate() {
             @Override
-            protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props) {
-                String s = super.getValue(obj, propertyName, width, fmt, props);
+            protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, boolean bUseFormat) {
+                String s = super.getValue(obj, propertyName, width, fmt, props, bUseFormat);
                 s = getTemplateValue(obj, propertyName, width, fmt, props, s);
                 return s;
             }
