@@ -356,19 +356,78 @@ public class OADateTime implements java.io.Serializable, Comparable {
         this._time += milsecs;
     }
 
+    
+    /**
+     * Flag to know if the date.time value should be sent, which is the raw value.
+     * Default is false, so times do not get converted. 
+     */
+    private static boolean bSerializeTimeValue = false;
+    //todo: set up a getter/setter for this?
+    //   qqqq client apps would need to make sure that they are the same as server
+    
+    
     // This will fix the bug in JDK and will keep date/times the same across different timezones.
     private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
-        stream.writeInt(9999); // version
-        stream.writeLong(_time);
+        if (this instanceof OADate) {
+            GregorianCalendar cal = _getCal();
+            try {
+                stream.writeInt(9997); // version
+                stream.writeInt(cal.get(Calendar.YEAR));
+                stream.writeInt(cal.get(Calendar.MONTH));
+                stream.writeInt(cal.get(Calendar.DATE));
+            }
+            finally {
+                _releaseCal(cal);
+            }
+        }
+        else if (bSerializeTimeValue) {
+            stream.writeInt(9999); // version
+            stream.writeLong(_time);
+        }
+        else {
+            GregorianCalendar cal = _getCal();
+            try {
+                stream.writeInt(9995); // version
+                stream.writeInt(cal.get(Calendar.YEAR));
+                stream.writeInt(cal.get(Calendar.MONTH));
+                stream.writeInt(cal.get(Calendar.DATE));
+                stream.writeInt(cal.get(Calendar.HOUR_OF_DAY));
+                stream.writeInt(cal.get(Calendar.MINUTE));
+                stream.writeInt(cal.get(Calendar.SECOND));
+                stream.writeInt(cal.get(Calendar.MILLISECOND));
+            }
+            finally {
+                _releaseCal(cal);
+            }
+        }
     }
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         // might want to add TimeZone
         // in.defaultReadObject();
         int x = in.readInt();
-        if (x == 9999) {
+        if (x == 9997) {
+            int year = in.readInt();
+            int month = in.readInt();
+            int day = in.readInt();
+            Date d = new Date(year-1900, month, day);
+            this._time = d.getTime();
+        }
+        else if (x == 9999) {
             _time = in.readLong();
         }
-        else { // previous format
+        else if (x == 9995) {
+            int year = in.readInt();
+            int month = in.readInt();
+            int day = in.readInt();
+            int hour = in.readInt();
+            int minute = in.readInt();
+            int second = in.readInt();
+            int milisecond = in.readInt();
+            Date d = new Date(year-1900, month, day, hour, minute, second);
+            this._time = d.getTime();
+            this._time += milisecond;
+        }
+        else {  // real old format
             int year = x;
             int month = in.readInt();
             int day = in.readInt();
@@ -376,7 +435,6 @@ public class OADateTime implements java.io.Serializable, Comparable {
             int minute = in.readInt();
             int second = in.readInt();
             int milisecond = in.readInt();
-
             Date d = new Date(year-1900, month, day, hour, minute, second);
             this._time = d.getTime();
             this._time += milisecond;
@@ -1735,7 +1793,16 @@ public class OADateTime implements java.io.Serializable, Comparable {
     }
     
     public static void main(String[] args) {
-        for (int i=0; i<80;i++) {
+        OADate d = new OADate("02/22/2019");
+        OADate today = new OADate();
+        int x = d.compareTo(today);
+        
+        System.out.println(d+", today="+today+", x="+x);
+        int xx = 4;
+        xx++;
+        
+        /*
+        for (int i=0; i<1;i++) {
             final int id = i;
             Thread t = new Thread() {
                 @Override
@@ -1745,13 +1812,15 @@ public class OADateTime implements java.io.Serializable, Comparable {
             };
             t.start();
         }
-        test(777);
+        */
+        // test(777);
     }
     public static void test(int id) {
-        OADate dx = new OADate();
         for (int i=0; ;i++) {
-            dx = (OADate) dx.addMilliSeconds(1);
-            if (i % 25000 == 0) System.out.println(id+") "+i);
+            OADate dx = new OADate(1980+((int) (Math.random()*50)), (int) (Math.random()*12), (int) (Math.random()*28));
+            dx = (OADate) dx.addDays(1);
+            // dx = (OADate) dx.addMilliSeconds( (int) (Math.random() * (24*60*60*1000)) );
+            if (i % 25000 == 0) System.out.println(id+") "+i+ "   "+dx);
         }
     }
 }
