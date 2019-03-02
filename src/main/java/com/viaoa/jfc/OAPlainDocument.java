@@ -11,6 +11,9 @@
 package com.viaoa.jfc;
 
 import javax.swing.text.*;
+
+import com.viaoa.object.OAObject;
+
 import java.awt.*;
 
 
@@ -119,7 +122,9 @@ public class OAPlainDocument extends PlainDocument {
             }
             else str = "";
             x = str.length();
-            handleError(ERROR_MAX_LENGTH);
+            if (!OAObject.getDebugMode()) {
+                handleError(ERROR_MAX_LENGTH);
+            }
             //return;
         }
 

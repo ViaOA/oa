@@ -134,14 +134,13 @@ public class TextFieldController extends OAJfcController implements FocusListene
             	case OAPlainDocument.ERROR_MAX_LENGTH:
         	        int max = getCalcMaxInput();
         	        if (max <= 0) max = getPropertyInfoMaxLength();
-            		msg = "Maximum input exceeded, currently set to " + max;
+            		msg = "Maximum input exceeded, max=" + max;
 
             		if (textField instanceof OATextField) {
             		    msg += " for " + TextFieldController.this.getEndPropertyName();
             		    Hub h = ((OATextField)textField).getHub();
             		    if (h != null) msg += ", in "+OAString.getDisplayName(h.getObjectClass().getSimpleName());
             		}
-            		
             		break;
             	case OAPlainDocument.ERROR_INVALID_CHAR:
             		return;

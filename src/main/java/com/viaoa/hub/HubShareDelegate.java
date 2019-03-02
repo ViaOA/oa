@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectHubDelegate;
+import com.viaoa.sync.OASync;
 import com.viaoa.util.OAFilter;
 
 /**
@@ -335,7 +336,8 @@ public class HubShareDelegate {
 	           could fail when it sends out event.
 	        */
 	    	thisHub.dataa.activeObject = null;
-	        if (thisHub.getSize() == 0 || thisHub.getLinkHub(true) != null || thisHub.datau.isNullOnRemove()) {
+	    	
+	        if (thisHub.getSize() == 0 || thisHub.getLinkHub(true) != null || thisHub.datau.isNullOnRemove() || OASync.isRemoteThread()) {
 	            // 20120505 dont update a linked value that has already been set  
 	            HubAODelegate.setActiveObject(thisHub, -1, false, true, false); // bUpdateLink, bForce, bCalledByShareHub
                 // was: HubAODelegate.setActiveObject(thisHub, -1, true, true,false); // bUpdateLink,bForce,bCalledByShareHub

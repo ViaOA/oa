@@ -15,7 +15,6 @@ import java.io.*;
 import java.lang.reflect.*;
 
 import com.viaoa.sync.OASyncDelegate;
-import com.viaoa.sync.remote.RemoteSyncInterface;
 import com.viaoa.util.*;
 import com.viaoa.ds.*;
 import com.viaoa.object.*;

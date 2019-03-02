@@ -1516,11 +1516,8 @@ public class OAObjectReflectDelegate {
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
 
         if (!(obj instanceof OAObjectKey)) {
-            if (obj != OANotExist.instance) {
-                if (obj != null) {
-                    return obj;
-                }
-                
+            
+            if (obj == OANotExist.instance || obj == null) {
                 // 20190112                    
                 String pps = li.getDefaultPropertyPath();
                 if (OAString.isNotEmpty(pps)) {
@@ -1535,14 +1532,23 @@ public class OAObjectReflectDelegate {
                             return obj;
                         }
                     }
-                    OAFinder hf = new OAFinder(pps);
-                    obj = hf.findFirst(oaObj);
-                    if (obj != null) {
-                        OAObjectPropertyDelegate.setPropertyCAS(oaObj, linkPropertyName, obj, null);
-                        return obj;
+                    else {
+                        OAFinder hf = new OAFinder(pps);
+                        obj = hf.findFirst(oaObj);
+                        if (obj != null) {
+                            OAObjectPropertyDelegate.setPropertyCAS(oaObj, linkPropertyName, obj, null);
+                            return obj;
+                        }
                     }
                 }
+            }
+            
+            if (obj != OANotExist.instance) {
+                if (obj != null) {
+                    return obj;
+                }
                 
+                // must be null
                 if (li.getAutoCreateNew()) {
                     if (OAObjectInfoDelegate.isOne2One(li)) return null; // will only be null if it was set to null on purpose. (ex: cascade delete)
                 }
@@ -1553,31 +1559,33 @@ public class OAObjectReflectDelegate {
 
             // == null.  check to see if it is One2One, and if a select must be used to get the object.
             if (li == null) return null;
-            if (OAObjectInfoDelegate.isOne2One(li) && !oaObj.isNew()) {
-                OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
-                if (!bIsServer && !bIsCalc) {
-                    if (oaObj.isDeleted()) { // 20151117
-                        return null;
+            if (OAObjectInfoDelegate.isOne2One(li)) {
+                if (!oaObj.isNew()) {
+                    OALinkInfo liReverse = OAObjectInfoDelegate.getReverseLinkInfo(li);
+                    if (!bIsServer && !bIsCalc) {
+                        if (oaObj.isDeleted()) {
+                            return null;
+                        }
+                        if (liReverse != null && !liReverse.bPrivateMethod) {
+                            ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
+                        }
+                        else ref = null;
                     }
-                    if (liReverse != null && !liReverse.bPrivateMethod) {
-                        ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
-                    }
-                    else ref = null;
-                }
-                else if (!bIsCalc) {
-                    if (liReverse != null && !liReverse.bPrivateMethod) {
-                        OASelect sel = new OASelect(li.getToClass());
-                        sel.setWhereObject(oaObj);
-                        sel.setPropertyFromWhereObject(li.name);
-                        sel.select();
-                        ref = sel.next();
-                        sel.close();
+                    else if (!bIsCalc) {
+                        if (liReverse != null && !liReverse.bPrivateMethod) {
+                            OASelect sel = new OASelect(li.getToClass());
+                            sel.setWhereObject(oaObj);
+                            sel.setPropertyFromWhereObject(li.name);
+                            sel.select();
+                            ref = sel.next();
+                            sel.close();
+                        }
                     }
                 }
             }
             else {
                 // first check to see if it is in the hub for the link
-                if (li.getPrivateMethod() || !isReferenceObjectNullOrEmpty(oaObj, linkPropertyName)) {
+                if (li.getPrivateMethod()) {
                     Hub hubx = OAObjectHubDelegate.getHub(oaObj, li);
                     if (hubx != null) {
                         ref = HubDelegate.getMasterObject(hubx);
@@ -1588,7 +1596,7 @@ public class OAObjectReflectDelegate {
                     OADataSource ds = OADataSource.getDataSource(li.getToClass());
                     if (ds != null && ds.supportsStorage()) {
                         if (!bIsServer && !bIsCalc) {
-                            if (oaObj.isDeleted()) { // 20151117
+                            if (oaObj.isDeleted()) { 
                                 return null;
                             }
                             ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);

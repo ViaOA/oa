@@ -170,11 +170,12 @@ public class OASyncClient {
                 
 /*qqqqqqqqqqqqqqqqqqqqq                
 if (siblingKeys == null || siblingKeys.length == 0) {
-    siblingKeys = OAObjectSiblingDelegate.getSiblings(masterObject, propertyName, max, hmIgnoreSibling);
+    siblingKeys = OASiblingHelperDelegate.getSiblings(masterObject, propertyName, max, hmIgnoreSibling);
     int xx = 4;
     xx++;
 }
-*/                
+*/
+                
                 additionalMasterProperties = OAObjectReflectDelegate.getUnloadedReferences(masterObject, false, propertyName, false);
               
                 try {

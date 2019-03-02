@@ -21,6 +21,8 @@ import java.awt.event.HierarchyListener;
 import java.net.*;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import javax.swing.*;
@@ -1128,12 +1130,24 @@ public class OAJfcController extends HubListenerAdapter {
         return getVisibleChangeListener().addEditQueryVisible(hub, propertyName);
     }
     
-    
     private HubEvent lastUpdateHubEvent;
+    private final AtomicBoolean abUpdate = new AtomicBoolean(false);
     
     protected void callUpdate() {
         if (bIgnoreUpdate) return;
-        update();
+        if (!SwingUtilities.isEventDispatchThread()) {
+            if (!abUpdate.compareAndSet(false, true)) return;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    abUpdate.set(false);
+                    update();
+                }
+            });
+        }
+        else {
+            update();
+        }
     }
 
 //static int cntAllUpdate;
@@ -1178,7 +1192,7 @@ cntAllUpdate++;
 
 
     protected void debug() {
-        if (!DEBUGUI || component == null) return;
+        if ((!DEBUGUI && !DEBUG)|| component == null) return;
 
         if (label != null) label.setBorder(new LineBorder(Color.green, 2));
         else component.setBorder(new LineBorder(Color.green, 2));
@@ -1415,7 +1429,7 @@ cntAllUpdate++;
             }
         }
         int i = 0;
-        for (Container cp=comp.getParent(); cp != null && i < 3; cp=cp.getParent(),i++) {
+        for (Container cp=comp.getParent(); cp != null && i < 5; cp=cp.getParent(),i++) {
             if (cp instanceof OAResizePanel) {
                 OAResizePanel rp = (OAResizePanel) cp;
                 if (rp.isVisible() != bVisible) {
@@ -1662,16 +1676,48 @@ cntAllUpdate++;
             if (getHub().size() == 1) callUpdate();
         }
     }
+
+    private final AtomicBoolean abAfterChangeAO = new AtomicBoolean(false);
     @Override
     public void afterChangeActiveObject(HubEvent e) {
-        afterChangeActiveObject();
+        if (!SwingUtilities.isEventDispatchThread()) {
+            if (!abAfterChangeAO.compareAndSet(false, true)) return;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    abAfterChangeAO.set(false);
+                    afterChangeActiveObject();
+                }
+            });
+        }
+        else {
+            afterChangeActiveObject();
+        }
     }
     @Override
     public void afterNewList(HubEvent e) {
         callUpdate();
     }
+
+    private final AtomicInteger aiAfterPropChange = new AtomicInteger();
     @Override
-    public void afterPropertyChange(HubEvent e) {
+    public void afterPropertyChange(final HubEvent e) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            final int x = aiAfterPropChange.incrementAndGet();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (x == aiAfterPropChange.get()) {
+                        _afterPropertyChange(e);
+                    }
+                }
+            });
+        }
+        else {
+            _afterPropertyChange(e);
+        }
+    }
+    private void _afterPropertyChange(HubEvent e) {
         Object ao = getHub().getAO();
         if (bAoOnly) {
             if (ao == null || e.getObject() != ao) return;

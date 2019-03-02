@@ -151,7 +151,9 @@ public class ComboBoxController extends OAJfcController implements FocusListener
             });
         }
     }
-    public @Override void afterChangeActiveObject(HubEvent e) {
+    
+    @Override
+    protected void afterChangeActiveObject() {
         Object oaObject = getHub().getActiveObject();
         myComboBoxModel.flag = true;
         comboBox.setSelectedItem(oaObject);
@@ -169,7 +171,7 @@ public class ComboBoxController extends OAJfcController implements FocusListener
         }
         ComboBoxController.this.callUpdate();
         ComboBoxController.this.comboBox.repaint();
-        super.afterChangeActiveObject(e);
+        super.afterChangeActiveObject();
     }
     public @Override void afterPropertyChange() {
         super.afterPropertyChange();

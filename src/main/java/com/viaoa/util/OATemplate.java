@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import com.viaoa.hub.*;
+import com.viaoa.jfc.table.OATableColumn;
 import com.viaoa.model.oa.VString;
 import com.viaoa.object.*;
 
@@ -654,6 +655,22 @@ if(errorCnt++ < 10) LOG.warning(node.errorMsg+", Template="+getTemplate());
      * Returns false if it did not complete (stopProcessing was called)
      */
     protected boolean generate(TreeNode rootNode, OAObject obj, Hub hub, StringBuilder sb, OAProperties props, final int cntStop) {
+        boolean b = false;
+        OASiblingHelper siblingHelper=null;
+        try {
+            if (hub != null) siblingHelper = new OASiblingHelper(hub);
+            OAThreadLocalDelegate.addSiblingHelper(siblingHelper);
+            b = _generate(rootNode, obj, hub, sb, props, cntStop);
+        }
+        finally {
+            if (siblingHelper != null) OAThreadLocalDelegate.removeSiblingHelper(siblingHelper);
+        }
+        return b;
+    }
+    
+    
+    protected boolean _generate(TreeNode rootNode, OAObject obj, Hub hub, StringBuilder sb, OAProperties props, final int cntStop) {
+    
         if (aiStopCalled.get() != cntStop) return false;
         boolean bNot = false;
         boolean bProcessChildren = true;
