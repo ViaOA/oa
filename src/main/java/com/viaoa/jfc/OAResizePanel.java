@@ -195,8 +195,13 @@ public class OAResizePanel extends JPanel {
         this(comp, comp2, 100, false);
     }
 
+    private JComponent compMain;
+    public JComponent getMainComponent() {
+        return compMain;
+    }
     
     private void setup(JComponent comp, int percentage, boolean bBoth) {
+        compMain = comp;
         if (comp instanceof JScrollPane) {
             JScrollPane jsp = (JScrollPane) comp;
             Component compx = ((JScrollPane) comp).getViewport().getView();

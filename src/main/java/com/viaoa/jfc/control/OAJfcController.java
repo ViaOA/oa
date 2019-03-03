@@ -1432,10 +1432,10 @@ cntAllUpdate++;
         for (Container cp=comp.getParent(); cp != null && i < 5; cp=cp.getParent(),i++) {
             if (cp instanceof OAResizePanel) {
                 OAResizePanel rp = (OAResizePanel) cp;
-                if (rp.isVisible() != bVisible) {
+                if (rp.getMainComponent() == comp && rp.isVisible() != bVisible) {
                     rp.setVisible(bVisible);
-                    break;
                 }
+                break;
             }
         }
         return bVisible;
