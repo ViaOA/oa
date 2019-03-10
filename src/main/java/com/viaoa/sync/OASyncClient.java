@@ -10,6 +10,7 @@
 */
 package com.viaoa.sync;
 
+import java.io.File;
 import java.lang.ref.*;
 import java.net.*;
 import java.util.*;
@@ -27,6 +28,7 @@ import com.viaoa.object.*;
 import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerClient;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
+import com.viaoa.sync.file.ClientFile;
 import com.viaoa.sync.model.ClientInfo;
 import com.viaoa.sync.remote.RemoteClientCallbackInterface;
 import com.viaoa.sync.remote.RemoteSessionInterface;
@@ -713,6 +715,16 @@ if (siblingKeys == null || siblingKeys.length == 0) {
         threadRemoveGuid2.setDaemon(true);
         threadRemoveGuid2.start();
     }
-    
+
+    public boolean uploadFile(String toFileName, File file) throws Exception {
+        ClientFile cf = new ClientFile();
+        boolean b = cf.upload(toFileName, file);
+        return b;
+    }
+    public boolean downloadFile(String fromFileName, File file) throws Exception {
+        ClientFile cf = new ClientFile();
+        boolean b = cf.download(fromFileName, file);
+        return b;
+    }
     
 }

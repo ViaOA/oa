@@ -505,7 +505,12 @@ if (li == null || li.getReverseLinkInfo() == null) {//qqqqqqqqqqqqqqqqq See if t
                 
                 String ppx = "";
                 for (int k=0; k<=j; k++) {
-                    if (ppx.length() > 0) ppx += ".";
+                    // 20190307 added class check 
+                    Class cx = methods[k].getReturnType(); 
+                    if (cx.equals(OAObject.class) && !classes[k].equals(cx)) {
+                        ppx = "(" + classes[k].getName() + ")";
+                    }
+                    if (k > 0) ppx += ".";
                     ppx += pps[k];
                 }
                 final String ppFromRoot = ppx;

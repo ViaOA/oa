@@ -244,7 +244,7 @@ public class OAJfcController extends HubListenerAdapter {
         if (this.hub == null) return;
         
         if (propertyPath != null && propertyPath.indexOf('.') >= 0) {
-            hubListenerPropertyName = propertyPath.replace('.', '_');
+            hubListenerPropertyName = propertyPath.replace('.', '_'); //qqqqqqqqqqqqq (com.cdi.model.oa.WebItem)B_WebPart_Title
             hub.addHubListener(this, hubListenerPropertyName, new String[] {propertyPath}, bAoOnly);
         }
         else {

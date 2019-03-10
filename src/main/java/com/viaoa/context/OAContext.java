@@ -58,9 +58,6 @@ public class OAContext {
         return b;
     }
     
-
-    
-    
     public static void setContext(Object context, OAObject obj) {
         if (obj == null) return;
         if (context == null) context = NullContext;

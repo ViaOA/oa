@@ -58,7 +58,9 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         if (hub == null) throw new RuntimeException("hub can not be null");
         clazz = hub.getObjectClass();
         wrHub = new WeakReference<Hub<T>>(hub);
- 
+
+        final boolean bEmptyHub = (hub.getSize() == 0);
+        
         if (filter != null) addFilter(filter, false);
         
         cacheListener = new OAObjectCacheListener<T>() {
@@ -94,19 +96,19 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         };        
         OAObjectCacheDelegate.addListener(clazz, cacheListener);
         
-        if (hub.getSize() == 0) {
+        if (bEmptyHub) {
             reselectAndRefresh();            
         }  // else the hub must have been preselected
     }
 
-    
-    
     
     public OAObjectCacheFilter(Hub<T> hub, OAFilter<T> filter, String ... dependentPropPaths) {
         if (hub == null) throw new RuntimeException("hub can not be null");
         clazz = hub.getObjectClass();
         wrHub = new WeakReference<Hub<T>>(hub);
  
+        final boolean bEmptyHub = (hub.getSize() == 0);
+        
         if (dependentPropPaths != null) {
             for (String pp : dependentPropPaths) {
                 addDependentProperty(pp, false);
@@ -114,7 +116,7 @@ public class OAObjectCacheFilter<T extends OAObject> implements OAFilter<T> {
         }
         
         if (filter != null) addFilter(filter, false);
-        if (hub.getSize() == 0) {
+        if (bEmptyHub) {
             reselectAndRefresh();            
         }  // else the hub must have been preselected
     }

@@ -41,6 +41,7 @@ public class OAPropertyInfo implements java.io.Serializable {
     private Method editQueryMethod;
     private boolean isProcessed;
     private boolean isHtml;
+    private boolean isTimestamp;
 
     private String enabledProperty;
     private boolean enabledValue;
@@ -195,6 +196,14 @@ public class OAPropertyInfo implements java.io.Serializable {
     public void setHtml(boolean b) {
         this.isHtml = b;
     }
+
+    public boolean isTimestamp() {
+        return isTimestamp;
+    }
+    public void setTimestamp(boolean b) {
+        this.isTimestamp = b;
+    }
+        
     
     public void setViewDependentProperties(String[] ss) {
         this.viewDependentProperties = ss;

@@ -118,6 +118,20 @@ public class OAFile extends java.io.File {
         return dir;
     }
 
+    public static String getExtension(File file) {
+        if (file == null) return null;
+        return getExtension(file.getName());
+    }
+    public static String getExtension(String filePath) {
+        String ext;
+        int x = filePath.lastIndexOf('.');
+        if (x >= 0) {
+            ext = filePath.substring(x+1);
+        }
+        else ext = "";
+        return ext;
+    }
+    
     /**
      * Create directories for fileName.<br>
      * Compared to the method in the File.class, "File.mkdirs()" which creates a

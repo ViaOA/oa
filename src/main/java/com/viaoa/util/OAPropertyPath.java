@@ -129,8 +129,30 @@ public class OAPropertyPath<F> {
     public String getPropertyPathLinksOnly() {
         if (linkInfos == null || linkInfos.length == 0) return null;
         String s = "";
-        for (OALinkInfo li : linkInfos) {
-            s = OAString.concat(s, li.getName(), ".");
+        for (int i=0; i<linkInfos.length; i++) {
+            OALinkInfo li = linkInfos[i];
+            
+            // 20190307 added cast name
+            String s2 = "";
+            if (castNames != null && i < castNames.length) {
+                if (OAString.isNotEmpty(castNames[i])) {
+                    s2 = "(" + castNames[i] + ")";
+                }
+            }
+            
+            s = OAString.concat(s, s2+li.getName(), ".");
+            
+            // 20190307 added filter name
+            if (filterNames != null && i < filterNames.length) {
+                if (OAString.isNotEmpty(filterNames[i])) {
+                    s += ":" + filterNames[i];
+
+                    if (filterParams != null && i < filterParams.length && OAString.isNotEmpty(filterParams[i])) {
+                        s += "(" + filterParams[i] + ")";
+                    }
+                }
+            }
+            
         }
         return s;
     }

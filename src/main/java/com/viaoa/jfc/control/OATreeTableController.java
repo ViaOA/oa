@@ -65,14 +65,14 @@ public class OATreeTableController extends OATree implements OATableComponent {
     /**
      * @param hub Hub that will be populated with all of the objects that are visible in the tree.
      */
-    public OATreeTableController(Hub hubRoot, Hub hub) {
-        this(hubRoot, null, hub);
+    public OATreeTableController(Hub hubRoot, Hub hubTable) {
+        this(hubRoot, null, hubTable);
     }
-    public OATreeTableController(Hub hubRoot, Hub hubFlattened, Hub hub) {
+    public OATreeTableController(Hub hubRoot, Hub hubFlattened, Hub hubTable) {
         super(8, 14, false);
         this.hubRoot = hubRoot;
-        this.hubTable = hub;
         this.hubFlattened = hubFlattened;
+        this.hubTable = hubTable;
         setup();
     }
     

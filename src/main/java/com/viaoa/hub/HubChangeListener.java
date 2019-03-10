@@ -167,7 +167,8 @@ public abstract class HubChangeListener {
         Hub hx = hub.getMasterHub();
         if (hx != null) {
             add(hx, Type.AoNotNull);
-            OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), null, null, this, true);
+            String propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, null, this, true);
         }
         return hp;
     }
@@ -195,7 +196,8 @@ public abstract class HubChangeListener {
         Hub hx = hub.getMasterHub();
         if (hx != null) {
             add(hx, Type.AoNotNull);
-            OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), null, null, this, true);
+            String propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, null, this, true);
         }
         
         return hp;
@@ -219,7 +221,8 @@ public abstract class HubChangeListener {
         Hub hx = hub.getMasterHub();
         if (hx != null) {
             add(hx, Type.AoNotNull);
-            OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), null, null, this, true);
+            String propx = HubDetailDelegate.getPropertyFromMasterToDetail(hub);
+            OAObjectEditQueryDelegate.addEditQueryChangeListeners(hx, hx.getObjectClass(), propx, null, this, true);
         }
         return hp;
     }

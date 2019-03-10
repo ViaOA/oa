@@ -163,6 +163,7 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
             pi.setUnique(oaprop.isUnique());
             pi.setProcessed(oaprop.isProcessed());
             pi.setHtml(oaprop.isHtml());
+            pi.setTimestamp(oaprop.isTimestamp());
             pi.setTrackPrimitiveNull(oaprop.trackPrimitiveNull());
 
             pi.setClassType(m.getReturnType());
@@ -803,6 +804,11 @@ if (clazz.getName().equals("com.cdi.model.oa.SalesOrder")) {
                 
                 Class returnClass = m.getReturnType();
                 if (returnClass == null) throw new Exception("method with fkey does not have a return class type, method is "+m.getName());
+                
+                OAClass oacx = (OAClass) returnClass.getAnnotation(OAClass.class);
+                if (oacx == null || !oacx.useDataSource()) continue;
+                
+                
                 OATable toTable = (OATable) returnClass.getAnnotation(OATable.class);
                 if (toTable == null) {
                     throw new Exception("class for fkey does not have a Table annotation defined, method is "+m.getName());

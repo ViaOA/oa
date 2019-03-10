@@ -33,6 +33,7 @@ import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.object.OAObjectUniqueDelegate;
 import com.viaoa.remote.multiplexer.RemoteMultiplexerServer;
 import com.viaoa.remote.multiplexer.info.RequestInfo;
+import com.viaoa.sync.file.ServerFile;
 import com.viaoa.sync.model.*;
 import com.viaoa.sync.remote.*;
 import com.viaoa.util.*;
@@ -69,6 +70,9 @@ public class OASyncServer {
     private RemoteSessionInterface remoteSessionServer;
     private RemoteClientInterface remoteClientForServer;
     private final Package packagex;
+
+    // allow upload/download files with clients
+    private ServerFile serverFile;
 
     public OASyncServer(int port) {
         this(null, port);
@@ -629,6 +633,7 @@ public class OASyncServer {
         getServerInfo();
         getMultiplexerServer().start();
         getRemoteMultiplexerServer().start();
+        getServerFile().start();
         startLoadDataInBackgroundThread();
     }
     
@@ -636,12 +641,20 @@ public class OASyncServer {
         if (multiplexerServer != null) {
             multiplexerServer.stop();
         }
+        getServerFile().stop();
     }
     
     public void performDGC() {
         if (remoteMultiplexerServer != null) {
             getRemoteMultiplexerServer().performDGC();
         }
+    }
+
+    public ServerFile getServerFile() {
+        if (serverFile == null) {
+            serverFile = new ServerFile("shared");
+        }
+        return serverFile;
     }
     
     

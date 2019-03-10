@@ -205,6 +205,7 @@ public class OAResizePanel extends JPanel {
         if (comp instanceof JScrollPane) {
             JScrollPane jsp = (JScrollPane) comp;
             Component compx = ((JScrollPane) comp).getViewport().getView();
+            if (compx instanceof JComponent) compMain = (JComponent) compx;
             if (compx instanceof OAList) {
                 final OAList list = (OAList) compx;
                 

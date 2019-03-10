@@ -13,6 +13,7 @@ import com.viaoa.hub.HubEvent;
 import com.viaoa.hub.HubEventDelegate;
 import com.viaoa.hub.HubListener;
 import com.viaoa.object.OAObjectEditQuery.Type;
+import com.viaoa.sync.OASync;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
 
@@ -501,13 +502,17 @@ public class OAObjectEditQueryDelegate {
     protected static void processEditQuery(OAObjectEditQuery editQuery, final Hub hubThis, final Class<? extends OAObject> clazz, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue, final boolean bProcessedCheck) {
         _processEditQuery(true, editQuery, hubThis, clazz, oaObj, propertyName, oldValue, newValue, bProcessedCheck);
         
+        // if allowed=false, then allow override
         if (DEMO_AllowAllToPass) {
             editQuery.setThrowable(null);
             editQuery.setAllowed(true);
         }
-        else if (OAContext.canAdminEdit()) {
-            editQuery.setThrowable(null);
-            editQuery.setAllowed(true);
+        else if ((!editQuery.getAllowed() || editQuery.getThrowable() != null)) {
+            // allow admin or server to be valid
+            if (OAContext.canAdminEdit() || (OASync.getSyncServer() != null && OAContext.getContext() == null)) {
+                editQuery.setThrowable(null);
+                editQuery.setAllowed(true);
+            }
         }
     }
     

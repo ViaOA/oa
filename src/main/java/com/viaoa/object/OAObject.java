@@ -109,7 +109,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     
     static {
         // oaversion
-        String ver = "3.5.56_20190221";
+        String ver = "3.5.56_20190304";
         try {
             InputStream resourceAsStream = OAObject.class.getResourceAsStream("/META-INF/maven/com.viaoa/oa/pom.properties");
             Properties props = new Properties();
@@ -460,6 +460,7 @@ public class OAObject implements java.io.Serializable, Comparable {
     public void setChanged(boolean tf) {
         if (changedFlag != tf) {
             boolean bOld = changedFlag;
+            
             OAObjectEventDelegate.fireBeforePropertyChange(this, OAObjectDelegate.WORD_Changed, 
                     bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, 
                             tf?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, 
@@ -470,8 +471,16 @@ public class OAObject implements java.io.Serializable, Comparable {
         	        bOld?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, 
         	        changedFlag?OAObjectDelegate.TRUE:OAObjectDelegate.FALSE, false, false);
 
-            // 20141030
             if (changedFlag) {
+                // 20190307
+                if (!isRemoteThread()) {
+                    OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(this.getClass());
+                    OAPropertyInfo pi = oi.getTimestampProperty();
+                    if (pi != null) {
+                        this.setProperty(pi.getName(), new OADateTime());
+                    }
+                }                
+                
                 OAObjectPropertyDelegate.setReferenceable(this, true);
 
                 // 20180520 notify owner

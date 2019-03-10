@@ -1509,14 +1509,13 @@ public class OAObjectReflectDelegate {
     private static Object _getReferenceObject(final OAObject oaObj, final String linkPropertyName, final OAObjectInfo oi, final OALinkInfo li) {
         if (linkPropertyName == null) return null;
         
-        boolean bIsServer = OASyncDelegate.isServer(oaObj);
-        boolean bIsCalc = li != null && li.bCalculated;
+        final boolean bIsServer = OASyncDelegate.isServer(oaObj);
+        final boolean bIsCalc = li != null && li.bCalculated;
 
         Object ref = null;
         Object obj = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
 
         if (!(obj instanceof OAObjectKey)) {
-            
             if (obj == OANotExist.instance || obj == null) {
                 // 20190112                    
                 String pps = li.getDefaultPropertyPath();
@@ -1550,7 +1549,9 @@ public class OAObjectReflectDelegate {
                 
                 // must be null
                 if (li.getAutoCreateNew()) {
-                    if (OAObjectInfoDelegate.isOne2One(li)) return null; // will only be null if it was set to null on purpose. (ex: cascade delete)
+                    if (OAObjectInfoDelegate.isOne2One(li)) {  // will only be "null" if it was deleted, else it will be oaNotExist
+                        return null; 
+                    }
                 }
                 else {
                     if (!li.bCalculated) return null;
@@ -1686,10 +1687,15 @@ public class OAObjectReflectDelegate {
                 // 20151117 dont autocreate new if this is deleted
             }
             else {
-                ref = OAObjectReflectDelegate.createNewObject(li.getToClass());
-                setProperty(oaObj, linkPropertyName, ref, null); // need to do this so oaObj.changed=true, etc.
-                if (b) { // 20190220
-                    setProperty((OAObject) ref, li.getReverseLinkInfo().getName(), oaObj, null);
+                if (!bIsServer) {
+                    ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
+                }
+                else {
+                    ref = OAObjectReflectDelegate.createNewObject(li.getToClass());
+                    setProperty(oaObj, linkPropertyName, ref, null); // need to do this so oaObj.changed=true, etc.
+                    if (b) { // 20190220
+                        setProperty((OAObject) ref, li.getReverseLinkInfo().getName(), oaObj, null);
+                    }
                 }
             }
         }

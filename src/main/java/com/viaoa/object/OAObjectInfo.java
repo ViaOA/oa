@@ -295,12 +295,12 @@ public class OAObjectInfo { //implements java.io.Serializable {
     	return alPropertyInfo;
     }
     public void addProperty(OAPropertyInfo ci) {
-    	getPropertyInfos().add(ci);
-        hmPropertyInfo = null; 
+        addPropertyInfo(ci);
     }
     public void addPropertyInfo(OAPropertyInfo ci) {
     	getPropertyInfos().add(ci);
         hmPropertyInfo = null; 
+        bCheckTimestamp = false;
     }
 
     private HashMap<String,OAPropertyInfo> hmPropertyInfo;
@@ -1046,4 +1046,19 @@ public class OAObjectInfo { //implements java.io.Serializable {
     public Method getEditQueryMethod() {
         return editQueryMethod;
     }
+
+    private OAPropertyInfo piTimestamp;
+    private boolean bCheckTimestamp;
+    public OAPropertyInfo getTimestampProperty() {
+        if (bCheckTimestamp) return piTimestamp;
+        for (OAPropertyInfo pi : getPropertyInfos()) {
+            if (pi.isTimestamp()) {
+                piTimestamp = pi;
+                break;
+            }
+        }
+        bCheckTimestamp = true;
+        return piTimestamp;
+    }
+    
 }

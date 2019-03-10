@@ -1814,7 +1814,8 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      *            Set the property path used to display values for a column.
      */
     public OATableColumn addColumn(String heading, int columns, String path) {
-        return this.addColumnMain(heading, columns, path, null, (TableCellEditor) null, -1, null);
+        OALabel lbl = new OALabel(getHub(), path);
+        return this.addColumnMain(heading, columns, path, lbl, (TableCellEditor) null, -1, null);
     }
 
     /**
@@ -1828,6 +1829,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      *            Set the property path used to display values for a column.
      */
     public OATableColumn addColumn(String heading, int columns, String path, String fmt) {
+        OALabel lbl = new OALabel(getHub(), path);
         return this.addColumnMain(heading, columns, path, null, (TableCellEditor) null, -1, fmt);
     }
 
@@ -1842,6 +1844,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
      *            Set the property path used to display values for a column.
      */
     public OATableColumn add(String heading, int columns, String path) {
+        OALabel lbl = new OALabel(getHub(), path);
         return this.addColumnMain(heading, columns, path, null, (TableCellEditor) null, -1, null);
     }
 
@@ -1954,7 +1957,7 @@ public class OATable extends JTable implements DragGestureListener, DropTargetLi
     protected OATableColumn addColumnMain(String heading, int cols, String path, OATableComponent oaComp, final TableCellEditor editComp, int index, String fmt) {
         Font font;
 
-        String ppTable = oaComp.getTablePropertyPath(this);
+        String ppTable = oaComp==null ? null : oaComp.getTablePropertyPath(this);
         if (OAString.isNotEmpty(ppTable)) path = ppTable;
         
         Component comp = null;
