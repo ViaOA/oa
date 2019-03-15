@@ -317,7 +317,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 }
                 break;
             case Delete:
-//qqqqqqqqqqqqqqqqqqq
                 for (int i=0; ;i++) {
                     objx = null;
                     if (i == 0) {
@@ -336,10 +335,11 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     }
                 
                     eq = OAObjectEditQueryDelegate.getConfirmDeleteEditQuery((OAObject)objx, msg, title);
+                    msg = eq.getConfirmMessage();
+                    title = eq.getConfirmTitle();
                 }
                 // also, need to check remove
             case Remove:
-//qqqqqqqqqqqqqqqqqqqqq
                 for (int i=0; ;i++) {
                     objx = null;
                     if (i == 0) {
@@ -357,6 +357,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
                         continue;
                     }
                     eq = OAObjectEditQueryDelegate.getConfirmRemoveEditQuery(getHub(), (OAObject) objx, msg, title);
+                    msg = eq.getConfirmMessage();
+                    title = eq.getConfirmTitle();
                 }
                 break;
             case Add:
@@ -370,6 +372,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
                     return false;
                 }
                 eq = OAObjectEditQueryDelegate.getConfirmAddEditQuery(getHub(), null, msg, title);
+                msg = eq.getConfirmMessage();
+                title = eq.getConfirmTitle();
                 break;
             case Search:
                 Hub hubx = HubLinkDelegate.getHubWithLink(hub, true);
@@ -388,9 +392,10 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 objx = hubx.getAO();
                 if (!(objx instanceof OAObject)) break;
                 eq = OAObjectEditQueryDelegate.getConfirmPropertyChangeEditQuery( (OAObject) objx, propx, objSearch, msg, title);
+                msg = eq.getConfirmMessage();
+                title = eq.getConfirmTitle();
                 break;
             case Save:
-//qqqqqqqqqqqqqqqqqqq
                 for (int i=0; ;i++) {
                     objx = null;
                     if (i == 0) {
@@ -415,6 +420,8 @@ public class ButtonController extends OAJfcController implements ActionListener 
                         return false;
                     }
                     eq = OAObjectEditQueryDelegate.getConfirmSaveEditQuery( (OAObject) objx, msg, title);
+                    msg = eq.getConfirmMessage();
+                    title = eq.getConfirmTitle();
                 }
                 break;
             }            
@@ -471,7 +478,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
             }
             break;
         case Delete:
-//qqqqqqqqqqqqqqqqqqqqqqqqq
             for (int i=0; ;i++) {
                 objx = null;
                 if (i == 0) {
@@ -492,9 +498,9 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 eq = OAObjectEditQueryDelegate.getVerifyDeleteEditQuery((OAObject)objx);
                 if (eq != null && !eq.getAllowed()) break;
             }
+            if (eq != null && !eq.getAllowed()) break;
             // needs to also check remove
         case Remove:
-//qqqqqqqqqq            
             for (int i=0; ;i++) {
                 objx = null;
                 if (i == 0) {
@@ -541,7 +547,7 @@ public class ButtonController extends OAJfcController implements ActionListener 
             break;
         }            
         
-        if (OAString.isNotEmpty(getMethodName()) && (obj instanceof OAObject)) {
+        if (OAString.isNotEmpty(getMethodName()) && (obj instanceof OAObject) && (eq == null || eq.isAllowed()) ) {
             eq = OAObjectEditQueryDelegate.getVerifyPropertyChangeEditQuery((OAObject)obj, getMethodName(), null, updateValue);
         }
         return eq;
@@ -1613,7 +1619,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 }
                 break;
             case Save:
-//qqqqqqqqqqqqqqqqq
                 flag = (obj != null || (mhub != null && mhub.size() > 0));
                 for (int i=0; ; i++) {
                     objx = null;
@@ -1674,7 +1679,6 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 }
                 break;
             case Delete:
-//qqqqqqqqqqqqq
                 flag = (obj != null || (mhub != null && mhub.size() > 0));
                 for (int i=0; flag; i++) {
                     objx = null;
@@ -1717,12 +1721,10 @@ public class ButtonController extends OAJfcController implements ActionListener 
                 flag = (obj != null && (hub.isMoreData() || hub.getPos() < (hub.getSize() - 1)));
                 break;
             case Cut:
-//qqqqqqq                
                 OAObjectEditQuery eq = OAObjectEditQueryDelegate.getAllowRemoveEditQuery(hub, true);
                 flag = eq.getAllowed();
                 if (!flag) break;
             case Copy:
-//qqqqqqqqqqqqqqqqqqqq                
                 flag = ((hubSelect != null && hubSelect.getSize() > 0) || (obj != null));
                 for (int i=0; flag; i++) {
                     objx = null;

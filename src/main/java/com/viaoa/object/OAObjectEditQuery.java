@@ -172,6 +172,9 @@ public class OAObjectEditQuery {
         this.toolTip = toolTip;
     }
 
+    public boolean isAllowed() {
+        return allowed;
+    }
     public boolean getAllowed() {
         return allowed;
     }

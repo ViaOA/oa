@@ -259,7 +259,8 @@ public class OAObjectSerializeDelegate {
             serializer.beforeSerialize(oaObj);
         }
         
-        boolean bNewObjectCache = OAObjectCSDelegate.isInNewObjectCache(oaObj);
+        final boolean bIsServer = OASyncDelegate.isServer(oaObj.getClass());
+        final boolean bNewObjectCache = !bIsServer && OAObjectCSDelegate.isInNewObjectCache(oaObj);
         
         if (stream instanceof RemoteObjectOutputStream) {
             if (bNewObjectCache){
@@ -283,7 +284,7 @@ public class OAObjectSerializeDelegate {
   
   		stream.writeObject(OAObjectDelegate.FALSE);  // end of property list
 
-        OAObjectCSDelegate.removeFromNewObjectCache(oaObj);
+        if (bNewObjectCache) OAObjectCSDelegate.removeFromNewObjectCache(oaObj);
 
         // 20141124
         if (serializer != null) {
@@ -299,9 +300,9 @@ public class OAObjectSerializeDelegate {
         Object[] objs = oaObj.properties;
         if (objs == null) return;
         
-        OAObjectInfo oi = OAObjectHashDelegate.hashObjectInfo.get(oaObj.getClass());
-        boolean bIsServer = OASyncDelegate.isServer(oaObj.getClass());
-        
+        final OAObjectInfo oi = OAObjectHashDelegate.hashObjectInfo.get(oaObj.getClass());
+        final boolean bIsServer = OASyncDelegate.isServer(oaObj.getClass());
+
         for (int i=0; i<objs.length; i+=2) {
             String key = (String) objs[i];
             if (key == null) continue;
@@ -341,8 +342,8 @@ public class OAObjectSerializeDelegate {
                 b = serializer.shouldSerializeReference(oaObj, (String) key, obj, li);
             }
 
-            if (b) {
-                if (obj instanceof OAObject) {
+            if (b || bNewObjectCache) {
+                if (serializer != null && obj instanceof OAObject) {
                     // option to dont send oaobj if it is already on the client
                     obj = serializer.getReferenceValueToSend(obj); 
                 }
@@ -351,7 +352,7 @@ public class OAObjectSerializeDelegate {
                 // see if something can be sent
                 if (obj instanceof OAObject) {
                     // always send OAObjectKey to reference objects
-                    if (!OAObjectCSDelegate.isInNewObjectCache((OAObject)obj)) {
+                    if (bIsServer) {
                         obj = OAObjectKeyDelegate.getKey((OAObject)obj);
                     }
                     b = true;

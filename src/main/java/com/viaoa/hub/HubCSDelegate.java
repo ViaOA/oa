@@ -124,8 +124,8 @@ public class HubCSDelegate {
         // must have a master object to be able to know which hub to add object to
         // send ADD message
         
-        if (!(thisHub.datam.getMasterObject() instanceof OAObject)) return;
-        OAObject master = (OAObject) thisHub.datam.getMasterObject();
+        final OAObject master = (OAObject) thisHub.datam.getMasterObject();
+        if (!(master instanceof OAObject)) return;
 	    if (OAObjectInfoDelegate.getOAObjectInfo(master).getLocalOnly()) return;
 
 	    /* 20160826 removed, since this is only needed when loading oaobj.hub, which already suppresses messages when loading
@@ -135,7 +135,7 @@ public class HubCSDelegate {
 	    */
 	    
 	    // 20140314 dont need to send if masterObject is only on client so far
-        if (OAObjectCSDelegate.isInNewObjectCache(thisHub.datam.getMasterObject())) {
+        if (OAObjectCSDelegate.isInNewObjectCache(master)) {
 	        return;
 	    }
 

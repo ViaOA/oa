@@ -393,6 +393,9 @@ public class OAObjectEditQueryDelegate {
     public static OAObjectEditQuery getAllowDeleteEditQuery(final Hub hub, final OAObject oaObj, final boolean bProcessedCheck) {
         final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.AllowDelete);
         editQuery.setValue(oaObj);
+        
+        processEditQuery(editQuery, null, null, oaObj, null, null, null, bProcessedCheck);
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqq        
         if (hub != null) {
             OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
             OAObject objMaster = hub.getMasterObject();
@@ -410,9 +413,6 @@ public class OAObjectEditQueryDelegate {
                 processEditQuery(editQuery, hub, null, objMaster, propertyName, null, null, bProcessedCheck);
             }
         }
-        else {
-            processEditQuery(editQuery, null, null, oaObj, null, null, null, bProcessedCheck);
-        }
         return editQuery;
     }
     
@@ -420,7 +420,7 @@ public class OAObjectEditQueryDelegate {
     public static OAObjectEditQuery getVerifyDeleteEditQuery(final OAObject oaObj) {
         final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.VerifyDelete);
         editQuery.setValue(oaObj);
-        
+//qqqqqqqqqqqqqqqqqqqqq        
         processEditQuery(editQuery, oaObj, null, null, null);
         return editQuery;
     }
@@ -458,7 +458,7 @@ public class OAObjectEditQueryDelegate {
         final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.SetConfirmForDelete);
         editQuery.setConfirmMessage(confirmMessage);
         editQuery.setConfirmTitle(confirmTitle);
-        
+//qqqqqqqqqqqqqqqqqqq        
         processEditQuery(editQuery, oaObj, null, null, null);
         return editQuery;
     }
@@ -509,7 +509,7 @@ public class OAObjectEditQueryDelegate {
         }
         else if ((!editQuery.getAllowed() || editQuery.getThrowable() != null)) {
             // allow admin or server to be valid
-            if (OAContext.canAdminEdit() || (OASync.getSyncServer() != null && OAContext.getContext() == null)) {
+            if (OAContext.canAdminEdit() || (OASync.isServer() && OAContext.getContext() == null)) {
                 editQuery.setThrowable(null);
                 editQuery.setAllowed(true);
             }

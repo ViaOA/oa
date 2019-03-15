@@ -508,6 +508,7 @@ public class OATreeNode implements Cloneable {
         if (def.updateHub == null) return;
         updateHubListener = new HubListenerAdapter() {
             public @Override void afterChangeActiveObject(HubEvent e) {
+int xx = 4;//qqqqqq
                 if (def.tree == null) {
                     return; // error
                 }
@@ -529,7 +530,9 @@ public class OATreeNode implements Cloneable {
                     h = HubShareDelegate.getMainSharedHub(def.updateHub);
                 }
                 if (obj != h.getAO()) {
-                    HubAODelegate.setActiveObject(h, obj);
+                    // 2l0190311 dont set AO, send hub event instead
+                    HubEventDelegate.fireAfterChangeActiveObjectEvent(h, obj, h.getPos(obj), false);
+                    //was: HubAODelegate.setActiveObject(h, obj);
                 }
             }
         };

@@ -47,6 +47,12 @@ public class OAContext {
     public static boolean canAdminEdit() {
         return canAdminEdit(NullContext);
     }
+    public static boolean isAdmin() {
+        return canAdminEdit(null);
+    }
+    public static boolean isAdmin(Object context) {
+        return canAdminEdit(context);
+    }
     public static boolean canAdminEdit(Object context) {
         if (context == null) context = NullContext;
         if (OAString.isEmpty(allowAdminEditPropertyPath)) return false;

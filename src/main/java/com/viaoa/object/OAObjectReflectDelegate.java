@@ -624,7 +624,7 @@ public class OAObjectReflectDelegate {
             boolean bSequence, Hub hubMatch, final OAObjectInfo oi, final OALinkInfo linkInfo ) {
         
         Object propertyValue = OAObjectPropertyDelegate.getProperty(oaObj, linkPropertyName, true, true);
-        boolean bThisIsServer = OAObjectCSDelegate.isServer(oaObj);
+        final boolean bThisIsServer = OAObjectCSDelegate.isServer(oaObj);
         // dont get calcs from server, calcs are maintained locally, events are not sent
         boolean bIsCalc = (linkInfo != null && linkInfo.bCalculated);
         boolean bIsServerSideCalc = (linkInfo != null && linkInfo.bServerSideCalc);
@@ -652,7 +652,6 @@ public class OAObjectReflectDelegate {
             sortOrder = linkInfo.getSortProperty();
             bSortAsc = linkInfo.isSortAsc();
         }
-
         
         Hub hub = null;
         if (propertyValue == null) { 
@@ -736,7 +735,7 @@ public class OAObjectReflectDelegate {
 
         if (hub != null) {
         }
-        else if (!bThisIsServer && !oi.getLocalOnly() && (!bIsCalc || bIsServerSideCalc)) {
+        else if (!bThisIsServer && !oi.getLocalOnly() && (!bIsCalc || bIsServerSideCalc) && !OAObjectCSDelegate.isInNewObjectCache(oaObj)) {
             // request from server
             hub = OAObjectCSDelegate.getServerReferenceHub(oaObj, linkPropertyName); 
             if (hub == null) {
@@ -764,7 +763,7 @@ public class OAObjectReflectDelegate {
                 // 20141109
                 hub = new Hub(linkClass, oaObj, liReverse, false);
                 
-                if (!bIsCalc) {
+                if (!bIsCalc && bThisIsServer) {
                     // 20171225 support for selecting siblings at same time
                     OALinkInfo rli = linkInfo.getReverseLinkInfo();
                     if (!bThisIsServer || linkInfo.getRecursive() || rli == null || rli.getType() == OALinkInfo.TYPE_MANY || rli.getPrivateMethod() || (hubMatch != null) || (matchProperty != null && matchProperty.length() > 0)) {
@@ -1687,7 +1686,7 @@ public class OAObjectReflectDelegate {
                 // 20151117 dont autocreate new if this is deleted
             }
             else {
-                if (!bIsServer) {
+                if (!bIsServer && !OAObjectCSDelegate.isInNewObjectCache(oaObj)) {
                     ref = OAObjectCSDelegate.getServerReference(oaObj, linkPropertyName);
                 }
                 else {

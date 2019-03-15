@@ -854,6 +854,7 @@ public class OAObjectEventDelegate {
 	        	}
 	        }
 	        catch (Exception e) {
+	            LOG.log(Level.WARNING, "exception while updating link", e);
 	        }
 	    }
 	
