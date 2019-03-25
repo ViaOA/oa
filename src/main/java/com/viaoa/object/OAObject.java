@@ -727,7 +727,13 @@ public class OAObject implements java.io.Serializable, Comparable {
         @see #isChanged
     */
     public void save() {
-    	this.save(CASCADE_LINK_RULES);
+        boolean bx = OAThreadLocalDelegate.setEnableEditQuery(false);
+        try {
+            this.save(CASCADE_LINK_RULES);
+        }
+        finally {
+            OAThreadLocalDelegate.setEnableEditQuery(bx);
+        }
     }
 
     /**

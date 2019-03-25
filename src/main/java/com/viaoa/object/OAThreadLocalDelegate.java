@@ -56,6 +56,7 @@ public class OAThreadLocalDelegate {
     
     private static AtomicInteger TotalHubListenerTreeCount = new AtomicInteger();
     private static final AtomicInteger TotalHubEvent = new AtomicInteger();
+    private static final AtomicInteger TotalEnableEditQuery = new AtomicInteger();
     
 
     public static final HashMap<Object, OAThreadLocal[]> hmLock = new HashMap<Object, OAThreadLocal[]>(53, .75f);
@@ -101,7 +102,6 @@ public class OAThreadLocalDelegate {
 	}
 	
 	/**
-	 * 
 	 * @see OAThreadLocal#loading
 	 */
 	public static boolean isLoading() {
@@ -1188,6 +1188,33 @@ static volatile int unlockCnt;
         return false;
     }
 
-    
+
+    public static boolean isEditQueryEnabled() {
+        boolean b; 
+        if (OAThreadLocalDelegate.TotalEnableEditQuery.get() == 0) {
+            b = true;
+        }
+        else {
+            b = isEditQueryEnabled(OAThreadLocalDelegate.getThreadLocal(false));
+        }
+        return b;
+    }
+    protected static boolean isEditQueryEnabled(OAThreadLocal ti) {
+        if (ti == null) return false;
+        return ti.enableEditQuery;
+    }
+    public static boolean setEnableEditQuery(boolean b) {
+        return setEnableEditQuery(OAThreadLocalDelegate.getThreadLocal(b), b);
+    }
+    protected static boolean setEnableEditQuery(OAThreadLocal ti, boolean b) {
+        if (ti == null) return false;
+        boolean bx = ti.enableEditQuery;
+        if (b != bx) {
+            ti.enableEditQuery = b;
+            if (b) OAThreadLocalDelegate.TotalEnableEditQuery.incrementAndGet();
+            else OAThreadLocalDelegate.TotalEnableEditQuery.decrementAndGet();
+        }
+        return bx;
+    }
 }
 

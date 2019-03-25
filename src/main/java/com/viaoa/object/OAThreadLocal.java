@@ -113,5 +113,7 @@ public class OAThreadLocal {
 
     // current HubEvent that is being processed
     public ArrayList<HubEvent> alHubEvent;
+    
+    public boolean enableEditQuery=true;
 }
 

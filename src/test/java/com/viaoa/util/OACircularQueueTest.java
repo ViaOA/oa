@@ -22,7 +22,7 @@ public class OACircularQueueTest extends OAUnitTest {
     private int cntCleanup;
     private final Object lockWrite = new Object();
 
-    void runReader(int id) {
+    void runReader(final int id, final int type) {
         long pos = que.registerSession(id);
         
         String s = "";
@@ -31,27 +31,30 @@ public class OACircularQueueTest extends OAUnitTest {
         
         System.out.println("start reader."+id+", que pos="+pos+s);
 
+        boolean bFlag = false;
+        final long msStart = System.currentTimeMillis();
+        
         for (int i=0; !bStopReader;i++) {
             try {
                 Integer[] ints = que.getMessages(id, pos, 10, 2000);
                 if (ints == null) continue;
                 
-                if (pos < 499) {
-                    // verify that they are in order
-                    for (Integer val : ints) {
-                        assertNotNull(val);
-                        assertEquals(val.intValue(), pos);
-                        ++pos;
+                // verify that they are in order
+                for (Integer val : ints) {
+                    assertNotNull(val);
+                    assertEquals(val.intValue(), pos);
+                    ++pos;
+                }
+
+                if (bFlag) {
+                    if (type == 1 && !bStopWriter) {
+                        // Thread.sleep(1);  // so that writers will have to wait on reader#1
+                    }
+                    else if (type == 2 && !bStopWriter) {
+                        Thread.sleep(500);  // let it overrun
                     }
                 }
-                else pos += ints.length;
-                  
-                if (id == 1 && !bStopWriter) {
-                    Thread.sleep(1);  // so that writers will have to wait on reader#1
-                }
-                else if (id == 2 && !bStopWriter) {
-                    Thread.sleep(1005);  // let it overrun
-                }
+                else bFlag = (System.currentTimeMillis() - 2000 > msStart);
             }
             catch (Exception e) {
                 System.out.println("sessionId="+id+", runReader Exception: "+e);
@@ -66,18 +69,10 @@ public class OACircularQueueTest extends OAUnitTest {
         System.out.println("start writer."+id);
         int cnt = 0;
         for (int i=0; !bStopWriter; i++) {
-            int throttleAmt = 0;
-            throttleAmt = 350;
-            // if (id == 0 && (i%25==0)) throttleAmt = 100;
-            
-            if (ai.get() < 600) {
-                synchronized (lockWrite) {
-                    int x = ai.getAndIncrement();
-                    que.addMessageToQueue(x, throttleAmt);
-                }
-            }
-            else {
-                que.addMessageToQueue(ai.getAndIncrement(), throttleAmt, 0);
+            int throttleAmt = 700;
+            synchronized (lockWrite) {
+                int x = ai.getAndIncrement();
+                que.addMessageToQueue(x, throttleAmt);
             }
             cnt++;
         }
@@ -103,7 +98,7 @@ public class OACircularQueueTest extends OAUnitTest {
             Thread tx = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    runReader(id+1);
+                    runReader(id, id);
                 }
             });
             tx.setName("Reader."+(i+1));
@@ -126,11 +121,11 @@ public class OACircularQueueTest extends OAUnitTest {
         
         for (int i=0; i<15; i++) {
             Thread.sleep(1000);
-            //if (que.getHeadPostion() > 1000) break;
+            // if (que.getHeadPostion() > 500000) break;
         }
         System.out.println("stopping ..");
         bStopWriter = true;
-        Thread.sleep(150);
+        Thread.sleep(250);
         bStopReader = true;
         assertTrue(cntCleanup > 0);
         assertTrue(que.getHeadPostion() > 100);

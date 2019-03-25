@@ -15,7 +15,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import com.viaoa.object.OAPerformance;
@@ -124,9 +123,12 @@ public abstract class OACircularQueue<TYPE> {
         session.id = sessionId;
         session.msLastRead = System.currentTimeMillis();
         
-        long x = queueHeadPosition;
-        session.queuePos = x;
-        hmSession.put(session.id, session);
+        long x;
+        synchronized (LOCKQueue) {
+            x = queueHeadPosition;
+            session.queuePos = x;
+            hmSession.put(session.id, session);
+        }
         return x;
     }
     public void unregisterSession(int sessionId) {
@@ -415,6 +417,9 @@ public abstract class OACircularQueue<TYPE> {
         }        
         return msgs;
     }
+
+    private volatile long msLastTime;
+    
     private TYPE[] _getMessages(final int sessionId, final Session session, long posTail, final int maxReturnAmount, final int maxWait) throws Exception {
         int amt;
         
@@ -435,13 +440,22 @@ public abstract class OACircularQueue<TYPE> {
             amt = maxReturnAmount;
         }
         
-        
         if (amt <= 0 && maxWait != 0) {
+            // 20190320 this was not sync'd
+            /*was
+            private AtomicInteger  aiCleanupQueue = new AtomicInteger(); 
             if (aiCleanupQueue.incrementAndGet() % 50 == 0) {
                 cleanupQueue();
             }
+            */
 
             synchronized(LOCKQueue) {
+                long ms = System.currentTimeMillis();
+                if (msLastTime < (ms - 5000)) {
+                    msLastTime = ms;
+                    cleanupQueue();
+                }
+                
                 for (int i=0; ;i++) {
                     amt = (int) (queueHeadPosition - posTail);
                     if (amt > 0) {
@@ -470,10 +484,11 @@ public abstract class OACircularQueue<TYPE> {
                 msgs[i] = msgQueue[ (int) (posTail++ % queueSize) ]; 
             }
         }
-        else msgs = null;
+        else {
+            msgs = null;
+        }
         return msgs;
     }
-    private AtomicInteger  aiCleanupQueue = new AtomicInteger(); 
 
     public void keepAlive(final int sessionId) {
         Session session = hmSession.get(sessionId);

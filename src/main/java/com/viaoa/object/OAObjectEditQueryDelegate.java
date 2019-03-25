@@ -80,11 +80,12 @@ public class OAObjectEditQueryDelegate {
         getAfterCopyEditQuery(oaObj, (OAObject) objx);
         return (OAObject) objx;
     }
+    /*
     public static void afterCopy(OAObject oaObj, OAObject oaObjCopy) {
         if (oaObj == null || oaObjCopy == null) return;
         getAfterCopyEditQuery(oaObj, oaObjCopy);
     }
-    
+    */
     
     public static boolean getVerifyPropertyChange(OAObject obj, String propertyName, Object oldValue, Object newValue) {
         return getVerifyPropertyChangeEditQuery(obj, propertyName, oldValue, newValue).getAllowed();
@@ -395,7 +396,6 @@ public class OAObjectEditQueryDelegate {
         editQuery.setValue(oaObj);
         
         processEditQuery(editQuery, null, null, oaObj, null, null, null, bProcessedCheck);
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqq        
         if (hub != null) {
             OALinkInfo li = HubDetailDelegate.getLinkInfoFromDetailToMaster(hub);
             OAObject objMaster = hub.getMasterObject();
@@ -458,7 +458,6 @@ public class OAObjectEditQueryDelegate {
         final OAObjectEditQuery editQuery = new OAObjectEditQuery(Type.SetConfirmForDelete);
         editQuery.setConfirmMessage(confirmMessage);
         editQuery.setConfirmTitle(confirmTitle);
-//qqqqqqqqqqqqqqqqqqq        
         processEditQuery(editQuery, oaObj, null, null, null);
         return editQuery;
     }
@@ -500,6 +499,7 @@ public class OAObjectEditQueryDelegate {
     }
     
     protected static void processEditQuery(OAObjectEditQuery editQuery, final Hub hubThis, final Class<? extends OAObject> clazz, final OAObject oaObj, final String propertyName, final Object oldValue, final Object newValue, final boolean bProcessedCheck) {
+        if (!OAThreadLocalDelegate.isEditQueryEnabled()) return;
         _processEditQuery(true, editQuery, hubThis, clazz, oaObj, propertyName, oldValue, newValue, bProcessedCheck);
         
         // if allowed=false, then allow override

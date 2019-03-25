@@ -1691,6 +1691,12 @@ public class OAObjectReflectDelegate {
                 }
                 else {
                     ref = OAObjectReflectDelegate.createNewObject(li.getToClass());
+//qqqqqqqqqqqqqqqqqqq     
+                    // 20190322
+                    if ( ((OAObject) ref).isLoading()) {
+                        OAObjectDelegate.initialize((OAObject) ref, OAObjectInfoDelegate.getOAObjectInfo(li.getToClass()), true, true, true, false, true);
+                    }
+                    
                     setProperty(oaObj, linkPropertyName, ref, null); // need to do this so oaObj.changed=true, etc.
                     if (b) { // 20190220
                         setProperty((OAObject) ref, li.getReverseLinkInfo().getName(), oaObj, null);

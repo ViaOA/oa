@@ -1,5 +1,14 @@
 
 
+
+
+    String us = NumberFormat.getCurrencyInstance(Locale.US).format(payment);
+    String china = NumberFormat.getCurrencyInstance(Locale.CHINA).format(payment);
+    String france = NumberFormat.getCurrencyInstance(Locale.FRANCE).format(payment);
+    // String india = NumberFormat.getCurrencyInstance(new Locale("hi", "IN")).format(payment);
+    String india = NumberFormat.getCurrencyInstance(new Locale("en", "IN")).format(payment);
+
+
 https://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html
 
 
@@ -10,6 +19,9 @@ from Resource.java
 
 String dt = lastDateTime.toString("yyyy-MM-dd'T'HH:mm:ss"); // 2002-06-05T10:21:10
 
+
+left justified, 0 padded int
+    System.out.printf("%-15s%03d\n", str, x);
 
 
 String.format

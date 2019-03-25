@@ -558,7 +558,13 @@ public class Hub<TYPE> implements Serializable, Cloneable, Comparable<TYPE>, Ite
      * @see OAObject#save
      */
     public void saveAll() {
-        HubSaveDelegate.saveAll(this, OAObject.CASCADE_LINK_RULES);
+        boolean bx = OAThreadLocalDelegate.setEnableEditQuery(false);
+        try {
+            HubSaveDelegate.saveAll(this, OAObject.CASCADE_LINK_RULES);
+        }
+        finally {
+            OAThreadLocalDelegate.setEnableEditQuery(bx);
+        }
     }
 
     public void saveAll(int iCascadeRule) {
