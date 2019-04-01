@@ -184,7 +184,7 @@
 				</executions>
 			</plugin>
 
-<!--  qqqqqqqqqqq required for maven central 
+<!--  qqqqqqqqqqq required for maven central --> 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -201,7 +201,7 @@
 					</execution>
 				</executions>
 			</plugin>
-qqqqqqqqqqqq -->
+<!-- qqqqqqqqqqqq -->
 
 <!-- qqqqqqqqqqqqqqq need to have this run when sending to maven central repo, a password window will popup when building --> 
 			<plugin>
