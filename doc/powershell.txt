@@ -1,9 +1,0 @@
-
-
-Line Count
-    PS C:\Users\vvia\git\oa\src\main> 
-    dir . -filter "*.java" -Recurse -name | foreach{(GC $_).Count} | measure-object -sum
-
-    
-    
-    

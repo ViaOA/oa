@@ -1151,7 +1151,7 @@ public class OAString {
                 }
                 catch (Exception e) {}
             }
-            else {
+            else if (str != null && str.length() < 9) {
                 // try number
                 try {
                     Number num = OAConv.toDouble(str);
@@ -2921,7 +2921,7 @@ i: 0123456789
    VinceViNce   
 j:      12
 */   
-                    sb.append(line.substring(b, b+j));
+                    sb.append(line.substring(b, b+1));
                 }
                 i -= j;  // start at last checking point, loop with inc i by +1
                 j = 0;

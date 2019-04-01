@@ -1,9 +1,0 @@
-
-
-    http://jqueryui.com/
-
-JQuery UI theming API
-    http://docs.jquery.com/UI/Theming/API
-
-    
-    

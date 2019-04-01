@@ -244,7 +244,7 @@ public class OAJfcController extends HubListenerAdapter {
         if (this.hub == null) return;
         
         if (propertyPath != null && propertyPath.indexOf('.') >= 0) {
-            hubListenerPropertyName = propertyPath.replace('.', '_'); //qqqqqqqqqqqqq (com.cdi.model.oa.WebItem)B_WebPart_Title
+            hubListenerPropertyName = propertyPath.replace('.', '_'); // (com.cdi.model.oa.WebItem)B_WebPart_Title
             hub.addHubListener(this, hubListenerPropertyName, new String[] {propertyPath}, bAoOnly);
         }
         else {
@@ -1433,7 +1433,13 @@ cntAllUpdate++;
             if (cp instanceof OAResizePanel) {
                 OAResizePanel rp = (OAResizePanel) cp;
                 if (rp.getMainComponent() == comp && rp.isVisible() != bVisible) {
-                    rp.setVisible(bVisible);
+                    // 20190328 could be in a tab
+                    boolean b = true;
+                    if (rp.getParent() instanceof JTabbedPane) {
+                        JTabbedPane tp = (JTabbedPane) rp.getParent();
+                        b = tp.getSelectedComponent() == rp;
+                    }
+                    if (b) rp.setVisible(bVisible);
                 }
                 break;
             }
@@ -1882,7 +1888,6 @@ cntAllUpdate++;
     public boolean isVisibleOnScreen() {
         if (component == null) return false;
         boolean bVisible = true;
-        
         Component comp = component.getParent();
 
         // 20181112

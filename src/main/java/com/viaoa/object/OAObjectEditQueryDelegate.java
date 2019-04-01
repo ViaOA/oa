@@ -509,7 +509,7 @@ public class OAObjectEditQueryDelegate {
         }
         else if ((!editQuery.getAllowed() || editQuery.getThrowable() != null)) {
             // allow admin or server to be valid
-            if (OAContext.canAdminEdit() || (OASync.isServer() && OAContext.getContext() == null)) {
+            if (OAContext.canAdminEdit() || ((OASync.isServer() && OAContext.getContext() == null) && !OASync.isSingleUser())) {
                 editQuery.setThrowable(null);
                 editQuery.setAllowed(true);
             }

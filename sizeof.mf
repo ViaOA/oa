@@ -1,3 +1,0 @@
-Created-By: Vince Via
-Premain-Class: com.viaoa.util.SizeOf
-      

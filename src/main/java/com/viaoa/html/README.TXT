@@ -1,5 +1,8 @@
 
 
+
+OA.Html is not being used, and has been replaced by oa.jsp, and oa.web
+
 The oa.html code is from 2002, which is being used for VetJobs 2008
 
 VetJobs4.0 is using OA2.6, with the exception of oa.html, which is from the 2002 version of Vetjobs

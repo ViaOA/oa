@@ -18,12 +18,15 @@ import javax.swing.table.*;
 import com.viaoa.hub.*;
 import com.viaoa.jfc.control.*;
 import com.viaoa.jfc.table.*;
+import com.viaoa.util.OAConv;
+import com.viaoa.util.OAString;
 
 public class OAFormattedTextField extends BaseFormattedTextField implements OATableComponent, OAJfcComponent {
     private FormattedTextFieldController control;
     private OATable table;
     private String heading = "";
     private OAFormattedTextFieldTableCellEditor tableCellEditor;
+    private String format; // instead of using control.format 
 
     /**
         Create TextField that is bound to a property path in a Hub.
@@ -59,6 +62,15 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
             }
         };
         setColumns(cols);
+        if (mask != null && mask.length() > 0) {
+            boolean b = true;
+            for (int i=0; !b && i<mask.length(); i++) {
+                char ch = mask.charAt(i);
+                if ("#,.09 ".indexOf(ch) < 0) b = false; 
+            }
+            if (b) this.format = "R("+mask+")";
+            else this.format = "L("+mask+")";
+        }
         initialize();
     }
 
@@ -94,7 +106,7 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
     
     @Override
     public String getFormat() {
-        return null;
+        return this.format;
     }
 
 /*    
@@ -211,6 +223,10 @@ public class OAFormattedTextField extends BaseFormattedTextField implements OATa
     public Component getTableRenderer(JLabel renderer, JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         if (control != null) {
             control.getTableRenderer(renderer, table, value, isSelected, hasFocus, row, column);
+            if (OAString.isNotEmpty(this.format)) {
+                value = OAConv.toString(value, this.format);
+                renderer.setText((String) value);
+            }
         }
         return renderer;
     }
