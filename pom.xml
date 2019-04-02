@@ -203,7 +203,7 @@
 			</plugin>
 <!-- qqqqqqqqqqqq -->
 
-<!-- qqqqqqqqqqqqqqq need to have this run when sending to maven central repo, a password window will popup when building --> 
+<!-- qqqq need to have this run when sending to maven central repo, a password window will popup when building --> 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
