@@ -12,7 +12,6 @@ The Model Driven approach defines the entities, relationships, persistence, busi
 
 Full software systems can be visually designed and then automatically generated using the OA library, OABuilder visual modeling tool, along with the OA.G2 code generation
 
-See [www.viaoa.com](www.viaoa.com) for more information.
 
 ## Key Concepts for automation
 
@@ -26,4 +25,7 @@ See [www.viaoa.com](www.viaoa.com) for more information.
 *   metadata - object data, discovery, and includes business rules, security, callbacks, so that the model is the core.
 *   functional - realtime filtering, merging, object graph, visiting, joins, groups, more.
 
-Visit www.viaoa.com for more on OA, and to learn about OABuilder
+Visit [www.viaoa.com](www.viaoa.com) for more information.
+
+Visit [OA Javadoc](docs/index.html)
+
