@@ -11,6 +11,11 @@
         Object Automation library
     </description>
 
+    <organization>
+        <name>ViaOA</name>
+        <url>www.viaoa.com</url>
+    </organization>
+
     <scm>
         <connection>scm:git:https://github.com/ViaOA/oa.git</connection>
         <developerConnection>scm:git:https://github.com/ViaOA/oa.git</developerConnection>
@@ -184,11 +189,11 @@
 				</executions>
 			</plugin>
 
-<!--  qqqqqqqqqqq required for maven central --> 
+<!-- qqqqqqqqqqq required for maven central --> 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
@@ -197,6 +202,13 @@
 						</goals>
 						<configuration>
 							<additionalOptions>-Xdoclint:none</additionalOptions>
+				            <author>true</author> 
+				            <windowtitle>OA Java Code Documentation</windowtitle>
+				            <header>OA by ViaOA, Inc.</header>
+				            <splitindex>true</splitindex>
+				            <overview>src/main/java/com/viaoa/overview.html</overview>
+				            <footer>&lt;small&gt;&amp;copy ${project.inceptionYear}-$project.{currentYear} ViaOA, Inc. All rights reserved&lt;small&gt;</footer>
+				            <excludePackageNames>com.viaoa.test.*, com.viaoa.html.*</excludePackageNames>
 						</configuration>
 					</execution>
 				</executions>

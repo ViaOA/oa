@@ -2,83 +2,60 @@
 <body>
 
 <b>Object Automation (OA) by Via Object Architects (ViaOA, Inc.)</b>
-
+<p>
 <center>
+
+
 <i>"All programs are made up of objects and collections of objects."</i>
+<p>
 OA automates how they work together.
 </center>
 <p>
 
 
-<p>
-<b>Overview of OA Packages</b>
+The OA Platform is a model driven, reactive, observable, componentized, distributed, synchronized, dynamic, functional, secure, small foot print, high velocity system for building Applications. 
 <p>
 
-<u>Package <b>com.viaoa.object</b></u><br>
-OAObject is used as the base class for representing custom entity classes.
-OAObject includes built in functionality to be able to automate interactions with other objects/components.
+The OA library offers solutions that use software patterns and techniques that allow for high reuse and functionality.  
 <p>
+
+The focus is on <i>creating software that creates software</i>, where most of software development can be automated.   
+This is first done by focusing on the computer science patterns within software development.
+<p>
+
+Using a model driven approach, where a model can be visually developed and defined.
+This allows a system to be organized in a way that gives high functionality, development velocity, and a reiterative constant improving software development process.  
+<p>
+
+
+Each package in OA defines these patterns and techniques.
+
+<p>
+
+At the core of OA is the object model that is an object-relational, observable, reactive, functional, distributed object graph.
+This graph of objects and collections automatically work with persistence layers, frameworks, UI, reporting, microservices, and more.
+<p>
+The Model Driven approach defines the entities, relationships, persistence, business logic, security, UI, endpoint access, work-flow and more.
+<p>
+Full software systems can be visually designed and then automatically generated using the OA library, OABuilder visual modeling tool, along with the OA.G2 code generation 
+<p>
+See <a href="www.viaoa.com">www.viaoa.com</a> for more information.
+<p>
+
+<h2>Key Concepts for automation</h2>
+
 <ul>
-<li>Observable - changes made to an object automatically updates other objects.
-<li>Annotated - defines information about the object and the relationships with other objects.
-<li>Reflective - all components that work with OAObject can work with any custom subclass. 
-<li>Synchronization with other computers - messaging between applications so that objects are synchronized.  
-<li>Automatically work with other objects - UI components, datasource (database/XML/binary/etc),  
-<li>Calculated Properties - changes that affect a calculation (formula) are automatically recaclulated.
-<li>XML support
-<li>Database support (database independent)
-<li>Cross application support
-<li>Locking support
-
-<li>Automating relationships between OAObjects:
-<ul>
-<li>one to one
-<li>one to many
-<li>many to many
-<li>recursive - parent has many children of same Class.
-</ul>
-Relationship rules include ownership, cascading, etc.
+<li>observable objects and collections - core for allowing reactive object graphs
+<li>property paths - dot separated paths for interacting with object graphs
+<li>remoting/distributed - allows scaling and failover, where everything works like a single application.
+<li>datasource independent, ORM, XML, JSON, yaml, REST, ... - any data, anywhere 
+<li>desktop UI - automated rich components - rich UI and reporting
+<li>web UI - componenized web apps.
+<li>reflective - techniques for automating interactions using object graphs, components and code.
+<li>metadata - object data, discovery, and includes business rules, security, callbacks, so that the model is the core.
+<li>functional - realtime filtering, merging, object graph, visiting, joins, groups, more.
 </ul>
 
-
-<br>
-<u>Package <b>com.viaoa.hub</b></u><br>
-The Hub is a collection class used with OAObjects.  OAObject classes use Hub collections to represent 
-relationships between other OAObjects.
-The Hub is an observable collection, with the additional functionality to manage the observable events
-of the objects that are contained in the collection.
-<br>
-
-
-<p>
-<u>Package <b>com.vioa.ds (datasource)</b></u><br>
-Includes main interface, OADataSource, used for storing and retrieving Objects from a persistent datasource 
-in a way that is independent from the Objects.  This includes Relational Databases, XML, serialized files, 
-legacy systems, application servers, etc.  Included with OA is datasource that uses JDBC to automatically 
-store/select/retrieve objects from a Relational Database. 
-<p>
-All selects/queries for retrieving objects are based on an Object Query Language that is based on
-Class structure, and not on datasource structure.
-<p>
-OAObject has built in methods for automatically working with any OADataSource.  Methods that include save, 
-delete, and initialization of object when object is created.  
-
-<p>
-<u>Package <b>com.viaoa.jfc (user interface components using Java Swing)</b></u><br>
-Object Aware visual components used for building Graphical User Interfaces.  Similar to databound components, 
-Object Aware components use OAObjects instead of a database.  Package currently has the Java Foundation 
-Classes (JFC) subclassed to automatically work with any OAObject or Hub Collection.
-
-<p>
-<u>Package <b>com.viaoa.html</b></u><br>
-Similar to com.viaoa.gui package, visual components that automatically work with frames, forms, and form
-components.  Includes components for building Web Applications using Java Server Pages (JSP).
-
-<p>
-<u>Package <b>com.viaoa.util</b></u><br>
-Includes utility Classes for strings, dates, times, converters, and more.   Data converters are used to convert 
-from one type to another, commonly used to convert to/from Strings to another variable type.  Data formatters 
-are also included.
 
 
 </body>

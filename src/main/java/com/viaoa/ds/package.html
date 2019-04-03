@@ -1,17 +1,21 @@
 <html>
 <body>
 
-Interface used for storing and retrieving Objects from a persistent datasource in a way that is independent from
-the Objects.  
+Datasource independent access for storing and retrieving Objects from a persistent datasource.
+<p>
+Automates how objects and collections interacts with databases, datasources, and outside data.
 
 <p>
 An OADataSource is used to initialize, insert, update, delete and query Objects without using 
 datasource/database specific commands or query languages.
 
 <p>
+Includes support for distributed DataSources.
+
+<p>
 A datasource is any form of service that provides persistent storage and retrieval of data.  The 
 most common datasource is for databases that use SQL and have a JDBC driver.  Other types of storage 
-could be flat files, XML, streaming to other systems, application servers, web services, legacy 
+could be NoSQL, flat files, XML, streaming to other systems, application servers, web services, legacy 
 systems, object-relational engines, etc.
 
 <p>
@@ -21,12 +25,6 @@ can then be used to find a OADataSource based on the Class of the Object that is
 <p>
 Applications can be created that are independent of the datasource.  At any time, a new OADataSource can be
 used without affecting the existing application or objects.  
-
-<p>
-Currently, OA supplies the following OADataSources: </br>
-OADataSourceNextNumber: used as a <i>fake</i> datasource. <br>
-OADataSourceJDBC: used to work with any JDBC driver, any Relational Database <br>
-OADataSourceClient: allows a Client application to use the OADataSource on the Server.  (See OAClient, OAServer)
 
 <p>
 <b>Queries/Selects</b><br>
