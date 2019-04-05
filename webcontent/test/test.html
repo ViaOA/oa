@@ -1,0 +1,432 @@
+
+<!DOCTYPE html>
+<html>
+<HEAD>
+<TITLE>goHi5.com</TITLE>
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<META content="text/html; charset=iso-8859-1" http-equiv=Content-Type>
+
+<link rel="stylesheet" href="css/redmond/jquery-ui-1.8.19.custom.css">
+<link rel="stylesheet" href="css/template.css">
+<link rel="stylesheet" href="css/form.css">
+
+<!-- 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+ -->
+
+<script type="text/javascript" language="javascript" src="js/jquery-1.7.1.js"></script>
+<script type="text/javascript" language="javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
+
+
+
+<script>
+    var toolbarOptions = {
+        managerToolkit : false,
+        personalInfo : true,
+        calendar : false,
+        sendEcard : false,
+        education : false,
+        hi5Nomination : false,
+        communications : false,
+        gallery : false
+    };
+
+    var userInfo = {
+        fullName : "Joey",
+        hasAward : true,
+        hasHifive : false,
+        awardText : "Congratulations Joey <br>you have a Service Award",
+        handText : "You have a <br>hi5 nomination"
+    };
+
+    var programInfo = {
+        imgLogo : "../servlet/img?c=ImageStore&i=8104&p=bytes",
+        imgHand : "image/banner/hand.gif",
+        imgSlides : 
+              [ 
+                "image/banner/01.jpg", "image/banner/02.jpg", "image/banner/03.jpg", 
+                "image/banner/04.jpg", "image/banner/05.jpg", "image/banner/06.jpg" 
+              ] 
+    }
+
+    $(document).ready(function() {
+        
+        $("ul#ulMenu li:last a").css({
+            borderRight : "none"
+        });
+
+        $("#programLogo img").attr("src", programInfo.imgLogo);
+        $("#hand img").attr("src", programInfo.imgHand);
+        
+        // <li><img src="image/banner/01.jpg" /></li>
+        for (var i=0; i < programInfo.imgSlides.length; i++) {
+            var x = programInfo.imgSlides[i];
+            $("#slideshow ul").append("<li><img src='" + x + "' /></li>");
+        }
+
+        $("#banner").slideshow(960, 196, 1650, 2200);
+        
+        if (userInfo.hasAward) {
+            $("#awardSeal").show();
+        }
+        if (userInfo.hasHifive) {
+            $("#hand").show();
+        }
+
+        $("#awardText").html(userInfo.awardText);
+        $("#handText").html(userInfo.handText);
+
+        if (toolbarOptions.managerToolkit) {
+            $("#tbManagerToolkit").show();
+            $("#boxManagerToolkit").show();
+        }
+        if (toolbarOptions.personalInfo) {
+            $("#tbPersonalInfo").show();
+            $("#boxPersonalInfo").show();
+        }
+        if (toolbarOptions.calendar) {
+            $("#tbCalendar").show();
+            $("#boxCalendar").show();
+        }
+        if (toolbarOptions.sendEcard) {
+            $("#tbSendEcard").show();
+            $("#boxSendEcard").show();
+        }
+        if (toolbarOptions.education) {
+            $("#tbEducation").show();
+        }
+        if (toolbarOptions.hi5Nomination) {
+            $("#tbHi5Nomination").show();
+        }
+        if (toolbarOptions.communications) {
+            $("#tbCommunications").show();
+        }
+        if (toolbarOptions.gallery) {
+            $("#tbGallery").show();
+        }
+    });
+</script>
+
+
+
+<script>
+    $(document).ready(function() {
+        // default form styling ======================
+        $("form fieldset").addClass("ui-widget-content");
+        $("input:submit").button();
+        $("input:reset").button();
+        $("button").button();
+        $("input:text, input:password").addClass("ui-corner-all");
+        // first txtField has focus
+        $("input[type='text']:enabled:first").focus();
+        // set all input names = id attribute
+        $("input").each(function(index, value) {
+            var s = $(this).attr("name");
+            if (s == undefined) {
+                var id = $(this).attr("id");
+                if (id != null) $(this).attr("name", id);
+            }
+        });
+    });
+</script>
+        
+
+ 
+
+<style type="text/css">
+
+#letterFrame {
+    position: relative;
+    min-height: 45px;
+    padding: 10px;
+    margin: 10px 22px 12px 22px;
+    background-color: white;
+
+    -moz-box-shadow: 10px 10px 15px #888;
+    -webkit-box-shadow: 10px 10px 15px #888;
+    box-shadow: 8px 8px 15px #888;
+}
+#ceoImage {
+    float: left;
+    margin: 7px 24px 7px 7px;
+}
+#letter {
+    padding: 25px 10px 5px 10px;
+    zoom: 1;
+}
+#logo { 
+    position: absolute;
+    bottom: 10px; 
+    right: 10px;
+    zoom: 1;
+}
+#getitnowBanner {
+     
+        /* gift cards only */
+        background: url('image/empAward/new-1R5C1.jpg') no-repeat -22px -10px;
+     
+    margin: 0px 22px 0px 22px;
+    height: 185px;    
+    width: 900px;
+    overflow: hidden;
+}
+
+.cardImage {
+    display: none;
+    border: inset;
+    border-color: white;
+    float: none;
+    margin: 8px;
+    pad: 8px;
+    max-width: 270px; //230 px;
+    max-height: 150px; //130 px;
+    overflow: hidden;
+    text-align: center;
+}
+
+.itemSlideshow {
+    width: 320px; 
+    height: 170px; 
+    float: right; 
+    margin-top: 20px; 
+    margin-right: 20px;
+}
+.cardSlideshow {
+    width: 320px; 
+    height: 170px; 
+    margin-top: 20px; 
+    margin-left: 20px;
+}
+
+#getitnow {
+    background-color: #DFDFDF;
+    border: white 1px solid;
+    border-top: none;
+    margin: 0px 25px;
+}
+
+</style>
+
+
+<script type="text/javascript" language="javascript" src="js/slideShow.js"></script>
+<script type="text/javascript" src="js/jquery.cycle.all.js"></script>
+
+<script>
+    $(document).ready(function() {
+        
+        
+        
+            $('.cardSlideshow').cycle({
+                fx : 'fade', // choose your transition type, ex: fade, scrollUp, shuffle, etc...
+                speed : 100,
+                random : 1,
+                fit : true
+            });
+            $('.cardSlideshow img').css('display', 'block');
+        
+    });
+</script>
+
+
+</HEAD>
+
+<BODY>
+  <table id="mainContainer" cellpadding="0" cellspacing="0">
+    <tr>
+      <td height="100%" valign="top">
+        <div id="divOuter">
+        
+          
+<div id="divMenu">
+  <ul id="ulMenu">
+    <li><a href="empMain.jsp">Home</a></li>
+    <li><a href="login.jsp">Logout</a></li>
+    <li><a href="contactUs.jsp">Help</a></li>
+    <li><a href="contactUs.jsp">Contact Us</a></li>
+  </ul>
+</div>
+
+
+          <div id="content" style="min-height: 400px;">
+
+          <div id="letterFrame">
+          
+              
+              <img id="ceoImage" src='servlet/img?c=ImageStore&i=8105&p=bytes'>
+              
+          
+
+              
+
+              <div id='letter'>
+                <span style="font-size:11.0pt; font-family:Futura-Book">It is with great 
+    pride that we recognize your anniversary with Air Force Federal Credit 
+    Union.</span><span style="font-size:11.0pt; font-family:Futura-Book"> </span><span style="font-size:11.0pt; font-family:Futura-Book">At 
+    this important milestone, we express our sincere appreciation for your 
+    dedication.</span><span style="font-size:11.0pt; font-family:Futura-Book"> </span><span style="font-size:11.0pt; font-family:Futura-Book">This 
+    service award program aims to provide you with a gift, suitable to your 
+    own taste, to mark our appreciation for the service you have rendered and 
+    the special contribution you make in our organization.</span><span style="font-size:11.0pt; font-family:Futura-Book"><o style="font-size:11.0pt; font-family:Futura-Book" p="#DEFAULT"></span><span style="font-size:11.0pt; font-family:Futura-Book"></o style="font-size:11.0pt; font-family:Futura-Book"></span>
+
+    <p class="MsoNormal">
+      <span style="font-size:11.0pt; font-family:Futura-Book">We strongly 
+      believe that each individual employee has the opportunity to add great 
+      value to our organization.</span><span style="font-size:11.0pt; font-family:Futura-Book"> 
+      </span><span style="font-size:11.0pt; font-family:Futura-Book">Thank you 
+      for all you have done to contribute to the success of Air Force Federal 
+      Credit Union.</span>
+    </p>
+    <p class="MsoNormal">
+      <o p="#DEFAULT">
+      &#160;</o>
+    </p>
+    <p class="MsoNormal">
+      Robert A. Glenn
+    </p>
+    <p class="MsoNormal">
+      President/CEO
+    </p>
+              </div>
+              
+              
+            <div id="logo">
+                <img src='servlet/img?c=ImageStore&i=8104&p=bytes'>
+            </div> 
+             
+         </div>             
+  
+         <!-- Image for Getitnow Banner inserted here -->       
+         <div id='getitnowBanner'>
+         </div>                  
+
+<!-- qqqqqqqqq  WORK AREA  qqqqqqqqqqqqqqq -->
+        
+         <div id='getitnow'>
+    
+        <div style='margin-left: 22px; margin-right=22px;' >
+          <a href='getitnowCard.jsp'><img src="image/empAward/getitnowCard.jpg"></a>
+          <div class="cardSlideshow" style='float: right;'>
+            <a href='getitnowCard.jsp?card=4'><img class='cardImage' src='servlet/img?c=ImageStore&i=7986&p=bytes'></a>
+<a href='getitnowCard.jsp?card=5'><img class='cardImage' src='servlet/img?c=ImageStore&i=7987&p=bytes'></a>
+<a href='getitnowCard.jsp?card=7'><img class='cardImage' src='servlet/img?c=ImageStore&i=7989&p=bytes'></a>
+<a href='getitnowCard.jsp?card=9'><img class='cardImage' src='servlet/img?c=ImageStore&i=7991&p=bytes'></a>
+<a href='getitnowCard.jsp?card=10'><img class='cardImage' src='servlet/img?c=ImageStore&i=7992&p=bytes'></a>
+<a href='getitnowCard.jsp?card=11'><img class='cardImage' src='servlet/img?c=ImageStore&i=7993&p=bytes'></a>
+<a href='getitnowCard.jsp?card=8'><img class='cardImage' src='servlet/img?c=ImageStore&i=7990&p=bytes'></a>
+<a href='getitnowCard.jsp?card=2'><img class='cardImage' src='servlet/img?c=ImageStore&i=7984&p=bytes'></a>
+<a href='getitnowCard.jsp?card=6'><img class='cardImage' src='servlet/img?c=ImageStore&i=7988&p=bytes'></a>
+<a href='getitnowCard.jsp?card=62'><img class='cardImage' src='servlet/img?c=ImageStore&i=8044&p=bytes'></a>
+<a href='getitnowCard.jsp?card=13'><img class='cardImage' src='servlet/img?c=ImageStore&i=7995&p=bytes'></a>
+<a href='getitnowCard.jsp?card=16'><img class='cardImage' src='servlet/img?c=ImageStore&i=7998&p=bytes'></a>
+<a href='getitnowCard.jsp?card=19'><img class='cardImage' src='servlet/img?c=ImageStore&i=8001&p=bytes'></a>
+<a href='getitnowCard.jsp?card=22'><img class='cardImage' src='servlet/img?c=ImageStore&i=8004&p=bytes'></a>
+<a href='getitnowCard.jsp?card=23'><img class='cardImage' src='servlet/img?c=ImageStore&i=8005&p=bytes'></a>
+<a href='getitnowCard.jsp?card=24'><img class='cardImage' src='servlet/img?c=ImageStore&i=8006&p=bytes'></a>
+<a href='getitnowCard.jsp?card=25'><img class='cardImage' src='servlet/img?c=ImageStore&i=8007&p=bytes'></a>
+<a href='getitnowCard.jsp?card=26'><img class='cardImage' src='servlet/img?c=ImageStore&i=8008&p=bytes'></a>
+<a href='getitnowCard.jsp?card=27'><img class='cardImage' src='servlet/img?c=ImageStore&i=8009&p=bytes'></a>
+<a href='getitnowCard.jsp?card=28'><img class='cardImage' src='servlet/img?c=ImageStore&i=8010&p=bytes'></a>
+<a href='getitnowCard.jsp?card=30'><img class='cardImage' src='servlet/img?c=ImageStore&i=8012&p=bytes'></a>
+<a href='getitnowCard.jsp?card=48'><img class='cardImage' src='servlet/img?c=ImageStore&i=8030&p=bytes'></a>
+<a href='getitnowCard.jsp?card=49'><img class='cardImage' src='servlet/img?c=ImageStore&i=8031&p=bytes'></a>
+<a href='getitnowCard.jsp?card=50'><img class='cardImage' src='servlet/img?c=ImageStore&i=8032&p=bytes'></a>
+<a href='getitnowCard.jsp?card=52'><img class='cardImage' src='servlet/img?c=ImageStore&i=8034&p=bytes'></a>
+<a href='getitnowCard.jsp?card=53'><img class='cardImage' src='servlet/img?c=ImageStore&i=8035&p=bytes'></a>
+<a href='getitnowCard.jsp?card=54'><img class='cardImage' src='servlet/img?c=ImageStore&i=8036&p=bytes'></a>
+<a href='getitnowCard.jsp?card=56'><img class='cardImage' src='servlet/img?c=ImageStore&i=8038&p=bytes'></a>
+<a href='getitnowCard.jsp?card=57'><img class='cardImage' src='servlet/img?c=ImageStore&i=8039&p=bytes'></a>
+<a href='getitnowCard.jsp?card=58'><img class='cardImage' src='servlet/img?c=ImageStore&i=8040&p=bytes'></a>
+<a href='getitnowCard.jsp?card=60'><img class='cardImage' src='servlet/img?c=ImageStore&i=8042&p=bytes'></a>
+<a href='getitnowCard.jsp?card=61'><img class='cardImage' src='servlet/img?c=ImageStore&i=8043&p=bytes'></a>
+<a href='getitnowCard.jsp?card=64'><img class='cardImage' src='servlet/img?c=ImageStore&i=8046&p=bytes'></a>
+<a href='getitnowCard.jsp?card=65'><img class='cardImage' src='servlet/img?c=ImageStore&i=8047&p=bytes'></a>
+<a href='getitnowCard.jsp?card=66'><img class='cardImage' src='servlet/img?c=ImageStore&i=8048&p=bytes'></a>
+<a href='getitnowCard.jsp?card=67'><img class='cardImage' src='servlet/img?c=ImageStore&i=8049&p=bytes'></a>
+<a href='getitnowCard.jsp?card=69'><img class='cardImage' src='servlet/img?c=ImageStore&i=8051&p=bytes'></a>
+<a href='getitnowCard.jsp?card=71'><img class='cardImage' src='servlet/img?c=ImageStore&i=8053&p=bytes'></a>
+<a href='getitnowCard.jsp?card=73'><img class='cardImage' src='servlet/img?c=ImageStore&i=8055&p=bytes'></a>
+<a href='getitnowCard.jsp?card=74'><img class='cardImage' src='servlet/img?c=ImageStore&i=8056&p=bytes'></a>
+<a href='getitnowCard.jsp?card=20'><img class='cardImage' src='servlet/img?c=ImageStore&i=8002&p=bytes'></a>
+<a href='getitnowCard.jsp?card=51'><img class='cardImage' src='servlet/img?c=ImageStore&i=8033&p=bytes'></a>
+<a href='getitnowCard.jsp?card=75'><img class='cardImage' src='servlet/img?c=ImageStore&i=8057&p=bytes'></a>
+<a href='getitnowCard.jsp?card=76'><img class='cardImage' src='servlet/img?c=ImageStore&i=8058&p=bytes'></a>
+<a href='getitnowCard.jsp?card=77'><img class='cardImage' src='servlet/img?c=ImageStore&i=8059&p=bytes'></a>
+<a href='getitnowCard.jsp?card=78'><img class='cardImage' src='servlet/img?c=ImageStore&i=8060&p=bytes'></a>
+<a href='getitnowCard.jsp?card=79'><img class='cardImage' src='servlet/img?c=ImageStore&i=8061&p=bytes'></a>
+<a href='getitnowCard.jsp?card=80'><img class='cardImage' src='servlet/img?c=ImageStore&i=8062&p=bytes'></a>
+<a href='getitnowCard.jsp?card=81'><img class='cardImage' src='servlet/img?c=ImageStore&i=8063&p=bytes'></a>
+<a href='getitnowCard.jsp?card=82'><img class='cardImage' src='servlet/img?c=ImageStore&i=8064&p=bytes'></a>
+<a href='getitnowCard.jsp?card=83'><img class='cardImage' src='servlet/img?c=ImageStore&i=8065&p=bytes'></a>
+<a href='getitnowCard.jsp?card=84'><img class='cardImage' src='servlet/img?c=ImageStore&i=8066&p=bytes'></a>
+<a href='getitnowCard.jsp?card=86'><img class='cardImage' src='servlet/img?c=ImageStore&i=8068&p=bytes'></a>
+<a href='getitnowCard.jsp?card=87'><img class='cardImage' src='servlet/img?c=ImageStore&i=8069&p=bytes'></a>
+<a href='getitnowCard.jsp?card=88'><img class='cardImage' src='servlet/img?c=ImageStore&i=8070&p=bytes'></a>
+<a href='getitnowCard.jsp?card=89'><img class='cardImage' src='servlet/img?c=ImageStore&i=8071&p=bytes'></a>
+<a href='getitnowCard.jsp?card=90'><img class='cardImage' src='servlet/img?c=ImageStore&i=8072&p=bytes'></a>
+<a href='getitnowCard.jsp?card=91'><img class='cardImage' src='servlet/img?c=ImageStore&i=8073&p=bytes'></a>
+<a href='getitnowCard.jsp?card=92'><img class='cardImage' src='servlet/img?c=ImageStore&i=8074&p=bytes'></a>
+<a href='getitnowCard.jsp?card=93'><img class='cardImage' src='servlet/img?c=ImageStore&i=8075&p=bytes'></a>
+<a href='getitnowCard.jsp?card=94'><img class='cardImage' src='servlet/img?c=ImageStore&i=8076&p=bytes'></a>
+<a href='getitnowCard.jsp?card=95'><img class='cardImage' src='servlet/img?c=ImageStore&i=8077&p=bytes'></a>
+<a href='getitnowCard.jsp?card=96'><img class='cardImage' src='servlet/img?c=ImageStore&i=8078&p=bytes'></a>
+<a href='getitnowCard.jsp?card=97'><img class='cardImage' src='servlet/img?c=ImageStore&i=8079&p=bytes'></a>
+<a href='getitnowCard.jsp?card=98'><img class='cardImage' src='servlet/img?c=ImageStore&i=8080&p=bytes'></a>
+<a href='getitnowCard.jsp?card=100'><img class='cardImage' src='servlet/img?c=ImageStore&i=8082&p=bytes'></a>
+<a href='getitnowCard.jsp?card=101'><img class='cardImage' src='servlet/img?c=ImageStore&i=8083&p=bytes'></a>
+<a href='getitnowCard.jsp?card=102'><img class='cardImage' src='servlet/img?c=ImageStore&i=8084&p=bytes'></a>
+<a href='getitnowCard.jsp?card=103'><img class='cardImage' src='servlet/img?c=ImageStore&i=8085&p=bytes'></a>
+<a href='getitnowCard.jsp?card=105'><img class='cardImage' src='servlet/img?c=ImageStore&i=8087&p=bytes'></a>
+<a href='getitnowCard.jsp?card=106'><img class='cardImage' src='servlet/img?c=ImageStore&i=8088&p=bytes'></a>
+<a href='getitnowCard.jsp?card=107'><img class='cardImage' src='servlet/img?c=ImageStore&i=8089&p=bytes'></a>
+<a href='getitnowCard.jsp?card=108'><img class='cardImage' src='servlet/img?c=ImageStore&i=8090&p=bytes'></a>
+<a href='getitnowCard.jsp?card=110'><img class='cardImage' src='servlet/img?c=ImageStore&i=8092&p=bytes'></a>
+<a href='getitnowCard.jsp?card=111'><img class='cardImage' src='servlet/img?c=ImageStore&i=8093&p=bytes'></a>
+<a href='getitnowCard.jsp?card=114'><img class='cardImage' src='servlet/img?c=ImageStore&i=8096&p=bytes'></a>
+<a href='getitnowCard.jsp?card=115'><img class='cardImage' src='servlet/img?c=ImageStore&i=8097&p=bytes'></a>
+<a href='getitnowCard.jsp?card=116'><img class='cardImage' src='servlet/img?c=ImageStore&i=8098&p=bytes'></a>
+<a href='getitnowCard.jsp?card=118'><img class='cardImage' src='servlet/img?c=ImageStore&i=8100&p=bytes'></a>
+<a href='getitnowCard.jsp?card=119'><img class='cardImage' src='servlet/img?c=ImageStore&i=8101&p=bytes'></a>
+<a href='getitnowCard.jsp?card=120'><img class='cardImage' src='servlet/img?c=ImageStore&i=8102&p=bytes'></a>
+<a href='getitnowCard.jsp?card=121'><img class='cardImage' src='servlet/img?c=ImageStore&i=8103&p=bytes'></a>
+<a href='getitnowCard.jsp?card=109'><img class='cardImage' src='servlet/img?c=ImageStore&i=8091&p=bytes'></a>
+
+          </div>
+        </div>
+    
+         <div style="width: 90%; margin: auto; margin-top: 14px; padding-top: 6px; border-top: 2px #00004B solid;">
+
+          <div style='text-align: center;  margin-bottom: 7px;'><b>Congratulations on your anniversary!</b></div>
+          
+            
+
+
+            
+            Award Cards can be ordered in multiple denominations from different retail establishments up to the 
+            award value reflected.
+            
+
+          <p>
+            
+
+
+         </div>                  
+       </div>  <!-- getitnow -->
+
+              
+         </div> <!-- content -->
+        </div> <!-- outer -->
+
+      </td>
+    </tr>
+
+    <tr>
+      <td valign="bottom" height=5 style='padding-bottom: 5px;'>
+          <div id="divFooter">gohi5.com &copy; 2012</div>
+      </td>
+    </tr>
+
+  </table>
+
+</BODY>
+</HTML>
+

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="OA" default="Dist" basedir=".">
+	<description>OA by ViaOA, Inc.</description> 
+
+    <property name="Version" value="3.6"/>
+    <property name="FullName" value="OA"/>
+    <property name="FileName" value="oa"/>
+	<property name="BackupDirectory" location="/projects/backup/oa"/>
+	
+    <tstamp>
+        <format property="DTSTAMP" pattern="yyyyMMdd_HHmm"/>
+    </tstamp>
+    <tstamp>
+        <format property="YEAR" pattern="yyyy"/>
+    </tstamp>
+
+	
+	<target name="Dist" depends="Jar, Sign" description="Distribution">
+		<zip basedir="src" destfile="dist/${FileName}_source.zip" update="false" />
+	
+		<!-- these files will be needed by jnlp for JWS applications -->
+		<!--
+		<copy overwrite="true" file="dist/${FileName}.jar" todir="${WebsiteDirectory}/WebContent/jnlp/oa" />
+		-->
+	</target>
+
+    <target name="Sign">
+        <signjar jar="dist/${FileName}.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" tsaurl="http://sha256timestamp.ws.symantec.com/sha256/timestamp"/>
+    </target>
+	
+
+	
+    <target name="Jar" depends="UpdateBinFiles" description="Jar Project">
+        <jar basedir="bin" destfile="dist/${FileName}.jar"  manifest="manifest.mf" update="false" 
+            excludes="test/**, **/builder/**, **/website/**, **/doc-files/**, **/vetjobstest/**, **/theice/**, **/tmgsc/**, **/*Test.class, **/*Test$*.class" 
+        />
+    </target>
+	
+
+    <target name="JarSizeOf" description="Jar SizeOf">
+        <jar basedir="bin" destfile="dist/sizeof.jar"  update="false" includes="**/SizeOf*.class" manifest="sizeof.mf"/>
+    </target>
+	
+
+	
+	<target name="UpdateBinFiles" description="update files from src to bin that are needed by OA jar file">
+        <copy overwrite="true" todir="bin">
+			<fileset dir="src">
+				<include name="*.gif/**"/>
+				<include name="*.jpg/**"/>
+                <include name="*.htm*/**"/>
+                <include name="*.css*/**"/>
+                <exclude name="**/doc-files/**"/>
+                <exclude name="**/package.html/**"/>
+                <exclude name="**/overview.html/**"/>
+			</fileset>
+		</copy>
+	</target>
+
+
+    <!-- this is no longer required, since java creates stub/skel from interface -->
+	<target name="rmic" description="create rmi classes">
+		<rmic classname="com.viaoa.cs.OAServerImpl" base="bin" sourcebase="src/java"/>
+		<rmic classname="com.viaoa.cs.OAObjectServerImpl" base="bin" sourcebase="src/java"/>
+	</target>
+
+
+	<!-- ========== Backup =========== -->
+	<target name="Backup" description="create a zip file and store in backup directory under timestamp name">
+		<mkdir dir="${BackupDirectory}"/>
+		<zip destfile="${BackupDirectory}/${FileName}_${DTSTAMP}.zip" update="false">
+			<fileset dir=".">
+			    <include name="*/**"/>
+                <exclude name=".*"/>
+                <exclude name="bin/**"/>
+                <exclude name="dist/**"/>
+                <exclude name="javadoc/**"/>
+			</fileset>
+		</zip>
+	</target>
+
+
+	<!-- ========== JavaDoc =========== -->
+	<target name="JavaDoc" description="run JavaDoc against source code.">
+		<deltree dir="javadoc"/>
+        <mkdir dir="javadoc"/>
+		<javadoc 
+			packagenames="com.viaoa.*"
+			destdir="javadoc" 
+			sourcepath="src/main/java" 
+			author="yes" 
+			protected="true" 
+			windowtitle="${FullName} Java Code Documentation"
+			header="${FullName} by ViaOA, Inc."
+			splitindex="true"
+			overview="src/main/java/com/viaoa/overview.html"
+			footer="&lt;small&gt;&amp;copy 1999-${YEAR} ViaOA, Inc. All rights reserved&lt;small&gt;"
+			excludepackagenames="com.viaoa.test.*, com.viaoa.html.*"
+		/>
+		<zip basedir="javadoc" destfile="dist/${FileName}_javadoc.zip" update="false" />
+	</target>	
+
+
+	
+
+    <!-- Misc -->	
+	
+	
+    <!-- this is used to sign the jh.jar file using viaoa certificate 
+         The original jh.jar will need to be unzipped, since it is already signed.
+         1: unzip to temp directory
+         2: run JarHelp using the directory, to get dist/jh.jar
+         3: run SignHelp on dist/jh.jar
+    -->
+    
+    <target name="JarHelp" depends="" description="Jar javahelp files">
+        <jar basedir="/temp/javahelp" manifest="manifest.mf" destfile="dist/jh.jar" casesensitive="true" update="false"  />
+    </target>
+    <target name="SignHelp" depends="JarHelp">
+        <signjar jar="dist/jh.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" tsaurl="http://sha256timestamp.ws.symantec.com/sha256/timestamp"/>
+    </target>
+
+    
+    <!-- this is used to sign the iText-2.1.7.jar file using viaoa certificate 
+         first copy iText-2.1.7.jar to dist/itext.jar 
+         then run this target to sign the jar.
+    -->
+    
+    <target name="JarIText" depends="" description="Jar IText files">
+        <jar basedir="/temp/itext" destfile="dist/itext.jar" manifest="manifest.mf" casesensitive="true" update="false"  />
+    </target>
+    <target name="SignItext" depends="">
+        <signjar jar="dist/itext.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" tsaurl="http://sha256timestamp.ws.symantec.com/sha256/timestamp"/>
+    </target>
+
+    <target name="JarBallonTip" depends="" description="Jar BallonTip files">
+        <jar basedir="/temp/ballontip" destfile="dist/ballontip.jar" manifest="manifest.mf" casesensitive="true" update="false"  />
+    </target>
+    <target name="SignBallonTip" depends="">
+        <signjar jar="dist/ballontip.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" tsaurl="http://sha256timestamp.ws.symantec.com/sha256/timestamp"/>
+    </target>
+    
+    
+    <target name="SignSizeOf" depends="">
+        <signjar jar="dist/sizeof.jar" alias="viaoa" keystore="../oabuilder/keystore/viaoa.jks" storepass="vince1" tsaurl="http://sha256timestamp.ws.symantec.com/sha256/timestamp"/>
+    </target>
+	
+	
+	
+	<!-- KeyStore used for Jar file signing 
+	  For oa jks, see the official one from thawte - read: keystore.txt
+	-->
+    <target name="KeyStore_SSLServer">
+        <delete file="keystore/sslserver.jks" />
+        <genkey alias="sslserver" storepass="vince1" keyalg="RSA" keysize="2048" keystore="keystore/sslserver.jks" validity="1500" verbose="true">
+            <dname>
+                <param name="cn" value="www.viaoa.com"/>
+                <param name="ou" value="ViaOA"/>
+                <param name="o" value="ViaOA"/>
+                <param name="l" value="Powder Springs"/>
+                <param name="s" value="Georgia"/>
+                <param name="c" value="US"/>
+            </dname>
+        </genkey>       
+    </target>
+
+	<!-- moved to OABuilder project
+    <target name="KeyStore_ViaOA">
+        <delete file="keystore/viaoa.jks" />
+        <genkey alias="viaoa" storepass="vince1" keyalg="RSA" keysize="2048" keystore="keystore/viaoa.jks" validity="1500" verbose="true">
+            <dname>
+                <param name="cn" value="www.viaoa.com"/>
+                <param name="ou" value="ViaOA"/>
+                <param name="o" value="ViaOA"/>
+                <param name="l" value="Powder Springs"/>
+                <param name="s" value="Georgia"/>
+                <param name="c" value="US"/>
+            </dname>
+        </genkey>       
+    </target>
+    -->
+    
+    
+</project> 
+

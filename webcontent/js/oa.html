@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<META HTTP-EQUIV="Expires" CONTENT="-1">
+
+<script type="text/javascript" src="js/jquery-1.7.2.js"></script>
+<script type="text/javascript" src="js/hub.js"></script>
+<script type="text/javascript" src="js/oaobject.js"></script>
+</head>
+
+<script>
+
+    function Person() {
+        OAObject.call(this);
+        this.firstName = null;
+        this.mom = null;
+        this.hubChildren = null;
+    }
+    OA.derive(Person);
+
+    Person.prototype.getFirstName = function() {
+        return this.firstName;
+    };
+        
+    Person.prototype.setFirstName = function(val) {
+        var orig = this.firstName;
+        this.firstName = val;
+        this.firePropertyChange("firstName", orig, this.firstName);
+    };
+
+    
+    Person.prototype.getMom = function() {
+        if (this.mom == null) {
+            this.mom = getObject("mom");
+        }
+        return this.mom;
+    };
+    Person.prototype.setMom = function(val) {
+        var orig = this.mom;
+        this.mom = val;
+        this.firePropertyChange("mom", orig, this.mom);
+        if (orig != null) orig.getChildren().remove(this);
+        if (this.mom != null) this.mom.getChildren().add(this);
+    };
+    
+    Person.prototype.getChildren = function() {
+        if (this.hubChildren == null) {
+            this.hubChildren = this.getHub("children");
+/*q            
+            this.hubChildren.addListener(new HubListener() {
+                onAdd: function(hub, obj) {
+                    obj.setMom(this);
+                },
+                onRemove: function(hub, obj) {
+                    obj.setMom(null);
+                }
+            }
+*/            
+        }
+        return this.hubChildren;
+    };
+    
+    var hub = new Hub();
+
+    var person = new Person();
+    person.setFirstName("Harry");
+
+
+    $().ready(function() {
+
+      //  alert("ready");
+        hub.add(person);
+
+        person.setFirstName("MaryXX");
+       
+        var mom = new Person();
+        mom.setFirstName("Mom");
+        person.setMom(mom);
+       
+        mom.getChildren().add(person);
+        
+        // var x = person.getProperty("mom.firstName");
+
+        var xx = new OATextField(hub, "firstName", "txtFirstName");
+        
+        var cnt = 0;
+        $("button").on("click", function() {
+            person.setFirstName("Vincent"+(cnt++));          
+        });
+        
+    });
+
+    function OATextField(hub, property, txtId) {
+        var hubListener = new HubListener();
+        hubListener.onPropertyChange = function(hub, obj, prop, oldValue, newValue) {
+            if (property != prop) return;
+            $("#"+txtId).val(newValue);
+            $("#oldValue").html(oldValue);
+        };
+       
+        hub.addListener(hubListener);
+    }
+
+</script>
+
+<body>
+<input id="txtFirstName" type="text">
+<button>Hey</button>
+<div id="oldValue" style="display:inline;"></div>
+
+
+
+
+
+</body>
+</html>

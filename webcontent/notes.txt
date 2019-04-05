@@ -1,0 +1,12 @@
+
+
+From Adobe Exchange
+
+jQuery Data Table
+    http://www.datatables.net
+
+jquery Visual  by scott_richards
+
+TinyMCE Editor
+
+Barcode Widget Andres Cayon
